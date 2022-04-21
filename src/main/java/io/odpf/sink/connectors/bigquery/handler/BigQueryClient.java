@@ -82,6 +82,11 @@ public class BigQueryClient {
         upsertDatasetAndTableWithRetry(tableInfo);
     }
 
+    public Schema getSchema() {
+        Table table = bigquery.getTable(tableID);
+        return table.getDefinition().getSchema();
+    }
+
     private void upsertDatasetAndTableWithRetry(TableInfo info) {
         for (int ii = 0; ii < TABLE_INFO_UPDATE_RETRIES; ii++) {
             try {

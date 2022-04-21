@@ -43,9 +43,11 @@ public class BigQuerySinkFactory {
             this.bigQueryClient = new BigQueryClient(sinkConfig, bigQueryMetrics, new Instrumentation(statsDReporter, BigQueryClient.class));
             this.bigQueryMetrics = new BigQueryMetrics(sinkConfig);
             this.recordConverterWrapper = new MessageRecordConverterCache();
+            // TODO: Create a factory for OdpfStencilUpdateListener
             OdpfStencilUpdateListener protoUpdateListener = new ProtoUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper);
             OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter, protoUpdateListener);
             protoUpdateListener.setMessageParser(odpfMessageParser);
+            //TODO: recordConverterWrapper.setRecordConverter() // set json or proto based on config.
             if (sinkConfig.isRowInsertIdEnabled()) {
                 this.rowCreator = new BigQueryRowWithInsertId(rowIDCreator);
             } else {
