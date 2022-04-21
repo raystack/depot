@@ -2,6 +2,7 @@ package io.odpf.sink.connectors.bigquery;
 
 import io.odpf.sink.connectors.OdpfSink;
 import io.odpf.sink.connectors.bigquery.converter.MessageRecordConverterCache;
+import io.odpf.sink.connectors.bigquery.error.ErrorHandler;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryClient;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRow;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRowWithInsertId;
@@ -30,6 +31,7 @@ public class BigQuerySinkFactory {
     private final Function<Map<String, Object>, String> rowIDCreator;
     private final Map<String, String> config;
     private BigQueryMetrics bigQueryMetrics;
+    private ErrorHandler errorHandler;
 
     public BigQuerySinkFactory(Map<String, String> env, StatsDReporter statsDReporter, Function<Map<String, Object>, String> rowIDCreator) {
         this.config = env;
@@ -64,6 +66,7 @@ public class BigQuerySinkFactory {
                 recordConverterWrapper,
                 rowCreator,
                 bigQueryMetrics,
-                new Instrumentation(statsDReporter, BigQuerySink.class));
+                new Instrumentation(statsDReporter, BigQuerySink.class),
+                errorHandler);
     }
 }
