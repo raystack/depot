@@ -5,6 +5,7 @@ out
 classes
 .project
 generated
+.gradle
 *.ipr
 *.iws
 .classpath
