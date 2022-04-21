@@ -12,3 +12,4 @@ generated
 .project
 .settings
 bin
+src/test/resources/__files
