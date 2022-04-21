@@ -10,7 +10,12 @@ public class OdpfMessageParserFactory {
             case JSON:
                 return new JsonOdpfMessageParser(config);
             case PROTOBUF:
-                return new ProtoOdpfMessageParser(config, statsDReporter, odpfStencilUpdateListener);
+                ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(config, statsDReporter, odpfStencilUpdateListener);
+                if (odpfStencilUpdateListener != null) {
+                    odpfStencilUpdateListener.setMessageParser(protoOdpfMessageParser);
+                    odpfStencilUpdateListener.onSchemaUpdate(protoOdpfMessageParser.getDescriptorMap());
+                }
+                return protoOdpfMessageParser;
             default:
                 throw new IllegalArgumentException("Schema Type is not supported");
         }
