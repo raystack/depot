@@ -2,7 +2,6 @@ package io.odpf.sink.connectors.message;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.sink.connectors.bigquery.proto.OdpfStencilUpdateListener;
 import io.odpf.sink.connectors.config.OdpfSinkConfig;
 import io.odpf.sink.connectors.metrics.StatsDReporter;
@@ -45,18 +44,10 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
         DynamicMessage dynamicMessage;
         switch (type) {
             case LOG_MESSAGE:
-                try {
-                    dynamicMessage = parser.parse(message.getLogMessage());
-                } catch (InvalidProtocolBufferException e) {
-                    throw new IOException("invalid proto log message", e);
-                }
+                dynamicMessage = parser.parse(message.getLogMessage());
                 break;
             case LOG_KEY:
-                try {
-                    dynamicMessage = parser.parse(message.getLogKey());
-                } catch (InvalidProtocolBufferException e) {
-                    throw new IOException("invalid proto log key", e);
-                }
+                dynamicMessage = parser.parse(message.getLogKey());
                 break;
             default:
                 throw new IOException("Error while parsing Message");

@@ -42,11 +42,10 @@ public class ProtoOdpfMessageParserTest {
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         byte[] invalidMessageBytes = "invalid message".getBytes();
         OdpfMessage message = new ProtoOdpfMessage(null, invalidMessageBytes);
-        IOException ioException = assertThrows(IOException.class, () -> {
+         assertThrows(InvalidProtocolBufferException.class, () -> {
             protoOdpfMessageParser.parse(message, InputSchemaMessageMode.LOG_MESSAGE);
         });
-        assertEquals("invalid proto log message", ioException.getMessage());
-        assertTrue(ioException.getCause() instanceof InvalidProtocolBufferException);
+
 
     }
 
@@ -71,11 +70,9 @@ public class ProtoOdpfMessageParserTest {
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         byte[] invalidKeyBytes = "invalid message".getBytes();
         OdpfMessage message = new ProtoOdpfMessage(invalidKeyBytes, null);
-        IOException ioException = assertThrows(IOException.class, () -> {
+        assertThrows(InvalidProtocolBufferException.class, () -> {
             protoOdpfMessageParser.parse(message, InputSchemaMessageMode.LOG_KEY);
         });
-        assertEquals("invalid proto log key", ioException.getMessage());
-        assertTrue(ioException.getCause() instanceof InvalidProtocolBufferException);
     }
 
     @Test
@@ -90,7 +87,5 @@ public class ProtoOdpfMessageParserTest {
             protoOdpfMessageParser.parse(message, null);
         });
         assertEquals("parser mode not defined", ioException.getMessage());
-
-
     }
 }
