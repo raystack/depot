@@ -15,7 +15,7 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
     }
 
     @Override
-    public ParsedOdpfMessage parse(OdpfMessage message, InputSchemaMessageMode type) throws IOException {
+    public ParsedOdpfMessage parse(OdpfMessage message, InputSchemaMessageMode type, String schemaClass) throws IOException {
         if (type == null) {
             throw new IOException("message mode not defined");
         }

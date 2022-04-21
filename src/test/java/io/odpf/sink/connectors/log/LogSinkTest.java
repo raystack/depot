@@ -53,7 +53,7 @@ public class LogSinkTest {
         Map<Long, List<ErrorInfo>> errors = odpfSinkResponse.getErrors();
 
         assertEquals(Collections.emptyMap(), errors);
-        verify(messageParser, never()).parse(any(), any());
+        verify(messageParser, never()).parse(any(), any(), any());
         verify(instrumentation, never()).logInfo(any(), any(), any());
     }
 

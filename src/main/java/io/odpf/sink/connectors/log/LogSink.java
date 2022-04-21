@@ -31,7 +31,11 @@ public class LogSink implements OdpfSink {
         for (int ii = 0; ii < messages.size(); ii++) {
             OdpfMessage message = messages.get(ii);
             try {
-                ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, config.getInputSchemaMessageMode());
+                ParsedOdpfMessage parsedOdpfMessage =
+                        odpfMessageParser.parse(
+                                message,
+                                config.getInputSchemaMessageMode(),
+                                config.getInputSchemaProtoClass());
                 instrumentation.logInfo("\n================= DATA =======================\n{}" +
                                 "\n================= METADATA =======================\n{}\n",
                         parsedOdpfMessage.toString(), message.getMetadataString());

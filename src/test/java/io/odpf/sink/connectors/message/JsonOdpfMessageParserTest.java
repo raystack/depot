@@ -22,9 +22,9 @@ public class JsonOdpfMessageParserTest {
         String validJsonStr = "{\"first_name\":\"john\"}";
         JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(null, validJsonStr.getBytes());
 
-        ParsedOdpfMessage parsedOdpfMessage = jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_MESSAGE);
+        ParsedOdpfMessage parsedOdpfMessage = jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_MESSAGE, null);
         JSONObject actualJson = (JSONObject) parsedOdpfMessage.getRaw();
-        JSONObject expectedJsonObject= new JSONObject(validJsonStr);
+        JSONObject expectedJsonObject = new JSONObject(validJsonStr);
         assertTrue(expectedJsonObject.similar(actualJson));
     }
 
@@ -35,7 +35,7 @@ public class JsonOdpfMessageParserTest {
         String invalidJsonStr = "{\"first_";
         JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(null, invalidJsonStr.getBytes());
         IOException ioException = assertThrows(IOException.class, () -> {
-            jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_MESSAGE);
+            jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_MESSAGE, null);
         });
         assertEquals("invalid json error", ioException.getMessage());
         assertTrue(ioException.getCause() instanceof JSONException);
@@ -48,9 +48,9 @@ public class JsonOdpfMessageParserTest {
         String validJsonStr = "{\"first_name\":\"john\"}";
         JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(validJsonStr.getBytes(), null);
 
-        ParsedOdpfMessage parsedOdpfMessage = jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_KEY);
+        ParsedOdpfMessage parsedOdpfMessage = jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_KEY, null);
         JSONObject actualJson = (JSONObject) parsedOdpfMessage.getRaw();
-        JSONObject expectedJsonObject= new JSONObject(validJsonStr);
+        JSONObject expectedJsonObject = new JSONObject(validJsonStr);
         assertTrue(expectedJsonObject.similar(actualJson));
     }
 
@@ -61,7 +61,7 @@ public class JsonOdpfMessageParserTest {
         String invalidJsonStr = "{\"first_";
         JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(invalidJsonStr.getBytes(), null);
         IOException ioException = assertThrows(IOException.class, () -> {
-            jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_KEY);
+            jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_KEY, null);
         });
         assertEquals("invalid json error", ioException.getMessage());
         assertTrue(ioException.getCause() instanceof JSONException);
@@ -74,7 +74,7 @@ public class JsonOdpfMessageParserTest {
         String invalidJsonStr = "{\"first_";
         JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(invalidJsonStr.getBytes(), null);
         IOException ioException = assertThrows(IOException.class, () -> {
-            jsonOdpfMessageParser.parse(jsonOdpfMessage, null);
+            jsonOdpfMessageParser.parse(jsonOdpfMessage, null, null);
         });
         assertEquals("message mode not defined", ioException.getMessage());
     }

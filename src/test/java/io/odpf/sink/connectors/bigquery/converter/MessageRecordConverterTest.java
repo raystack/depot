@@ -14,6 +14,7 @@ import io.odpf.sink.connectors.bigquery.TestOdpfMessageBuilder;
 import io.odpf.sink.connectors.bigquery.TestMetadata;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
+import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,13 +33,14 @@ import static org.mockito.Mockito.when;
 public class MessageRecordConverterTest {
     private MessageRecordConverter recordConverter;
     private RowMapper rowMapper;
-    private Parser parser;
+    private StencilClient stencilClient;
     private Instant now;
 
     @Before
     public void setUp() {
-        parser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-        ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(parser);
+        System.setProperty("INPUT_SCHEMA_PROTO_CLASS", "io.odpf.sink.connectors.TestMessageBQ");
+        stencilClient = StencilClientFactory.getClient();
+        ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
         Properties columnMapping = new Properties();
         columnMapping.put(1, "bq_order_number");
         columnMapping.put(2, "bq_order_url");
@@ -131,7 +133,7 @@ public class MessageRecordConverterTest {
     @Test
     public void shouldNotNamespaceMetadataFieldWhenNamespaceIsNotProvided() {
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
-        ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(parser);
+        ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
         MessageRecordConverter recordConverterTest = new MessageRecordConverter(rowMapper, protoOdpfMessageParser, sinkConfig);
 
         TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
@@ -157,7 +159,7 @@ public class MessageRecordConverterTest {
     public void shouldNamespaceMetadataFieldWhenNamespaceIsProvided() {
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "metadata_ns");
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
-        ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(parser);
+        ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
         MessageRecordConverter recordConverterTest = new MessageRecordConverter(rowMapper, protoOdpfMessageParser, sinkConfig);
 
         TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
@@ -242,7 +244,7 @@ public class MessageRecordConverterTest {
                         .build())
                 .build();
         ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage);
-        when(mockParser.parse(consumerRecord,InputSchemaMessageMode.LOG_MESSAGE)).thenReturn(parsedOdpfMessage);
+        when(mockParser.parse(consumerRecord, InputSchemaMessageMode.LOG_MESSAGE, "io.odpf.sink.connectors.TestMessageBQ")).thenReturn(parsedOdpfMessage);
 
         recordConverter = new MessageRecordConverter(rowMapper, mockParser,
                 ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
@@ -271,7 +273,7 @@ public class MessageRecordConverterTest {
                         .build())
                 .build();
         ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage);
-        when(mockParser.parse(consumerRecord, InputSchemaMessageMode.LOG_MESSAGE)).thenReturn(parsedOdpfMessage);
+        when(mockParser.parse(consumerRecord, InputSchemaMessageMode.LOG_MESSAGE, "io.odpf.sink.connectors.TestMessageBQ")).thenReturn(parsedOdpfMessage);
 
         recordConverter = new MessageRecordConverter(rowMapper, mockParser,
                 ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));

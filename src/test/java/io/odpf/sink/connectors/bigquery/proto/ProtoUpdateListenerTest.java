@@ -55,7 +55,6 @@ public class ProtoUpdateListenerTest {
         config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         converterWrapper = new MessageRecordConverterCache();
         when(stencilClient.parse(Mockito.anyString(), Mockito.any())).thenCallRealMethod();
-        when(stencilClient.getParser(Mockito.anyString())).thenCallRealMethod();
     }
 
     @Test
@@ -85,8 +84,7 @@ public class ProtoUpdateListenerTest {
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
-        Parser protoParser = stencilClient.getParser(config.getInputSchemaProtoClass());
-        OdpfMessageParser parser = new ProtoOdpfMessageParser(protoParser);
+        OdpfMessageParser parser = new ProtoOdpfMessageParser(stencilClient);
         protoUpdateListener.setMessageParser(parser);
         protoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
@@ -181,8 +179,7 @@ public class ProtoUpdateListenerTest {
             }}));
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
-        Parser protoParser = stencilClient.getParser(config.getInputSchemaProtoClass());
-        OdpfMessageParser parser = new ProtoOdpfMessageParser(protoParser);
+        OdpfMessageParser parser = new ProtoOdpfMessageParser(stencilClient);
         protoUpdateListener.setMessageParser(parser);
         protoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
@@ -228,8 +225,7 @@ public class ProtoUpdateListenerTest {
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
-        Parser protoParser = stencilClient.getParser(config.getInputSchemaProtoClass());
-        OdpfMessageParser parser = new ProtoOdpfMessageParser(protoParser);
+        OdpfMessageParser parser = new ProtoOdpfMessageParser(stencilClient);
         protoUpdateListener.setMessageParser(parser);
         protoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();

@@ -59,7 +59,7 @@ public class MessageRecordConverter {
             throw new EmptyMessageException();
         }
         try {
-            DynamicMessage dynamicMessage = (DynamicMessage) parser.parse(message, InputSchemaMessageMode.LOG_MESSAGE).getRaw();
+            DynamicMessage dynamicMessage = (DynamicMessage) parser.parse(message, InputSchemaMessageMode.LOG_MESSAGE, config.getInputSchemaProtoClass()).getRaw();
             if (!config.getInputSchemaProtoAllowUnknownFieldsEnable() && ProtoUtils.hasUnknownField(dynamicMessage)) {
                 log.info("unknown fields found {}", message.getMetadataString());
                 throw new UnknownFieldsException(dynamicMessage);
