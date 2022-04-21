@@ -1,10 +1,13 @@
-package io.odpf.sink.connectors.message;
+package io.odpf.sink.connectors.message.proto;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.sink.connectors.bigquery.proto.OdpfStencilUpdateListener;
 import io.odpf.sink.connectors.config.OdpfSinkConfig;
+import io.odpf.sink.connectors.message.InputSchemaMessageMode;
+import io.odpf.sink.connectors.message.OdpfMessage;
+import io.odpf.sink.connectors.message.OdpfMessageParser;
+import io.odpf.sink.connectors.message.ParsedOdpfMessage;
 import io.odpf.sink.connectors.metrics.StatsDReporter;
 import io.odpf.sink.connectors.utils.StencilUtils;
 import io.odpf.stencil.StencilClientFactory;

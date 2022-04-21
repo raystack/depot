@@ -2,6 +2,8 @@ package io.odpf.sink.connectors.message;
 
 import io.odpf.sink.connectors.bigquery.proto.OdpfStencilUpdateListener;
 import io.odpf.sink.connectors.config.OdpfSinkConfig;
+import io.odpf.sink.connectors.message.json.JsonOdpfMessageParser;
+import io.odpf.sink.connectors.message.proto.ProtoOdpfMessageParser;
 import io.odpf.sink.connectors.metrics.StatsDReporter;
 
 public class OdpfMessageParserFactory {
@@ -25,4 +27,3 @@ public class OdpfMessageParserFactory {
         return getParser(config, statsDReporter, null);
     }
 }
-

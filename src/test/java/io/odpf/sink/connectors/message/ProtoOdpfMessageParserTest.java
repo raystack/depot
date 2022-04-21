@@ -4,6 +4,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.sink.connectors.TestMessage;
 import io.odpf.sink.connectors.bigquery.proto.OdpfStencilUpdateListener;
 import io.odpf.sink.connectors.config.OdpfSinkConfig;
+import io.odpf.sink.connectors.message.proto.ProtoOdpfMessage;
+import io.odpf.sink.connectors.message.proto.ProtoOdpfMessageParser;
 import io.odpf.sink.connectors.metrics.StatsDReporter;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Test;

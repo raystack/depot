@@ -1,6 +1,7 @@
-package io.odpf.sink.connectors.message;
+package io.odpf.sink.connectors.message.proto;
 
 import io.odpf.sink.connectors.config.Tuple;
+import io.odpf.sink.connectors.message.OdpfMessage;
 import lombok.Getter;
 
 import java.util.Arrays;

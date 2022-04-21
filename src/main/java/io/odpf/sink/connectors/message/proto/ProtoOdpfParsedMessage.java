@@ -1,6 +1,10 @@
-package io.odpf.sink.connectors.message;
+package io.odpf.sink.connectors.message.proto;
 
 import com.google.protobuf.DynamicMessage;
+import io.odpf.sink.connectors.message.ParsedOdpfMessage;
+
+import java.util.Map;
+import java.util.Properties;
 
 public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     private final DynamicMessage dynamicMessage;
@@ -16,5 +20,10 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     @Override
     public Object getRaw() {
         return dynamicMessage;
+    }
+
+    @Override
+    public Map<String, Object> getMapping() {
+        return null;
     }
 }

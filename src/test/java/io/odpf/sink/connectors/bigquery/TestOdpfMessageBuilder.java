@@ -5,7 +5,7 @@ import io.odpf.sink.connectors.TestKeyBQ;
 import io.odpf.sink.connectors.TestMessageBQ;
 import io.odpf.sink.connectors.config.Tuple;
 import io.odpf.sink.connectors.message.OdpfMessage;
-import io.odpf.sink.connectors.message.ProtoOdpfMessage;
+import io.odpf.sink.connectors.message.proto.ProtoOdpfMessage;
 
 import java.sql.Date;
 import java.time.Instant;

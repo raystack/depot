@@ -6,7 +6,6 @@ import io.odpf.sink.connectors.TestMessageBQ;
 import io.odpf.sink.connectors.TestNestedMessageBQ;
 import io.odpf.sink.connectors.TestRecursiveMessageBQ;
 import io.odpf.sink.connectors.bigquery.models.ProtoField;
-import io.odpf.sink.connectors.bigquery.proto.ProtoFieldParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
