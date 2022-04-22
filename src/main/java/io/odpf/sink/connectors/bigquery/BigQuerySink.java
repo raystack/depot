@@ -2,6 +2,7 @@ package io.odpf.sink.connectors.bigquery;
 
 import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.InsertAllResponse;
+import io.odpf.sink.connectors.bigquery.error.ErrorHandler;
 import io.odpf.sink.connectors.error.ErrorInfo;
 import io.odpf.sink.connectors.message.OdpfMessage;
 import io.odpf.sink.connectors.OdpfSink;
@@ -26,17 +27,20 @@ public class BigQuerySink implements OdpfSink {
     private final MessageRecordConverterCache converterCache;
     private final Instrumentation instrumentation;
     private final BigQueryMetrics bigQueryMetrics;
+    private final ErrorHandler errorHandler;
 
     public BigQuerySink(BigQueryClient client,
                         MessageRecordConverterCache converterCache,
                         BigQueryRow rowCreator,
                         BigQueryMetrics bigQueryMetrics,
-                        Instrumentation instrumentation) {
+                        Instrumentation instrumentation,
+                        ErrorHandler errorHandler) {
         this.bigQueryClient = client;
         this.converterCache = converterCache;
         this.rowCreator = rowCreator;
         this.instrumentation = instrumentation;
         this.bigQueryMetrics = bigQueryMetrics;
+        this.errorHandler = errorHandler;
     }
 
     @Override
@@ -60,6 +64,7 @@ public class BigQuerySink implements OdpfSink {
             if (response.hasErrors()) {
                 Map<Long, ErrorInfo> errorInfoMap = BigQueryResponseParser.parseAndFillOdpfSinkResponse(records.getValidRecords(), response, bigQueryMetrics, instrumentation);
                 errorInfoMap.forEach(odpfSinkResponse::addErrors);
+                errorHandler.handle(errorInfoMap, records.getValidRecords());
             }
         }
         return odpfSinkResponse;

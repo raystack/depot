@@ -27,6 +27,7 @@ import java.util.Map;
 @AllArgsConstructor
 @Slf4j
 public class MessageRecordConverter {
+    //TODO: make this as in interface and move this code to ProtoMessageRecordConverter
     private final RowMapper rowMapper;
     private final OdpfMessageParser parser;
     private final BigQuerySinkConfig config;

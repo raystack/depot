@@ -7,6 +7,7 @@ import com.google.cloud.bigquery.TableId;
 import io.odpf.sink.connectors.OdpfSinkResponse;
 import io.odpf.sink.connectors.bigquery.converter.MessageRecordConverter;
 import io.odpf.sink.connectors.bigquery.converter.MessageRecordConverterCache;
+import io.odpf.sink.connectors.bigquery.error.ErrorHandler;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryClient;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRow;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRowWithInsertId;
@@ -49,11 +50,14 @@ public class BigQuerySinkTest {
     @Mock
     private InsertAllResponse response;
 
+    @Mock
+    private ErrorHandler errorHandler;
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
         this.converterCache.setMessageRecordConverter(converter);
-        this.sink = new BigQuerySink(client, converterCache, rowCreator, metrics, instrumentation);
+        this.sink = new BigQuerySink(client, converterCache, rowCreator, metrics, instrumentation, errorHandler);
         Mockito.when(client.getTableID()).thenReturn(tableId);
     }
 
