@@ -173,7 +173,7 @@ public class BigQuerySinkTest {
 
         OdpfSinkResponse response = sink.pushToSink(messages);
         Mockito.verify(client, Mockito.times(1)).insertAll(rows);
-
+        Mockito.verify(errorHandler, Mockito.times(1)).handle(Mockito.any(), Mockito.any());
         Assert.assertEquals(4, response.getErrors().size());
 
         Assert.assertEquals(ErrorType.SINK_UNKNOWN_ERROR, response.getErrors().get(0L).get(0).getErrorType());
