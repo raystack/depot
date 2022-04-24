@@ -1,10 +1,12 @@
 package io.odpf.sink.connectors.error;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @AllArgsConstructor
 @Data
+@Builder
 public class ErrorInfo {
     private Exception exception;
     private ErrorType errorType;
