@@ -13,7 +13,7 @@ public class SinkMetrics {
     public static final String FATAL_ERROR = "fatal";
 
     @Getter
-    private String applicationPrefix;
+    private final String applicationPrefix;
 
     public SinkMetrics(OdpfSinkConfig config) {
         this.applicationPrefix = config.getMetricsApplicationPrefix();

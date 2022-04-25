@@ -120,4 +120,29 @@ jar {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
+jacocoTestCoverageVerification {
+    afterEvaluate {
+        getClassDirectories().setFrom(classDirectories.files.collect {
+            fileTree(dir: it,
+                    exclude: ['**/config/**',
+                              '**/factory/**',
+                              '**/exception/**',
+                              '**/serializer/**',
+                              '**/cortexpb/**',
+                              '**/SinkFactory**',
+                              '**/Clock**',
+                              '**/KafkaUtils**',
+                              '**/ConsumerRebalancer**',
+                              '**/FirehoseConsumerFactory**',
+                              '**/GoGoProtos**',])
+        })
+    }
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.80
+            }
+        }
+    }
+}
 check.dependsOn jacocoTestCoverageVerification
