@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ProtoUtils {
+public class BigqueryFields {
     public static List<Field> getMetadataFields(List<TupleString> metadataColumnsTypes) {
         return metadataColumnsTypes.stream().map(
                 tuple -> Field.newBuilder(tuple.getFirst(), LegacySQLTypeName.valueOf(tuple.getSecond()))

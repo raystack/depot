@@ -1,8 +1,8 @@
-package io.odpf.sink.connectors.message;
+package io.odpf.sink.connectors.message.json;
 
 import io.odpf.sink.connectors.config.OdpfSinkConfig;
-import io.odpf.sink.connectors.message.json.JsonOdpfMessage;
-import io.odpf.sink.connectors.message.json.JsonOdpfMessageParser;
+import io.odpf.sink.connectors.message.InputSchemaMessageMode;
+import io.odpf.sink.connectors.message.ParsedOdpfMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;

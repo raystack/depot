@@ -18,6 +18,7 @@ import io.odpf.sink.connectors.common.Tuple;
 import io.odpf.sink.connectors.common.TupleString;
 import io.odpf.sink.connectors.message.proto.ProtoOdpfMessage;
 import io.odpf.sink.connectors.message.proto.ProtoOdpfMessageParser;
+import io.odpf.sink.connectors.message.proto.TestProtoUtil;
 import io.odpf.stencil.client.StencilClient;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
@@ -77,7 +78,7 @@ public class BigqueryProtoUpdateListenerTest {
         ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
             add(Field.newBuilder("order_number", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
             add(Field.newBuilder("order_url", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
-            addAll(ProtoUtils.getMetadataFields(new ArrayList<TupleString>() {{
+            addAll(BigqueryFields.getMetadataFields(new ArrayList<TupleString>() {{
                 add(new TupleString("topic", "string"));
                 add(new TupleString("partition", "integer"));
                 add(new TupleString("offset", "integer"));
@@ -171,7 +172,7 @@ public class BigqueryProtoUpdateListenerTest {
         ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
             add(Field.newBuilder("order_number", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
             add(Field.newBuilder("order_url", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
-            addAll(ProtoUtils.getMetadataFields(new ArrayList<TupleString>() {{
+            addAll(BigqueryFields.getMetadataFields(new ArrayList<TupleString>() {{
                 add(new TupleString("topic", "string"));
                 add(new TupleString("partition", "integer"));
                 add(new TupleString("offset", "integer"));
@@ -217,7 +218,7 @@ public class BigqueryProtoUpdateListenerTest {
         ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
             add(Field.newBuilder("order_number", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
             add(Field.newBuilder("order_url", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
-            add(ProtoUtils.getNamespacedMetadataField(config.getBqMetadataNamespace(), new ArrayList<TupleString>() {{
+            add(BigqueryFields.getNamespacedMetadataField(config.getBqMetadataNamespace(), new ArrayList<TupleString>() {{
                 add(new TupleString("topic", "string"));
                 add(new TupleString("partition", "integer"));
                 add(new TupleString("offset", "integer"));
@@ -261,7 +262,7 @@ public class BigqueryProtoUpdateListenerTest {
         ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
             add(Field.newBuilder("order_number", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
             add(Field.newBuilder("order_url", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
-            add(ProtoUtils.getNamespacedMetadataField(config.getBqMetadataNamespace(), new ArrayList<TupleString>() {{
+            add(BigqueryFields.getNamespacedMetadataField(config.getBqMetadataNamespace(), new ArrayList<TupleString>() {{
                 add(new TupleString("topic", "string"));
                 add(new TupleString("partition", "integer"));
                 add(new TupleString("offset", "integer"));

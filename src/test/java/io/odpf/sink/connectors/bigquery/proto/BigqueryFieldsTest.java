@@ -1,17 +1,13 @@
 package io.odpf.sink.connectors.bigquery.proto;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.protobuf.DescriptorProtos;
 import io.odpf.sink.connectors.message.proto.Constants;
 import io.odpf.sink.connectors.message.proto.ProtoField;
-import io.odpf.sink.connectors.message.proto.ProtoMapper;
+import io.odpf.sink.connectors.message.proto.TestProtoUtil;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,9 +17,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 
-public class ProtoMapperTest {
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
+public class BigqueryFieldsTest {
 
     private final Map<DescriptorProtos.FieldDescriptorProto.Type, LegacySQLTypeName> expectedType = new HashMap<DescriptorProtos.FieldDescriptorProto.Type, LegacySQLTypeName>() {{
         put(DescriptorProtos.FieldDescriptorProto.Type.TYPE_BYTES, LegacySQLTypeName.BYTES);
@@ -33,62 +27,6 @@ public class ProtoMapperTest {
         put(DescriptorProtos.FieldDescriptorProto.Type.TYPE_DOUBLE, LegacySQLTypeName.FLOAT);
         put(DescriptorProtos.FieldDescriptorProto.Type.TYPE_FLOAT, LegacySQLTypeName.FLOAT);
     }};
-
-
-    @Test
-    public void shouldTestShouldCreateFirstLevelColumnMappingSuccessfully() throws IOException {
-        ProtoField protoField = TestProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
-            add(TestProtoUtil.createProtoField("order_number", 1));
-            add(TestProtoUtil.createProtoField("order_url", 2));
-            add(TestProtoUtil.createProtoField("order_details", 3));
-            add(TestProtoUtil.createProtoField("created_at", 4));
-            add(TestProtoUtil.createProtoField("status", 5));
-        }});
-
-        ObjectNode objNode = JsonNodeFactory.instance.objectNode();
-        objNode.put("1", "order_number");
-        objNode.put("2", "order_url");
-        objNode.put("3", "order_details");
-        objNode.put("4", "created_at");
-        objNode.put("5", "status");
-
-        String columnMapping = ProtoMapper.generateColumnMappings(protoField.getFields());
-
-        String expectedProtoMapping = objectMapper.writeValueAsString(objNode);
-        assertEquals(expectedProtoMapping, columnMapping);
-    }
-
-    @Test
-    public void shouldTestShouldCreateNestedMapping() throws IOException {
-        ProtoField protoField = TestProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
-            add(TestProtoUtil.createProtoField("order_number", 1));
-            add(TestProtoUtil.createProtoField("order_url", "some.type.name", DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE, 2, new ArrayList<ProtoField>() {{
-                add(TestProtoUtil.createProtoField("host", 1));
-                add(TestProtoUtil.createProtoField("url", 2));
-            }}));
-            add(TestProtoUtil.createProtoField("order_details", 3));
-        }});
-
-        ObjectNode objNode = JsonNodeFactory.instance.objectNode();
-        ObjectNode innerObjNode = JsonNodeFactory.instance.objectNode();
-        innerObjNode.put("1", "host");
-        innerObjNode.put("2", "url");
-        innerObjNode.put("record_name", "order_url");
-        objNode.put("1", "order_number");
-        objNode.put("2", innerObjNode);
-        objNode.put("3", "order_details");
-
-
-        String columnMapping = ProtoMapper.generateColumnMappings(protoField.getFields());
-        String expectedProtoMapping = objectMapper.writeValueAsString(objNode);
-        assertEquals(expectedProtoMapping, columnMapping);
-    }
-
-    @Test
-    public void generateColumnMappingsForNoFields() throws IOException {
-        String protoMapping = ProtoMapper.generateColumnMappings(new ArrayList<>());
-        assertEquals(protoMapping, "{}");
-    }
 
     @Test
     public void shouldTestConvertToSchemaSuccessful() {
@@ -101,7 +39,7 @@ public class ProtoMapperTest {
         nestedBQFields.add(TestProtoUtil.createProtoField("field5_float", DescriptorProtos.FieldDescriptorProto.Type.TYPE_FLOAT, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
 
 
-        List<Field> fields = ProtoUtils.generateBigquerySchema(TestProtoUtil.createProtoField(nestedBQFields));
+        List<Field> fields = BigqueryFields.generateBigquerySchema(TestProtoUtil.createProtoField(nestedBQFields));
         assertEquals(nestedBQFields.size(), fields.size());
         IntStream.range(0, nestedBQFields.size())
                 .forEach(index -> {
@@ -109,7 +47,6 @@ public class ProtoMapperTest {
                     assertEquals(nestedBQFields.get(index).getName(), fields.get(index).getName());
                     assertEquals(expectedType.get(nestedBQFields.get(index).getType()), fields.get(index).getType());
                 });
-
     }
 
     @Test
@@ -132,7 +69,7 @@ public class ProtoMapperTest {
                 .collect(Collectors.toList());
 
 
-        List<Field> fields = ProtoUtils.generateBigquerySchema(TestProtoUtil.createProtoField(nestedBQFields));
+        List<Field> fields = BigqueryFields.generateBigquerySchema(TestProtoUtil.createProtoField(nestedBQFields));
         assertEquals(nestedBQFields.size(), fields.size());
         IntStream.range(0, nestedBQFields.size())
                 .forEach(index -> {
@@ -141,6 +78,7 @@ public class ProtoMapperTest {
                     assertEquals(LegacySQLTypeName.INTEGER, fields.get(index).getType());
                 });
     }
+
 
     @Test
     public void shouldTestShouldConvertNestedField() {
@@ -160,7 +98,7 @@ public class ProtoMapperTest {
         }});
 
 
-        List<Field> fields = ProtoUtils.generateBigquerySchema(protoField);
+        List<Field> fields = BigqueryFields.generateBigquerySchema(protoField);
 
         assertEquals(protoField.getFields().size(), fields.size());
         assertEquals(nestedBQFields.size(), fields.get(1).getSubFields().size());
@@ -171,6 +109,7 @@ public class ProtoMapperTest {
         assertBqField(nestedBQFields.get(1).getName(), LegacySQLTypeName.STRING, Field.Mode.NULLABLE, fields.get(1).getSubFields().get(1));
 
     }
+
 
     @Test
     public void shouldTestShouldConvertMultiNestedFields() {
@@ -218,7 +157,7 @@ public class ProtoMapperTest {
             ));
         }});
 
-        List<Field> fields = ProtoUtils.generateBigquerySchema(protoField);
+        List<Field> fields = BigqueryFields.generateBigquerySchema(protoField);
 
 
         assertEquals(protoField.getFields().size(), fields.size());
@@ -238,11 +177,12 @@ public class ProtoMapperTest {
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
         }});
 
-        List<Field> fields = ProtoUtils.generateBigquerySchema(protoField);
+        List<Field> fields = BigqueryFields.generateBigquerySchema(protoField);
 
         assertEquals(protoField.getFields().size(), fields.size());
         assertBqField(protoField.getFields().get(0).getName(), LegacySQLTypeName.TIMESTAMP, Field.Mode.NULLABLE, fields.get(0));
     }
+
 
     @Test
     public void shouldTestConvertToSchemaForSpecialFields() {
@@ -295,7 +235,7 @@ public class ProtoMapperTest {
 
         }});
 
-        List<Field> fields = ProtoUtils.generateBigquerySchema(protoField);
+        List<Field> fields = BigqueryFields.generateBigquerySchema(protoField);
 
         assertEquals(protoField.getFields().size(), fields.size());
         assertBqField(protoField.getFields().get(0).getName(), LegacySQLTypeName.STRING, Field.Mode.NULLABLE, fields.get(0));
@@ -324,7 +264,7 @@ public class ProtoMapperTest {
 
         }});
 
-        List<Field> fields = ProtoUtils.generateBigquerySchema(protoField);
+        List<Field> fields = BigqueryFields.generateBigquerySchema(protoField);
 
         assertEquals(protoField.getFields().size(), fields.size());
         assertBqField(protoField.getFields().get(0).getName(), LegacySQLTypeName.INTEGER, Field.Mode.REPEATED, fields.get(0));

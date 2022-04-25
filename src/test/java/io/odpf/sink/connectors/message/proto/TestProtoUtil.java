@@ -1,4 +1,4 @@
-package io.odpf.sink.connectors.bigquery.proto;
+package io.odpf.sink.connectors.message.proto;
 
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Duration;
@@ -6,7 +6,6 @@ import com.google.protobuf.Timestamp;
 import io.odpf.sink.connectors.StatusBQ;
 import io.odpf.sink.connectors.TestMessageBQ;
 import io.odpf.sink.connectors.TestNestedMessageBQ;
-import io.odpf.sink.connectors.message.proto.ProtoField;
 
 import java.time.Instant;
 import java.util.ArrayList;

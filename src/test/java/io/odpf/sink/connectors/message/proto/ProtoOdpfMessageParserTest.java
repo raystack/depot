@@ -1,11 +1,12 @@
-package io.odpf.sink.connectors.message;
+package io.odpf.sink.connectors.message.proto;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.sink.connectors.TestMessage;
+import io.odpf.sink.connectors.message.InputSchemaMessageMode;
+import io.odpf.sink.connectors.message.OdpfMessage;
+import io.odpf.sink.connectors.message.ParsedOdpfMessage;
 import io.odpf.sink.connectors.stencil.OdpfStencilUpdateListener;
 import io.odpf.sink.connectors.config.OdpfSinkConfig;
-import io.odpf.sink.connectors.message.proto.ProtoOdpfMessage;
-import io.odpf.sink.connectors.message.proto.ProtoOdpfMessageParser;
 import io.odpf.sink.connectors.metrics.StatsDReporter;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Test;
@@ -37,7 +38,7 @@ public class ProtoOdpfMessageParserTest {
     }
 
     @Test
-    public void shouldThrowErrorOnInvalidMessage() throws IOException {
+    public void shouldThrowErrorOnInvalidMessage() {
         OdpfSinkConfig sinkConfig = ConfigFactory.create(OdpfSinkConfig.class, configMap);
         StatsDReporter statsdReporter = mock(StatsDReporter.class);
         OdpfStencilUpdateListener protoUpdateListener = mock(OdpfStencilUpdateListener.class);
@@ -65,7 +66,7 @@ public class ProtoOdpfMessageParserTest {
     }
 
     @Test
-    public void shouldThrowErrorOnInvalidKey() throws IOException {
+    public void shouldThrowErrorOnInvalidKey() {
         OdpfSinkConfig sinkConfig = ConfigFactory.create(OdpfSinkConfig.class, configMap);
         StatsDReporter statsdReporter = mock(StatsDReporter.class);
         OdpfStencilUpdateListener protoUpdateListener = mock(OdpfStencilUpdateListener.class);

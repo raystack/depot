@@ -8,7 +8,7 @@ import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
 import io.odpf.sink.connectors.*;
-import io.odpf.sink.connectors.bigquery.proto.TestProtoUtil;
+import io.odpf.sink.connectors.message.proto.TestProtoUtil;
 import io.odpf.sink.connectors.message.OdpfMessageSchema;
 import io.odpf.sink.connectors.message.proto.ProtoOdpfMessageParser;
 import io.odpf.sink.connectors.message.proto.ProtoOdpfParsedMessage;

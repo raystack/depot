@@ -1,12 +1,10 @@
-package io.odpf.sink.connectors.bigquery.proto;
+package io.odpf.sink.connectors.message.proto;
 
 import com.google.protobuf.*;
 import com.google.type.Date;
 import io.odpf.sink.connectors.TestMessageBQ;
 import io.odpf.sink.connectors.TestNestedMessageBQ;
 import io.odpf.sink.connectors.TestRecursiveMessageBQ;
-import io.odpf.sink.connectors.message.proto.ProtoField;
-import io.odpf.sink.connectors.message.proto.ProtoFieldParser;
 import org.junit.Before;
 import org.junit.Test;
 

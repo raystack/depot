@@ -46,7 +46,7 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
                     ? config.getSinkConnectorSchemaMessageClass() : config.getSinkConnectorSchemaKeyClass();
             OdpfMessageSchema schema = getOdpfMessageParser().getSchema(schemaClass);
             ProtoField protoField = ((ProtoOdpfMessageSchema) schema).getProtoField();
-            List<Field> bqSchemaFields = ProtoUtils.generateBigquerySchema(protoField);
+            List<Field> bqSchemaFields = BigqueryFields.generateBigquerySchema(protoField);
             addMetadataFields(bqSchemaFields);
             bqClient.upsertTable(bqSchemaFields);
             recordConverterWrapper.setMessageRecordConverter(new MessageRecordConverter(getOdpfMessageParser(), config, schema));
@@ -63,9 +63,9 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
         if (config.shouldAddMetadata()) {
             List<TupleString> metadataColumnsTypes = config.getMetadataColumnsTypes();
             if (namespaceName.isEmpty()) {
-                bqMetadataFields.addAll(ProtoUtils.getMetadataFields(metadataColumnsTypes));
+                bqMetadataFields.addAll(BigqueryFields.getMetadataFields(metadataColumnsTypes));
             } else {
-                bqMetadataFields.add(ProtoUtils.getNamespacedMetadataField(namespaceName, metadataColumnsTypes));
+                bqMetadataFields.add(BigqueryFields.getNamespacedMetadataField(namespaceName, metadataColumnsTypes));
             }
         }
 
