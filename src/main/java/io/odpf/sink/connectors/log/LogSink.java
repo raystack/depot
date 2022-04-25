@@ -6,6 +6,7 @@ import io.odpf.sink.connectors.config.OdpfSinkConfig;
 import io.odpf.sink.connectors.error.ErrorInfo;
 import io.odpf.sink.connectors.error.ErrorType;
 import io.odpf.sink.connectors.expcetion.OdpfSinkException;
+import io.odpf.sink.connectors.message.InputSchemaMessageMode;
 import io.odpf.sink.connectors.message.OdpfMessage;
 import io.odpf.sink.connectors.message.OdpfMessageParser;
 import io.odpf.sink.connectors.message.ParsedOdpfMessage;
@@ -28,16 +29,19 @@ public class LogSink implements OdpfSink {
     @Override
     public OdpfSinkResponse pushToSink(List<OdpfMessage> messages) throws OdpfSinkException {
         OdpfSinkResponse response = new OdpfSinkResponse();
+        InputSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
+        String schemaClass = mode == InputSchemaMessageMode.LOG_MESSAGE
+                ? config.getSinkConnectorSchemaMessageClass() : config.getSinkConnectorSchemaKeyClass();
         for (int ii = 0; ii < messages.size(); ii++) {
             OdpfMessage message = messages.get(ii);
             try {
                 ParsedOdpfMessage parsedOdpfMessage =
                         odpfMessageParser.parse(
                                 message,
-                                config.getInputSchemaMessageMode(),
-                                config.getInputSchemaProtoClass());
-                instrumentation.logInfo("\n================= DATA =======================\n{}" +
-                                "\n================= METADATA =======================\n{}\n",
+                                mode,
+                                schemaClass);
+                instrumentation.logInfo("\n================= DATA =======================\n{}"
+                                + "\n================= METADATA =======================\n{}\n",
                         parsedOdpfMessage.toString(), message.getMetadataString());
             } catch (IOException e) {
                 response.addErrors(ii, new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR));

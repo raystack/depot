@@ -30,14 +30,14 @@ public class BigQueryMetrics extends SinkMetrics {
     public static final String BIGQUERY_ERROR_TAG = "error=%s";
 
     public String getBigqueryOperationTotalMetric() {
-        return applicationPrefix + SINK_PREFIX + BIGQUERY_SINK_PREFIX + "operation_total";
+        return getApplicationPrefix() + SINK_PREFIX + BIGQUERY_SINK_PREFIX + "operation_total";
     }
 
     public String getBigqueryOperationLatencyMetric() {
-        return applicationPrefix + SINK_PREFIX + BIGQUERY_SINK_PREFIX + "operation_latency_milliseconds";
+        return getApplicationPrefix() + SINK_PREFIX + BIGQUERY_SINK_PREFIX + "operation_latency_milliseconds";
     }
 
     public String getBigqueryTotalErrorsMetrics() {
-        return applicationPrefix + SINK_PREFIX + BIGQUERY_SINK_PREFIX + "errors_total";
+        return getApplicationPrefix() + SINK_PREFIX + BIGQUERY_SINK_PREFIX + "errors_total";
     }
 }

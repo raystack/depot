@@ -2,12 +2,12 @@ package io.odpf.sink.connectors.bigquery;
 
 import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.InsertAllResponse;
+import io.odpf.sink.connectors.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.sink.connectors.bigquery.error.ErrorHandler;
 import io.odpf.sink.connectors.error.ErrorInfo;
 import io.odpf.sink.connectors.message.OdpfMessage;
 import io.odpf.sink.connectors.OdpfSink;
 import io.odpf.sink.connectors.OdpfSinkResponse;
-import io.odpf.sink.connectors.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryClient;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryResponseParser;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRow;
@@ -24,19 +24,19 @@ public class BigQuerySink implements OdpfSink {
 
     private final BigQueryClient bigQueryClient;
     private final BigQueryRow rowCreator;
-    private final MessageRecordConverterCache converterCache;
+    private final MessageRecordConverterCache messageRecordConverterCache;
     private final Instrumentation instrumentation;
     private final BigQueryMetrics bigQueryMetrics;
     private final ErrorHandler errorHandler;
 
     public BigQuerySink(BigQueryClient client,
-                        MessageRecordConverterCache converterCache,
+                        MessageRecordConverterCache messageRecordConverterCache,
                         BigQueryRow rowCreator,
                         BigQueryMetrics bigQueryMetrics,
                         Instrumentation instrumentation,
                         ErrorHandler errorHandler) {
         this.bigQueryClient = client;
-        this.converterCache = converterCache;
+        this.messageRecordConverterCache = messageRecordConverterCache;
         this.rowCreator = rowCreator;
         this.instrumentation = instrumentation;
         this.bigQueryMetrics = bigQueryMetrics;
@@ -55,7 +55,7 @@ public class BigQuerySink implements OdpfSink {
 
     @Override
     public OdpfSinkResponse pushToSink(List<OdpfMessage> messageList) {
-        Records records = converterCache.getMessageRecordConverter().convert(messageList);
+        Records records = messageRecordConverterCache.getMessageRecordConverter().convert(messageList);
         OdpfSinkResponse odpfSinkResponse = new OdpfSinkResponse();
         records.getInvalidRecords().forEach(invalidRecord -> odpfSinkResponse.addErrors(invalidRecord.getIndex(), invalidRecord.getErrorInfo()));
         if (records.getValidRecords().size() > 0) {

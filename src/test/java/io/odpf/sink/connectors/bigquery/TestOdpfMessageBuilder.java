@@ -3,7 +3,7 @@ package io.odpf.sink.connectors.bigquery;
 import com.google.api.client.util.DateTime;
 import io.odpf.sink.connectors.TestKeyBQ;
 import io.odpf.sink.connectors.TestMessageBQ;
-import io.odpf.sink.connectors.config.Tuple;
+import io.odpf.sink.connectors.common.Tuple;
 import io.odpf.sink.connectors.message.OdpfMessage;
 import io.odpf.sink.connectors.message.proto.ProtoOdpfMessage;
 
@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class TestOdpfMessageBuilder {
+public final class TestOdpfMessageBuilder {
     private long timestamp;
     private String topic;
     private int partition;

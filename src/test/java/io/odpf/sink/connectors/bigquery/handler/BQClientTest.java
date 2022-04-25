@@ -1,9 +1,7 @@
 package io.odpf.sink.connectors.bigquery.handler;
 
 import com.google.cloud.bigquery.*;
-import io.odpf.sink.connectors.bigquery.handler.BigQueryClient;
 import io.odpf.sink.connectors.config.BigQuerySinkConfig;
-import io.odpf.sink.connectors.config.Tuple;
 import io.odpf.sink.connectors.metrics.BigQueryMetrics;
 import io.odpf.sink.connectors.metrics.Instrumentation;
 import org.junit.Test;

@@ -12,6 +12,8 @@ buildscript {
 plugins {
     id 'java'
     id 'idea'
+    id 'checkstyle'
+    id 'jacoco'
     id "com.google.protobuf" version "0.8.17"
     id 'nebula.ospackage' version '8.6.3'
     id 'io.franzbecker.gradle-lombok' version '1.14'
@@ -64,6 +66,16 @@ test {
     }
 
 }
+checkstyle {
+    toolVersion '7.6.1'
+    configFile file("config/checkstyle/checkstyle.xml")
+}
+checkstyleMain {
+    source = 'src/main/java'
+}
+checkstyleTest {
+    source = 'src/test/java'
+}
 
 clean {
     delete "$projectDir/src/test/resources/__files"
@@ -108,3 +120,4 @@ jar {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
+check.dependsOn jacocoTestCoverageVerification

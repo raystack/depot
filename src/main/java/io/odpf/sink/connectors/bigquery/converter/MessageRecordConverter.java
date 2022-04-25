@@ -1,20 +1,18 @@
 package io.odpf.sink.connectors.bigquery.converter;
 
-import com.google.protobuf.DynamicMessage;
-import com.google.protobuf.InvalidProtocolBufferException;
-import io.odpf.sink.connectors.message.InputSchemaMessageMode;
-import io.odpf.sink.connectors.message.OdpfMessage;
 import io.odpf.sink.connectors.bigquery.models.Record;
 import io.odpf.sink.connectors.bigquery.models.Records;
-import io.odpf.sink.connectors.bigquery.proto.UnknownProtoFields;
 import io.odpf.sink.connectors.config.BigQuerySinkConfig;
 import io.odpf.sink.connectors.error.ErrorInfo;
 import io.odpf.sink.connectors.error.ErrorType;
 import io.odpf.sink.connectors.expcetion.DeserializerException;
 import io.odpf.sink.connectors.expcetion.EmptyMessageException;
 import io.odpf.sink.connectors.expcetion.UnknownFieldsException;
+import io.odpf.sink.connectors.message.InputSchemaMessageMode;
+import io.odpf.sink.connectors.message.OdpfMessage;
 import io.odpf.sink.connectors.message.OdpfMessageParser;
-import io.odpf.sink.connectors.utils.ProtoUtils;
+import io.odpf.sink.connectors.message.OdpfMessageSchema;
+import io.odpf.sink.connectors.message.ParsedOdpfMessage;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,10 +25,9 @@ import java.util.Map;
 @AllArgsConstructor
 @Slf4j
 public class MessageRecordConverter {
-    //TODO: make this as in interface and move this code to ProtoMessageRecordConverter
-    private final RowMapper rowMapper;
     private final OdpfMessageParser parser;
     private final BigQuerySinkConfig config;
+    private final OdpfMessageSchema schema;
 
     public Records convert(List<OdpfMessage> messages) {
         ArrayList<Record> validRecords = new ArrayList<>();
@@ -55,24 +52,17 @@ public class MessageRecordConverter {
     }
 
     private Record createRecord(OdpfMessage message, int index) {
-        if (message.getLogMessage() == null || message.getLogMessage().length == 0) {
-            log.info("empty message found {}", message.getMetadataString());
-            throw new EmptyMessageException();
-        }
         try {
-            DynamicMessage dynamicMessage = (DynamicMessage) parser.parse(message, InputSchemaMessageMode.LOG_MESSAGE, config.getInputSchemaProtoClass()).getRaw();
-            if (!config.getInputSchemaProtoAllowUnknownFieldsEnable() && ProtoUtils.hasUnknownField(dynamicMessage)) {
-                log.info("unknown fields found {}", message.getMetadataString());
-                throw new UnknownFieldsException(dynamicMessage);
-            }
-            Map<String, Object> columns = rowMapper.map(dynamicMessage);
+            InputSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
+            String schemaClass = mode == InputSchemaMessageMode.LOG_MESSAGE
+                    ? config.getSinkConnectorSchemaMessageClass() : config.getSinkConnectorSchemaKeyClass();
+            ParsedOdpfMessage parsedOdpfMessage = parser.parse(message, mode, schemaClass);
+            parsedOdpfMessage.validate(config);
+            Map<String, Object> columns = parsedOdpfMessage.getMapping(schema);
             if (config.shouldAddMetadata()) {
                 addMetadata(columns, message);
             }
             return new Record(message.getMetadata(), columns, index, null);
-        } catch (InvalidProtocolBufferException e) {
-            log.error("failed to deserialize message: {}, {} ", UnknownProtoFields.toString(message.getLogMessage()), message.getMetadataString());
-            throw new DeserializerException("failed to deserialize ", e);
         } catch (IOException e) {
             log.error("failed to deserialize message: {}, {} ", e, message.getMetadataString());
             throw new DeserializerException("failed to deserialize ", e);

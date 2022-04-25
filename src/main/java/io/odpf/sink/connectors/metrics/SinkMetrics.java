@@ -1,6 +1,7 @@
 package io.odpf.sink.connectors.metrics;
 
 import io.odpf.sink.connectors.config.OdpfSinkConfig;
+import lombok.Getter;
 
 public class SinkMetrics {
     public static final String SINK_PREFIX = "sink_";
@@ -11,7 +12,8 @@ public class SinkMetrics {
     public static final String NON_FATAL_ERROR = "nonfatal";
     public static final String FATAL_ERROR = "fatal";
 
-    protected String applicationPrefix;
+    @Getter
+    private String applicationPrefix;
 
     public SinkMetrics(OdpfSinkConfig config) {
         this.applicationPrefix = config.getMetricsApplicationPrefix();

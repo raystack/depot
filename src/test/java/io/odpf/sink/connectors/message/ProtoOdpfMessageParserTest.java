@@ -2,7 +2,7 @@ package io.odpf.sink.connectors.message;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.sink.connectors.TestMessage;
-import io.odpf.sink.connectors.bigquery.proto.OdpfStencilUpdateListener;
+import io.odpf.sink.connectors.stencil.OdpfStencilUpdateListener;
 import io.odpf.sink.connectors.config.OdpfSinkConfig;
 import io.odpf.sink.connectors.message.proto.ProtoOdpfMessage;
 import io.odpf.sink.connectors.message.proto.ProtoOdpfMessageParser;
@@ -20,7 +20,7 @@ public class ProtoOdpfMessageParserTest {
 
     private final HashMap<String, String> configMap = new HashMap<String, String>() {{
         put("SCHEMA_REGISTRY_STENCIL_ENABLE", "false");
-        put("INPUT_SCHEMA_PROTO_CLASS", "io.odpf.sink.connectors.TestMessage");
+        put("SINK_CONNECTOR_SCHEMA_MESSAGE_CLASS", "io.odpf.sink.connectors.TestMessage");
     }};
 
     @Test

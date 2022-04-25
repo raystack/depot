@@ -55,15 +55,26 @@ public interface OdpfSinkConfig extends Config {
     @DefaultValue("application_")
     String getMetricsApplicationPrefix();
 
-    @Key("INPUT_SCHEMA_PROTO_CLASS")
-    String getInputSchemaProtoClass();
+    @Key("SINK_CONNECTOR_SCHEMA_MESSAGE_CLASS")
+    @DefaultValue("")
+    String getSinkConnectorSchemaMessageClass();
 
-    @Key("INPUT_SCHEMA_DATA_TYPE")
+    @Key("SINK_CONNECTOR_SCHEMA_KEY_CLASS")
+    @DefaultValue("")
+    String getSinkConnectorSchemaKeyClass();
+
+
+    @Key("SINK_CONNECTOR_SCHEMA_DATA_TYPE")
     @ConverterClass(InputSchemaDataTypeConverter.class)
     @DefaultValue("PROTOBUF")
-    InputSchemaDataType getInputSchemaDataTye();
+    InputSchemaDataType getSinkConnectorSchemaDataTye();
 
-    @Key("INPUT_SCHEMA_MESSAGE_MODE")
+    @Key("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE")
     @ConverterClass(InputSchemaMessageModeConverter.class)
-    InputSchemaMessageMode getInputSchemaMessageMode();
+    @DefaultValue("LOG_MESSAGE")
+    InputSchemaMessageMode getSinkConnectorSchemaMessageMode();
+
+    @Key("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE")
+    @DefaultValue("false")
+    boolean getSinkConnectorSchemaProtoAllowUnknownFieldsEnable();
 }

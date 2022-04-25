@@ -1,5 +1,7 @@
 package io.odpf.sink.connectors.message.json;
 
+import io.odpf.sink.connectors.config.OdpfSinkConfig;
+import io.odpf.sink.connectors.message.OdpfMessageSchema;
 import io.odpf.sink.connectors.message.ParsedOdpfMessage;
 import org.json.JSONObject;
 
@@ -22,7 +24,12 @@ public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
     }
 
     @Override
-    public Map<String, Object> getMapping() {
+    public void validate(OdpfSinkConfig config) {
+
+    }
+
+    @Override
+    public Map<String, Object> getMapping(OdpfMessageSchema schema) {
         return null;
     }
 }

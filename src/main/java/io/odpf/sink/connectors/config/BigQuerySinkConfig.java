@@ -1,5 +1,6 @@
 package io.odpf.sink.connectors.config;
 
+import io.odpf.sink.connectors.common.TupleString;
 import io.odpf.sink.connectors.config.converter.ConfToListConverter;
 import io.odpf.sink.connectors.config.converter.ConverterUtils;
 import io.odpf.sink.connectors.config.converter.LabelMapConverter;
@@ -72,9 +73,5 @@ public interface BigQuerySinkConfig extends OdpfSinkConfig {
     @Separator(ConfToListConverter.ELEMENT_SEPARATOR)
     List<TupleString> getMetadataColumnsTypes();
 
-    // Check this where to put these
-    @Key("INPUT_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE")
-    @DefaultValue("true")
-    boolean getInputSchemaProtoAllowUnknownFieldsEnable();
 }
 

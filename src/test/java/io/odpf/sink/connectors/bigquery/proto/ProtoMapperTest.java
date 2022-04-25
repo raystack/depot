@@ -6,8 +6,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.protobuf.DescriptorProtos;
-import io.odpf.sink.connectors.bigquery.models.Constants;
-import io.odpf.sink.connectors.bigquery.models.ProtoField;
+import io.odpf.sink.connectors.message.proto.Constants;
+import io.odpf.sink.connectors.message.proto.ProtoField;
+import io.odpf.sink.connectors.message.proto.ProtoMapper;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -19,11 +20,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 public class ProtoMapperTest {
 
-    private final ProtoMapper protoMapper = new ProtoMapper();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final Map<DescriptorProtos.FieldDescriptorProto.Type, LegacySQLTypeName> expectedType = new HashMap<DescriptorProtos.FieldDescriptorProto.Type, LegacySQLTypeName>() {{
@@ -38,12 +37,12 @@ public class ProtoMapperTest {
 
     @Test
     public void shouldTestShouldCreateFirstLevelColumnMappingSuccessfully() throws IOException {
-        ProtoField protoField = ProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
-            add(ProtoUtil.createProtoField("order_number", 1));
-            add(ProtoUtil.createProtoField("order_url", 2));
-            add(ProtoUtil.createProtoField("order_details", 3));
-            add(ProtoUtil.createProtoField("created_at", 4));
-            add(ProtoUtil.createProtoField("status", 5));
+        ProtoField protoField = TestProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
+            add(TestProtoUtil.createProtoField("order_number", 1));
+            add(TestProtoUtil.createProtoField("order_url", 2));
+            add(TestProtoUtil.createProtoField("order_details", 3));
+            add(TestProtoUtil.createProtoField("created_at", 4));
+            add(TestProtoUtil.createProtoField("status", 5));
         }});
 
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
@@ -53,7 +52,7 @@ public class ProtoMapperTest {
         objNode.put("4", "created_at");
         objNode.put("5", "status");
 
-        String columnMapping = protoMapper.generateColumnMappings(protoField.getFields());
+        String columnMapping = ProtoMapper.generateColumnMappings(protoField.getFields());
 
         String expectedProtoMapping = objectMapper.writeValueAsString(objNode);
         assertEquals(expectedProtoMapping, columnMapping);
@@ -61,13 +60,13 @@ public class ProtoMapperTest {
 
     @Test
     public void shouldTestShouldCreateNestedMapping() throws IOException {
-        ProtoField protoField = ProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
-            add(ProtoUtil.createProtoField("order_number", 1));
-            add(ProtoUtil.createProtoField("order_url", "some.type.name", DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE, 2, new ArrayList<ProtoField>() {{
-                add(ProtoUtil.createProtoField("host", 1));
-                add(ProtoUtil.createProtoField("url", 2));
+        ProtoField protoField = TestProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
+            add(TestProtoUtil.createProtoField("order_number", 1));
+            add(TestProtoUtil.createProtoField("order_url", "some.type.name", DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE, 2, new ArrayList<ProtoField>() {{
+                add(TestProtoUtil.createProtoField("host", 1));
+                add(TestProtoUtil.createProtoField("url", 2));
             }}));
-            add(ProtoUtil.createProtoField("order_details", 3));
+            add(TestProtoUtil.createProtoField("order_details", 3));
         }});
 
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
@@ -80,29 +79,29 @@ public class ProtoMapperTest {
         objNode.put("3", "order_details");
 
 
-        String columnMapping = protoMapper.generateColumnMappings(protoField.getFields());
+        String columnMapping = ProtoMapper.generateColumnMappings(protoField.getFields());
         String expectedProtoMapping = objectMapper.writeValueAsString(objNode);
         assertEquals(expectedProtoMapping, columnMapping);
     }
 
     @Test
     public void generateColumnMappingsForNoFields() throws IOException {
-        String protoMapping = protoMapper.generateColumnMappings(new ArrayList<>());
+        String protoMapping = ProtoMapper.generateColumnMappings(new ArrayList<>());
         assertEquals(protoMapping, "{}");
     }
 
     @Test
     public void shouldTestConvertToSchemaSuccessful() {
         List<ProtoField> nestedBQFields = new ArrayList<>();
-        nestedBQFields.add(ProtoUtil.createProtoField("field0_bytes", DescriptorProtos.FieldDescriptorProto.Type.TYPE_BYTES, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
-        nestedBQFields.add(ProtoUtil.createProtoField("field1_string", DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
-        nestedBQFields.add(ProtoUtil.createProtoField("field2_bool", DescriptorProtos.FieldDescriptorProto.Type.TYPE_BOOL, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
-        nestedBQFields.add(ProtoUtil.createProtoField("field3_enum", DescriptorProtos.FieldDescriptorProto.Type.TYPE_ENUM, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
-        nestedBQFields.add(ProtoUtil.createProtoField("field4_double", DescriptorProtos.FieldDescriptorProto.Type.TYPE_DOUBLE, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
-        nestedBQFields.add(ProtoUtil.createProtoField("field5_float", DescriptorProtos.FieldDescriptorProto.Type.TYPE_FLOAT, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
+        nestedBQFields.add(TestProtoUtil.createProtoField("field0_bytes", DescriptorProtos.FieldDescriptorProto.Type.TYPE_BYTES, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
+        nestedBQFields.add(TestProtoUtil.createProtoField("field1_string", DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
+        nestedBQFields.add(TestProtoUtil.createProtoField("field2_bool", DescriptorProtos.FieldDescriptorProto.Type.TYPE_BOOL, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
+        nestedBQFields.add(TestProtoUtil.createProtoField("field3_enum", DescriptorProtos.FieldDescriptorProto.Type.TYPE_ENUM, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
+        nestedBQFields.add(TestProtoUtil.createProtoField("field4_double", DescriptorProtos.FieldDescriptorProto.Type.TYPE_DOUBLE, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
+        nestedBQFields.add(TestProtoUtil.createProtoField("field5_float", DescriptorProtos.FieldDescriptorProto.Type.TYPE_FLOAT, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
 
 
-        List<Field> fields = protoMapper.generateBigquerySchema(ProtoUtil.createProtoField(nestedBQFields));
+        List<Field> fields = ProtoUtils.generateBigquerySchema(TestProtoUtil.createProtoField(nestedBQFields));
         assertEquals(nestedBQFields.size(), fields.size());
         IntStream.range(0, nestedBQFields.size())
                 .forEach(index -> {
@@ -111,12 +110,6 @@ public class ProtoMapperTest {
                     assertEquals(expectedType.get(nestedBQFields.get(index).getType()), fields.get(index).getType());
                 });
 
-    }
-
-    @Test
-    public void shouldTestConverterToSchemaForNullFields() {
-        List<Field> fields = protoMapper.generateBigquerySchema(null);
-        assertNull(fields);
     }
 
     @Test
@@ -135,11 +128,11 @@ public class ProtoMapperTest {
         }};
 
         List<ProtoField> nestedBQFields = IntStream.range(0, allIntTypes.size())
-                .mapToObj(index -> ProtoUtil.createProtoField("field-" + index, allIntTypes.get(index), DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL))
+                .mapToObj(index -> TestProtoUtil.createProtoField("field-" + index, allIntTypes.get(index), DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL))
                 .collect(Collectors.toList());
 
 
-        List<Field> fields = protoMapper.generateBigquerySchema(ProtoUtil.createProtoField(nestedBQFields));
+        List<Field> fields = ProtoUtils.generateBigquerySchema(TestProtoUtil.createProtoField(nestedBQFields));
         assertEquals(nestedBQFields.size(), fields.size());
         IntStream.range(0, nestedBQFields.size())
                 .forEach(index -> {
@@ -152,14 +145,14 @@ public class ProtoMapperTest {
     @Test
     public void shouldTestShouldConvertNestedField() {
         List<ProtoField> nestedBQFields = new ArrayList<>();
-        nestedBQFields.add(ProtoUtil.createProtoField("field1_level2_nested", DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
-        nestedBQFields.add(ProtoUtil.createProtoField("field2_level2_nested", DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
+        nestedBQFields.add(TestProtoUtil.createProtoField("field1_level2_nested", DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
+        nestedBQFields.add(TestProtoUtil.createProtoField("field2_level2_nested", DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING, DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
 
-        ProtoField protoField = ProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
-            add(ProtoUtil.createProtoField("field1_level1",
+        ProtoField protoField = TestProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
+            add(TestProtoUtil.createProtoField("field1_level1",
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
-            add(ProtoUtil.createProtoField("field2_level1_message",
+            add(TestProtoUtil.createProtoField("field2_level1_message",
                     "some.type.name",
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL,
@@ -167,7 +160,7 @@ public class ProtoMapperTest {
         }});
 
 
-        List<Field> fields = protoMapper.generateBigquerySchema(protoField);
+        List<Field> fields = ProtoUtils.generateBigquerySchema(protoField);
 
         assertEquals(protoField.getFields().size(), fields.size());
         assertEquals(nestedBQFields.size(), fields.get(1).getSubFields().size());
@@ -182,40 +175,40 @@ public class ProtoMapperTest {
     @Test
     public void shouldTestShouldConvertMultiNestedFields() {
         List<ProtoField> nestedBQFields = new ArrayList<ProtoField>() {{
-            add(ProtoUtil.createProtoField("field1_level3_nested",
+            add(TestProtoUtil.createProtoField("field1_level3_nested",
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
-            add(ProtoUtil.createProtoField("field2_level3_nested",
+            add(TestProtoUtil.createProtoField("field2_level3_nested",
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
         }};
 
-        ProtoField protoField = ProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
-            add(ProtoUtil.createProtoField("field1_level1",
+        ProtoField protoField = TestProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
+            add(TestProtoUtil.createProtoField("field1_level1",
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
 
-            add(ProtoUtil.createProtoField(
+            add(TestProtoUtil.createProtoField(
                     "field2_level1_message",
                     "some.type.name",
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL,
                     new ArrayList<ProtoField>() {{
-                        add(ProtoUtil.createProtoField(
+                        add(TestProtoUtil.createProtoField(
                                 "field1_level2",
                                 DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING,
                                 DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
-                        add(ProtoUtil.createProtoField(
+                        add(TestProtoUtil.createProtoField(
                                 "field2_level2_message",
                                 "some.type.name",
                                 DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE,
                                 DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL,
                                 nestedBQFields));
-                        add(ProtoUtil.createProtoField(
+                        add(TestProtoUtil.createProtoField(
                                 "field3_level2",
                                 DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING,
                                 DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
-                        add(ProtoUtil.createProtoField(
+                        add(TestProtoUtil.createProtoField(
                                 "field4_level2_message",
                                 "some.type.name",
                                 DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE,
@@ -225,7 +218,7 @@ public class ProtoMapperTest {
             ));
         }});
 
-        List<Field> fields = protoMapper.generateBigquerySchema(protoField);
+        List<Field> fields = ProtoUtils.generateBigquerySchema(protoField);
 
 
         assertEquals(protoField.getFields().size(), fields.size());
@@ -238,14 +231,14 @@ public class ProtoMapperTest {
 
     @Test
     public void shouldTestConvertToSchemaForTimestamp() {
-        ProtoField protoField = ProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
-            add(ProtoUtil.createProtoField("field1_timestamp",
+        ProtoField protoField = TestProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
+            add(TestProtoUtil.createProtoField("field1_timestamp",
                     Constants.ProtobufTypeName.TIMESTAMP_PROTOBUF_TYPE_NAME,
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
         }});
 
-        List<Field> fields = protoMapper.generateBigquerySchema(protoField);
+        List<Field> fields = ProtoUtils.generateBigquerySchema(protoField);
 
         assertEquals(protoField.getFields().size(), fields.size());
         assertBqField(protoField.getFields().get(0).getName(), LegacySQLTypeName.TIMESTAMP, Field.Mode.NULLABLE, fields.get(0));
@@ -253,47 +246,47 @@ public class ProtoMapperTest {
 
     @Test
     public void shouldTestConvertToSchemaForSpecialFields() {
-        ProtoField protoField = ProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
-            add(ProtoUtil.createProtoField("field1_struct",
+        ProtoField protoField = TestProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
+            add(TestProtoUtil.createProtoField("field1_struct",
                     Constants.ProtobufTypeName.STRUCT_PROTOBUF_TYPE_NAME,
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
-            add(ProtoUtil.createProtoField("field2_bytes",
+            add(TestProtoUtil.createProtoField("field2_bytes",
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_BYTES,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
 
-            add(ProtoUtil.createProtoField("field3_duration",
+            add(TestProtoUtil.createProtoField("field3_duration",
                     "." + com.google.protobuf.Duration.getDescriptor().getFullName(),
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL,
                     new ArrayList<ProtoField>() {
                         {
-                            add(ProtoUtil.createProtoField("duration_seconds",
+                            add(TestProtoUtil.createProtoField("duration_seconds",
                                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_INT64,
                                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
 
-                            add(ProtoUtil.createProtoField("duration_nanos",
+                            add(TestProtoUtil.createProtoField("duration_nanos",
                                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_INT32,
                                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
 
                         }
                     }));
 
-            add(ProtoUtil.createProtoField("field3_date",
+            add(TestProtoUtil.createProtoField("field3_date",
                     "." + com.google.type.Date.getDescriptor().getFullName(),
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL,
                     new ArrayList<ProtoField>() {
                         {
-                            add(ProtoUtil.createProtoField("year",
+                            add(TestProtoUtil.createProtoField("year",
                                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_INT64,
                                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
 
-                            add(ProtoUtil.createProtoField("month",
+                            add(TestProtoUtil.createProtoField("month",
                                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_INT32,
                                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
 
-                            add(ProtoUtil.createProtoField("day",
+                            add(TestProtoUtil.createProtoField("day",
                                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_INT32,
                                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL));
 
@@ -302,7 +295,7 @@ public class ProtoMapperTest {
 
         }});
 
-        List<Field> fields = protoMapper.generateBigquerySchema(protoField);
+        List<Field> fields = ProtoUtils.generateBigquerySchema(protoField);
 
         assertEquals(protoField.getFields().size(), fields.size());
         assertBqField(protoField.getFields().get(0).getName(), LegacySQLTypeName.STRING, Field.Mode.NULLABLE, fields.get(0));
@@ -321,17 +314,17 @@ public class ProtoMapperTest {
 
     @Test
     public void shouldTestConvertToSchemaForRepeatedFields() {
-        ProtoField protoField = ProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
-            add(ProtoUtil.createProtoField("field1_map",
+        ProtoField protoField = TestProtoUtil.createProtoField(new ArrayList<ProtoField>() {{
+            add(TestProtoUtil.createProtoField("field1_map",
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_INT32,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_REPEATED));
-            add(ProtoUtil.createProtoField("field2_repeated",
+            add(TestProtoUtil.createProtoField("field2_repeated",
                     DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING,
                     DescriptorProtos.FieldDescriptorProto.Label.LABEL_REPEATED));
 
         }});
 
-        List<Field> fields = protoMapper.generateBigquerySchema(protoField);
+        List<Field> fields = ProtoUtils.generateBigquerySchema(protoField);
 
         assertEquals(protoField.getFields().size(), fields.size());
         assertBqField(protoField.getFields().get(0).getName(), LegacySQLTypeName.INTEGER, Field.Mode.REPEATED, fields.get(0));

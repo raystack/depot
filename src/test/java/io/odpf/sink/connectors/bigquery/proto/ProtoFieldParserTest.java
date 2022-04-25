@@ -5,11 +5,10 @@ import com.google.type.Date;
 import io.odpf.sink.connectors.TestMessageBQ;
 import io.odpf.sink.connectors.TestNestedMessageBQ;
 import io.odpf.sink.connectors.TestRecursiveMessageBQ;
-import io.odpf.sink.connectors.bigquery.models.ProtoField;
+import io.odpf.sink.connectors.message.proto.ProtoField;
+import io.odpf.sink.connectors.message.proto.ProtoFieldParser;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +17,6 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ProtoFieldParserTest {
     private ProtoFieldParser protoMappingParser;
 

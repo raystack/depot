@@ -1,6 +1,6 @@
 package io.odpf.sink.connectors.message.proto;
 
-import io.odpf.sink.connectors.config.Tuple;
+import io.odpf.sink.connectors.common.Tuple;
 import io.odpf.sink.connectors.message.OdpfMessage;
 import lombok.Getter;
 

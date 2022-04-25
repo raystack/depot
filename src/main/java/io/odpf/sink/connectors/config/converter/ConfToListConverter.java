@@ -1,6 +1,6 @@
 package io.odpf.sink.connectors.config.converter;
 
-import io.odpf.sink.connectors.config.TupleString;
+import io.odpf.sink.connectors.common.TupleString;
 import org.aeonbits.owner.Converter;
 
 import java.lang.reflect.Method;
