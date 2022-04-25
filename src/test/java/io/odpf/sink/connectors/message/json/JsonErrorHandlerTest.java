@@ -21,6 +21,7 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -55,12 +56,12 @@ public class JsonErrorHandlerTest {
 
         Map<String, Object> columnsMap= new HashMap<>();
         columnsMap.put("first_name", "john doe");
-        Record invalidRecord = Record.builder().columns(columnsMap).build();
+        Record validRecord = Record.builder().columns(columnsMap).build();
 
         List<Record> records = new ArrayList<>();
-        records.add(invalidRecord);
+        records.add(validRecord);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey, true);
         jsonErrorHandler.handle(errorInfoMap, records);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -80,12 +81,12 @@ public class JsonErrorHandlerTest {
 
         Map<String, Object> columnsMap= new HashMap<>();
         columnsMap.put("first_name", "john doe");
-        Record invalidRecord = Record.builder().columns(columnsMap).build();
+        Record validRecord = Record.builder().columns(columnsMap).build();
 
         List<Record> records = new ArrayList<>();
-        records.add(invalidRecord);
+        records.add(validRecord);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey, true);
         jsonErrorHandler.handle(errorInfoMap, records);
 
         verify(bigQueryClient, never()).upsertTable(any());
@@ -112,7 +113,7 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithFirstName);
         validRecords.add(validRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey, true);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
 
@@ -145,7 +146,7 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithFirstName);
         validRecords.add(validRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey, true);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -175,7 +176,7 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithFirstName);
         validRecords.add(validRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey, true);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -209,7 +210,7 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithLastName);
         validRecords.add(anotheRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey, true);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -250,7 +251,7 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithLastName);
         validRecords.add(anotheRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey, true);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -288,7 +289,7 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithLastName);
 
         String tablePartitionKey =   "event_timestamp_partition";
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey, true);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
 
@@ -300,5 +301,27 @@ public class JsonErrorHandlerTest {
         List<Field> actualFields = fieldsArgumentCaptor.getValue();
         assertThat(actualFields, containsInAnyOrder(firstName, lastName, eventTimestamp));
     }
+
+    @Test
+    public void shouldThrowExceptionWhenCastFieldsToStringNotTrue() {
+        when(bigQueryClient.getSchema()).thenReturn(emptyTableSchema);
+
+        Map<Long, ErrorInfo> errorInfoMap = new HashMap<>();
+        ErrorInfo unknowFieldError = errorBuilder.errorType(ErrorType.UNKNOWN_FIELDS_ERROR).build();
+        errorInfoMap.put(0L, unknowFieldError);
+
+        Map<String, Object> columnsMap= new HashMap<>();
+        columnsMap.put("first_name", "john doe");
+        Record validRecord = Record.builder().columns(columnsMap).build();
+
+        List<Record> records = new ArrayList<>();
+        records.add(validRecord);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, tablePartitionKey, false);
+        assertThrows(UnsupportedOperationException.class , () -> {
+            jsonErrorHandler.handle(errorInfoMap, records);});
+
+        verify(bigQueryClient, never()).upsertTable((List<Field>) any());
+    }
+
     //TODO set json error handler in the factory while creating bigquery sink
 }

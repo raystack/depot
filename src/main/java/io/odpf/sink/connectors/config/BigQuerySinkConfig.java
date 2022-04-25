@@ -76,5 +76,9 @@ public interface BigQuerySinkConfig extends OdpfSinkConfig {
     @Key("INPUT_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE")
     @DefaultValue("true")
     boolean getInputSchemaProtoAllowUnknownFieldsEnable();
+
+    @Key("SINK_BIGQUERY_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE")
+    @DefaultValue("false")
+    boolean getsinkBigqueryJsonOutputDefaultDatatypeStringEnable();
 }
 

@@ -18,15 +18,21 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/*
+the job of the class is to handle unknown field errors and then update the bq table schema,
+ this happens incase of where schema is inferred from incoming data
+ */
 public class JsonErrorHandler implements ErrorHandler {
 
     private final BigQueryClient bigQueryClient;
     private final String tablePartitionKey;
+    private final boolean castAllColumnsToStringDataType;
 
-    public JsonErrorHandler(BigQueryClient bigQueryClient, String tablePartitionKey) {
+    public JsonErrorHandler(BigQueryClient bigQueryClient, String tablePartitionKey, boolean castAllColumnsToStringDataType) {
 
         this.bigQueryClient = bigQueryClient;
         this.tablePartitionKey = tablePartitionKey;
+        this.castAllColumnsToStringDataType = castAllColumnsToStringDataType;
     }
 
     @Override
@@ -61,7 +67,9 @@ public class JsonErrorHandler implements ErrorHandler {
         if(tablePartitionKey != null && tablePartitionKey.equals(key)) {
             return Field.of(key, LegacySQLTypeName.TIMESTAMP);
         }
-        //TODO have config for casting all types to string
+        if(!castAllColumnsToStringDataType) {
+            throw new UnsupportedOperationException("only string data type is supported for fields other than partition key");
+        }
         return Field.of(key, LegacySQLTypeName.STRING);
     }
 
