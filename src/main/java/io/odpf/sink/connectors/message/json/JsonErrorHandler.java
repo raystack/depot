@@ -11,7 +11,6 @@ import io.odpf.sink.connectors.error.ErrorInfo;
 import io.odpf.sink.connectors.error.ErrorType;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,10 +38,7 @@ public class JsonErrorHandler implements ErrorHandler {
     public void handle(Map<Long, ErrorInfo> errorInfoMap, List<Record> records) {
         Schema schema = bigQueryClient.getSchema();
         FieldList existingFieldList = schema.getFields();
-        HashMap<Integer, ErrorInfo> integerErrorInfoMap = new HashMap<>();
-        errorInfoMap.forEach((k, v) -> integerErrorInfoMap.put(k.intValue(), v));
-
-        List<Entry<Integer, ErrorInfo>> unknownFieldErrors = getUnknownFieldErrors(integerErrorInfoMap);
+        List<Entry<Long, ErrorInfo>> unknownFieldErrors = getUnknownFieldErrors(errorInfoMap);
         if (unknownFieldErrors.size() > 0) {
             Set<Field> missingFields = unknownFieldErrors
                     .stream()
@@ -58,8 +54,8 @@ public class JsonErrorHandler implements ErrorHandler {
         }
     }
 
-    private Set<String> getColumnNamesForRecordsWhichHadUknownFieldErrors(List<Record> records, Entry<Integer, ErrorInfo> x) {
-        Integer recordKey = x.getKey();
+    private Set<String> getColumnNamesForRecordsWhichHadUknownFieldErrors(List<Record> records, Entry<Long, ErrorInfo> x) {
+        Integer recordKey = x.getKey().intValue();
         return records.get(recordKey).getColumns().keySet();
     }
 
@@ -83,7 +79,7 @@ public class JsonErrorHandler implements ErrorHandler {
         }
     }
 
-    private List<Entry<Integer, ErrorInfo>> getUnknownFieldErrors(Map<Integer, ErrorInfo> errorInfoMap) {
+    private List<Entry<Long, ErrorInfo>> getUnknownFieldErrors(Map<Long, ErrorInfo> errorInfoMap) {
         return errorInfoMap.entrySet()
                 .stream()
                 .filter(errorInfoEntry -> errorInfoEntry.getValue().getErrorType() == ErrorType.UNKNOWN_FIELDS_ERROR)
