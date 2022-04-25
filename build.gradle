@@ -125,15 +125,13 @@ jacocoTestCoverageVerification {
         getClassDirectories().setFrom(classDirectories.files.collect {
             fileTree(dir: it,
                     exclude: ['**/config/**',
-                              '**/factory/**',
+                              '**/**Factory**',
                               '**/exception/**',
                               '**/serializer/**',
                               '**/cortexpb/**',
-                              '**/SinkFactory**',
                               '**/Clock**',
                               '**/KafkaUtils**',
                               '**/ConsumerRebalancer**',
-                              '**/FirehoseConsumerFactory**',
                               '**/GoGoProtos**',])
         })
     }

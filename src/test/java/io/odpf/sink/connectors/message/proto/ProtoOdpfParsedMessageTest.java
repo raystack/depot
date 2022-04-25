@@ -1,4 +1,4 @@
-package io.odpf.sink.connectors.message.proto.converter;
+package io.odpf.sink.connectors.message.proto;
 
 import com.google.api.client.util.DateTime;
 import com.google.protobuf.Descriptors;
@@ -7,11 +7,12 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
-import io.odpf.sink.connectors.*;
-import io.odpf.sink.connectors.message.proto.TestProtoUtil;
+import io.odpf.sink.connectors.StatusBQ;
+import io.odpf.sink.connectors.TestKeyBQ;
+import io.odpf.sink.connectors.TestMessageBQ;
+import io.odpf.sink.connectors.TestNestedMessageBQ;
+import io.odpf.sink.connectors.TestNestedRepeatedMessageBQ;
 import io.odpf.sink.connectors.message.OdpfMessageSchema;
-import io.odpf.sink.connectors.message.proto.ProtoOdpfMessageParser;
-import io.odpf.sink.connectors.message.proto.ProtoOdpfParsedMessage;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
@@ -24,7 +25,9 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
 public class ProtoOdpfParsedMessageTest {

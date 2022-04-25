@@ -1,4 +1,4 @@
-package io.odpf.sink.connectors.bigquery.proto;
+package io.odpf.sink.connectors.message.proto;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.UnknownFieldSet;
@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Try to convert raw proto bytes to some meaningful representation that is good enough for debug.
- * */
+ */
 @Slf4j
 public class UnknownProtoFields {
     public static String toString(byte[] message) {

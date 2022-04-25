@@ -1,6 +1,6 @@
 package io.odpf.sink.connectors.message.json;
 
-import io.odpf.sink.connectors.config.OdpfSinkConfig;
+import io.odpf.sink.connectors.expcetion.EmptyMessageException;
 import io.odpf.sink.connectors.message.InputSchemaMessageMode;
 import io.odpf.sink.connectors.message.ParsedOdpfMessage;
 import org.json.JSONException;
@@ -19,8 +19,7 @@ public class JsonOdpfMessageParserTest {
      */
     @Test
     public void shouldParseJsonLogMessage() throws IOException {
-        OdpfSinkConfig config = null;
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(config);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(null);
         String validJsonStr = "{\"first_name\":\"john\"}";
         JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(null, validJsonStr.getBytes());
 
@@ -32,8 +31,7 @@ public class JsonOdpfMessageParserTest {
 
     @Test
     public void shouldThrowErrorForInvalidLogMessage() throws IOException {
-        OdpfSinkConfig config = null;
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(config);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(null);
         String invalidJsonStr = "{\"first_";
         JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(null, invalidJsonStr.getBytes());
         IOException ioException = assertThrows(IOException.class, () -> {
@@ -44,9 +42,18 @@ public class JsonOdpfMessageParserTest {
     }
 
     @Test
+    public void shouldThrowEmptyMessageException() throws IOException {
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(null);
+        JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(null, null);
+        EmptyMessageException emptyMessageException = assertThrows(EmptyMessageException.class, () -> {
+            jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_MESSAGE, null);
+        });
+        assertEquals("log message is empty", emptyMessageException.getMessage());
+    }
+
+    @Test
     public void shouldParseJsonKeyMessage() throws IOException {
-        OdpfSinkConfig config = null;
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(config);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(null);
         String validJsonStr = "{\"first_name\":\"john\"}";
         JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(validJsonStr.getBytes(), null);
 
@@ -58,8 +65,7 @@ public class JsonOdpfMessageParserTest {
 
     @Test
     public void shouldThrowErrorForInvalidKeyMessage() throws IOException {
-        OdpfSinkConfig config = null;
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(config);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(null);
         String invalidJsonStr = "{\"first_";
         JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(invalidJsonStr.getBytes(), null);
         IOException ioException = assertThrows(IOException.class, () -> {
@@ -71,8 +77,7 @@ public class JsonOdpfMessageParserTest {
 
     @Test
     public void shouldThrowErrorWhenModeNotDefined() throws IOException {
-        OdpfSinkConfig config = null;
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(config);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(null);
         String invalidJsonStr = "{\"first_";
         JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(invalidJsonStr.getBytes(), null);
         IOException ioException = assertThrows(IOException.class, () -> {

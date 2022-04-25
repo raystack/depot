@@ -26,24 +26,12 @@ public class StatsDReporter implements Closeable {
         return client;
     }
 
-    public void captureCount(String metric, Integer delta, String... tags) {
-        client.count(withTags(metric, tags), delta);
-    }
-
     public void captureCount(String metric, Long delta, String... tags) {
         client.count(withTags(metric, tags), delta);
     }
 
-    public void captureCount(String metric, Integer delta) {
-        client.count(withGlobalTags(metric), delta);
-    }
-
-    public void captureHistogramWithTags(String metric, long delta, String... tags) {
+    public void captureHistogram(String metric, long delta, String... tags) {
         client.time(withTags(metric, tags), delta);
-    }
-
-    public void captureHistogram(String metric, long delta) {
-        client.time(withGlobalTags(metric), delta);
     }
 
     public void captureDurationSince(String metric, Instant startTime, String... tags) {
@@ -59,11 +47,7 @@ public class StatsDReporter implements Closeable {
     }
 
     public void increment(String metric, String... tags) {
-        captureCount(metric, 1, tags);
-    }
-
-    public void increment(String metric) {
-        captureCount(metric, 1);
+        captureCount(metric, 1L, tags);
     }
 
     public void recordEvent(String metric, String eventName, String... tags) {

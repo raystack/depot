@@ -2,7 +2,6 @@ package io.odpf.sink.connectors.message.proto;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.sink.connectors.bigquery.proto.UnknownProtoFields;
 import io.odpf.sink.connectors.config.OdpfSinkConfig;
 import io.odpf.sink.connectors.expcetion.UnknownFieldsException;
 import io.odpf.sink.connectors.expcetion.ConfigurationException;
