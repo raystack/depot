@@ -1,6 +1,7 @@
 package io.odpf.sink.connectors.message.json;
 
 import io.odpf.sink.connectors.config.OdpfSinkConfig;
+import io.odpf.sink.connectors.expcetion.ConfigurationException;
 import io.odpf.sink.connectors.expcetion.EmptyMessageException;
 import io.odpf.sink.connectors.message.InputSchemaMessageMode;
 import io.odpf.sink.connectors.message.OdpfMessage;
@@ -22,34 +23,31 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
         this.config = config;
     }
 
+
     @Override
     public ParsedOdpfMessage parse(OdpfMessage message, InputSchemaMessageMode type, String schemaClass) throws IOException {
         if (type == null) {
             throw new IOException("message mode not defined");
         }
+        byte[] payload;
         switch (type) {
             case LOG_KEY:
-                try {
-                    if (message.getLogKey() == null || message.getLogKey().length == 0) {
-                        log.info("empty message found {}", message.getMetadataString());
-                        throw new EmptyMessageException();
-                    }
-                    return new JsonOdpfParsedMessage(new JSONObject(new String(message.getLogKey())));
-                } catch (JSONException ex) {
-                    throw new IOException("invalid json error", ex);
-                }
+                payload = message.getLogKey();
+                break;
             case LOG_MESSAGE:
-                try {
-                    if (message.getLogMessage() == null || message.getLogMessage().length == 0) {
-                        log.info("empty message found {}", message.getMetadataString());
-                        throw new EmptyMessageException();
-                    }
-                    return new JsonOdpfParsedMessage(new JSONObject(new String(message.getLogMessage())));
-                } catch (JSONException ex) {
-                    throw new IOException("invalid json error", ex);
-                }
+                payload = message.getLogMessage();
+                break;
             default:
-                throw new IOException("Error while parsing Message");
+                throw new ConfigurationException("Schema type not supported");
+        }
+        try {
+            if (payload == null || payload.length == 0) {
+                log.info("empty message found {}", message.getMetadataString());
+                throw new EmptyMessageException();
+            }
+            return new JsonOdpfParsedMessage(new JSONObject(new String(payload)));
+        } catch (JSONException ex) {
+            throw new IOException("invalid json error", ex);
         }
     }
 

@@ -1,4 +1,4 @@
-package io.odpf.sink.connectors.bigquery.converter;
+package io.odpf.sink.connectors.bigquery.handler;
 
 import io.odpf.sink.connectors.bigquery.models.Record;
 import io.odpf.sink.connectors.bigquery.models.Records;

@@ -1,11 +1,10 @@
-package io.odpf.sink.connectors.message.proto.converter;
+package io.odpf.sink.connectors.bigquery.handler;
 
 import com.google.api.client.util.DateTime;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.UnknownFieldSet;
 import io.odpf.sink.connectors.TestMessage;
-import io.odpf.sink.connectors.bigquery.converter.MessageRecordConverter;
 import io.odpf.sink.connectors.bigquery.models.Record;
 import io.odpf.sink.connectors.bigquery.models.Records;
 import io.odpf.sink.connectors.config.BigQuerySinkConfig;

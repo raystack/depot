@@ -1,7 +1,7 @@
 package io.odpf.sink.connectors.bigquery;
 
 import io.odpf.sink.connectors.OdpfSink;
-import io.odpf.sink.connectors.bigquery.converter.MessageRecordConverterCache;
+import io.odpf.sink.connectors.bigquery.handler.MessageRecordConverterCache;
 import io.odpf.sink.connectors.bigquery.error.ErrorHandler;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryClient;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRow;
@@ -43,7 +43,7 @@ public class BigQuerySinkFactory {
             this.bigQueryClient = new BigQueryClient(sinkConfig, bigQueryMetrics, new Instrumentation(statsDReporter, BigQueryClient.class));
             this.bigQueryMetrics = new BigQueryMetrics(sinkConfig);
             this.recordConverterWrapper = new MessageRecordConverterCache();
-            OdpfStencilUpdateListener odpfStencilUpdateListener = BigqueryStencilUpdateListenerFactory.getBigqueryStencilUpdateListener(sinkConfig, bigQueryClient, recordConverterWrapper);
+            OdpfStencilUpdateListener odpfStencilUpdateListener = BigqueryStencilUpdateListenerFactory.create(sinkConfig, bigQueryClient, recordConverterWrapper);
             OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter, odpfStencilUpdateListener);
             odpfStencilUpdateListener.setOdpfMessageParser(odpfMessageParser);
             odpfStencilUpdateListener.onSchemaUpdate(null);

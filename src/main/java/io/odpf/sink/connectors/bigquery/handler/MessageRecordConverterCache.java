@@ -1,4 +1,4 @@
-package io.odpf.sink.connectors.bigquery.converter;
+package io.odpf.sink.connectors.bigquery.handler;
 
 import lombok.Data;
 

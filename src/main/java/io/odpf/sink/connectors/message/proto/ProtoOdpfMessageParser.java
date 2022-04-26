@@ -2,6 +2,7 @@ package io.odpf.sink.connectors.message.proto;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
+import io.odpf.sink.connectors.expcetion.ConfigurationException;
 import io.odpf.sink.connectors.expcetion.EmptyMessageException;
 import io.odpf.sink.connectors.message.InputSchemaMessageMode;
 import io.odpf.sink.connectors.message.OdpfMessage;
@@ -44,25 +45,22 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
         if (type == null) {
             throw new IOException("parser mode not defined");
         }
-        DynamicMessage dynamicMessage;
+        byte[] payload;
         switch (type) {
             case LOG_MESSAGE:
-                if (message.getLogMessage() == null || message.getLogMessage().length == 0) {
-                    log.info("empty message found {}", message.getMetadataString());
-                    throw new EmptyMessageException();
-                }
-                dynamicMessage = stencilClient.parse(schemaClass, message.getLogMessage());
+                payload = message.getLogMessage();
                 break;
             case LOG_KEY:
-                if (message.getLogKey() == null || message.getLogKey().length == 0) {
-                    log.info("empty key found {}", message.getMetadataString());
-                    throw new EmptyMessageException();
-                }
-                dynamicMessage = stencilClient.parse(schemaClass, message.getLogKey());
+                payload = message.getLogKey();
                 break;
             default:
-                throw new IOException("Error while parsing Message");
+                throw new ConfigurationException("Schema type not supported");
         }
+        if (payload == null || payload.length == 0) {
+            log.info("empty message found {}", message.getMetadataString());
+            throw new EmptyMessageException();
+        }
+        DynamicMessage dynamicMessage = stencilClient.parse(schemaClass, payload);
         return new ProtoOdpfParsedMessage(dynamicMessage);
     }
 

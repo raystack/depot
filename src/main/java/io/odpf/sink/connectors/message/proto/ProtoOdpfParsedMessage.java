@@ -53,6 +53,7 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
         return getMappings(dynamicMessage, (Properties) schema.getSchema());
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> getMappings(DynamicMessage message, Properties columnMapping) {
         if (message == null || columnMapping == null || columnMapping.isEmpty()) {
             return new HashMap<>();
@@ -105,11 +106,13 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
         String columnName = null;
         for (Object f : fieldValue) {
             if (f instanceof DynamicMessage) {
+                assert value instanceof Properties;
                 Properties nestedMappings = (Properties) value;
                 repeatedNestedFields.add(getMappings((DynamicMessage) f, nestedMappings));
                 columnName = getNestedColumnName(nestedMappings);
             } else {
                 repeatedNestedFields.add(f);
+                assert value instanceof String;
                 columnName = (String) value;
             }
         }

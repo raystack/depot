@@ -7,7 +7,7 @@ import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.odpf.sink.connectors.TestKeyBQ;
-import io.odpf.sink.connectors.bigquery.converter.MessageRecordConverterCache;
+import io.odpf.sink.connectors.bigquery.handler.MessageRecordConverterCache;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryClient;
 import io.odpf.sink.connectors.message.OdpfMessage;
 import io.odpf.sink.connectors.message.OdpfMessageParser;
@@ -96,7 +96,7 @@ public class BigqueryProtoUpdateListenerTest {
                 new Tuple<>("topic", "topic"),
                 new Tuple<>("partition", 1),
                 new Tuple<>("offset", 1));
-        Records convert = bigqueryProtoUpdateListener.getRecordConverterWrapper().getMessageRecordConverter().convert(Collections.singletonList(testMessage));
+        Records convert = bigqueryProtoUpdateListener.getConverterCache().getMessageRecordConverter().convert(Collections.singletonList(testMessage));
         Assert.assertEquals(1, convert.getValidRecords().size());
         Assert.assertEquals("order", convert.getValidRecords().get(0).getColumns().get("order_number"));
         Assert.assertEquals("test", convert.getValidRecords().get(0).getColumns().get("order_url"));
@@ -189,7 +189,7 @@ public class BigqueryProtoUpdateListenerTest {
                 new Tuple<>("topic", "topic"),
                 new Tuple<>("partition", 1),
                 new Tuple<>("offset", 1));
-        Records convert = bigqueryProtoUpdateListener.getRecordConverterWrapper().getMessageRecordConverter().convert(Collections.singletonList(testMessage));
+        Records convert = bigqueryProtoUpdateListener.getConverterCache().getMessageRecordConverter().convert(Collections.singletonList(testMessage));
         Assert.assertEquals(1, convert.getValidRecords().size());
         Assert.assertEquals("order", convert.getValidRecords().get(0).getColumns().get("order_number"));
         Assert.assertEquals("test", convert.getValidRecords().get(0).getColumns().get("order_url"));
@@ -236,7 +236,7 @@ public class BigqueryProtoUpdateListenerTest {
                 new Tuple<>("topic", "topic"),
                 new Tuple<>("partition", 1),
                 new Tuple<>("offset", 1));
-        Records convert = bigqueryProtoUpdateListener.getRecordConverterWrapper().getMessageRecordConverter().convert(Collections.singletonList(testMessage));
+        Records convert = bigqueryProtoUpdateListener.getConverterCache().getMessageRecordConverter().convert(Collections.singletonList(testMessage));
         Assert.assertEquals(1, convert.getValidRecords().size());
         Assert.assertEquals("order", convert.getValidRecords().get(0).getColumns().get("order_number"));
         Assert.assertEquals("test", convert.getValidRecords().get(0).getColumns().get("order_url"));

@@ -3,8 +3,8 @@ package io.odpf.sink.connectors.bigquery.proto;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import com.google.protobuf.Descriptors.Descriptor;
-import io.odpf.sink.connectors.bigquery.converter.MessageRecordConverter;
-import io.odpf.sink.connectors.bigquery.converter.MessageRecordConverterCache;
+import io.odpf.sink.connectors.bigquery.handler.MessageRecordConverter;
+import io.odpf.sink.connectors.bigquery.handler.MessageRecordConverterCache;
 import io.odpf.sink.connectors.bigquery.exception.BQSchemaMappingException;
 import io.odpf.sink.connectors.bigquery.exception.BQTableUpdateFailure;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryClient;
@@ -29,12 +29,12 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
     private final BigQuerySinkConfig config;
     private final BigQueryClient bqClient;
     @Getter
-    private final MessageRecordConverterCache recordConverterWrapper;
+    private final MessageRecordConverterCache converterCache;
 
-    public BigqueryProtoUpdateListener(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterCache recordConverterWrapper) {
+    public BigqueryProtoUpdateListener(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterCache converterCache) {
         this.config = config;
         this.bqClient = bqClient;
-        this.recordConverterWrapper = recordConverterWrapper;
+        this.converterCache = converterCache;
     }
 
     @Override
@@ -49,7 +49,7 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
             List<Field> bqSchemaFields = BigqueryFields.generateBigquerySchema(protoField);
             addMetadataFields(bqSchemaFields);
             bqClient.upsertTable(bqSchemaFields);
-            recordConverterWrapper.setMessageRecordConverter(new MessageRecordConverter(getOdpfMessageParser(), config, schema));
+            converterCache.setMessageRecordConverter(new MessageRecordConverter(getOdpfMessageParser(), config, schema));
         } catch (BigQueryException | IOException e) {
             String errMsg = "Error while updating bigquery table on callback:" + e.getMessage();
             log.error(errMsg);
