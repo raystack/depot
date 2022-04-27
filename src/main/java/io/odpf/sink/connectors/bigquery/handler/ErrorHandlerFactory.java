@@ -8,8 +8,7 @@ public class ErrorHandlerFactory {
         if (InputSchemaDataType.JSON == sinkConfig.getSinkConnectorSchemaDataTye()) {
             return new JsonErrorHandler(
                     bigQueryClient,
-                    sinkConfig.getTablePartitionKey(),
-                    sinkConfig.getOutputDefaultDatatypeStringEnable());
+                    sinkConfig);
         }
         return new NoopErrorHandler();
     }

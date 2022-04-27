@@ -3,11 +3,11 @@ package io.odpf.sink.connectors.bigquery.handler;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
-import io.odpf.sink.connectors.bigquery.handler.BigQueryClient;
-import io.odpf.sink.connectors.bigquery.handler.JsonErrorHandler;
 import io.odpf.sink.connectors.bigquery.models.Record;
+import io.odpf.sink.connectors.config.BigQuerySinkConfig;
 import io.odpf.sink.connectors.error.ErrorInfo;
 import io.odpf.sink.connectors.error.ErrorType;
+import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ public class JsonErrorHandlerTest {
 
     private final Schema emptyTableSchema = Schema.of();
     private final ErrorInfo.ErrorInfoBuilder errorBuilder = ErrorInfo.builder();
+    private BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, Collections.emptyMap());
 
     @Mock
     private BigQueryClient bigQueryClient;
@@ -61,7 +63,7 @@ public class JsonErrorHandlerTest {
         List<Record> records = new ArrayList<>();
         records.add(validRecord);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, null, true);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
         jsonErrorHandler.handle(errorInfoMap, records);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -86,7 +88,7 @@ public class JsonErrorHandlerTest {
         List<Record> records = new ArrayList<>();
         records.add(validRecord);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, null, true);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
         jsonErrorHandler.handle(errorInfoMap, records);
 
         verify(bigQueryClient, never()).upsertTable(any());
@@ -114,7 +116,7 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithFirstName);
         validRecords.add(validRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, null, true);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
 
@@ -147,7 +149,7 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithFirstName);
         validRecords.add(validRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, null, true);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -177,7 +179,7 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithFirstName);
         validRecords.add(validRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, null, true);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -211,7 +213,7 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithLastName);
         validRecords.add(anotheRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, null, true);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -252,7 +254,7 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithLastName);
         validRecords.add(anotheRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, null, true);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -264,8 +266,6 @@ public class JsonErrorHandlerTest {
         List<Field> actualFields = fieldsArgumentCaptor.getValue();
         assertThat(actualFields, containsInAnyOrder(firstName, lastName, newFieldDog, newFieldAddress));
     }
-
-    //TODO upsert event_timestamp fields
 
     @Test
     public void shouldUpsertTableWithPartitionKeyTimestampField() {
@@ -289,7 +289,11 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithFirstName);
         validRecords.add(validRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, "event_timestamp_partition", true);
+        Map<String, String> envMap = new HashMap<String, String>() {{
+            put("SINK_BIGQUERY_TABLE_PARTITION_KEY", "event_timestamp_partition");
+        }};
+        BigQuerySinkConfig partitionKeyConfig = ConfigFactory.create(BigQuerySinkConfig.class, envMap);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, partitionKeyConfig);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
 
@@ -316,7 +320,11 @@ public class JsonErrorHandlerTest {
 
         List<Record> records = new ArrayList<>();
         records.add(validRecord);
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, null, false);
+        Map<String, String> envMap = new HashMap<String, String>() {{
+            put("SINK_BIGQUERY_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false");
+        }};
+        BigQuerySinkConfig stringDisableConfig = ConfigFactory.create(BigQuerySinkConfig.class, envMap);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, stringDisableConfig);
         assertThrows(UnsupportedOperationException.class, () -> {
             jsonErrorHandler.handle(errorInfoMap, records);
         });

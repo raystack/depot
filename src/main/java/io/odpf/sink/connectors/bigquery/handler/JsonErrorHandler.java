@@ -5,6 +5,7 @@ import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
 import io.odpf.sink.connectors.bigquery.models.Record;
+import io.odpf.sink.connectors.config.BigQuerySinkConfig;
 import io.odpf.sink.connectors.error.ErrorInfo;
 import io.odpf.sink.connectors.error.ErrorType;
 
@@ -25,11 +26,11 @@ public class JsonErrorHandler implements ErrorHandler {
     private final String tablePartitionKey;
     private final boolean castAllColumnsToStringDataType;
 
-    public JsonErrorHandler(BigQueryClient bigQueryClient, String tablePartitionKey, boolean castAllColumnsToStringDataType) {
+    public JsonErrorHandler(BigQueryClient bigQueryClient, BigQuerySinkConfig bigQuerySinkConfig) {
 
         this.bigQueryClient = bigQueryClient;
-        this.tablePartitionKey = tablePartitionKey;
-        this.castAllColumnsToStringDataType = castAllColumnsToStringDataType;
+        this.tablePartitionKey = bigQuerySinkConfig.getTablePartitionKey();
+        this.castAllColumnsToStringDataType = bigQuerySinkConfig.getOutputDefaultDatatypeStringEnable();
     }
 
     @Override
