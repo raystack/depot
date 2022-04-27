@@ -1,7 +1,6 @@
 package io.odpf.sink.connectors.bigquery.handler;
 
 import com.google.cloud.bigquery.InsertAllRequest;
-import io.odpf.sink.connectors.bigquery.handler.BigQueryRowWithoutInsertId;
 import io.odpf.sink.connectors.bigquery.models.Record;
 import org.junit.Test;
 

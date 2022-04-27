@@ -5,6 +5,8 @@ import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.protobuf.DescriptorProtos;
 import io.odpf.sink.connectors.bigquery.exception.BQSchemaMappingException;
+import io.odpf.sink.connectors.message.proto.Constants;
+import io.odpf.sink.connectors.message.proto.ProtoField;
 import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;

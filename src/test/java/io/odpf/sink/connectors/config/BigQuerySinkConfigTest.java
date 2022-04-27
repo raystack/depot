@@ -1,5 +1,6 @@
 package io.odpf.sink.connectors.config;
 
+import io.odpf.sink.connectors.common.TupleString;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,7 +13,7 @@ public class BigQuerySinkConfigTest {
 
     @Test
     public void testMetadataTypes() {
-        System.setProperty("INPUT_SCHEMA_PROTO_CLASS", "io.odpf.sink.connectors.TestKeyBQ");
+        System.setProperty("SINK_CONNECTOR_SCHEMA_MESSAGE_CLASS", "io.odpf.sink.connectors.TestKeyBQ");
         System.setProperty("SINK_BIGQUERY_ENABLE_AUTO_SCHEMA_UPDATE", "false");
         System.setProperty("SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "topic=string,partition=integer,offset=integer");
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());

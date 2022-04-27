@@ -4,6 +4,7 @@ import com.timgroup.statsd.NoOpStatsDClient;
 import com.timgroup.statsd.NonBlockingStatsDClientBuilder;
 import com.timgroup.statsd.StatsDClient;
 import io.odpf.sink.connectors.config.MetricsConfig;
+import lombok.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Create statsDReporter Instance.
  */
+@Builder
 public class StatsDReporterBuilder {
 
     private MetricsConfig metricsConfig;
@@ -31,20 +33,6 @@ public class StatsDReporterBuilder {
         arr = java.util.Arrays.copyOf(arr, length + second.length);
         System.arraycopy(second, 0, arr, length, second.length);
         return arr;
-    }
-
-    public static StatsDReporterBuilder builder() {
-        return new StatsDReporterBuilder();
-    }
-
-    public StatsDReporterBuilder setMetricConfig(MetricsConfig metricsConfig) {
-        this.metricsConfig = metricsConfig;
-        return this;
-    }
-
-    public StatsDReporterBuilder setExtraTags(String[] extraTags) {
-        this.extraTags = extraTags;
-        return this;
     }
 
     public StatsDReporter build() {

@@ -5,7 +5,6 @@ import io.odpf.sink.connectors.config.OdpfSinkConfig;
 import io.odpf.sink.connectors.error.ErrorInfo;
 import io.odpf.sink.connectors.error.ErrorType;
 import io.odpf.sink.connectors.expcetion.OdpfSinkException;
-import io.odpf.sink.connectors.message.json.JsonOdpfMessage;
 import io.odpf.sink.connectors.message.json.JsonOdpfMessageParser;
 import io.odpf.sink.connectors.message.OdpfMessage;
 import io.odpf.sink.connectors.message.OdpfMessageParser;
@@ -34,33 +33,33 @@ import static org.mockito.Mockito.verify;
 public class LogSinkTest {
     private final String template = "\n================= DATA =======================\n{}\n================= METADATA =======================\n{}\n";
     private OdpfSinkConfig config;
-    private OdpfMessageParser messageParser;
+    private OdpfMessageParser odpfMessageParser;
     private Instrumentation instrumentation;
 
     @Before
     public void setUp() throws Exception {
-         config = mock(OdpfSinkConfig.class);
-         messageParser = mock(OdpfMessageParser.class);
-         instrumentation = mock(Instrumentation.class);
+        config = mock(OdpfSinkConfig.class);
+        odpfMessageParser = mock(OdpfMessageParser.class);
+        instrumentation = mock(Instrumentation.class);
 
     }
 
     @Test
     public void shouldProcessEmptyMessageWithNoError() throws IOException {
-        LogSink logSink = new LogSink(config, messageParser, instrumentation);
+        LogSink logSink = new LogSink(config, odpfMessageParser, instrumentation);
         ArrayList<OdpfMessage> messages = new ArrayList<>();
         OdpfSinkResponse odpfSinkResponse = logSink.pushToSink(messages);
         Map<Long, List<ErrorInfo>> errors = odpfSinkResponse.getErrors();
 
         assertEquals(Collections.emptyMap(), errors);
-        verify(messageParser, never()).parse(any(), any(), any());
+        verify(odpfMessageParser, never()).parse(any(), any(), any());
         verify(instrumentation, never()).logInfo(any(), any(), any());
     }
 
     @Test
     public void shouldLogJsonMessages() throws OdpfSinkException {
         HashMap<String, String> configMap = new HashMap<String, String>() {{
-            put("INPUT_SCHEMA_MESSAGE_MODE", "log_message");
+            put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "log_message");
         }};
         OdpfSinkConfig odpfSinkConfig = ConfigFactory.create(OdpfSinkConfig.class, configMap);
         OdpfMessageParser messageParser = new JsonOdpfMessageParser(odpfSinkConfig);
@@ -70,8 +69,8 @@ public class LogSinkTest {
         byte[] logMessage1 = validJsonFirstName.getBytes();
         String validJsonLastName = "{\"last_name\":\"doe\"}";
         byte[] logMessage2 = validJsonLastName.getBytes();
-        messages.add(new JsonOdpfMessage(null, logMessage1));
-        messages.add(new JsonOdpfMessage(null, logMessage2));
+        messages.add(new OdpfMessage(null, logMessage1));
+        messages.add(new OdpfMessage(null, logMessage2));
         OdpfSinkResponse odpfSinkResponse = logSink.pushToSink(messages);
 
         //assert no error
@@ -87,7 +86,7 @@ public class LogSinkTest {
     @Test
     public void shouldReturnErrorResponseAndProcessValidMessage() throws OdpfSinkException {
         HashMap<String, String> configMap = new HashMap<String, String>() {{
-            put("INPUT_SCHEMA_MESSAGE_MODE", "log_message");
+            put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "log_message");
         }};
         OdpfSinkConfig odpfSinkConfig = ConfigFactory.create(OdpfSinkConfig.class, configMap);
 
@@ -98,8 +97,8 @@ public class LogSinkTest {
         byte[] logMessage1 = validJsonFirstName.getBytes();
         String invalidJson = "{\"last_name";
         byte[] invalidLogMessage = invalidJson.getBytes();
-        messages.add(new JsonOdpfMessage(null, logMessage1));
-        messages.add(new JsonOdpfMessage(null, invalidLogMessage));
+        messages.add(new OdpfMessage(null, logMessage1));
+        messages.add(new OdpfMessage(null, invalidLogMessage));
         OdpfSinkResponse odpfSinkResponse = logSink.pushToSink(messages);
 
         //assert error

@@ -6,18 +6,22 @@ import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import io.odpf.sink.connectors.config.BigQuerySinkConfig;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
- import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.Mockito;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class BQTableDefinitionTest {
     @Mock
     private BigQuerySinkConfig bqConfig;
+
+    @Before
+    public void setup() {
+        bqConfig = Mockito.mock(BigQuerySinkConfig.class);
+    }
 
     @Test(expected = UnsupportedOperationException.class)
     public void shouldThrowUnsupportedExceptionForRangePartition() {

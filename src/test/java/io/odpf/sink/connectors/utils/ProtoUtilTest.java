@@ -5,7 +5,6 @@ import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.UnknownFieldSet;
 import io.odpf.sink.connectors.TestBookingLogMessage;
 import io.odpf.sink.connectors.TestLocation;
-import io.odpf.sink.connectors.utils.ProtoUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;

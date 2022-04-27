@@ -2,14 +2,12 @@ package io.odpf.sink.connectors.bigquery.handler;
 
 import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.InsertAllResponse;
-import io.odpf.sink.connectors.OdpfSinkResponse;
 import io.odpf.sink.connectors.bigquery.error.ErrorDescriptor;
 import io.odpf.sink.connectors.bigquery.error.ErrorParser;
 import io.odpf.sink.connectors.bigquery.error.InvalidSchemaError;
 import io.odpf.sink.connectors.bigquery.error.OOBError;
 import io.odpf.sink.connectors.bigquery.error.StoppedError;
 import io.odpf.sink.connectors.bigquery.error.UnknownError;
-import io.odpf.sink.connectors.message.OdpfMessage;
 import io.odpf.sink.connectors.bigquery.exception.BigQuerySinkException;
 import io.odpf.sink.connectors.bigquery.models.Record;
 import io.odpf.sink.connectors.error.ErrorInfo;
@@ -23,8 +21,7 @@ import java.util.Map;
 
 public class BigQueryResponseParser {
     /**
-     * Parses the {@link InsertAllResponse} object and returns {@link OdpfMessage} that were
-     * tried to sink in BQ and the error type {@link ErrorDescriptor}.
+     * Parses the {@link InsertAllResponse} object and returns errors type {@link ErrorDescriptor}.
      * {@link InsertAllResponse} in bqResponse are 1 to 1 indexed based on the records that are requested to be inserted.
      *
      * @param records    - list of records that were tried with BQ insertion
