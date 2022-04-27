@@ -3,9 +3,8 @@ package io.odpf.sink.connectors.bigquery;
 import com.google.api.client.util.DateTime;
 import io.odpf.sink.connectors.TestKeyBQ;
 import io.odpf.sink.connectors.TestMessageBQ;
-import io.odpf.sink.connectors.config.Tuple;
+import io.odpf.sink.connectors.common.Tuple;
 import io.odpf.sink.connectors.message.OdpfMessage;
-import io.odpf.sink.connectors.message.proto.ProtoOdpfMessage;
 
 import java.sql.Date;
 import java.time.Instant;
@@ -13,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class TestOdpfMessageBuilder {
+public final class TestOdpfMessageBuilder {
     private long timestamp;
     private String topic;
     private int partition;
@@ -43,7 +42,7 @@ public class TestOdpfMessageBuilder {
                 .setOrderUrl(orderUrl)
                 .setOrderDetails(orderDetails)
                 .build();
-        return new ProtoOdpfMessage(
+        return new OdpfMessage(
                 key.toByteArray(),
                 message.toByteArray(),
                 new Tuple<>("message_topic", topic),
@@ -58,7 +57,7 @@ public class TestOdpfMessageBuilder {
                 .setOrderNumber(orderNumber)
                 .setOrderUrl(orderUrl)
                 .build();
-        return new ProtoOdpfMessage(
+        return new OdpfMessage(
                 key.toByteArray(),
                 null,
                 new Tuple<>("message_topic", topic),

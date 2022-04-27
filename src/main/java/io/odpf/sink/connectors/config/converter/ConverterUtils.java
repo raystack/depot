@@ -1,6 +1,6 @@
 package io.odpf.sink.connectors.config.converter;
 
-import io.odpf.sink.connectors.config.Tuple;
+import io.odpf.sink.connectors.common.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;

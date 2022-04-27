@@ -1,6 +1,10 @@
 package io.odpf.sink.connectors.bigquery.handler;
 
-import com.google.cloud.bigquery.*;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.LegacySQLTypeName;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.TimePartitioning;
 import io.odpf.sink.connectors.bigquery.exception.BQPartitionKeyNotSpecified;
 import io.odpf.sink.connectors.config.BigQuerySinkConfig;
 import lombok.AllArgsConstructor;

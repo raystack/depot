@@ -6,8 +6,7 @@ import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.protobuf.Descriptors;
 import io.odpf.sink.connectors.TestMessage;
 import io.odpf.sink.connectors.TestTypesMessage;
-import io.odpf.sink.connectors.bigquery.models.BQField;
-import io.odpf.sink.connectors.bigquery.models.ProtoField;
+import io.odpf.sink.connectors.message.proto.ProtoField;
 import org.junit.Test;
 
 import java.util.ArrayList;

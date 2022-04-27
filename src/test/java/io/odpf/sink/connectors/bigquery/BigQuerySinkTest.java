@@ -5,9 +5,9 @@ import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.TableId;
 import io.odpf.sink.connectors.OdpfSinkResponse;
-import io.odpf.sink.connectors.bigquery.converter.MessageRecordConverter;
-import io.odpf.sink.connectors.bigquery.converter.MessageRecordConverterCache;
-import io.odpf.sink.connectors.bigquery.error.ErrorHandler;
+import io.odpf.sink.connectors.bigquery.handler.MessageRecordConverter;
+import io.odpf.sink.connectors.bigquery.handler.MessageRecordConverterCache;
+import io.odpf.sink.connectors.bigquery.handler.ErrorHandler;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryClient;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRow;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRowWithInsertId;
@@ -48,7 +48,7 @@ public class BigQuerySinkTest {
     private BigQueryMetrics metrics;
     private BigQuerySink sink;
     @Mock
-    private InsertAllResponse response;
+    private InsertAllResponse insertAllResponse;
 
     @Mock
     private ErrorHandler errorHandler;
@@ -88,8 +88,8 @@ public class BigQuerySinkTest {
         records.getValidRecords().forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         Mockito.when(converter.convert(Mockito.eq(messages))).thenReturn(records);
-        Mockito.when(client.insertAll(rows)).thenReturn(response);
-        Mockito.when(response.hasErrors()).thenReturn(false);
+        Mockito.when(client.insertAll(rows)).thenReturn(insertAllResponse);
+        Mockito.when(insertAllResponse.hasErrors()).thenReturn(false);
         OdpfSinkResponse response = sink.pushToSink(messages);
         Assert.assertEquals(0, response.getErrors().size());
         Mockito.verify(client, Mockito.times(1)).insertAll(rows);
@@ -122,8 +122,8 @@ public class BigQuerySinkTest {
         records.getValidRecords().forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         Mockito.when(converter.convert(Mockito.eq(messages))).thenReturn(records);
-        Mockito.when(client.insertAll(rows)).thenReturn(response);
-        Mockito.when(response.hasErrors()).thenReturn(false);
+        Mockito.when(client.insertAll(rows)).thenReturn(insertAllResponse);
+        Mockito.when(insertAllResponse.hasErrors()).thenReturn(false);
         OdpfSinkResponse response = sink.pushToSink(messages);
         Assert.assertEquals(2, response.getErrors().size());
         Mockito.verify(client, Mockito.times(1)).insertAll(rows);
@@ -159,8 +159,8 @@ public class BigQuerySinkTest {
         records.getValidRecords().forEach((Record m) -> builder.addRow(rowCreator.of(m)));
         InsertAllRequest rows = builder.build();
         Mockito.when(converter.convert(Mockito.eq(messages))).thenReturn(records);
-        Mockito.when(client.insertAll(rows)).thenReturn(response);
-        Mockito.when(response.hasErrors()).thenReturn(true);
+        Mockito.when(client.insertAll(rows)).thenReturn(insertAllResponse);
+        Mockito.when(insertAllResponse.hasErrors()).thenReturn(true);
 
         BigQueryError error1 = new BigQueryError("", "US", "");
         BigQueryError error3 = new BigQueryError("invalid", "", "The destination table's partition tmp$20160101 is outside the allowed bounds. You can only stream to partitions within 1825 days in the past and 366 days in the future relative to the current date");
@@ -169,7 +169,7 @@ public class BigQuerySinkTest {
             put(0L, Collections.list(error1));
             put(2L, Collections.list(error3));
         }};
-        Mockito.when(response.getInsertErrors()).thenReturn(insertErrorsMap);
+        Mockito.when(insertAllResponse.getInsertErrors()).thenReturn(insertErrorsMap);
 
         OdpfSinkResponse response = sink.pushToSink(messages);
         Mockito.verify(client, Mockito.times(1)).insertAll(rows);

@@ -26,14 +26,14 @@ public class OdpfSinkResponse {
     }
 
     /**
-     * Adds an error for the index
+     * Adds an error for the index.
      */
     public void addErrors(long index, ErrorInfo errorInfo) {
         errors.computeIfAbsent(index, x -> new ArrayList<>()).add(errorInfo);
     }
 
     /**
-     * Returns {@code true} if no row insertion failed, {@code false} otherwise. If {@code false}
+     * Returns {@code true} if no row insertion failed, {@code false} otherwise. If {@code false}.
      * {@link #getErrors()} ()} returns an empty map.
      */
     public boolean hasErrors() {

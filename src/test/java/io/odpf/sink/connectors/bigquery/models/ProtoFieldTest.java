@@ -3,7 +3,7 @@ package io.odpf.sink.connectors.bigquery.models;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
 import io.odpf.sink.connectors.TestTypesMessage;
-import io.odpf.sink.connectors.bigquery.models.ProtoField;
+import io.odpf.sink.connectors.message.proto.ProtoField;
 import org.junit.Test;
 
 import java.util.List;

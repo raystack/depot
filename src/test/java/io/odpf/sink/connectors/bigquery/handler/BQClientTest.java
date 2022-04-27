@@ -23,6 +23,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -92,6 +94,7 @@ public class BQClientTest {
         when(bqConfig.isTablePartitioningEnabled()).thenReturn(false);
         when(bqConfig.getTableName()).thenReturn("bq-table");
         when(bqConfig.getDatasetName()).thenReturn("bq-proto");
+        when(bqConfig.getDatasetLabels()).thenReturn(Collections.emptyMap());
         when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
         bqClient = new BigQueryClient(bigquery, bqConfig, metrics, instrumentation);
 
@@ -115,6 +118,9 @@ public class BQClientTest {
         TableInfo tableInfo = TableInfo.newBuilder(tableId, updatedBQTableDefinition).build();
         when(bigquery.getDataset(tableId.getDataset())).thenReturn(dataset);
         when(dataset.exists()).thenReturn(true);
+        when(dataset.getLabels()).thenReturn(new HashMap<String, String>() {{
+            put("new_key", "new_value");
+        }});
         when(dataset.getLocation()).thenReturn("US");
         when(table.exists()).thenReturn(true);
         when(bigquery.getTable(tableId)).thenReturn(table);

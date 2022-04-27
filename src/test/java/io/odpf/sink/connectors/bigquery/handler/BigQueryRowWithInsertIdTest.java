@@ -1,14 +1,10 @@
 package io.odpf.sink.connectors.bigquery.handler;
 
 import com.google.cloud.bigquery.InsertAllRequest;
-import io.odpf.sink.connectors.bigquery.handler.BigQueryRowWithInsertId;
 import io.odpf.sink.connectors.bigquery.models.Record;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
 

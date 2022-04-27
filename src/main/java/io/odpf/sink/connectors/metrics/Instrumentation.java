@@ -85,11 +85,13 @@ public class Instrumentation implements Closeable {
 
     public void captureNonFatalError(String metric, Exception e, String template, Object... t) {
         logger.warn(template, t);
+        logger.warn(e.getMessage(), e);
         statsDReporter.recordEvent(metric, SinkMetrics.NON_FATAL_ERROR, errorTag(e, SinkMetrics.NON_FATAL_ERROR));
     }
 
     public void captureFatalError(String metric, Exception e, String template, Object... t) {
         logger.error(template, t);
+        logger.error(e.getMessage(), e);
         statsDReporter.recordEvent(metric, SinkMetrics.FATAL_ERROR, errorTag(e, SinkMetrics.FATAL_ERROR));
     }
 
