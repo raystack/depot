@@ -13,7 +13,6 @@ import io.odpf.sink.connectors.error.ErrorType;
 import io.odpf.sink.connectors.message.*;
 import io.odpf.sink.connectors.bigquery.TestOdpfMessageBuilder;
 import io.odpf.sink.connectors.bigquery.TestMetadata;
-import io.odpf.sink.connectors.message.proto.ProtoOdpfMessage;
 import io.odpf.sink.connectors.message.proto.ProtoOdpfMessageParser;
 import io.odpf.sink.connectors.message.proto.ProtoOdpfParsedMessage;
 import io.odpf.stencil.client.ClassLoadStencilClient;
@@ -188,7 +187,7 @@ public class MessageRecordConverterTest {
         TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(), now.toEpochMilli());
         OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
                 "order-url-1", "order-details-1");
-        OdpfMessage record2 = new ProtoOdpfMessage("invalid-key".getBytes(), "invalid-value".getBytes(),
+        OdpfMessage record2 = new OdpfMessage("invalid-key".getBytes(), "invalid-value".getBytes(),
                 new Tuple<>("topic", record2Offset.getTopic()),
                 new Tuple<>("partition", record2Offset.getPartition()));
         List<OdpfMessage> messages = Arrays.asList(record1, record2);
@@ -203,7 +202,7 @@ public class MessageRecordConverterTest {
         OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
                 "order-url-1", "order-details-1");
 
-        OdpfMessage record2 = new ProtoOdpfMessage("invalid-key".getBytes(), "invalid-value".getBytes(),
+        OdpfMessage record2 = new OdpfMessage("invalid-key".getBytes(), "invalid-value".getBytes(),
                 new Tuple<>("message_topic", record2Offset.getTopic()),
                 new Tuple<>("message_partition", record2Offset.getPartition()),
                 new Tuple<>("message_offset", record2Offset.getOffset()),

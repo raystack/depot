@@ -32,10 +32,10 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
         byte[] payload;
         switch (type) {
             case LOG_KEY:
-                payload = message.getLogKey();
+                payload = (byte[]) message.getLogKey();
                 break;
             case LOG_MESSAGE:
-                payload = message.getLogMessage();
+                payload = (byte[]) message.getLogMessage();
                 break;
             default:
                 throw new ConfigurationException("Schema type not supported");

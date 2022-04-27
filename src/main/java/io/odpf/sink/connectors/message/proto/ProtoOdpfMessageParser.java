@@ -48,10 +48,10 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
         byte[] payload;
         switch (type) {
             case LOG_MESSAGE:
-                payload = message.getLogMessage();
+                payload = (byte[]) message.getLogMessage();
                 break;
             case LOG_KEY:
-                payload = message.getLogKey();
+                payload = (byte[]) message.getLogKey();
                 break;
             default:
                 throw new ConfigurationException("Schema type not supported");

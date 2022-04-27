@@ -16,7 +16,6 @@ import io.odpf.sink.connectors.bigquery.models.Records;
 import io.odpf.sink.connectors.config.BigQuerySinkConfig;
 import io.odpf.sink.connectors.common.Tuple;
 import io.odpf.sink.connectors.common.TupleString;
-import io.odpf.sink.connectors.message.proto.ProtoOdpfMessage;
 import io.odpf.sink.connectors.message.proto.ProtoOdpfMessageParser;
 import io.odpf.sink.connectors.message.proto.TestProtoUtil;
 import io.odpf.stencil.client.StencilClient;
@@ -28,7 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
- import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -90,7 +89,7 @@ public class BigqueryProtoUpdateListenerTest {
         bigqueryProtoUpdateListener.setOdpfMessageParser(parser);
         bigqueryProtoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
-        OdpfMessage testMessage = new ProtoOdpfMessage(
+        OdpfMessage testMessage = new OdpfMessage(
                 "".getBytes(),
                 testKeyBQ.toByteArray(),
                 new Tuple<>("topic", "topic"),
@@ -183,7 +182,7 @@ public class BigqueryProtoUpdateListenerTest {
         bigqueryProtoUpdateListener.setOdpfMessageParser(parser);
         bigqueryProtoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
-        OdpfMessage testMessage = new ProtoOdpfMessage(
+        OdpfMessage testMessage = new OdpfMessage(
                 "".getBytes(),
                 testKeyBQ.toByteArray(),
                 new Tuple<>("topic", "topic"),
@@ -230,7 +229,7 @@ public class BigqueryProtoUpdateListenerTest {
         bigqueryProtoUpdateListener.setOdpfMessageParser(parser);
         bigqueryProtoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
-        OdpfMessage testMessage = new ProtoOdpfMessage(
+        OdpfMessage testMessage = new OdpfMessage(
                 "".getBytes(),
                 testKeyBQ.toByteArray(),
                 new Tuple<>("topic", "topic"),

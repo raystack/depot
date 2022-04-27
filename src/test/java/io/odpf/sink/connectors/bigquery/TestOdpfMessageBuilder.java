@@ -5,7 +5,6 @@ import io.odpf.sink.connectors.TestKeyBQ;
 import io.odpf.sink.connectors.TestMessageBQ;
 import io.odpf.sink.connectors.common.Tuple;
 import io.odpf.sink.connectors.message.OdpfMessage;
-import io.odpf.sink.connectors.message.proto.ProtoOdpfMessage;
 
 import java.sql.Date;
 import java.time.Instant;
@@ -43,7 +42,7 @@ public final class TestOdpfMessageBuilder {
                 .setOrderUrl(orderUrl)
                 .setOrderDetails(orderDetails)
                 .build();
-        return new ProtoOdpfMessage(
+        return new OdpfMessage(
                 key.toByteArray(),
                 message.toByteArray(),
                 new Tuple<>("message_topic", topic),
@@ -58,7 +57,7 @@ public final class TestOdpfMessageBuilder {
                 .setOrderNumber(orderNumber)
                 .setOrderUrl(orderUrl)
                 .build();
-        return new ProtoOdpfMessage(
+        return new OdpfMessage(
                 key.toByteArray(),
                 null,
                 new Tuple<>("message_topic", topic),

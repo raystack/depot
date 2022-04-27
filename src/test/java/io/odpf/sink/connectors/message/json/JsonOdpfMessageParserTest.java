@@ -2,6 +2,7 @@ package io.odpf.sink.connectors.message.json;
 
 import io.odpf.sink.connectors.expcetion.EmptyMessageException;
 import io.odpf.sink.connectors.message.InputSchemaMessageMode;
+import io.odpf.sink.connectors.message.OdpfMessage;
 import io.odpf.sink.connectors.message.ParsedOdpfMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,7 +22,7 @@ public class JsonOdpfMessageParserTest {
     public void shouldParseJsonLogMessage() throws IOException {
         JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(null);
         String validJsonStr = "{\"first_name\":\"john\"}";
-        JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(null, validJsonStr.getBytes());
+        OdpfMessage jsonOdpfMessage = new OdpfMessage(null, validJsonStr.getBytes());
 
         ParsedOdpfMessage parsedOdpfMessage = jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_MESSAGE, null);
         JSONObject actualJson = (JSONObject) parsedOdpfMessage.getRaw();
@@ -33,7 +34,7 @@ public class JsonOdpfMessageParserTest {
     public void shouldThrowErrorForInvalidLogMessage() throws IOException {
         JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(null);
         String invalidJsonStr = "{\"first_";
-        JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(null, invalidJsonStr.getBytes());
+        OdpfMessage jsonOdpfMessage = new OdpfMessage(null, invalidJsonStr.getBytes());
         IOException ioException = assertThrows(IOException.class, () -> {
             jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_MESSAGE, null);
         });
@@ -44,7 +45,7 @@ public class JsonOdpfMessageParserTest {
     @Test
     public void shouldThrowEmptyMessageException() throws IOException {
         JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(null);
-        JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(null, null);
+        OdpfMessage jsonOdpfMessage = new OdpfMessage(null, null);
         EmptyMessageException emptyMessageException = assertThrows(EmptyMessageException.class, () -> {
             jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_MESSAGE, null);
         });
@@ -55,7 +56,7 @@ public class JsonOdpfMessageParserTest {
     public void shouldParseJsonKeyMessage() throws IOException {
         JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(null);
         String validJsonStr = "{\"first_name\":\"john\"}";
-        JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(validJsonStr.getBytes(), null);
+        OdpfMessage jsonOdpfMessage = new OdpfMessage(validJsonStr.getBytes(), null);
 
         ParsedOdpfMessage parsedOdpfMessage = jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_KEY, null);
         JSONObject actualJson = (JSONObject) parsedOdpfMessage.getRaw();
@@ -67,7 +68,7 @@ public class JsonOdpfMessageParserTest {
     public void shouldThrowErrorForInvalidKeyMessage() throws IOException {
         JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(null);
         String invalidJsonStr = "{\"first_";
-        JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(invalidJsonStr.getBytes(), null);
+        OdpfMessage jsonOdpfMessage = new OdpfMessage(invalidJsonStr.getBytes(), null);
         IOException ioException = assertThrows(IOException.class, () -> {
             jsonOdpfMessageParser.parse(jsonOdpfMessage, InputSchemaMessageMode.LOG_KEY, null);
         });
@@ -79,7 +80,7 @@ public class JsonOdpfMessageParserTest {
     public void shouldThrowErrorWhenModeNotDefined() throws IOException {
         JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(null);
         String invalidJsonStr = "{\"first_";
-        JsonOdpfMessage jsonOdpfMessage = new JsonOdpfMessage(invalidJsonStr.getBytes(), null);
+        OdpfMessage jsonOdpfMessage = new OdpfMessage(invalidJsonStr.getBytes(), null);
         IOException ioException = assertThrows(IOException.class, () -> {
             jsonOdpfMessageParser.parse(jsonOdpfMessage, null, null);
         });

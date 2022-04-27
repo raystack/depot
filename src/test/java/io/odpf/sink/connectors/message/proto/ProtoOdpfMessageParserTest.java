@@ -31,7 +31,7 @@ public class ProtoOdpfMessageParserTest {
         OdpfStencilUpdateListener protoUpdateListener = mock(OdpfStencilUpdateListener.class);
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("order-1").build();
-        OdpfMessage message = new ProtoOdpfMessage(null, testMessage.toByteArray());
+        OdpfMessage message = new OdpfMessage(null, testMessage.toByteArray());
         ParsedOdpfMessage parsedOdpfMessage = protoOdpfMessageParser.parse(message, InputSchemaMessageMode.LOG_MESSAGE, "io.odpf.sink.connectors.TestMessage");
         assertEquals(testMessage, parsedOdpfMessage.getRaw());
 
@@ -44,12 +44,10 @@ public class ProtoOdpfMessageParserTest {
         OdpfStencilUpdateListener protoUpdateListener = mock(OdpfStencilUpdateListener.class);
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         byte[] invalidMessageBytes = "invalid message".getBytes();
-        OdpfMessage message = new ProtoOdpfMessage(null, invalidMessageBytes);
+        OdpfMessage message = new OdpfMessage(null, invalidMessageBytes);
         assertThrows(InvalidProtocolBufferException.class, () -> {
             protoOdpfMessageParser.parse(message, InputSchemaMessageMode.LOG_MESSAGE, "io.odpf.sink.connectors.TestMessage");
         });
-
-
     }
 
     @Test
@@ -59,7 +57,7 @@ public class ProtoOdpfMessageParserTest {
         OdpfStencilUpdateListener protoUpdateListener = mock(OdpfStencilUpdateListener.class);
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         TestMessage testKey = TestMessage.newBuilder().setOrderNumber("order-1").build();
-        OdpfMessage message = new ProtoOdpfMessage(testKey.toByteArray(), null);
+        OdpfMessage message = new OdpfMessage(testKey.toByteArray(), null);
         ParsedOdpfMessage parsedOdpfMessage = protoOdpfMessageParser.parse(message, InputSchemaMessageMode.LOG_KEY, "io.odpf.sink.connectors.TestMessage");
         assertEquals(testKey, parsedOdpfMessage.getRaw());
 
@@ -72,7 +70,7 @@ public class ProtoOdpfMessageParserTest {
         OdpfStencilUpdateListener protoUpdateListener = mock(OdpfStencilUpdateListener.class);
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         byte[] invalidKeyBytes = "invalid message".getBytes();
-        OdpfMessage message = new ProtoOdpfMessage(invalidKeyBytes, null);
+        OdpfMessage message = new OdpfMessage(invalidKeyBytes, null);
         assertThrows(InvalidProtocolBufferException.class, () -> {
             protoOdpfMessageParser.parse(message, InputSchemaMessageMode.LOG_KEY, "io.odpf.sink.connectors.TestMessage");
         });
@@ -85,7 +83,7 @@ public class ProtoOdpfMessageParserTest {
         OdpfStencilUpdateListener protoUpdateListener = mock(OdpfStencilUpdateListener.class);
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         byte[] validKeyBytes = TestMessage.newBuilder().setOrderNumber("order-1").build().toByteArray();
-        OdpfMessage message = new ProtoOdpfMessage(validKeyBytes, null);
+        OdpfMessage message = new OdpfMessage(validKeyBytes, null);
         IOException ioException = assertThrows(IOException.class, () -> {
             protoOdpfMessageParser.parse(message, null, null);
         });

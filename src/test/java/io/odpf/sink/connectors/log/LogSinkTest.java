@@ -5,7 +5,6 @@ import io.odpf.sink.connectors.config.OdpfSinkConfig;
 import io.odpf.sink.connectors.error.ErrorInfo;
 import io.odpf.sink.connectors.error.ErrorType;
 import io.odpf.sink.connectors.expcetion.OdpfSinkException;
-import io.odpf.sink.connectors.message.json.JsonOdpfMessage;
 import io.odpf.sink.connectors.message.json.JsonOdpfMessageParser;
 import io.odpf.sink.connectors.message.OdpfMessage;
 import io.odpf.sink.connectors.message.OdpfMessageParser;
@@ -39,9 +38,9 @@ public class LogSinkTest {
 
     @Before
     public void setUp() throws Exception {
-         config = mock(OdpfSinkConfig.class);
-         odpfMessageParser = mock(OdpfMessageParser.class);
-         instrumentation = mock(Instrumentation.class);
+        config = mock(OdpfSinkConfig.class);
+        odpfMessageParser = mock(OdpfMessageParser.class);
+        instrumentation = mock(Instrumentation.class);
 
     }
 
@@ -70,8 +69,8 @@ public class LogSinkTest {
         byte[] logMessage1 = validJsonFirstName.getBytes();
         String validJsonLastName = "{\"last_name\":\"doe\"}";
         byte[] logMessage2 = validJsonLastName.getBytes();
-        messages.add(new JsonOdpfMessage(null, logMessage1));
-        messages.add(new JsonOdpfMessage(null, logMessage2));
+        messages.add(new OdpfMessage(null, logMessage1));
+        messages.add(new OdpfMessage(null, logMessage2));
         OdpfSinkResponse odpfSinkResponse = logSink.pushToSink(messages);
 
         //assert no error
@@ -98,8 +97,8 @@ public class LogSinkTest {
         byte[] logMessage1 = validJsonFirstName.getBytes();
         String invalidJson = "{\"last_name";
         byte[] invalidLogMessage = invalidJson.getBytes();
-        messages.add(new JsonOdpfMessage(null, logMessage1));
-        messages.add(new JsonOdpfMessage(null, invalidLogMessage));
+        messages.add(new OdpfMessage(null, logMessage1));
+        messages.add(new OdpfMessage(null, invalidLogMessage));
         OdpfSinkResponse odpfSinkResponse = logSink.pushToSink(messages);
 
         //assert error
