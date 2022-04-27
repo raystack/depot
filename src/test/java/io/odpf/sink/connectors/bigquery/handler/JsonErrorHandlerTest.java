@@ -1,4 +1,4 @@
-package io.odpf.sink.connectors.message.json;
+package io.odpf.sink.connectors.bigquery.handler;
 
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class JsonErrorHandlerFactoryTest {
+public class JsonErrorHandlerTest {
 
     private final Schema emptyTableSchema = Schema.of();
     private final ErrorInfo.ErrorInfoBuilder errorBuilder = ErrorInfo.builder();
