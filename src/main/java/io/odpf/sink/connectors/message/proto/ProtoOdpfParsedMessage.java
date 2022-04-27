@@ -2,6 +2,7 @@ package io.odpf.sink.connectors.message.proto;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
+import io.odpf.sink.connectors.common.Tuple;
 import io.odpf.sink.connectors.config.OdpfSinkConfig;
 import io.odpf.sink.connectors.expcetion.UnknownFieldsException;
 import io.odpf.sink.connectors.expcetion.ConfigurationException;
@@ -78,20 +79,26 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
                     addRepeatedFields(row, value, (List<Object>) fieldValue);
                     return;
                 }
-
                 if (protoField.getClass().getName().equals(NestedProtoField.class.getName())) {
-                    try {
-                        columnName = getNestedColumnName((Properties) value);
-                        fieldValue = getMappings((DynamicMessage) field, (Properties) value);
-                    } catch (Exception e) {
-                        log.error("Exception::Handling nested field failure: {}", e.getMessage());
-                        throw e;
-                    }
+                    Tuple<String, Object> nestedColumns = getNestedColumnName(field, value);
+                    row.put(nestedColumns.getFirst(), nestedColumns.getSecond());
+                } else {
+                    row.put(columnName, fieldValue);
                 }
-                row.put(columnName, fieldValue);
             }
         });
         return row;
+    }
+
+    private Tuple<String, Object> getNestedColumnName(Object field, Object value) {
+        try {
+            String columnName = getNestedColumnName((Properties) value);
+            Object fieldValue = getMappings((DynamicMessage) field, (Properties) value);
+            return new Tuple<>(columnName, fieldValue);
+        } catch (Exception e) {
+            log.error("Exception::Handling nested field failure: {}", e.getMessage());
+            throw e;
+        }
     }
 
     private String getNestedColumnName(Properties value) {
