@@ -1,12 +1,11 @@
 package io.odpf.sink.connectors.bigquery.handler;
 
+import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
 import io.odpf.sink.connectors.bigquery.models.Record;
 import io.odpf.sink.connectors.config.BigQuerySinkConfig;
-import io.odpf.sink.connectors.error.ErrorInfo;
-import io.odpf.sink.connectors.error.ErrorType;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 public class JsonErrorHandlerTest {
 
     private final Schema emptyTableSchema = Schema.of();
-    private final ErrorInfo.ErrorInfoBuilder errorBuilder = ErrorInfo.builder();
+
     private BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, Collections.emptyMap());
 
     @Mock
@@ -52,9 +52,9 @@ public class JsonErrorHandlerTest {
     public void shouldUpdateTableFieldsOnSchemaError() {
         when(bigQueryClient.getSchema()).thenReturn(emptyTableSchema);
 
-        Map<Long, ErrorInfo> errorInfoMap = new HashMap<>();
-        ErrorInfo unknowFieldError = errorBuilder.errorType(ErrorType.UNKNOWN_FIELDS_ERROR).build();
-        errorInfoMap.put(0L, unknowFieldError);
+        Map<Long, List<BigQueryError>> insertErrors = new HashMap<>();
+        BigQueryError bigQueryError = new BigQueryError("invalid", "first_name", "no such field: first_name");
+        insertErrors.put(0L, asList(bigQueryError));
 
         Map<String, Object> columnsMap = new HashMap<>();
         columnsMap.put("first_name", "john doe");
@@ -64,8 +64,8 @@ public class JsonErrorHandlerTest {
         records.add(validRecord);
 
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
-        jsonErrorHandler.handle(errorInfoMap, records);
 
+        jsonErrorHandler.handle(insertErrors, records);
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
 
         Field firstName = Field.of("first_name", LegacySQLTypeName.STRING);
@@ -77,9 +77,10 @@ public class JsonErrorHandlerTest {
     public void shouldNotUpdateTableWhenNoSchemaError() {
         when(bigQueryClient.getSchema()).thenReturn(emptyTableSchema);
 
-        Map<Long, ErrorInfo> errorInfoMap = new HashMap<>();
-        ErrorInfo sinkError = errorBuilder.errorType(ErrorType.SINK_4XX_ERROR).build();
-        errorInfoMap.put(0L, sinkError);
+        Map<Long, List<BigQueryError>> insertErrors = new HashMap<>();
+        BigQueryError serverError = new BigQueryError("otherresons", "planet eart", "server error");
+        BigQueryError anotherError = new BigQueryError("otherresons", "planet eart", "server error");
+        insertErrors.put(0L, asList(serverError, anotherError));
 
         Map<String, Object> columnsMap = new HashMap<>();
         columnsMap.put("first_name", "john doe");
@@ -89,7 +90,7 @@ public class JsonErrorHandlerTest {
         records.add(validRecord);
 
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
-        jsonErrorHandler.handle(errorInfoMap, records);
+        jsonErrorHandler.handle(insertErrors, records);
 
         verify(bigQueryClient, never()).upsertTable(any());
 
@@ -99,10 +100,14 @@ public class JsonErrorHandlerTest {
     public void shouldUpdateTableFieldsForMultipleRecords() {
         when(bigQueryClient.getSchema()).thenReturn(emptyTableSchema);
 
-        Map<Long, ErrorInfo> errorInfoMap = new HashMap<>();
-        ErrorInfo unknowFieldError = errorBuilder.errorType(ErrorType.UNKNOWN_FIELDS_ERROR).build();
-        errorInfoMap.put(0L, unknowFieldError);
-        errorInfoMap.put(1L, unknowFieldError);
+
+        Map<Long, List<BigQueryError>> errorInfoMap = new HashMap<>();
+        BigQueryError firstNameNotFoundError = new BigQueryError("invalid", "first_name", "no such field: first_name");
+        BigQueryError anotherError = new BigQueryError("otherresons", "planet eart", "some error");
+        BigQueryError lastNameNotFoundError = new BigQueryError("invalid", "first_name", "no such field: last_name");
+        errorInfoMap.put(0L, asList(firstNameNotFoundError, anotherError));
+        errorInfoMap.put(1L, asList(lastNameNotFoundError));
+
 
         Map<String, Object> columnsMap = new HashMap<>();
         columnsMap.put("first_name", "john doe");
@@ -131,11 +136,12 @@ public class JsonErrorHandlerTest {
     @Test
     public void shouldIngoreRecordsWhichHaveOtherErrors() {
         when(bigQueryClient.getSchema()).thenReturn(emptyTableSchema);
-        Map<Long, ErrorInfo> errorInfoMap = new HashMap<>();
-        ErrorInfo unknowFieldError = errorBuilder.errorType(ErrorType.UNKNOWN_FIELDS_ERROR).build();
-        ErrorInfo sinkError = errorBuilder.errorType(ErrorType.SINK_4XX_ERROR).build();
-        errorInfoMap.put(1L, unknowFieldError);
-        errorInfoMap.put(0L, sinkError);
+
+        Map<Long, List<BigQueryError>> errorInfoMap = new HashMap<>();
+        BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
+        BigQueryError otherError = new BigQueryError("otherresons", "planet eart", "server error");
+        errorInfoMap.put(1L, asList(noSuchFieldError, otherError));
+        errorInfoMap.put(0L, asList(otherError));
 
         Map<String, Object> columnsMap = new HashMap<>();
         columnsMap.put("first_name", "john doe");
@@ -163,9 +169,10 @@ public class JsonErrorHandlerTest {
     public void shouldIngoreRecordsWithNoErrors() {
         when(bigQueryClient.getSchema()).thenReturn(emptyTableSchema);
 
-        Map<Long, ErrorInfo> errorInfoMap = new HashMap<>();
-        ErrorInfo unknowFieldError = errorBuilder.errorType(ErrorType.UNKNOWN_FIELDS_ERROR).build();
-        errorInfoMap.put(1L, unknowFieldError);
+
+        Map<Long, List<BigQueryError>> errorInfoMap = new HashMap<>();
+        BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
+        errorInfoMap.put(1L, asList(noSuchFieldError));
 
         Map<String, Object> columnsMap = new HashMap<>();
         columnsMap.put("first_name", "john doe");
@@ -193,11 +200,12 @@ public class JsonErrorHandlerTest {
     public void shouldUpdateOnlyUniqueFields() {
         when(bigQueryClient.getSchema()).thenReturn(emptyTableSchema);
 
-        Map<Long, ErrorInfo> errorInfoMap = new HashMap<>();
-        ErrorInfo unknowFieldError = errorBuilder.errorType(ErrorType.UNKNOWN_FIELDS_ERROR).build();
-        errorInfoMap.put(0L, unknowFieldError);
-        errorInfoMap.put(1L, unknowFieldError);
-        errorInfoMap.put(2L, unknowFieldError);
+
+        Map<Long, List<BigQueryError>> errorInfoMap = new HashMap<>();
+        BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
+        errorInfoMap.put(0L, asList(noSuchFieldError));
+        errorInfoMap.put(1L, asList(noSuchFieldError));
+        errorInfoMap.put(2L, asList(noSuchFieldError));
 
         Map<String, Object> columnsMap = new HashMap<>();
         columnsMap.put("first_name", "john doe");
@@ -233,11 +241,11 @@ public class JsonErrorHandlerTest {
         Schema nonEmptyTableSchema = Schema.of(firstName, lastName);
         when(bigQueryClient.getSchema()).thenReturn(nonEmptyTableSchema);
 
-        Map<Long, ErrorInfo> errorInfoMap = new HashMap<>();
-        ErrorInfo unknowFieldError = errorBuilder.errorType(ErrorType.UNKNOWN_FIELDS_ERROR).build();
-        errorInfoMap.put(0L, unknowFieldError);
-        errorInfoMap.put(1L, unknowFieldError);
-        errorInfoMap.put(2L, unknowFieldError);
+        Map<Long, List<BigQueryError>> errorInfoMap = new HashMap<>();
+        BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
+        errorInfoMap.put(0L, asList(noSuchFieldError));
+        errorInfoMap.put(1L, asList(noSuchFieldError));
+        errorInfoMap.put(2L, asList(noSuchFieldError));
 
         Map<String, Object> columnsMapWithFistName = new HashMap<>();
         columnsMapWithFistName.put("first_name", "john doe");
@@ -271,10 +279,11 @@ public class JsonErrorHandlerTest {
     public void shouldUpsertTableWithPartitionKeyTimestampField() {
         when(bigQueryClient.getSchema()).thenReturn(emptyTableSchema);
 
-        Map<Long, ErrorInfo> errorInfoMap = new HashMap<>();
-        ErrorInfo unknowFieldError = errorBuilder.errorType(ErrorType.UNKNOWN_FIELDS_ERROR).build();
-        errorInfoMap.put(0L, unknowFieldError);
-        errorInfoMap.put(1L, unknowFieldError);
+
+        Map<Long, List<BigQueryError>> errorInfoMap = new HashMap<>();
+        BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
+        errorInfoMap.put(0L, asList(noSuchFieldError));
+        errorInfoMap.put(1L, asList(noSuchFieldError));
 
         Map<String, Object> columnsMap = new HashMap<>();
         columnsMap.put("first_name", "john doe");
@@ -310,9 +319,10 @@ public class JsonErrorHandlerTest {
     public void shouldThrowExceptionWhenCastFieldsToStringNotTrue() {
         when(bigQueryClient.getSchema()).thenReturn(emptyTableSchema);
 
-        Map<Long, ErrorInfo> errorInfoMap = new HashMap<>();
-        ErrorInfo unknowFieldError = errorBuilder.errorType(ErrorType.UNKNOWN_FIELDS_ERROR).build();
-        errorInfoMap.put(0L, unknowFieldError);
+
+        Map<Long, List<BigQueryError>> errorInfoMap = new HashMap<>();
+        BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
+        errorInfoMap.put(0L, asList(noSuchFieldError));
 
         Map<String, Object> columnsMap = new HashMap<>();
         columnsMap.put("first_name", "john doe");

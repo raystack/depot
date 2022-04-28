@@ -1,13 +1,12 @@
 package io.odpf.sink.connectors.bigquery.handler;
 
+import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
 import io.odpf.sink.connectors.bigquery.models.Record;
 import io.odpf.sink.connectors.config.BigQuerySinkConfig;
-import io.odpf.sink.connectors.error.ErrorInfo;
-import io.odpf.sink.connectors.error.ErrorType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,30 +32,57 @@ public class JsonErrorHandler implements ErrorHandler {
         this.castAllColumnsToStringDataType = bigQuerySinkConfig.getOutputDefaultDatatypeStringEnable();
     }
 
-    @Override
-    public void handle(Map<Long, ErrorInfo> errorInfoMap, List<Record> records) {
+    public void handle(Map<Long, List<BigQueryError>> insertErrors, List<Record> records) {
+
         Schema schema = bigQueryClient.getSchema();
         FieldList existingFieldList = schema.getFields();
-        List<Entry<Long, ErrorInfo>> unknownFieldErrors = getUnknownFieldErrors(errorInfoMap);
-        if (unknownFieldErrors.size() > 0) {
-            Set<Field> missingFields = unknownFieldErrors
-                    .stream()
-                    .map(x -> getColumnNamesForRecordsWhichHadUknownFieldErrors(records, x))
+        List<Entry<Long, List<BigQueryError>>> unknownFieldBqErrors = getUnknownFieldBqErrors(insertErrors);
+        if (!unknownFieldBqErrors.isEmpty()) {
+            Set<Field> missingFields = unknownFieldBqErrors
+                    .parallelStream()
+                    .map(x -> getColumnNamesForRecordsWhichHadUknownBqFieldErrors(records, x))
                     .flatMap(keys -> keys.stream())
                     .filter(key -> filterExistingFields(existingFieldList, key))
                     .map(key -> getField(key))
                     .collect(Collectors.toSet());
-
             ArrayList<Field> bqSchemaFields = new ArrayList<>(missingFields);
             existingFieldList.iterator().forEachRemaining(bqSchemaFields::add);
             bigQueryClient.upsertTable(bqSchemaFields);
         }
     }
 
-    private Set<String> getColumnNamesForRecordsWhichHadUknownFieldErrors(List<Record> records, Entry<Long, ErrorInfo> x) {
+    private Set<String> getColumnNamesForRecordsWhichHadUknownBqFieldErrors(List<Record> records, Entry<Long, List<BigQueryError>> x) {
         Integer recordKey = x.getKey().intValue();
         return records.get(recordKey).getColumns().keySet();
     }
+
+
+    private List<Entry<Long, List<BigQueryError>>> getUnknownFieldBqErrors(Map<Long, List<BigQueryError>> insertErrors) {
+        List<Entry<Long, List<BigQueryError>>> unkownFieldFieldBqError = insertErrors.entrySet().parallelStream()
+                .filter((x) -> {
+                    List<BigQueryError> value = x.getValue();
+                    List<BigQueryError> bqErrorsWithNoSuchFields = getBqErrorsWithNoSuchFields(value);
+                    if (!bqErrorsWithNoSuchFields.isEmpty()) {
+                        return true;
+                    }
+                    return false;
+
+                }).collect(Collectors.toList());
+        return unkownFieldFieldBqError;
+    }
+
+    private List<BigQueryError> getBqErrorsWithNoSuchFields(List<BigQueryError> value) {
+        return value.stream().filter(
+                bigQueryError -> {
+                    if (bigQueryError.getReason().equals("invalid")
+                            && bigQueryError.getMessage().contains("no such field")) {
+                        return true;
+                    }
+                    return false;
+                }
+        ).collect(Collectors.toList());
+    }
+
 
     private Field getField(String key) {
         if (tablePartitionKey != null && tablePartitionKey.equals(key)) {
@@ -77,10 +103,4 @@ public class JsonErrorHandler implements ErrorHandler {
         }
     }
 
-    private List<Entry<Long, ErrorInfo>> getUnknownFieldErrors(Map<Long, ErrorInfo> errorInfoMap) {
-        return errorInfoMap.entrySet()
-                .stream()
-                .filter(errorInfoEntry -> errorInfoEntry.getValue().getErrorType() == ErrorType.UNKNOWN_FIELDS_ERROR)
-                .collect(Collectors.toList());
-    }
 }

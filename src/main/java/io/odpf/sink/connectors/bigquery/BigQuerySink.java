@@ -64,7 +64,7 @@ public class BigQuerySink implements OdpfSink {
             if (response.hasErrors()) {
                 Map<Long, ErrorInfo> errorInfoMap = BigQueryResponseParser.parseAndFillOdpfSinkResponse(records.getValidRecords(), response, bigQueryMetrics, instrumentation);
                 errorInfoMap.forEach(odpfSinkResponse::addErrors);
-                errorHandler.handle(errorInfoMap, records.getValidRecords());
+                errorHandler.handle(response.getInsertErrors(), records.getValidRecords());
             }
         }
         return odpfSinkResponse;
