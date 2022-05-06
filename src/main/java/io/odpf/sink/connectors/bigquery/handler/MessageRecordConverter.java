@@ -1,7 +1,9 @@
 package io.odpf.sink.connectors.bigquery.handler;
 
+import com.google.api.client.util.DateTime;
 import io.odpf.sink.connectors.bigquery.models.Record;
 import io.odpf.sink.connectors.bigquery.models.Records;
+import io.odpf.sink.connectors.common.TupleString;
 import io.odpf.sink.connectors.config.BigQuerySinkConfig;
 import io.odpf.sink.connectors.error.ErrorInfo;
 import io.odpf.sink.connectors.error.ErrorType;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Slf4j
@@ -70,10 +73,21 @@ public class MessageRecordConverter {
     }
 
     private void addMetadata(Map<String, Object> columns, OdpfMessage message) {
+        List<TupleString> metadataColumnsTypes = config.getMetadataColumnsTypes();
+        Map<String, Object> metadata = message.getMetadata(metadataColumnsTypes);
+        Map<String, Object> finalMetadata = metadataColumnsTypes.stream().collect(Collectors.toMap(TupleString::getFirst, t -> {
+            String key = t.getFirst();
+            String dataType = t.getSecond();
+            Object value = metadata.get(key);
+            if (value instanceof Long && dataType.equals("timestamp")) {
+                value = new DateTime((long) value);
+            }
+            return value;
+        }));
         if (config.getBqMetadataNamespace().isEmpty()) {
-            columns.putAll(message.getMetadata());
+            columns.putAll(finalMetadata);
         } else {
-            columns.put(config.getBqMetadataNamespace(), message.getMetadata());
+            columns.put(config.getBqMetadataNamespace(), finalMetadata);
         }
     }
 }

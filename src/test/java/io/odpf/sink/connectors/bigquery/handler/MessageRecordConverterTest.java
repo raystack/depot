@@ -7,6 +7,7 @@ import com.google.protobuf.UnknownFieldSet;
 import io.odpf.sink.connectors.TestMessage;
 import io.odpf.sink.connectors.bigquery.models.Record;
 import io.odpf.sink.connectors.bigquery.models.Records;
+import io.odpf.sink.connectors.common.TupleString;
 import io.odpf.sink.connectors.config.BigQuerySinkConfig;
 import io.odpf.sink.connectors.common.Tuple;
 import io.odpf.sink.connectors.error.ErrorType;
@@ -25,6 +26,7 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -39,6 +41,9 @@ public class MessageRecordConverterTest {
     @Before
     public void setUp() throws IOException {
         System.setProperty("SINK_CONNECTOR_SCHEMA_MESSAGE_CLASS", "io.odpf.sink.connectors.TestMessage");
+        System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "");
+        System.setProperty("SINK_BIGQUERY_METADATA_COLUMNS_TYPES",
+                "message_offset=integer,message_topic=string,load_time=timestamp,message_timestamp=timestamp,message_partition=integer");
         stencilClient = Mockito.mock(ClassLoadStencilClient.class, CALLS_REAL_METHODS);
         Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
             put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
@@ -278,7 +283,20 @@ public class MessageRecordConverterTest {
 
         List<OdpfMessage> messages = Collections.singletonList(consumerRecord);
         Records records = recordConverter.convert(messages);
-        Record record = new Record(consumerRecord.getMetadata(), consumerRecord.getMetadata(), 0, null);
+
+        BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
+        List<TupleString> metadataColumnsTypes = config.getMetadataColumnsTypes();
+        Map<String, Object> metadata = consumerRecord.getMetadata();
+        Map<String, Object> finalMetadata = metadataColumnsTypes.stream().collect(Collectors.toMap(TupleString::getFirst, t -> {
+            String key = t.getFirst();
+            String dataType = t.getSecond();
+            Object value = metadata.get(key);
+            if (value instanceof Long && dataType.equals("timestamp")) {
+                value = new DateTime((long) value);
+            }
+            return value;
+        }));
+        Record record = new Record(consumerRecord.getMetadata(), finalMetadata, 0, null);
         assertEquals(1, records.getValidRecords().size());
         assertEquals(0, records.getInvalidRecords().size());
         assertEquals(record, records.getValidRecords().get(0));

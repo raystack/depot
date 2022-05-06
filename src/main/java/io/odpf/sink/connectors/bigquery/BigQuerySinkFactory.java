@@ -41,8 +41,8 @@ public class BigQuerySinkFactory {
     public void init() {
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, config);
         try {
-            this.bigQueryClient = new BigQueryClient(sinkConfig, bigQueryMetrics, new Instrumentation(statsDReporter, BigQueryClient.class));
             this.bigQueryMetrics = new BigQueryMetrics(sinkConfig);
+            this.bigQueryClient = new BigQueryClient(sinkConfig, bigQueryMetrics, new Instrumentation(statsDReporter, BigQueryClient.class));
             this.recordConverterWrapper = new MessageRecordConverterCache();
             this.errorHandler = ErrorHandlerFactory.create(sinkConfig, bigQueryClient);
             OdpfStencilUpdateListener odpfStencilUpdateListener = BigqueryStencilUpdateListenerFactory.create(sinkConfig, bigQueryClient, recordConverterWrapper);

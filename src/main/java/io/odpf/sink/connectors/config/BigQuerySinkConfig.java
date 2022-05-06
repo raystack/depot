@@ -59,8 +59,8 @@ public interface BigQuerySinkConfig extends OdpfSinkConfig {
     @DefaultValue("asia-southeast1")
     String getBigQueryDatasetLocation();
 
-    @DefaultValue("")
     @Key("SINK_BIGQUERY_METADATA_NAMESPACE")
+    @DefaultValue("")
     String getBqMetadataNamespace();
 
     @DefaultValue("true")
