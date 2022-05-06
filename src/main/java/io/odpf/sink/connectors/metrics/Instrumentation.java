@@ -1,5 +1,6 @@
 package io.odpf.sink.connectors.metrics;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +15,9 @@ import java.time.Instant;
  * Handle logging and metric capturing.
  */
 public class Instrumentation implements Closeable {
+    @Getter
     private final StatsDReporter statsDReporter;
+    @Getter
     private final Logger logger;
 
     /**
@@ -68,6 +71,10 @@ public class Instrumentation implements Closeable {
         statsDReporter.captureCount(metric, count, tags);
     }
 
+    public void captureHistogram(String metric, Long count, String... tags) {
+        statsDReporter.captureHistogram(metric, count, tags);
+    }
+
     public void incrementCounter(String metric, String... tags) {
         statsDReporter.increment(metric, tags);
     }
@@ -80,16 +87,20 @@ public class Instrumentation implements Closeable {
         statsDReporter.captureDurationSince(metric, instant, tags);
     }
 
+    public void captureDuration(String metric, long duration, String... tags) {
+        statsDReporter.captureDuration(metric, duration, tags);
+    }
+
 
     // =================== ERROR ===================
 
-    public void captureNonFatalError(String metric, Exception e, String template, Object... t) {
+    public void captureNonFatalError(String metric, Throwable e, String template, Object... t) {
         logger.warn(template, t);
         logger.warn(e.getMessage(), e);
         statsDReporter.recordEvent(metric, SinkMetrics.NON_FATAL_ERROR, errorTag(e, SinkMetrics.NON_FATAL_ERROR));
     }
 
-    public void captureFatalError(String metric, Exception e, String template, Object... t) {
+    public void captureFatalError(String metric, Throwable e, String template, Object... t) {
         logger.error(template, t);
         logger.error(e.getMessage(), e);
         statsDReporter.recordEvent(metric, SinkMetrics.FATAL_ERROR, errorTag(e, SinkMetrics.FATAL_ERROR));

@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -49,7 +48,7 @@ public class LogSinkTest {
         LogSink logSink = new LogSink(config, odpfMessageParser, instrumentation);
         ArrayList<OdpfMessage> messages = new ArrayList<>();
         OdpfSinkResponse odpfSinkResponse = logSink.pushToSink(messages);
-        Map<Long, List<ErrorInfo>> errors = odpfSinkResponse.getErrors();
+        Map<Long, ErrorInfo> errors = odpfSinkResponse.getErrors();
 
         assertEquals(Collections.emptyMap(), errors);
         verify(odpfMessageParser, never()).parse(any(), any(), any());
@@ -74,7 +73,7 @@ public class LogSinkTest {
         OdpfSinkResponse odpfSinkResponse = logSink.pushToSink(messages);
 
         //assert no error
-        Map<Long, List<ErrorInfo>> errors = odpfSinkResponse.getErrors();
+        Map<Long, ErrorInfo> errors = odpfSinkResponse.getErrors();
         assertEquals(Collections.emptyMap(), errors);
 
         //assert processed message
@@ -102,11 +101,8 @@ public class LogSinkTest {
         OdpfSinkResponse odpfSinkResponse = logSink.pushToSink(messages);
 
         //assert error
-        Map<Long, List<ErrorInfo>> errors = odpfSinkResponse.getErrors();
-        assertEquals(1, errors.size());
-        List<ErrorInfo> errorInfos = errors.get(1L);
-        assertEquals(1, errorInfos.size());
-        assertEquals(ErrorType.DESERIALIZATION_ERROR, errorInfos.get(0).getErrorType());
+        ErrorInfo error = odpfSinkResponse.getErrorsFor(1L);
+        assertEquals(ErrorType.DESERIALIZATION_ERROR, error.getErrorType());
 
         //assert valid message processed
         ArgumentCaptor<String> jsonStrCaptor = ArgumentCaptor.forClass(String.class);

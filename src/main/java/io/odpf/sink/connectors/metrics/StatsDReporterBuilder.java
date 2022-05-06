@@ -4,28 +4,38 @@ import com.timgroup.statsd.NoOpStatsDClient;
 import com.timgroup.statsd.NonBlockingStatsDClientBuilder;
 import com.timgroup.statsd.StatsDClient;
 import io.odpf.sink.connectors.config.MetricsConfig;
-import lombok.Builder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * StatsDReporterFactory
  * <p>
  * Create statsDReporter Instance.
  */
-@Builder
+@Slf4j
 public class StatsDReporterBuilder {
 
     private MetricsConfig metricsConfig;
     private String[] extraTags;
-    private static final Logger LOGGER = LoggerFactory.getLogger(StatsDReporterBuilder.class);
 
     private static <T> T[] append(T[] arr, T lastElement) {
         final int length = arr.length;
         arr = java.util.Arrays.copyOf(arr, length + 1);
         arr[length] = lastElement;
         return arr;
+    }
+
+    public static StatsDReporterBuilder builder() {
+        return new StatsDReporterBuilder();
+    }
+
+    public StatsDReporterBuilder withMetricConfig(MetricsConfig config) {
+        this.metricsConfig = config;
+        return this;
+    }
+
+    public StatsDReporterBuilder withExtraTags(String... tags) {
+        this.extraTags = tags;
+        return this;
     }
 
     private static <T> T[] append(T[] arr, T[] second) {
@@ -47,10 +57,10 @@ public class StatsDReporterBuilder {
                     .hostname(metricsConfig.getMetricStatsDHost())
                     .port(metricsConfig.getMetricStatsDPort())
                     .build();
-            LOGGER.info("NonBlocking StatsD client connection established");
+            log.info("NonBlocking StatsD client connection established");
         } catch (Exception e) {
-            LOGGER.warn("Exception on creating StatsD client, disabling StatsD and Audit client", e);
-            LOGGER.warn("Application is running without collecting any metrics!!!!!!!!");
+            log.warn("Exception on creating StatsD client, disabling StatsD and Audit client", e);
+            log.warn("Application is running without collecting any metrics!!!!!!!!");
             statsDClient = new NoOpStatsDClient();
         }
         return statsDClient;

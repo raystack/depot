@@ -51,6 +51,7 @@ public class BigqueryProtoUpdateListenerTest {
     public void setUp() throws InvalidProtocolBufferException {
         System.setProperty("SINK_CONNECTOR_SCHEMA_MESSAGE_CLASS", "io.odpf.sink.connectors.TestKeyBQ");
         System.setProperty("SINK_BIGQUERY_ENABLE_AUTO_SCHEMA_UPDATE", "false");
+        System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "");
         System.setProperty("SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "topic=string,partition=integer,offset=integer");
         config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         converterWrapper = new MessageRecordConverterCache();

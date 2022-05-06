@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    id 'java'
+    id 'java-library'
     id 'idea'
     id 'checkstyle'
     id 'jacoco'
@@ -21,10 +21,11 @@ plugins {
 }
 
 group 'io.odpf'
-version '0.1.0'
+version '0.1.1'
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
@@ -34,7 +35,7 @@ dependencies {
     implementation group: 'io.odpf', name: 'stencil', version: '0.1.6' exclude group: 'org.slf4j'
     implementation group: 'org.aeonbits.owner', name: 'owner', version: '1.0.9'
     implementation 'com.google.cloud:google-cloud-bigquery:1.115.0'
-    implementation "io.grpc:grpc-all:1.18.0"
+    implementation "io.grpc:grpc-all:1.38.0"
     implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.35'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.1'
     implementation 'org.json:json:20220320'
@@ -110,14 +111,24 @@ protobuf {
     }
 }
 
-jar {
-    manifest {
-        attributes 'Main-Class': 'io.odpf.sink.Main'
-        duplicatesStrategy = 'exclude'
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+            from components.java
+        }
     }
-    from {
-
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/odpf/flow"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
 jacocoTestCoverageVerification {
@@ -136,7 +147,7 @@ jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.75
+                minimum = 0.7
             }
         }
     }

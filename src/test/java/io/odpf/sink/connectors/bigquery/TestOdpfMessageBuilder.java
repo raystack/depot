@@ -48,8 +48,9 @@ public final class TestOdpfMessageBuilder {
                 new Tuple<>("message_topic", topic),
                 new Tuple<>("message_partition", partition),
                 new Tuple<>("message_offset", offset),
-                new Tuple<>("message_timestamp", new DateTime(timestamp)),
-                new Tuple<>("load_time", new DateTime(loadTime)));
+                new Tuple<>("message_timestamp", timestamp),
+                new Tuple<>("load_time", loadTime),
+                new Tuple<>("should_be_ignored", timestamp));
     }
 
     public OdpfMessage createEmptyValueConsumerRecord(String orderNumber, String orderUrl) {
@@ -63,8 +64,9 @@ public final class TestOdpfMessageBuilder {
                 new Tuple<>("message_topic", topic),
                 new Tuple<>("message_partition", partition),
                 new Tuple<>("message_offset", offset),
-                new Tuple<>("message_timestamp", new DateTime(timestamp)),
-                new Tuple<>("load_time", new DateTime(loadTime)));
+                new Tuple<>("message_timestamp", timestamp),
+                new Tuple<>("load_time", loadTime),
+                new Tuple<>("should_be_ignored", timestamp));
     }
 
     public static Map<String, Object> metadataColumns(TestMetadata testMetadata, Instant now) {

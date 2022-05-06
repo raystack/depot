@@ -128,8 +128,8 @@ public class BigQuerySinkTest {
         Assert.assertEquals(2, response.getErrors().size());
         Mockito.verify(client, Mockito.times(1)).insertAll(rows);
 
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, response.getErrors().get(1L).get(0).getErrorType());
-        Assert.assertEquals(ErrorType.INVALID_MESSAGE_ERROR, response.getErrors().get(3L).get(0).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, response.getErrors().get(1L).getErrorType());
+        Assert.assertEquals(ErrorType.INVALID_MESSAGE_ERROR, response.getErrors().get(3L).getErrorType());
     }
 
     @Test
@@ -176,9 +176,9 @@ public class BigQuerySinkTest {
 
         Assert.assertEquals(4, response.getErrors().size());
 
-        Assert.assertEquals(ErrorType.SINK_UNKNOWN_ERROR, response.getErrors().get(0L).get(0).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, response.getErrors().get(1L).get(0).getErrorType());
-        Assert.assertEquals(ErrorType.INVALID_MESSAGE_ERROR, response.getErrors().get(3L).get(0).getErrorType());
-        Assert.assertEquals(ErrorType.SINK_4XX_ERROR, response.getErrors().get(4L).get(0).getErrorType());
+        Assert.assertEquals(ErrorType.SINK_UNKNOWN_ERROR, response.getErrors().get(0L).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, response.getErrors().get(1L).getErrorType());
+        Assert.assertEquals(ErrorType.INVALID_MESSAGE_ERROR, response.getErrors().get(3L).getErrorType());
+        Assert.assertEquals(ErrorType.SINK_4XX_ERROR, response.getErrors().get(4L).getErrorType());
     }
 }
