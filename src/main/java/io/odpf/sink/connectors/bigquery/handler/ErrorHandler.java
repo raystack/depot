@@ -7,5 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface ErrorHandler {
-    void handle(Map<Long, List<BigQueryError>> errorInfoMap, List<Record> records);
+    default void handle(Map<Long, List<BigQueryError>> errorInfoMap, List<Record> records) {
+    }
 }

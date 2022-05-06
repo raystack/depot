@@ -2,6 +2,7 @@ package io.odpf.sink.connectors.message;
 
 import io.odpf.sink.connectors.common.Tuple;
 import io.odpf.sink.connectors.common.TupleString;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 
 @Getter
+@EqualsAndHashCode
 public class OdpfMessage {
     private final Object logKey;
     private final Object logMessage;
