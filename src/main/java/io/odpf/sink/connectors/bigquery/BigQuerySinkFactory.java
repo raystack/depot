@@ -1,12 +1,13 @@
 package io.odpf.sink.connectors.bigquery;
 
 import io.odpf.sink.connectors.OdpfSink;
-import io.odpf.sink.connectors.bigquery.handler.MessageRecordConverterCache;
-import io.odpf.sink.connectors.bigquery.error.ErrorHandler;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryClient;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRow;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRowWithInsertId;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRowWithoutInsertId;
+import io.odpf.sink.connectors.bigquery.handler.ErrorHandler;
+import io.odpf.sink.connectors.bigquery.handler.ErrorHandlerFactory;
+import io.odpf.sink.connectors.bigquery.handler.MessageRecordConverterCache;
 import io.odpf.sink.connectors.stencil.OdpfStencilUpdateListener;
 import io.odpf.sink.connectors.config.BigQuerySinkConfig;
 import io.odpf.sink.connectors.message.OdpfMessageParser;
@@ -43,6 +44,7 @@ public class BigQuerySinkFactory {
             this.bigQueryMetrics = new BigQueryMetrics(sinkConfig);
             this.bigQueryClient = new BigQueryClient(sinkConfig, bigQueryMetrics, new Instrumentation(statsDReporter, BigQueryClient.class));
             this.recordConverterWrapper = new MessageRecordConverterCache();
+            this.errorHandler = ErrorHandlerFactory.create(sinkConfig, bigQueryClient);
             OdpfStencilUpdateListener odpfStencilUpdateListener = BigqueryStencilUpdateListenerFactory.create(sinkConfig, bigQueryClient, recordConverterWrapper);
             OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter, odpfStencilUpdateListener);
             odpfStencilUpdateListener.setOdpfMessageParser(odpfMessageParser);
@@ -56,6 +58,7 @@ public class BigQuerySinkFactory {
             throw new IllegalArgumentException("Exception occurred while creating sink", e);
         }
     }
+
 
     public OdpfSink create() {
         return new BigQuerySink(

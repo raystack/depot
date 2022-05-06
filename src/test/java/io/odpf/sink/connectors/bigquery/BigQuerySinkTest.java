@@ -5,12 +5,12 @@ import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.TableId;
 import io.odpf.sink.connectors.OdpfSinkResponse;
-import io.odpf.sink.connectors.bigquery.handler.MessageRecordConverter;
-import io.odpf.sink.connectors.bigquery.handler.MessageRecordConverterCache;
-import io.odpf.sink.connectors.bigquery.error.ErrorHandler;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryClient;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRow;
 import io.odpf.sink.connectors.bigquery.handler.BigQueryRowWithInsertId;
+import io.odpf.sink.connectors.bigquery.handler.ErrorHandler;
+import io.odpf.sink.connectors.bigquery.handler.MessageRecordConverter;
+import io.odpf.sink.connectors.bigquery.handler.MessageRecordConverterCache;
 import io.odpf.sink.connectors.bigquery.models.Record;
 import io.odpf.sink.connectors.bigquery.models.Records;
 import io.odpf.sink.connectors.error.ErrorInfo;
@@ -173,7 +173,7 @@ public class BigQuerySinkTest {
 
         OdpfSinkResponse response = sink.pushToSink(messages);
         Mockito.verify(client, Mockito.times(1)).insertAll(rows);
-
+        Mockito.verify(errorHandler, Mockito.times(1)).handle(Mockito.eq(insertErrorsMap), Mockito.any());
         Assert.assertEquals(4, response.getErrors().size());
 
         Assert.assertEquals(ErrorType.SINK_UNKNOWN_ERROR, response.getErrors().get(0L).getErrorType());
