@@ -20,7 +20,7 @@ plugins {
     id 'maven-publish'
 }
 
-group 'io.odpf.depot'
+group 'io.odpf'
 version '0.1.0'
 
 repositories {
