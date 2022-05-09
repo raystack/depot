@@ -49,7 +49,6 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
                 log.info("empty message found {}", message.getMetadataString());
                 throw new EmptyMessageException();
             }
-            //TODO check if this can be done as part of constructor
             JSONObject jsonObject = new JSONObject(new String(payload));
             JSONObject jsonWithStringValues = new JSONObject();
             jsonObject.keySet()
