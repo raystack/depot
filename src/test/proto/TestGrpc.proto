@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package io.odpf.sink.connectors;
+package io.odpf.depot;
 
 option java_multiple_files = true;
-option java_package = "io.odpf.sink.connectors";
+option java_package = "io.odpf.depot";
 option java_outer_classname = "SampleGrpcServerProto";
 
 service TestServer {

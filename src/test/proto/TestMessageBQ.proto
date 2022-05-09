@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package odpf.sink.connectors;
+package odpf.depot;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
@@ -8,7 +8,7 @@ import "google/protobuf/struct.proto";
 import "google/type/date.proto";
 
 option java_multiple_files = true;
-option java_package = "io.odpf.sink.connectors";
+option java_package = "io.odpf.depot";
 option java_outer_classname = "TestMessageProtoBQ";
 
 message TestKeyBQ {
