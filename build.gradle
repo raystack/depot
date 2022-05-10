@@ -18,13 +18,16 @@ plugins {
     id 'nebula.ospackage' version '8.6.3'
     id 'io.franzbecker.gradle-lombok' version '1.14'
     id 'maven-publish'
+    id 'signing'
+    id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
 }
 
 group 'io.odpf'
-version '0.1.0'
+version '0.1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    jcenter()
     mavenLocal()
 }
 
@@ -112,22 +115,58 @@ protobuf {
 }
 
 publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = project.group
-            artifactId = project.name
-            version = project.version
-            from components.java
-        }
-    }
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/odpf/depot"
+            name = "OSSRH"
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
             }
+        }
+    }
+
+    publications {
+        maven(MavenPublication) {
+            pom {
+                name = 'Depot'
+                description = 'Library for sinks which can be plugged in other applications for example: firehose and daggers'
+                url = 'https://github.com/odpf/depot'
+
+                scm {
+                    url = 'https://github.com/odpf/depot.git'
+                }
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'lavkesh'
+                        name = 'Lavkesh Lahngir'
+                        email = 'lavkesh51@gmail.com'
+                    }
+                }
+                from components.java
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.maven
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            username = System.getenv("MAVEN_USERNAME")
+            password = System.getenv("MAVEN_PASSWORD")
         }
     }
 }
