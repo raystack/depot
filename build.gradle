@@ -15,7 +15,6 @@ plugins {
     id 'checkstyle'
     id 'jacoco'
     id "com.google.protobuf" version "0.8.17"
-    id 'nebula.ospackage' version '8.6.3'
     id 'io.franzbecker.gradle-lombok' version '1.14'
     id 'maven-publish'
     id 'signing'
@@ -23,7 +22,7 @@ plugins {
 }
 
 group 'io.odpf'
-version '0.1.0-SNAPSHOT'
+version '0.1.1'
 
 repositories {
     mavenCentral()
@@ -114,6 +113,11 @@ protobuf {
     }
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 publishing {
     repositories {
         maven {
@@ -129,6 +133,9 @@ publishing {
     publications {
         maven(MavenPublication) {
             pom {
+                groupId = project.group
+                artifactId = project.name
+                version = project.version
                 name = 'Depot'
                 description = 'Library for sinks which can be plugged in other applications for example: firehose and daggers'
                 url = 'https://github.com/odpf/depot'
