@@ -19,7 +19,11 @@ import io.odpf.stencil.config.StencilConfig;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -78,8 +82,14 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
 
     private Map<String, String> getTypeNameToPackageNameMap(Map<String, Descriptors.Descriptor> descriptors) {
         return descriptors.entrySet().stream()
+                .filter(distinctByFullName(t -> t.getValue().getFullName()))
                 .collect(Collectors.toMap(
                         (mapEntry) -> String.format(".%s", mapEntry.getValue().getFullName()),
                         Map.Entry::getKey));
+    }
+
+    private <T> Predicate<T> distinctByFullName(Function<? super T, Object> keyExtractor) {
+        Set<Object> objects = new HashSet<>();
+        return t -> objects.add(keyExtractor.apply(t));
     }
 }
