@@ -1,4 +1,4 @@
-package io.odpf.depot.expcetion;
+package io.odpf.depot.exception;
 
 /**
  * Empty thrown when the message is contains zero bytes.

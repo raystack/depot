@@ -1,4 +1,4 @@
-package io.odpf.depot.expcetion;
+package io.odpf.depot.exception;
 
 
 import com.google.protobuf.DynamicMessage;

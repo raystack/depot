@@ -1,9 +1,9 @@
 package io.odpf.depot.message.json;
 
 import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.expcetion.ConfigurationException;
-import io.odpf.depot.expcetion.EmptyMessageException;
-import io.odpf.depot.message.InputSchemaMessageMode;
+import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.EmptyMessageException;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageSchema;
@@ -25,7 +25,7 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
 
 
     @Override
-    public ParsedOdpfMessage parse(OdpfMessage message, InputSchemaMessageMode type, String schemaClass) throws IOException {
+    public ParsedOdpfMessage parse(OdpfMessage message, SinkConnectorSchemaMessageMode type, String schemaClass) throws IOException {
         if (type == null) {
             throw new IOException("message mode not defined");
         }

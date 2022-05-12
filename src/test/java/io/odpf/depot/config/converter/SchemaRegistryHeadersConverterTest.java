@@ -18,7 +18,7 @@ public class SchemaRegistryHeadersConverterTest {
             }
         };
         OdpfSinkConfig config = ConfigFactory.create(OdpfSinkConfig.class, properties);
-        Assert.assertEquals(0, config.getSchemaRegistryFetchHeaders().size());
+        Assert.assertEquals(0, config.getSchemaRegistryStencilFetchHeaders().size());
     }
 
     @Test
@@ -26,7 +26,7 @@ public class SchemaRegistryHeadersConverterTest {
         Map<String, String> properties = new HashMap<String, String>() {
         };
         OdpfSinkConfig config = ConfigFactory.create(OdpfSinkConfig.class, properties);
-        Assert.assertEquals(0, config.getSchemaRegistryFetchHeaders().size());
+        Assert.assertEquals(0, config.getSchemaRegistryStencilFetchHeaders().size());
     }
 
     @Test
@@ -37,8 +37,8 @@ public class SchemaRegistryHeadersConverterTest {
             }
         };
         OdpfSinkConfig config = ConfigFactory.create(OdpfSinkConfig.class, properties);
-        Assert.assertEquals((new BasicHeader("key1", "value1")).toString(), config.getSchemaRegistryFetchHeaders().get(0).toString());
-        Assert.assertEquals((new BasicHeader("key2", "value2")).toString(), config.getSchemaRegistryFetchHeaders().get(1).toString());
-        Assert.assertEquals(2, config.getSchemaRegistryFetchHeaders().size());
+        Assert.assertEquals((new BasicHeader("key1", "value1")).toString(), config.getSchemaRegistryStencilFetchHeaders().get(0).toString());
+        Assert.assertEquals((new BasicHeader("key2", "value2")).toString(), config.getSchemaRegistryStencilFetchHeaders().get(1).toString());
+        Assert.assertEquals(2, config.getSchemaRegistryStencilFetchHeaders().size());
     }
 }

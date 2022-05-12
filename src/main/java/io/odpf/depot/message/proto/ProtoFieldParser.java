@@ -1,7 +1,7 @@
 package io.odpf.depot.message.proto;
 
 import com.google.protobuf.Descriptors;
-import io.odpf.depot.expcetion.ProtoNotFoundException;
+import io.odpf.depot.exception.ProtoNotFoundException;
 
 import java.util.Map;
 

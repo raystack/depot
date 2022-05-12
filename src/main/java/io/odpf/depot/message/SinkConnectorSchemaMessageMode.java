@@ -1,6 +1,6 @@
 package io.odpf.depot.message;
 
-public enum InputSchemaMessageMode {
+public enum SinkConnectorSchemaMessageMode {
     LOG_KEY,
     LOG_MESSAGE
 }

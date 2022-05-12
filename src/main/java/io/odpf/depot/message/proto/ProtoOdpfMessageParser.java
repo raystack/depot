@@ -5,9 +5,9 @@ import com.google.protobuf.DynamicMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.stencil.OdpfStencilUpdateListener;
-import io.odpf.depot.expcetion.ConfigurationException;
-import io.odpf.depot.expcetion.EmptyMessageException;
-import io.odpf.depot.message.InputSchemaMessageMode;
+import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.EmptyMessageException;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.config.OdpfSinkConfig;
@@ -45,7 +45,7 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
         this.stencilClient = stencilClient;
     }
 
-    public ParsedOdpfMessage parse(OdpfMessage message, InputSchemaMessageMode type, String schemaClass) throws IOException {
+    public ParsedOdpfMessage parse(OdpfMessage message, SinkConnectorSchemaMessageMode type, String schemaClass) throws IOException {
         if (type == null) {
             throw new IOException("parser mode not defined");
         }

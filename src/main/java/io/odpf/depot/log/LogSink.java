@@ -5,8 +5,8 @@ import io.odpf.depot.OdpfSinkResponse;
 import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.expcetion.OdpfSinkException;
-import io.odpf.depot.message.InputSchemaMessageMode;
+import io.odpf.depot.exception.OdpfSinkException;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.ParsedOdpfMessage;
@@ -29,8 +29,8 @@ public class LogSink implements OdpfSink {
     @Override
     public OdpfSinkResponse pushToSink(List<OdpfMessage> messages) throws OdpfSinkException {
         OdpfSinkResponse response = new OdpfSinkResponse();
-        InputSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
-        String schemaClass = mode == InputSchemaMessageMode.LOG_MESSAGE
+        SinkConnectorSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
+        String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
                 ? config.getSinkConnectorSchemaMessageClass() : config.getSinkConnectorSchemaKeyClass();
         for (int ii = 0; ii < messages.size(); ii++) {
             OdpfMessage message = messages.get(ii);
