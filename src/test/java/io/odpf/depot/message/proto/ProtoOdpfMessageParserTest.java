@@ -5,7 +5,7 @@ import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 import io.odpf.depot.TestMessage;
-import io.odpf.depot.message.InputSchemaMessageMode;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.config.OdpfSinkConfig;
 import org.aeonbits.owner.ConfigFactory;
@@ -32,7 +32,7 @@ public class ProtoOdpfMessageParserTest {
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("order-1").build();
         OdpfMessage message = new OdpfMessage(null, testMessage.toByteArray());
-        ParsedOdpfMessage parsedOdpfMessage = protoOdpfMessageParser.parse(message, InputSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage");
+        ParsedOdpfMessage parsedOdpfMessage = protoOdpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage");
         assertEquals(testMessage, parsedOdpfMessage.getRaw());
 
     }
@@ -46,7 +46,7 @@ public class ProtoOdpfMessageParserTest {
         byte[] invalidMessageBytes = "invalid message".getBytes();
         OdpfMessage message = new OdpfMessage(null, invalidMessageBytes);
         assertThrows(InvalidProtocolBufferException.class, () -> {
-            protoOdpfMessageParser.parse(message, InputSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage");
+            protoOdpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage");
         });
     }
 
@@ -58,7 +58,7 @@ public class ProtoOdpfMessageParserTest {
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         TestMessage testKey = TestMessage.newBuilder().setOrderNumber("order-1").build();
         OdpfMessage message = new OdpfMessage(testKey.toByteArray(), null);
-        ParsedOdpfMessage parsedOdpfMessage = protoOdpfMessageParser.parse(message, InputSchemaMessageMode.LOG_KEY, "io.odpf.depot.TestMessage");
+        ParsedOdpfMessage parsedOdpfMessage = protoOdpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_KEY, "io.odpf.depot.TestMessage");
         assertEquals(testKey, parsedOdpfMessage.getRaw());
 
     }
@@ -72,7 +72,7 @@ public class ProtoOdpfMessageParserTest {
         byte[] invalidKeyBytes = "invalid message".getBytes();
         OdpfMessage message = new OdpfMessage(invalidKeyBytes, null);
         assertThrows(InvalidProtocolBufferException.class, () -> {
-            protoOdpfMessageParser.parse(message, InputSchemaMessageMode.LOG_KEY, "io.odpf.depot.TestMessage");
+            protoOdpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_KEY, "io.odpf.depot.TestMessage");
         });
     }
 

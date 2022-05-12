@@ -1,6 +1,6 @@
 package io.odpf.depot.config.enums;
 
-public enum InputSchemaDataType {
+public enum SinkConnectorSchemaDataType {
     PROTOBUF,
     JSON
 }

@@ -12,7 +12,7 @@ import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
 import io.odpf.depot.bigquery.exception.BQSchemaMappingException;
 import io.odpf.depot.bigquery.exception.BQTableUpdateFailure;
-import io.odpf.depot.message.InputSchemaMessageMode;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.proto.ProtoOdpfMessageSchema;
 import lombok.Getter;
@@ -41,8 +41,8 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
     public void onSchemaUpdate(Map<String, Descriptor> newDescriptors) {
         log.info("stencil cache was refreshed, validating if bigquery schema changed");
         try {
-            InputSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
-            String schemaClass = mode == InputSchemaMessageMode.LOG_MESSAGE
+            SinkConnectorSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
+            String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
                     ? config.getSinkConnectorSchemaMessageClass() : config.getSinkConnectorSchemaKeyClass();
             OdpfMessageSchema schema = getOdpfMessageParser().getSchema(schemaClass);
             ProtoField protoField = ((ProtoOdpfMessageSchema) schema).getProtoField();

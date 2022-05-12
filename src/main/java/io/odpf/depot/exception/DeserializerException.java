@@ -1,4 +1,4 @@
-package io.odpf.depot.expcetion;
+package io.odpf.depot.exception;
 
 /**
  * Deserializer exception is thrown when message from proto is not deserializable into the Java object.

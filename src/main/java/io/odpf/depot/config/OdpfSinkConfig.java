@@ -1,11 +1,11 @@
 package io.odpf.depot.config;
 
-import io.odpf.depot.config.converter.InputSchemaDataTypeConverter;
-import io.odpf.depot.config.enums.InputSchemaDataType;
-import io.odpf.depot.config.converter.InputSchemaMessageModeConverter;
+import io.odpf.depot.config.converter.SinkConnectorSchemaDataTypeConverter;
+import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
+import io.odpf.depot.config.converter.SinkConnectorSchemaMessageModeConverter;
 import io.odpf.depot.config.converter.SchemaRegistryHeadersConverter;
 import io.odpf.depot.config.converter.SchemaRegistryRefreshConverter;
-import io.odpf.depot.message.InputSchemaMessageMode;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.stencil.cache.SchemaRefreshStrategy;
 import org.aeonbits.owner.Config;
 import org.apache.http.Header;
@@ -38,7 +38,7 @@ public interface OdpfSinkConfig extends Config {
     @TokenizerClass(SchemaRegistryHeadersConverter.class)
     @ConverterClass(SchemaRegistryHeadersConverter.class)
     @DefaultValue("")
-    List<Header> getSchemaRegistryFetchHeaders();
+    List<Header> getSchemaRegistryStencilFetchHeaders();
 
     @Key("SCHEMA_REGISTRY_STENCIL_CACHE_AUTO_REFRESH")
     @DefaultValue("false")
@@ -63,16 +63,15 @@ public interface OdpfSinkConfig extends Config {
     @DefaultValue("")
     String getSinkConnectorSchemaKeyClass();
 
-
     @Key("SINK_CONNECTOR_SCHEMA_DATA_TYPE")
-    @ConverterClass(InputSchemaDataTypeConverter.class)
+    @ConverterClass(SinkConnectorSchemaDataTypeConverter.class)
     @DefaultValue("PROTOBUF")
-    InputSchemaDataType getSinkConnectorSchemaDataTye();
+    SinkConnectorSchemaDataType getSinkConnectorSchemaDataType();
 
     @Key("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE")
-    @ConverterClass(InputSchemaMessageModeConverter.class)
+    @ConverterClass(SinkConnectorSchemaMessageModeConverter.class)
     @DefaultValue("LOG_MESSAGE")
-    InputSchemaMessageMode getSinkConnectorSchemaMessageMode();
+    SinkConnectorSchemaMessageMode getSinkConnectorSchemaMessageMode();
 
     @Key("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE")
     @DefaultValue("false")

@@ -9,10 +9,10 @@ import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.bigquery.models.Records;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.error.ErrorInfo;
-import io.odpf.depot.expcetion.DeserializerException;
-import io.odpf.depot.expcetion.EmptyMessageException;
-import io.odpf.depot.expcetion.UnknownFieldsException;
-import io.odpf.depot.message.InputSchemaMessageMode;
+import io.odpf.depot.exception.DeserializerException;
+import io.odpf.depot.exception.EmptyMessageException;
+import io.odpf.depot.exception.UnknownFieldsException;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageSchema;
 import lombok.AllArgsConstructor;
@@ -56,8 +56,8 @@ public class MessageRecordConverter {
 
     private Record createRecord(OdpfMessage message, int index) {
         try {
-            InputSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
-            String schemaClass = mode == InputSchemaMessageMode.LOG_MESSAGE
+            SinkConnectorSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
+            String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
                     ? config.getSinkConnectorSchemaMessageClass() : config.getSinkConnectorSchemaKeyClass();
             ParsedOdpfMessage parsedOdpfMessage = parser.parse(message, mode, schemaClass);
             parsedOdpfMessage.validate(config);

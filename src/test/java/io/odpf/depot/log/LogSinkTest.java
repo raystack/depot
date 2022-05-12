@@ -5,7 +5,7 @@ import io.odpf.depot.OdpfSinkResponse;
 import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.expcetion.OdpfSinkException;
+import io.odpf.depot.exception.OdpfSinkException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.metrics.Instrumentation;

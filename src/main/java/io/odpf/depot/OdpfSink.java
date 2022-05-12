@@ -1,6 +1,6 @@
 package io.odpf.depot;
 
-import io.odpf.depot.expcetion.OdpfSinkException;
+import io.odpf.depot.exception.OdpfSinkException;
 import io.odpf.depot.message.OdpfMessage;
 
 import java.io.Closeable;

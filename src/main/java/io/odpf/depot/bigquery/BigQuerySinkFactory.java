@@ -30,7 +30,7 @@ public class BigQuerySinkFactory {
     private final Map<String, String> config;
     private BigQueryMetrics bigQueryMetrics;
     private ErrorHandler errorHandler;
-    private MessageRecordConverterCache recordConverterWrapper;
+    private MessageRecordConverterCache converterCache;
 
     public BigQuerySinkFactory(Map<String, String> env, StatsDReporter statsDReporter, Function<Map<String, Object>, String> rowIDCreator) {
         this.config = env;
@@ -43,9 +43,9 @@ public class BigQuerySinkFactory {
         try {
             this.bigQueryMetrics = new BigQueryMetrics(sinkConfig);
             this.bigQueryClient = new BigQueryClient(sinkConfig, bigQueryMetrics, new Instrumentation(statsDReporter, BigQueryClient.class));
-            this.recordConverterWrapper = new MessageRecordConverterCache();
+            this.converterCache = new MessageRecordConverterCache();
             this.errorHandler = ErrorHandlerFactory.create(sinkConfig, bigQueryClient);
-            OdpfStencilUpdateListener odpfStencilUpdateListener = BigqueryStencilUpdateListenerFactory.create(sinkConfig, bigQueryClient, recordConverterWrapper);
+            OdpfStencilUpdateListener odpfStencilUpdateListener = BigqueryStencilUpdateListenerFactory.create(sinkConfig, bigQueryClient, converterCache);
             OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter, odpfStencilUpdateListener);
             odpfStencilUpdateListener.setOdpfMessageParser(odpfMessageParser);
             odpfStencilUpdateListener.onSchemaUpdate(null);
@@ -59,11 +59,10 @@ public class BigQuerySinkFactory {
         }
     }
 
-
     public OdpfSink create() {
         return new BigQuerySink(
                 bigQueryClient,
-                recordConverterWrapper,
+                converterCache,
                 rowCreator,
                 bigQueryMetrics,
                 new Instrumentation(statsDReporter, BigQuerySink.class),

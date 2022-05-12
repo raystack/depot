@@ -248,7 +248,7 @@ public class MessageRecordConverterTest {
                         .build())
                 .build();
         ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage);
-        when(mockParser.parse(consumerRecord, InputSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage")).thenReturn(parsedOdpfMessage);
+        when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage")).thenReturn(parsedOdpfMessage);
 
         recordConverter = new MessageRecordConverter(mockParser, ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
 
@@ -276,7 +276,7 @@ public class MessageRecordConverterTest {
                         .build())
                 .build();
         ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage);
-        when(mockParser.parse(consumerRecord, InputSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage")).thenReturn(parsedOdpfMessage);
+        when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage")).thenReturn(parsedOdpfMessage);
 
         recordConverter = new MessageRecordConverter(mockParser,
                 ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);

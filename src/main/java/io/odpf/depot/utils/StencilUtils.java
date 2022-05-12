@@ -14,7 +14,7 @@ public class StencilUtils {
                 .cacheAutoRefresh(sinkConfig.getSchemaRegistryStencilCacheAutoRefresh())
                 .cacheTtlMs(sinkConfig.getSchemaRegistryStencilCacheTtlMs())
                 .statsDClient(statsDClient)
-                .fetchHeaders(sinkConfig.getSchemaRegistryFetchHeaders())
+                .fetchHeaders(sinkConfig.getSchemaRegistryStencilFetchHeaders())
                 .fetchBackoffMinMs(sinkConfig.getSchemaRegistryStencilFetchBackoffMinMs())
                 .fetchRetries(sinkConfig.getSchemaRegistryStencilFetchRetries())
                 .fetchTimeoutMs(sinkConfig.getSchemaRegistryStencilFetchTimeoutMs())

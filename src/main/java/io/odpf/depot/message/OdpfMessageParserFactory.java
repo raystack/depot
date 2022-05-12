@@ -8,7 +8,7 @@ import io.odpf.depot.metrics.StatsDReporter;
 
 public class OdpfMessageParserFactory {
     public static OdpfMessageParser getParser(OdpfSinkConfig config, StatsDReporter statsDReporter, OdpfStencilUpdateListener odpfStencilUpdateListener) {
-        switch (config.getSinkConnectorSchemaDataTye()) {
+        switch (config.getSinkConnectorSchemaDataType()) {
             case JSON:
                 return new JsonOdpfMessageParser(config);
             case PROTOBUF:
