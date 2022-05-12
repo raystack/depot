@@ -12,7 +12,7 @@ public class BigqueryStencilUpdateListenerFactory {
     public static OdpfStencilUpdateListener create(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterCache converterCache) {
         switch (config.getSinkConnectorSchemaDataType()) {
             case JSON:
-                return new BigqueryJsonUpdateListener();
+                return new BigqueryJsonUpdateListener(config, converterCache);
             case PROTOBUF:
                 return new BigqueryProtoUpdateListener(config, bqClient, converterCache);
             default:

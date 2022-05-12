@@ -115,7 +115,7 @@ public class JsonOdpfMessageParserTest {
         JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig);
         String invalidJsonStr = "{\"first_";
         OdpfMessage jsonOdpfMessage = new OdpfMessage(null, invalidJsonStr.getBytes());
-        IOException ioException = assertThrows(IOException.class, 
+        IOException ioException = assertThrows(IOException.class,
                 () -> jsonOdpfMessageParser.parse(jsonOdpfMessage, LOG_MESSAGE, null));
         assertEquals("invalid json error", ioException.getMessage());
         assertTrue(ioException.getCause() instanceof JSONException);
@@ -125,7 +125,7 @@ public class JsonOdpfMessageParserTest {
     public void shouldThrowEmptyMessageException() {
         JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig);
         OdpfMessage jsonOdpfMessage = new OdpfMessage(null, null);
-        EmptyMessageException emptyMessageException = assertThrows(EmptyMessageException.class, 
+        EmptyMessageException emptyMessageException = assertThrows(EmptyMessageException.class,
                 () -> jsonOdpfMessageParser.parse(jsonOdpfMessage, LOG_MESSAGE, null));
         assertEquals("log message is empty", emptyMessageException.getMessage());
     }
@@ -158,7 +158,7 @@ public class JsonOdpfMessageParserTest {
         JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig);
         String invalidJsonStr = "{\"first_";
         OdpfMessage jsonOdpfMessage = new OdpfMessage(invalidJsonStr.getBytes(), null);
-        IOException ioException = assertThrows(IOException.class, 
+        IOException ioException = assertThrows(IOException.class,
                 () -> jsonOdpfMessageParser.parse(jsonOdpfMessage, null, null));
         assertEquals("message mode not defined", ioException.getMessage());
     }
