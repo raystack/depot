@@ -10,7 +10,7 @@ import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 
 public class BigqueryStencilUpdateListenerFactory {
     public static OdpfStencilUpdateListener create(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterCache converterCache) {
-        switch (config.getSinkConnectorSchemaDataTye()) {
+        switch (config.getSinkConnectorSchemaDataType()) {
             case JSON:
                 return new BigqueryJsonUpdateListener();
             case PROTOBUF:

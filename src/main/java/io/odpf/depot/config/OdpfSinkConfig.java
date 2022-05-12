@@ -63,11 +63,10 @@ public interface OdpfSinkConfig extends Config {
     @DefaultValue("")
     String getSinkConnectorSchemaKeyClass();
 
-
     @Key("SINK_CONNECTOR_SCHEMA_DATA_TYPE")
     @ConverterClass(InputSchemaDataTypeConverter.class)
     @DefaultValue("PROTOBUF")
-    InputSchemaDataType getSinkConnectorSchemaDataTye();
+    InputSchemaDataType getSinkConnectorSchemaDataType();
 
     @Key("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE")
     @ConverterClass(InputSchemaMessageModeConverter.class)
