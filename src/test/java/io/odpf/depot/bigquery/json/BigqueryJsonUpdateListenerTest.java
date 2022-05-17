@@ -16,7 +16,7 @@ public class BigqueryJsonUpdateListenerTest {
         MessageRecordConverterCache converterCache = mock(MessageRecordConverterCache.class);
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(null, converterCache);
         bigqueryJsonUpdateListener.setOdpfMessageParser(null);
-        bigqueryJsonUpdateListener.onSchemaUpdate(null);
+        bigqueryJsonUpdateListener.updateSchema();
         verify(converterCache, times(1)).setMessageRecordConverter(any(MessageRecordConverter.class));
     }
 }

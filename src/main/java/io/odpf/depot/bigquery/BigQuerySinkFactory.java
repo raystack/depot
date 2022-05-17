@@ -49,7 +49,7 @@ public class BigQuerySinkFactory {
             OdpfStencilUpdateListener odpfStencilUpdateListener = BigqueryStencilUpdateListenerFactory.create(sinkConfig, bigQueryClient, converterCache);
             OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter, odpfStencilUpdateListener);
             odpfStencilUpdateListener.setOdpfMessageParser(odpfMessageParser);
-            odpfStencilUpdateListener.onSchemaUpdate(null);
+            odpfStencilUpdateListener.updateSchema();
 
             if (sinkConfig.isRowInsertIdEnabled()) {
                 this.rowCreator = new BigQueryRowWithInsertId(rowIDCreator);
