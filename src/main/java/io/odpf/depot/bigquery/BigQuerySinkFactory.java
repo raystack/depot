@@ -1,20 +1,21 @@
 package io.odpf.depot.bigquery;
 
+
+import io.odpf.depot.OdpfSink;
+import io.odpf.depot.bigquery.handler.BigQueryClient;
+import io.odpf.depot.bigquery.handler.BigQueryRow;
+import io.odpf.depot.bigquery.handler.BigQueryRowWithInsertId;
+import io.odpf.depot.bigquery.handler.BigQueryRowWithoutInsertId;
 import io.odpf.depot.bigquery.handler.ErrorHandler;
 import io.odpf.depot.bigquery.handler.ErrorHandlerFactory;
+import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
+import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.metrics.BigQueryMetrics;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.stencil.OdpfStencilUpdateListener;
-import io.odpf.depot.OdpfSink;
-import io.odpf.depot.bigquery.handler.BigQueryClient;
-import io.odpf.depot.bigquery.handler.BigQueryRow;
-import io.odpf.depot.bigquery.handler.BigQueryRowWithInsertId;
-import io.odpf.depot.bigquery.handler.BigQueryRowWithoutInsertId;
-import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
-import io.odpf.depot.config.BigQuerySinkConfig;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.io.IOException;
@@ -48,7 +49,8 @@ public class BigQuerySinkFactory {
             OdpfStencilUpdateListener odpfStencilUpdateListener = BigqueryStencilUpdateListenerFactory.create(sinkConfig, bigQueryClient, converterCache);
             OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter, odpfStencilUpdateListener);
             odpfStencilUpdateListener.setOdpfMessageParser(odpfMessageParser);
-            odpfStencilUpdateListener.onSchemaUpdate(null);
+            odpfStencilUpdateListener.updateSchema();
+
             if (sinkConfig.isRowInsertIdEnabled()) {
                 this.rowCreator = new BigQueryRowWithInsertId(rowIDCreator);
             } else {

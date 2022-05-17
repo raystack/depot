@@ -20,7 +20,11 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
     private final OdpfSinkConfig config;
 
     public JsonOdpfMessageParser(OdpfSinkConfig config) {
+        if (!config.getSinkConnectorSchemaJsonOutputDefaultDatatypeStringEnable()) {
+            throw new UnsupportedOperationException("currently only string data type for values is supported");
+        }
         this.config = config;
+
     }
 
 
@@ -45,7 +49,20 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
                 log.info("empty message found {}", message.getMetadataString());
                 throw new EmptyMessageException();
             }
-            return new JsonOdpfParsedMessage(new JSONObject(new String(payload)));
+            JSONObject jsonObject = new JSONObject(new String(payload));
+            JSONObject jsonWithStringValues = new JSONObject();
+            jsonObject.keySet()
+                    .forEach(k -> {
+                        Object value = jsonObject.get(k);
+                        if (value instanceof JSONObject) {
+                            throw new UnsupportedOperationException("nested json structure not supported yet");
+                        }
+                        if (JSONObject.NULL.equals(value)) {
+                            return;
+                        }
+                        jsonWithStringValues.put(k, value.toString());
+                    });
+            return new JsonOdpfParsedMessage(jsonWithStringValues);
         } catch (JSONException ex) {
             throw new IOException("invalid json error", ex);
         }

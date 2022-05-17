@@ -5,6 +5,7 @@ import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import org.json.JSONObject;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
@@ -30,6 +31,9 @@ public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
 
     @Override
     public Map<String, Object> getMapping(OdpfMessageSchema schema) {
-        return null;
+        if (jsonObject == null || jsonObject.isEmpty()) {
+            return  Collections.emptyMap();
+        }
+        return jsonObject.toMap();
     }
 }

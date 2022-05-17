@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import java.util.Map;
 @Getter
 @EqualsAndHashCode
 @Builder
+@ToString
 public class Record {
     private final Map<String, Object> metadata;
     private final Map<String, Object> columns;

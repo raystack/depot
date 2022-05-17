@@ -29,7 +29,7 @@ public class JsonErrorHandler implements ErrorHandler {
 
         this.bigQueryClient = bigQueryClient;
         this.tablePartitionKey = bigQuerySinkConfig.getTablePartitionKey();
-        this.castAllColumnsToStringDataType = bigQuerySinkConfig.getOutputDefaultDatatypeStringEnable();
+        this.castAllColumnsToStringDataType = bigQuerySinkConfig.getSinkConnectorSchemaJsonOutputDefaultDatatypeStringEnable();
     }
 
     public void handle(Map<Long, List<BigQueryError>> insertErrors, List<Record> records) {
