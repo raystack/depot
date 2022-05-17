@@ -49,6 +49,9 @@ public class MessageRecordConverter {
             } catch (DeserializerException e) {
                 ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR);
                 invalidRecords.add(new Record(message.getMetadata(), Collections.emptyMap(), index, errorInfo));
+            } catch (UnsupportedOperationException e) {
+                ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.INVALID_MESSAGE_ERROR);
+                invalidRecords.add(new Record(message.getMetadata(), Collections.emptyMap(), index, errorInfo));
             }
         }
         return new Records(validRecords, invalidRecords);

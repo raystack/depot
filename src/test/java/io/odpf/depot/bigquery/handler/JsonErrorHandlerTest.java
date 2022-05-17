@@ -331,7 +331,7 @@ public class JsonErrorHandlerTest {
         List<Record> records = new ArrayList<>();
         records.add(validRecord);
         Map<String, String> envMap = new HashMap<String, String>() {{
-            put("SINK_BIGQUERY_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false");
+            put("SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false");
         }};
         BigQuerySinkConfig stringDisableConfig = ConfigFactory.create(BigQuerySinkConfig.class, envMap);
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, stringDisableConfig);

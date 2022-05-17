@@ -64,6 +64,11 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
         }
     }
 
+    @Override
+    public void updateSchema() {
+        onSchemaUpdate(null);
+    }
+
     private void addMetadataFields(List<Field> bqSchemaFields) {
         List<Field> bqMetadataFields = new ArrayList<>();
         String namespaceName = config.getBqMetadataNamespace();

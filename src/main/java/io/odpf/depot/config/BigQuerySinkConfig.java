@@ -73,8 +73,5 @@ public interface BigQuerySinkConfig extends OdpfSinkConfig {
     @Separator(ConfToListConverter.ELEMENT_SEPARATOR)
     List<TupleString> getMetadataColumnsTypes();
 
-    @DefaultValue("true")
-    @Key("SINK_BIGQUERY_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE")
-    boolean getOutputDefaultDatatypeStringEnable();
 }
 
