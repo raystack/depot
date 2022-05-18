@@ -137,7 +137,7 @@ publishing {
                 artifactId = project.name
                 version = project.version
                 name = 'Depot'
-                description = 'Library for sinks which can be plugged in other applications for example: firehose and daggers'
+                description = 'A sink connector library containing multiple sink implementations'
                 url = 'https://github.com/odpf/depot'
 
                 scm {
