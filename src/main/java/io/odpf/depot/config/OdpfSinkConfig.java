@@ -32,6 +32,7 @@ public interface OdpfSinkConfig extends Config {
 
     @Key("SCHEMA_REGISTRY_STENCIL_REFRESH_STRATEGY")
     @ConverterClass(SchemaRegistryRefreshConverter.class)
+    @DefaultValue("VERSION_BASED_REFRESH")
     SchemaRefreshStrategy getSchemaRegistryStencilRefreshStrategy();
 
     @Key("SCHEMA_REGISTRY_STENCIL_FETCH_HEADERS")
