@@ -42,5 +42,13 @@ if (response.hasErrors())
 // handle errors.
 </pre>
 
+### Data types
+Currently, sink connector library is supporting protobuf and Json format. We can set the datatype
+of `OdpfMessage` by setting configs. Each datatype has parsers which takes care of deserialization. 
+
+### Adding a new Sink
+Each sink will have to implement `OdpfSink` interface. The pushToSink take a batch of messages
+and return a response with error list.
+
 ### Configurations
 Please check the docs folder for details.
