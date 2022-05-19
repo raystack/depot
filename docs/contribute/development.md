@@ -88,6 +88,15 @@ Following are the typical requirements:
 * GUI visualization dashboard \(e.g. Grafana\) for detailed visualisation of metrics
 
 
+### Adding a new Sink
+To add a new sink implementation the Sink class has to implement OdpfSink interface 
+```java
+public interface OdpfSink extends Closeable {
+    OdpfSinkResponse pushToSink(List<OdpfMessage> messages) throws OdpfSinkException;
+}
+```
+Sink implementations will normally have a factory class too which will be used to setup and create objects of Impl classes. 
+
 ## Style Guide
 
 ### Java
