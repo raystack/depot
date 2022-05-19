@@ -1,6 +1,6 @@
 # Generic
 
-All sinks in requires the following variables to be set
+All sinks require the following variables to be set
 
 ## `SINK_METRICS_APPLICATION_PREFIX`
 
@@ -25,7 +25,7 @@ OdpfMessage log-key schema class
 
 ## `SINK_CONNECTOR_SCHEMA_DATA_TYPE`
 
-OdMessage raw data type
+OdpfMessage raw data type
 
 * Example value: `JSON`
 * Type: `required`

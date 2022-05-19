@@ -66,11 +66,11 @@ The response can contain multiple errors which will be sent to the application.
 
 Several IAM permission is required for bigquery sink to run properly,
 
-* Create and update Dataset
+* Create and update Table 
     * bigquery.tables.create
     * bigquery.tables.get
     * bigquery.tables.update
-* Create and update Table
+* Create and update Dataset
     * bigquery.datasets.create
     * bigquery.datasets.get
     * bigquery.datasets.update
