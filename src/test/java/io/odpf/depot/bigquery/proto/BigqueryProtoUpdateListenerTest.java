@@ -70,7 +70,6 @@ public class BigqueryProtoUpdateListenerTest {
             put(String.format("%s", TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
         }};
         when(stencilClient.get(TestKeyBQ.class.getName())).thenReturn(descriptorsMap.get(TestKeyBQ.class.getName()));
-        when(stencilClient.getAll()).thenReturn(descriptorsMap);
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
         objNode.put("2", "order_url");
@@ -101,6 +100,51 @@ public class BigqueryProtoUpdateListenerTest {
         Assert.assertEquals("order", convert.getValidRecords().get(0).getColumns().get("order_number"));
         Assert.assertEquals("test", convert.getValidRecords().get(0).getColumns().get("order_url"));
     }
+
+    @Test
+    public void shouldUseNewSchemaIfProtoChangesWhenNullDescriptorMapSentInBqSinkFactoryInit() {
+        BigqueryProtoUpdateListener bigqueryProtoUpdateListener = new BigqueryProtoUpdateListener(config, bigQueryClient, converterWrapper);
+
+        ProtoField returnedProtoField = new ProtoField();
+        returnedProtoField.addField(TestProtoUtil.createProtoField("order_number", 1));
+        returnedProtoField.addField(TestProtoUtil.createProtoField("order_url", 2));
+
+        HashMap<String, Descriptor> descriptorsMap = new HashMap<String, Descriptor>() {{
+            put(String.format("%s", TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
+        }};
+        when(stencilClient.get(TestKeyBQ.class.getName())).thenReturn(descriptorsMap.get(TestKeyBQ.class.getName()));
+        when(stencilClient.getAll()).thenReturn(descriptorsMap);
+        ObjectNode objNode = JsonNodeFactory.instance.objectNode();
+        objNode.put("1", "order_number");
+        objNode.put("2", "order_url");
+
+        ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
+            add(Field.newBuilder("order_number", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder("order_url", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
+            addAll(BigqueryFields.getMetadataFields(new ArrayList<TupleString>() {{
+                add(new TupleString("topic", "string"));
+                add(new TupleString("partition", "integer"));
+                add(new TupleString("offset", "integer"));
+            }}));
+        }};
+        doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
+
+        OdpfMessageParser parser = new ProtoOdpfMessageParser(stencilClient);
+        bigqueryProtoUpdateListener.setOdpfMessageParser(parser);
+        bigqueryProtoUpdateListener.onSchemaUpdate(null);
+        TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
+        OdpfMessage testMessage = new OdpfMessage(
+                "".getBytes(),
+                testKeyBQ.toByteArray(),
+                new Tuple<>("topic", "topic"),
+                new Tuple<>("partition", 1),
+                new Tuple<>("offset", 1));
+        Records convert = bigqueryProtoUpdateListener.getConverterCache().getMessageRecordConverter().convert(Collections.singletonList(testMessage));
+        Assert.assertEquals(1, convert.getValidRecords().size());
+        Assert.assertEquals("order", convert.getValidRecords().get(0).getColumns().get("order_number"));
+        Assert.assertEquals("test", convert.getValidRecords().get(0).getColumns().get("order_url"));
+    }
+
 
 
     @Test(expected = RuntimeException.class)
@@ -163,7 +207,6 @@ public class BigqueryProtoUpdateListenerTest {
         HashMap<String, Descriptor> descriptorsMap = new HashMap<String, Descriptor>() {{
             put(String.format("%s", TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
         }};
-        when(stencilClient.getAll()).thenReturn(descriptorsMap);
         when(stencilClient.get(TestKeyBQ.class.getName())).thenReturn(descriptorsMap.get(TestKeyBQ.class.getName()));
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
@@ -210,7 +253,6 @@ public class BigqueryProtoUpdateListenerTest {
             put(String.format("%s", TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
         }};
         when(stencilClient.get(TestKeyBQ.class.getName())).thenReturn(descriptorsMap.get(TestKeyBQ.class.getName()));
-        when(stencilClient.getAll()).thenReturn(descriptorsMap);
         ObjectNode objNode = JsonNodeFactory.instance.objectNode();
         objNode.put("1", "order_number");
         objNode.put("2", "order_url");
@@ -272,7 +314,6 @@ public class BigqueryProtoUpdateListenerTest {
         HashMap<String, Descriptor> descriptorsMap = new HashMap<String, Descriptor>() {{
             put(String.format("%s", TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
         }};
-        when(stencilClient.getAll()).thenReturn(descriptorsMap);
         OdpfMessageParser parser = new ProtoOdpfMessageParser(stencilClient);
         bigqueryProtoUpdateListener.setOdpfMessageParser(parser);
 

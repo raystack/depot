@@ -48,9 +48,8 @@ public class MessageRecordConverterTest {
         Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
             put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
         }};
-        doReturn(descriptorsMap).when(stencilClient).getAll();
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
-        schema = protoOdpfMessageParser.getSchema("io.odpf.depot.TestMessage");
+        schema = protoOdpfMessageParser.getSchema("io.odpf.depot.TestMessage", descriptorsMap);
         recordConverter = new MessageRecordConverter(protoOdpfMessageParser,
                 ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
 
