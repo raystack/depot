@@ -3,18 +3,19 @@ package io.odpf.depot.bigquery.proto;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import com.google.protobuf.Descriptors.Descriptor;
-import io.odpf.depot.bigquery.handler.BigQueryClient;
-import io.odpf.depot.bigquery.handler.MessageRecordConverter;
-import io.odpf.depot.common.TupleString;
-import io.odpf.depot.config.BigQuerySinkConfig;
-import io.odpf.depot.message.proto.ProtoField;
-import io.odpf.depot.stencil.OdpfStencilUpdateListener;
-import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
 import io.odpf.depot.bigquery.exception.BQSchemaMappingException;
 import io.odpf.depot.bigquery.exception.BQTableUpdateFailure;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import io.odpf.depot.bigquery.handler.BigQueryClient;
+import io.odpf.depot.bigquery.handler.MessageRecordConverter;
+import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
+import io.odpf.depot.common.TupleString;
+import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import io.odpf.depot.message.proto.ProtoField;
+import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.message.proto.ProtoOdpfMessageSchema;
+import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,12 +45,18 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
             SinkConnectorSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
             String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
                     ? config.getSinkConnectorSchemaMessageClass() : config.getSinkConnectorSchemaKeyClass();
-            OdpfMessageSchema schema = getOdpfMessageParser().getSchema(schemaClass);
+            ProtoOdpfMessageParser odpfMessageParser = (ProtoOdpfMessageParser) getOdpfMessageParser();
+            OdpfMessageSchema schema;
+            if (newDescriptors == null) {
+                schema = odpfMessageParser.getSchema(schemaClass);
+            } else {
+                schema = odpfMessageParser.getSchema(schemaClass, newDescriptors);
+            }
             ProtoField protoField = ((ProtoOdpfMessageSchema) schema).getProtoField();
             List<Field> bqSchemaFields = BigqueryFields.generateBigquerySchema(protoField);
             addMetadataFields(bqSchemaFields);
             bqClient.upsertTable(bqSchemaFields);
-            converterCache.setMessageRecordConverter(new MessageRecordConverter(getOdpfMessageParser(), config, schema));
+            converterCache.setMessageRecordConverter(new MessageRecordConverter(odpfMessageParser, config, schema));
         } catch (BigQueryException | IOException e) {
             String errMsg = "Error while updating bigquery table on callback:" + e.getMessage();
             log.error(errMsg);
