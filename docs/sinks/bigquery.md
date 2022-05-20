@@ -1,6 +1,9 @@
 # Bigquery Sink
 
-Bigquery Sink has several responsibilities, first creation of bigquery table and dataset when they are not exist, second update the bigquery table schema based on the latest protobuf schema, third translate protobuf messages into bigquery records and insert them to bigquery tables.
+### Datatype Protobuf
+Bigquery Sink has several responsibilities, first creation of bigquery table and dataset when they are not exist, 
+second update the bigquery table schema based on the latest protobuf schema,
+third translate protobuf messages into bigquery records and insert them to bigquery tables.
 Bigquery utilise Bigquery [Streaming API](https://cloud.google.com/bigquery/streaming-data-into-bigquery) to insert record into bigquery tables.
 
 ## Bigquery Table Schema Update
@@ -38,9 +41,14 @@ Bigquery Sink supports creation of table with partition configuration. Currently
 To have time based partitioning protobuf `Timestamp` as field is needed on the protobuf message. The protobuf field will be used as partitioning column on table creation. 
 The time partitioning type that is currently supported is `DAY` partitioning.
 
-## Kafka Metadata
+## Metadata
 
-For data quality checking purpose sometimes kafka metadata need to be added on the record. When `SINK_BIGQUERY_METADATA_NAMESPACE` is configured kafka metadata column will be added, here is the list of kafka metadata column to be added :
+For data quality checking purpose sometimes some metadata need to be added on the record. 
+if `SINK_BIGQUERY_ADD_METADATA_ENABLED` is true then the metadata will be added. 
+`SINK_BIGQUERY_METADATA_NAMESPACE` is used for another namespace to add columns
+if namespace is empty, the metadata columns will be added in the root level.
+`SINK_BIGQUERY_METADATA_COLUMNS_TYPES` is set with kafka metadata column and their type,
+An example of metadata columns that can be added for kafka records.
 
 | Fully Qualified Column Name | Type | Modifier |
 | --- | ----------- | ------- | 

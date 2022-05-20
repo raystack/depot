@@ -4,7 +4,7 @@ A Bigquery sink requires the following variables to be set along with Generic on
 
 ## `SINK_BIGQUERY_GOOGLE_CLOUD_PROJECT_ID`
 
-Contains information of google cloud project id location of the bigquery table where the records need to be inserted. Further documentation on google cloud [project id](https://cloud.google.com/resource-manager/docs/creating-managing-projects).
+Contains information of google cloud project id of the bigquery table where the records need to be inserted. Further documentation on google cloud [project id](https://cloud.google.com/resource-manager/docs/creating-managing-projects).
 
 * Example value: `gcp-project-id`
 * Type: `required`
@@ -33,7 +33,8 @@ Labels of a bigquery dataset, key-value information separated by comma attached 
 
 ## `SINK_BIGQUERY_TABLE_LABELS`
 
-Labels of a bigquery table, key-value information separated by comma attached to the bigquery table. This configuration define labels that will be set to the bigquery dataset. Here is further documentation of bigquery [labels](https://cloud.google.com/bigquery/docs/labels-intro).
+Labels of a bigquery table, key-value information separated by comma attached to the bigquery table. 
+This configuration define labels that will be set to the bigquery table. Here is further documentation of bigquery [labels](https://cloud.google.com/bigquery/docs/labels-intro).
 
 * Example value: `owner=data-engineering,granurality=daily`
 * Type: `optional`
@@ -50,7 +51,8 @@ Here is further documentation of bigquery [table partitioning](https://cloud.goo
 
 ## `SINK_BIGQUERY_TABLE_PARTITION_KEY`
 
-Define protobuf/bigquery field name that will be used for bigquery table partitioning. only protobuf `Timestamp` field, that later converted into bigquery `Timestamp` column that is supported as partitioning key.
+Define bigquery field name that will be used for bigquery table partitioning. only 
+bigquery `Timestamp` column is supported as partitioning key.
 Currently, this sink only support `DAY` time partitioning type.
 Here is further documentation of bigquery [column time partitioning](https://cloud.google.com/bigquery/docs/creating-partitioned-tables#console).
 
@@ -75,7 +77,8 @@ Full path of google cloud credentials file. Here is further documentation of goo
 
 ## `SINK_BIGQUERY_METADATA_NAMESPACE`
 
-The name of column that will be added alongside of the existing bigquery column that generated from protobuf, that column contains struct of kafka metadata of the inserted record.
+The name of column that will be added alongside of the existing bigquery column.
+This column contains struct of metadata of the inserted record.
 When this config is not configured the metadata column will not be added to the table.
 
 * Example value: `kafka_metadata`
@@ -112,3 +115,18 @@ The duration of bigquery client http connection timeout in milliseconds, 0 for a
 * Example value: `20000`
 * Type: `optional`
 * Default value: `-1`
+
+## `SINK_BIGQUERY_ADD_METADATA_ENABLED`
+
+A boolean value to enable adding metadata columns to output.
+
+* Example value: `true`
+* Type: `optional`
+* Default value: `true`
+
+## `SINK_BIGQUERY_METADATA_COLUMNS_TYPES`
+
+Metadata columns and their types to be added. 
+
+* Example value: `message_offset=integer,message_topic=string,load_time=timestamp,message_timestamp=timestamp,message_partition=integer`
+* Type: `optional`
