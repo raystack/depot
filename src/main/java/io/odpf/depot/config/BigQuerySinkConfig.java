@@ -64,7 +64,7 @@ public interface BigQuerySinkConfig extends OdpfSinkConfig {
     String getBqMetadataNamespace();
 
     @DefaultValue("true")
-    @Key("SINK_BIGQUERY_ADD_METADATA_NAMESPACE")
+    @Key("SINK_BIGQUERY_ADD_METADATA_ENABLED")
     boolean shouldAddMetadata();
 
     @DefaultValue("")
