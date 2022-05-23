@@ -98,6 +98,3 @@ with error list.
 ### Configurations
 
 Please check the docs folder for details.
-
-## License
-Firehose is [Apache 2.0](LICENSE) licensed.
