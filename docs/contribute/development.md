@@ -11,7 +11,7 @@ The main components of depot sink-connector are:
 ### Development environment
 
 Java SE Development Kit 8 is required to build, test.
-Oracle JDK 8 can be downloaded from [here](https://www.oracle.com/in/java/technologies/javase/javase-jdk8-downloads.html). Extract the tarball to your preferred installation directory and configure your `PATH` environment variable to point to the `bin` sub-directory in the JDK 8 installation directory. For example -
+Oracle JDK 8 can be downloaded from [here](https://www.oracle.com/tr/java/technologies/javase/javase8-archive-downloads.html). Extract the tarball to your preferred installation directory and configure your `PATH` environment variable to point to the `bin` sub-directory in the JDK 8 installation directory. For example -
 
 ```bash
 export PATH=~/Downloads/jdk1.8.0_291/bin:$PATH
@@ -19,7 +19,7 @@ export PATH=~/Downloads/jdk1.8.0_291/bin:$PATH
 
 ### Environment Variables
 
-Environment variables can be configured in either of the following ways -
+Environment variables can be configured in the following way -
 
 * run  `export SAMPLE_VARIABLE=287` on a UNIX shell, to directly assign the required environment variable.
 
@@ -119,6 +119,5 @@ $ git commit -s -m "feat: my first commit"
 * Follow the [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) format for all commit messages.
 * Fill in the description based on the default template configured when you first open the PR
 * Include kind label when opening the PR
-* Add WIP: to PR name if more work needs to be done prior to review
 * Avoid force-pushing as it makes reviewing difficult
 

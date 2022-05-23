@@ -4,7 +4,7 @@
 * [Roadmap](roadmap.md)
 
 ## Sink
-* [Bigquery](sink/bigquery.md)
+* [Bigquery](sinks/bigquery.md)
 
 ## Reference
 
@@ -13,8 +13,6 @@
   * [Stencil Client](reference/configuration/stencil-client.md)
   * [Bigquery Sink](reference/configuration/bigquery-sink.md)
 * [Metrics](reference/metrics.md)
-* [FAQs](reference/core-faqs.md)
-* [Glossary](reference/glossary.md)
 
 ## Contribute
 
