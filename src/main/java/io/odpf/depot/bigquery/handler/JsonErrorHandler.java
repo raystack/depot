@@ -6,6 +6,7 @@ import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
 import io.odpf.depot.bigquery.models.Record;
+import io.odpf.depot.common.TupleString;
 import io.odpf.depot.config.BigQuerySinkConfig;
 
 import java.util.ArrayList;
@@ -24,12 +25,19 @@ public class JsonErrorHandler implements ErrorHandler {
     private final BigQueryClient bigQueryClient;
     private final String tablePartitionKey;
     private final boolean castAllColumnsToStringDataType;
+    private final Map<String, String> metadataColumnsTypesMap;
+    private final String bqMetadataNamespace;
 
     public JsonErrorHandler(BigQueryClient bigQueryClient, BigQuerySinkConfig bigQuerySinkConfig) {
 
         this.bigQueryClient = bigQueryClient;
         this.tablePartitionKey = bigQuerySinkConfig.getTablePartitionKey();
         this.castAllColumnsToStringDataType = bigQuerySinkConfig.getSinkConnectorSchemaJsonOutputDefaultDatatypeStringEnable();
+        bqMetadataNamespace = bigQuerySinkConfig.getBqMetadataNamespace();
+        metadataColumnsTypesMap = bigQuerySinkConfig
+                .getMetadataColumnsTypes()
+                .stream()
+                .collect(Collectors.toMap(TupleString::getFirst, TupleString::getSecond));
     }
 
     public void handle(Map<Long, List<BigQueryError>> insertErrors, List<Record> records) {
@@ -87,6 +95,12 @@ public class JsonErrorHandler implements ErrorHandler {
     private Field getField(String key) {
         if (tablePartitionKey != null && tablePartitionKey.equals(key)) {
             return Field.of(key, LegacySQLTypeName.TIMESTAMP);
+        }
+        if (!bqMetadataNamespace.isEmpty()) {
+            throw new UnsupportedOperationException("metadata namespace is not supported, because nested json structure is not supported");
+        }
+        if (metadataColumnsTypesMap.containsKey(key)) {
+            return Field.of(key, LegacySQLTypeName.valueOfStrict(metadataColumnsTypesMap.get(key).toUpperCase()));
         }
         if (!castAllColumnsToStringDataType) {
             throw new UnsupportedOperationException("only string data type is supported for fields other than partition key");

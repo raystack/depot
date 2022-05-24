@@ -81,8 +81,4 @@ public interface OdpfSinkConfig extends Config {
     @DefaultValue("true")
     @Key("SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE")
     boolean getSinkConnectorSchemaJsonOutputDefaultDatatypeStringEnable();
-
-    @DefaultValue("true")
-    @Key("SINK_CONNECTOR_SCHEMA_JSON_DYNAMIC_SCHEMA_ENABLE")
-    boolean getSinkConnectorSchemaJsonDynamicSchemaEnable();
 }

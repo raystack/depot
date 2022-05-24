@@ -1,9 +1,11 @@
 package io.odpf.depot.bigquery.handler;
 
+import com.google.api.client.util.DateTime;
 import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
+import com.google.common.collect.ImmutableMap;
 import io.odpf.depot.bigquery.models.Record;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import org.aeonbits.owner.ConfigFactory;
@@ -23,7 +25,7 @@ import java.util.Map;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -341,5 +343,100 @@ public class JsonErrorHandlerTest {
 
         verify(bigQueryClient, never()).upsertTable((List<Field>) any());
     }
+
+    @Test
+    public void shouldUpdateMissingMetadataFields() {
+        //existing table fields
+        Field lastName = Field.of("last_name", LegacySQLTypeName.STRING);
+        Field firstName = Field.of("first_name", LegacySQLTypeName.STRING);
+
+        Schema nonEmptyTableSchema = Schema.of(firstName, lastName);
+        when(bigQueryClient.getSchema()).thenReturn(nonEmptyTableSchema);
+
+        Map<Long, List<BigQueryError>> errorInfoMap = new HashMap<>();
+        BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
+        errorInfoMap.put(0L, asList(noSuchFieldError));
+        errorInfoMap.put(1L, asList(noSuchFieldError));
+        errorInfoMap.put(2L, asList(noSuchFieldError));
+
+        Map<String, Object> columnsMapWithFistName = new HashMap<>();
+        columnsMapWithFistName.put("first_name", "john doe");
+        columnsMapWithFistName.put("newFieldAddress", "planet earth");
+        columnsMapWithFistName.put("message_offset", 111);
+        Record validRecordWithFirstName = Record.builder().columns(columnsMapWithFistName).build();
+
+        Map<String, Object> columnsMapWithNewFieldDog = new HashMap<>();
+        columnsMapWithNewFieldDog.put("newFieldDog", "golden retriever");
+        columnsMapWithNewFieldDog.put("load_time", new DateTime(System.currentTimeMillis()));
+        Record validRecordWithLastName = Record.builder().columns(columnsMapWithNewFieldDog).build();
+        Record anotheRecordWithLastName = Record.builder().columns(columnsMapWithNewFieldDog).build();
+
+        List<Record> validRecords = new ArrayList<>();
+        validRecords.add(validRecordWithFirstName);
+        validRecords.add(validRecordWithLastName);
+        validRecords.add(anotheRecordWithLastName);
+
+        Map<String, String> config = ImmutableMap.of("SINK_BIGQUERY_METADATA_COLUMNS_TYPES",
+                "message_offset=integer,load_time=timestamp");
+        BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, config);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig);
+        jsonErrorHandler.handle(errorInfoMap, validRecords);
+
+        verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
+
+        //missing fields
+        Field newFieldDog = Field.of("newFieldDog", LegacySQLTypeName.STRING);
+        Field newFieldAddress = Field.of("newFieldAddress", LegacySQLTypeName.STRING);
+
+        Field messageOffset = Field.of("message_offset", LegacySQLTypeName.INTEGER);
+        Field loadTime = Field.of("load_time", LegacySQLTypeName.TIMESTAMP);
+        List<Field> actualFields = fieldsArgumentCaptor.getValue();
+        assertThat(actualFields,
+                containsInAnyOrder(messageOffset, loadTime, firstName, lastName, newFieldDog, newFieldAddress));
+    }
+
+    @Test
+    public void shouldThrowErrorForNamespacedMetadataNotSupported() {
+        //existing table fields
+        Field lastName = Field.of("last_name", LegacySQLTypeName.STRING);
+        Field firstName = Field.of("first_name", LegacySQLTypeName.STRING);
+
+        Schema nonEmptyTableSchema = Schema.of(firstName, lastName);
+        when(bigQueryClient.getSchema()).thenReturn(nonEmptyTableSchema);
+
+        Map<Long, List<BigQueryError>> errorInfoMap = new HashMap<>();
+        BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
+        errorInfoMap.put(0L, asList(noSuchFieldError));
+        errorInfoMap.put(1L, asList(noSuchFieldError));
+        errorInfoMap.put(2L, asList(noSuchFieldError));
+
+        Map<String, Object> columnsMapWithFistName = new HashMap<>();
+        columnsMapWithFistName.put("first_name", "john doe");
+        columnsMapWithFistName.put("newFieldAddress", "planet earth");
+        columnsMapWithFistName.put("message_offset", 111);
+        Record validRecordWithFirstName = Record.builder().columns(columnsMapWithFistName).build();
+
+        Map<String, Object> columnsMapWithNewFieldDog = new HashMap<>();
+        columnsMapWithNewFieldDog.put("newFieldDog", "golden retriever");
+        columnsMapWithNewFieldDog.put("load_time", new DateTime(System.currentTimeMillis()));
+        Record validRecordWithLastName = Record.builder().columns(columnsMapWithNewFieldDog).build();
+        Record anotheRecordWithLastName = Record.builder().columns(columnsMapWithNewFieldDog).build();
+
+        List<Record> validRecords = new ArrayList<>();
+        validRecords.add(validRecordWithFirstName);
+        validRecords.add(validRecordWithLastName);
+        validRecords.add(anotheRecordWithLastName);
+
+        Map<String, String> config = ImmutableMap.of("SINK_BIGQUERY_METADATA_COLUMNS_TYPES",
+                "message_offset=integer,load_time=timestamp",
+                "SINK_BIGQUERY_METADATA_NAMESPACE", "hello_world_namespace");
+        BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, config);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig);
+        assertThrows(UnsupportedOperationException.class, () -> {
+            jsonErrorHandler.handle(errorInfoMap, validRecords);
+        });
+        verify(bigQueryClient, never()).upsertTable(any());
+    }
+
 }
 
