@@ -9,6 +9,7 @@ import io.odpf.depot.bigquery.handler.MessageRecordConverter;
 import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import org.aeonbits.owner.ConfigFactory;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -22,9 +23,16 @@ import static org.mockito.Mockito.verify;
 
 public class BigqueryJsonUpdateListenerTest {
 
+    private MessageRecordConverterCache converterCache;
+
+    @Before
+    public void setUp() throws Exception {
+
+        converterCache = mock(MessageRecordConverterCache.class);
+    }
+
     @Test
     public void shouldSetMessageRecordConverterAndUpsertTable() throws Exception {
-        MessageRecordConverterCache converterCache = mock(MessageRecordConverterCache.class);
         BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, Collections.emptyMap());
         BigQueryClient bqClient = mock(BigQueryClient.class);
         BigqueryJsonUpdateListener updateListener = new BigqueryJsonUpdateListener(bigQuerySinkConfig, converterCache, bqClient);
@@ -40,7 +48,6 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
                 "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false"
         ));
-        MessageRecordConverterCache converterCache = mock(MessageRecordConverterCache.class);
         BigQueryClient mockBqClient = mock(BigQueryClient.class);
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
         bigqueryJsonUpdateListener.updateSchema();
@@ -56,7 +63,6 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "age=integer",
                 "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "true"
         ));
-        MessageRecordConverterCache converterCache = mock(MessageRecordConverterCache.class);
         BigQueryClient mockBqClient = mock(BigQueryClient.class);
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
         assertThrows(IllegalArgumentException.class, () -> bigqueryJsonUpdateListener.updateSchema());
@@ -70,7 +76,6 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_TABLE_PARTITIONING_ENABLE", "true",
                 "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "true"
         ));
-        MessageRecordConverterCache converterCache = mock(MessageRecordConverterCache.class);
         BigQueryClient mockBqClient = mock(BigQueryClient.class);
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
         bigqueryJsonUpdateListener.updateSchema();
