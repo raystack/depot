@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,7 @@ public class JsonErrorHandler implements ErrorHandler {
 
     private final BigQueryClient bigQueryClient;
     private final String tablePartitionKey;
+    private final Optional<LegacySQLTypeName> partitionKeyDataType;
     private final boolean castAllColumnsToStringDataType;
     private final Map<String, String> metadataColumnsTypesMap;
     private final String bqMetadataNamespace;
@@ -31,8 +33,18 @@ public class JsonErrorHandler implements ErrorHandler {
     public JsonErrorHandler(BigQueryClient bigQueryClient, BigQuerySinkConfig bigQuerySinkConfig) {
 
         this.bigQueryClient = bigQueryClient;
-        this.tablePartitionKey = bigQuerySinkConfig.getTablePartitionKey();
-        this.castAllColumnsToStringDataType = bigQuerySinkConfig.getSinkConnectorSchemaJsonOutputDefaultDatatypeStringEnable();
+        tablePartitionKey = bigQuerySinkConfig.isTablePartitioningEnabled() ? bigQuerySinkConfig.getTablePartitionKey() : "";
+        if (bigQuerySinkConfig.isTablePartitioningEnabled()) {
+            List<TupleString> defaultColumns = bigQuerySinkConfig.getSinkBigquerySchemaJsonOutputDefaultColumns();
+            partitionKeyDataType = defaultColumns
+                    .stream()
+                    .filter(column -> tablePartitionKey.equals(column.getFirst()))
+                    .findFirst()
+                    .map(tupleString -> LegacySQLTypeName.valueOfStrict(tupleString.getSecond().toUpperCase()));
+        } else {
+            partitionKeyDataType = Optional.empty();
+        }
+        castAllColumnsToStringDataType = bigQuerySinkConfig.getSinkConnectorSchemaJsonOutputDefaultDatatypeStringEnable();
         bqMetadataNamespace = bigQuerySinkConfig.getBqMetadataNamespace();
         metadataColumnsTypesMap = bigQuerySinkConfig
                 .getMetadataColumnsTypes()
@@ -93,8 +105,8 @@ public class JsonErrorHandler implements ErrorHandler {
 
 
     private Field getField(String key) {
-        if (tablePartitionKey != null && tablePartitionKey.equals(key)) {
-            return Field.of(key, LegacySQLTypeName.TIMESTAMP);
+        if ((!tablePartitionKey.isEmpty()) && tablePartitionKey.equals(key)) {
+            return Field.of(key, partitionKeyDataType.get());
         }
         if (!bqMetadataNamespace.isEmpty()) {
             throw new UnsupportedOperationException("metadata namespace is not supported, because nested json structure is not supported");

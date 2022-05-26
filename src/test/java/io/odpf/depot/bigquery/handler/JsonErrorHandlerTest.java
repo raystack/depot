@@ -278,7 +278,7 @@ public class JsonErrorHandlerTest {
     }
 
     @Test
-    public void shouldUpsertTableWithPartitionKeyTimestampField() {
+    public void shouldUpsertTableWithPartitionKey() {
         when(bigQueryClient.getSchema()).thenReturn(emptyTableSchema);
 
 
@@ -301,7 +301,9 @@ public class JsonErrorHandlerTest {
         validRecords.add(validRecordWithLastName);
 
         Map<String, String> envMap = new HashMap<String, String>() {{
+            put("SINK_BIGQUERY_TABLE_PARTITIONING_ENABLE", "true");
             put("SINK_BIGQUERY_TABLE_PARTITION_KEY", "event_timestamp_partition");
+            put("SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp_partition=timestamp");
         }};
         BigQuerySinkConfig partitionKeyConfig = ConfigFactory.create(BigQuerySinkConfig.class, envMap);
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, partitionKeyConfig);
@@ -363,11 +365,13 @@ public class JsonErrorHandlerTest {
         columnsMapWithFistName.put("first_name", "john doe");
         columnsMapWithFistName.put("newFieldAddress", "planet earth");
         columnsMapWithFistName.put("message_offset", 111);
+        columnsMapWithFistName.put("load_time", new DateTime(System.currentTimeMillis()));
         Record validRecordWithFirstName = Record.builder().columns(columnsMapWithFistName).build();
 
         Map<String, Object> columnsMapWithNewFieldDog = new HashMap<>();
         columnsMapWithNewFieldDog.put("newFieldDog", "golden retriever");
         columnsMapWithNewFieldDog.put("load_time", new DateTime(System.currentTimeMillis()));
+        columnsMapWithNewFieldDog.put("message_offset", 112);
         Record validRecordWithLastName = Record.builder().columns(columnsMapWithNewFieldDog).build();
         Record anotheRecordWithLastName = Record.builder().columns(columnsMapWithNewFieldDog).build();
 
@@ -437,6 +441,5 @@ public class JsonErrorHandlerTest {
         });
         verify(bigQueryClient, never()).upsertTable(any());
     }
-
 }
 
