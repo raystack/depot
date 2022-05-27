@@ -12,10 +12,13 @@ import io.odpf.depot.config.BigQuerySinkConfig;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.Collections;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -73,11 +76,12 @@ public class BigqueryJsonUpdateListenerTest {
         ));
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
         bigqueryJsonUpdateListener.updateSchema();
-        List<Field> expectedBqSchemaFields = ImmutableList.of(
-                Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
-                Field.of("first_name", LegacySQLTypeName.STRING),
-                existingField1, existingField2);
-        verify(mockBqClient, times(1)).upsertTable(expectedBqSchemaFields);
+        ArgumentCaptor<List<Field>> listArgumentCaptor = ArgumentCaptor.forClass(List.class);
+        verify(mockBqClient, times(1)).upsertTable(listArgumentCaptor.capture());
+        List<Field> actualFields = listArgumentCaptor.getValue();
+        Field eventTimestampField = Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP);
+        Field firstNameField = Field.of("first_name", LegacySQLTypeName.STRING);
+        assertThat(actualFields, containsInAnyOrder(eventTimestampField, firstNameField, existingField1, existingField2));
     }
 
     @Test
