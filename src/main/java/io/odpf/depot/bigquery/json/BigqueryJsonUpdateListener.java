@@ -1,7 +1,9 @@
 package io.odpf.depot.bigquery.json;
 
 import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
+import com.google.cloud.bigquery.Schema;
 import io.odpf.depot.bigquery.handler.BigQueryClient;
 import io.odpf.depot.bigquery.handler.MessageRecordConverter;
 import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
@@ -10,6 +12,7 @@ import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,12 +32,16 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
         OdpfMessageParser parser = getOdpfMessageParser();
         MessageRecordConverter messageRecordConverter = new MessageRecordConverter(parser, config, null);
         converterCache.setMessageRecordConverter(messageRecordConverter);
+        Schema existingTableSchema = bigQueryClient.getSchema();
+        FieldList existingTableFields = existingTableSchema.getFields();
         List<TupleString> defaultColumns = config.getSinkBigquerySchemaJsonOutputDefaultColumns();
-        List<Field> bqSchemaFields = defaultColumns
+        List<Field> defaultFields = defaultColumns
                 .stream()
                 .map(tupleString -> getField(tupleString))
                 .collect(Collectors.toList());
-        bigQueryClient.upsertTable(bqSchemaFields);
+        ArrayList<Field> finalFieldList = new ArrayList<>(defaultFields);
+        existingTableFields.iterator().forEachRemaining(finalFieldList::add);
+        bigQueryClient.upsertTable(finalFieldList);
     }
 
     private Field getField(TupleString tupleString) {

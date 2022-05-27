@@ -2,6 +2,7 @@ package io.odpf.depot.bigquery.json;
 
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.LegacySQLTypeName;
+import com.google.cloud.bigquery.Schema;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.odpf.depot.bigquery.handler.BigQueryClient;
@@ -20,35 +21,38 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class BigqueryJsonUpdateListenerTest {
 
     private MessageRecordConverterCache converterCache;
+    private BigQueryClient mockBqClient;
 
     @Before
     public void setUp() throws Exception {
-
         converterCache = mock(MessageRecordConverterCache.class);
+        mockBqClient = mock(BigQueryClient.class);
+        Schema emptySchema = Schema.of();
+        when(mockBqClient.getSchema()).thenReturn(emptySchema);
     }
 
     @Test
     public void shouldSetMessageRecordConverterAndUpsertTable() throws Exception {
         BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, Collections.emptyMap());
-        BigQueryClient bqClient = mock(BigQueryClient.class);
-        BigqueryJsonUpdateListener updateListener = new BigqueryJsonUpdateListener(bigQuerySinkConfig, converterCache, bqClient);
+        BigqueryJsonUpdateListener updateListener = new BigqueryJsonUpdateListener(bigQuerySinkConfig, converterCache, mockBqClient);
         updateListener.setOdpfMessageParser(null);
         updateListener.updateSchema();
         verify(converterCache, times(1)).setMessageRecordConverter(any(MessageRecordConverter.class));
-        verify(bqClient, times(1)).upsertTable(Collections.emptyList());
+        verify(mockBqClient, times(1)).upsertTable(Collections.emptyList());
     }
 
     @Test
     public void shouldCreateTableWithDefaultColumns() {
+
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
                 "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
                 "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false"
         ));
-        BigQueryClient mockBqClient = mock(BigQueryClient.class);
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
         bigqueryJsonUpdateListener.updateSchema();
         List<Field> bqSchemaFields = ImmutableList.of(
@@ -58,12 +62,30 @@ public class BigqueryJsonUpdateListenerTest {
     }
 
     @Test
+    public void shouldCreateTableWithDefaultColumnsAndExistingTableColumns() {
+        Field existingField1 = Field.of("existing_field1", LegacySQLTypeName.STRING);
+        Field existingField2 = Field.of("existing_field2", LegacySQLTypeName.STRING);
+        when(mockBqClient.getSchema()).thenReturn(Schema.of(existingField1,
+                existingField2));
+        BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
+                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
+                "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false"
+        ));
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        bigqueryJsonUpdateListener.updateSchema();
+        List<Field> expectedBqSchemaFields = ImmutableList.of(
+                Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
+                Field.of("first_name", LegacySQLTypeName.STRING),
+                existingField1, existingField2);
+        verify(mockBqClient, times(1)).upsertTable(expectedBqSchemaFields);
+    }
+
+    @Test
     public void shouldThrowErrorWhenFieldDataTypeMismatchWithCastToString() {
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
                 "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "age=integer",
                 "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "true"
         ));
-        BigQueryClient mockBqClient = mock(BigQueryClient.class);
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
         assertThrows(IllegalArgumentException.class, () -> bigqueryJsonUpdateListener.updateSchema());
     }
@@ -76,7 +98,6 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_TABLE_PARTITIONING_ENABLE", "true",
                 "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "true"
         ));
-        BigQueryClient mockBqClient = mock(BigQueryClient.class);
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
         bigqueryJsonUpdateListener.updateSchema();
         List<Field> bqSchemaFields = ImmutableList.of(
