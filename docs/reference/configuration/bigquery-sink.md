@@ -130,3 +130,17 @@ Metadata columns and their types to be added.
 
 * Example value: `message_offset=integer,message_topic=string,load_time=timestamp,message_timestamp=timestamp,message_partition=integer`
 * Type: `optional`
+
+# Configs for json input data type
+
+## SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS
+
+Default list of columns to be added when creating the table
+
+* Example value: `event_timstamp=timestamp,first_name=string`
+
+## SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_ADD_EVENT_TIMESTAMP_ENABLE
+A boolean value to enable injecting event_timstamp with value as ingestion time
+* Example value: true
+* Type: optional boolean
+* Default value: false
