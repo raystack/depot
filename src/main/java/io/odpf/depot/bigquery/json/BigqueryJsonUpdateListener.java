@@ -27,6 +27,9 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
         this.converterCache = converterCache;
         this.config = config;
         this.bigQueryClient = bigQueryClient;
+        if (!config.getSinkConnectorSchemaJsonDynamicSchemaEnable()) {
+            throw new UnsupportedOperationException("currently only schema inferred from incoming data is supported, stencil schema support for json will be added in future");
+        }
     }
 
     @Override

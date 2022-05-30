@@ -110,4 +110,12 @@ public class BigqueryJsonUpdateListenerTest {
         verify(mockBqClient, times(1)).upsertTable(bqSchemaFields);
     }
 
+    @Test
+    public void shouldThrowExceptionWhenDynamicSchemaNotEnabled() {
+        BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class,
+                ImmutableMap.of("SINK_CONNECTOR_SCHEMA_JSON_DYNAMIC_SCHEMA_ENABLE", "false"));
+        assertThrows(UnsupportedOperationException.class,
+                () -> new BigqueryJsonUpdateListener(bigQuerySinkConfig, converterCache, mockBqClient));
+
+    }
 }
