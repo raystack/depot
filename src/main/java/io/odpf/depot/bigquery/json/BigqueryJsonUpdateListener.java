@@ -13,7 +13,6 @@ import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,11 +39,7 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
         Schema existingTableSchema = bigQueryClient.getSchema();
         FieldList existingTableFields = existingTableSchema.getFields();
         List<TupleString> defaultColumns = config.getSinkBigquerySchemaJsonOutputDefaultColumns();
-        Set<Field> defaultFields = defaultColumns
-                .stream()
-                .map(tupleString -> getField(tupleString))
-                .collect(Collectors.toSet());
-        Set<Field> finalFieldList = new HashSet<Field>(defaultFields);
+        Set<Field> finalFieldList = defaultColumns.stream().map(this::getField).collect(Collectors.toSet());
         existingTableFields.iterator().forEachRemaining(finalFieldList::add);
         bigQueryClient.upsertTable(new ArrayList<>(finalFieldList));
     }
