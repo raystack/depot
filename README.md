@@ -49,12 +49,12 @@ $ ./gradlew clean
 <dependency>
     <groupId>io.odpf</groupId>
     <artifactId>depot</artifactId>
-    <version>0.1.3</version>
+    <version>version</version>
 </dependency>
 ```
 
 ```sh
-implementation group: 'io.odpf', name: 'depot', version: '0.1.3'
+implementation group: 'io.odpf', name: 'depot', version: 'version'
 ```
 
 ### Usage example:
