@@ -65,6 +65,57 @@ public class BigqueryJsonUpdateListenerTest {
     }
 
     @Test
+    public void shouldCreateTableWithDefaultColumnsAndMetadataFields() {
+        BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
+                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
+                "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false",
+                "SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "message_offset=integer,message_topic=string,message_timestamp=timestamp",
+                "SINK_BIGQUERY_ADD_METADATA_ENABLED", "true"
+        ));
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        bigqueryJsonUpdateListener.updateSchema();
+        List<Field> bqSchemaFields = ImmutableList.of(
+                Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
+                Field.of("first_name", LegacySQLTypeName.STRING),
+                Field.of("message_offset", LegacySQLTypeName.INTEGER),
+                Field.of("message_topic", LegacySQLTypeName.STRING),
+                Field.of("message_timestamp", LegacySQLTypeName.TIMESTAMP));
+        ArgumentCaptor<List<Field>> listArgumentCaptor = ArgumentCaptor.forClass(List.class);
+        verify(mockBqClient, times(1)).upsertTable(listArgumentCaptor.capture());
+        assertThat(listArgumentCaptor.getValue(), containsInAnyOrder(bqSchemaFields.toArray()));
+    }
+
+    @Test
+    public void shouldNotAddMetadataFields() {
+        BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
+                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
+                "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false",
+                "SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "message_offset=integer,message_topic=string,message_timestamp=timestamp",
+                "SINK_BIGQUERY_ADD_METADATA_ENABLED", "false"
+        ));
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        bigqueryJsonUpdateListener.updateSchema();
+        List<Field> bqSchemaFields = ImmutableList.of(
+                Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
+                Field.of("first_name", LegacySQLTypeName.STRING));
+        ArgumentCaptor<List<Field>> listArgumentCaptor = ArgumentCaptor.forClass(List.class);
+        verify(mockBqClient, times(1)).upsertTable(listArgumentCaptor.capture());
+        assertThat(listArgumentCaptor.getValue(), containsInAnyOrder(bqSchemaFields.toArray()));
+    }
+
+    @Test
+    public void shouldThrowErrorIfDefaultColumnsAndMetadataFieldsContainSameEntryCalledFirstName() {
+        BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
+                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
+                "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false",
+                "SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "message_offset=integer,first_name=integer",
+                "SINK_BIGQUERY_ADD_METADATA_ENABLED", "true"
+        ));
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        assertThrows(IllegalArgumentException.class, () -> bigqueryJsonUpdateListener.updateSchema());
+    }
+
+    @Test
     public void shouldCreateTableWithDefaultColumnsAndExistingTableColumns() {
         Field existingField1 = Field.of("existing_field1", LegacySQLTypeName.STRING);
         Field existingField2 = Field.of("existing_field2", LegacySQLTypeName.STRING);

@@ -7,6 +7,7 @@ import com.google.cloud.bigquery.Schema;
 import io.odpf.depot.bigquery.handler.BigQueryClient;
 import io.odpf.depot.bigquery.handler.MessageRecordConverter;
 import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
+import io.odpf.depot.bigquery.proto.BigqueryFields;
 import io.odpf.depot.common.TupleString;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.message.OdpfMessageParser;
@@ -15,6 +16,8 @@ import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
@@ -39,10 +42,27 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
         Schema existingTableSchema = bigQueryClient.getSchema();
         FieldList existingTableFields = existingTableSchema.getFields();
         List<TupleString> defaultColumns = config.getSinkBigquerySchemaJsonOutputDefaultColumns();
+        Set<String> defaultColumnNames = defaultColumns
+                .stream()
+                .map(c -> c.getFirst())
+                .collect(Collectors.toSet());
         HashSet<Field> fieldsToBeUpdated = defaultColumns
                 .stream()
                 .map(tupleString -> getField(tupleString))
                 .collect(Collectors.toCollection(HashSet::new));
+        if (config.shouldAddMetadata()) {
+            List<TupleString> metadataColumnsTypes = config.getMetadataColumnsTypes();
+            List<Field> metadataFields = BigqueryFields.getMetadataFieldsStrict(metadataColumnsTypes);
+            Optional<Field> duplicateField = metadataFields
+                    .stream()
+                    .filter(m -> defaultColumnNames.contains(m.getName())).findFirst();
+            if (duplicateField.isPresent()) {
+                throw new IllegalArgumentException("duplicate field called "
+                        + duplicateField.get().getName()
+                        + " is present in both default columns config and metadata config");
+            }
+            fieldsToBeUpdated.addAll(metadataFields);
+        }
         existingTableFields.iterator().forEachRemaining(fieldsToBeUpdated::add);
         bigQueryClient.upsertTable(new ArrayList<>(fieldsToBeUpdated));
     }
@@ -65,7 +85,7 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
     }
 
     /**
-     *Range Bigquery partitioning is not supported, supported paritition fields have to be of DATE or TIMESTAMP type..
+     * Range Bigquery partitioning is not supported, supported paritition fields have to be of DATE or TIMESTAMP type..
      */
     private boolean isValidPartitionField(String fieldName, LegacySQLTypeName fieldDataType) {
         Boolean isPartitioningEnabled = config.isTablePartitioningEnabled();
