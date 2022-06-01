@@ -44,7 +44,7 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
         List<TupleString> defaultColumns = config.getSinkBigquerySchemaJsonOutputDefaultColumns();
         HashSet<Field> fieldsToBeUpdated = defaultColumns
                 .stream()
-                .map(tupleString -> getField(tupleString))
+                .map(this::getField)
                 .collect(Collectors.toCollection(HashSet::new));
         if (config.shouldAddMetadata() && !config.getBqMetadataNamespace().isEmpty()) {
             throw new UnsupportedOperationException("metadata namespace is not supported, because nested json structure is not supported");
@@ -64,7 +64,7 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
     private List<Field> getMetadataFields(List<TupleString> defaultColumns) {
         Set<String> defaultColumnNames = defaultColumns
                 .stream()
-                .map(c -> c.getFirst())
+                .map(TupleString::getFirst)
                 .collect(Collectors.toSet());
         List<TupleString> metadataColumnsTypes = config.getMetadataColumnsTypes();
         List<Field> metadataFields = BigqueryFields.getMetadataFieldsStrict(metadataColumnsTypes);
