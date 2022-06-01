@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
     private final MessageRecordConverterCache converterCache;
-    private BigQuerySinkConfig config;
+    private final BigQuerySinkConfig config;
     private final BigQueryClient bigQueryClient;
 
     public BigqueryJsonUpdateListener(BigQuerySinkConfig config, MessageRecordConverterCache converterCache, BigQueryClient bigQueryClient) {
@@ -42,29 +42,41 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
         Schema existingTableSchema = bigQueryClient.getSchema();
         FieldList existingTableFields = existingTableSchema.getFields();
         List<TupleString> defaultColumns = config.getSinkBigquerySchemaJsonOutputDefaultColumns();
-        Set<String> defaultColumnNames = defaultColumns
-                .stream()
-                .map(c -> c.getFirst())
-                .collect(Collectors.toSet());
         HashSet<Field> fieldsToBeUpdated = defaultColumns
                 .stream()
                 .map(tupleString -> getField(tupleString))
                 .collect(Collectors.toCollection(HashSet::new));
+        if (config.shouldAddMetadata() && !config.getBqMetadataNamespace().isEmpty()) {
+            throw new UnsupportedOperationException("metadata namespace is not supported, because nested json structure is not supported");
+        }
         if (config.shouldAddMetadata()) {
-            List<TupleString> metadataColumnsTypes = config.getMetadataColumnsTypes();
-            List<Field> metadataFields = BigqueryFields.getMetadataFieldsStrict(metadataColumnsTypes);
-            Optional<Field> duplicateField = metadataFields
-                    .stream()
-                    .filter(m -> defaultColumnNames.contains(m.getName())).findFirst();
-            if (duplicateField.isPresent()) {
-                throw new IllegalArgumentException("duplicate field called "
-                        + duplicateField.get().getName()
-                        + " is present in both default columns config and metadata config");
-            }
+            List<Field> metadataFields = getMetadataFields(defaultColumns);
             fieldsToBeUpdated.addAll(metadataFields);
         }
         existingTableFields.iterator().forEachRemaining(fieldsToBeUpdated::add);
         bigQueryClient.upsertTable(new ArrayList<>(fieldsToBeUpdated));
+    }
+
+    /*
+    returns metadata fields from config
+    throws error incase there are duplicate fields between metadata and default columns config
+     */
+    private List<Field> getMetadataFields(List<TupleString> defaultColumns) {
+        Set<String> defaultColumnNames = defaultColumns
+                .stream()
+                .map(c -> c.getFirst())
+                .collect(Collectors.toSet());
+        List<TupleString> metadataColumnsTypes = config.getMetadataColumnsTypes();
+        List<Field> metadataFields = BigqueryFields.getMetadataFieldsStrict(metadataColumnsTypes);
+        Optional<Field> duplicateField = metadataFields
+                .stream()
+                .filter(m -> defaultColumnNames.contains(m.getName())).findFirst();
+        if (duplicateField.isPresent()) {
+            throw new IllegalArgumentException("duplicate field called "
+                    + duplicateField.get().getName()
+                    + " is present in both default columns config and metadata config");
+        }
+        return metadataFields;
     }
 
     private Field getField(TupleString tupleString) {

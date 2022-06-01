@@ -116,6 +116,17 @@ public class BigqueryJsonUpdateListenerTest {
     }
 
     @Test
+    public void shouldThrowErrorIfMetadataNamespaceIsNotEmpty() {
+        BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
+                "SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "message_offset=integer,first_name=integer",
+                "SINK_BIGQUERY_ADD_METADATA_ENABLED", "true",
+                "SINK_BIGQUERY_METADATA_NAMESPACE", "metadata_namespace"
+        ));
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        assertThrows(UnsupportedOperationException.class, () -> bigqueryJsonUpdateListener.updateSchema());
+    }
+
+    @Test
     public void shouldCreateTableWithDefaultColumnsAndExistingTableColumns() {
         Field existingField1 = Field.of("existing_field1", LegacySQLTypeName.STRING);
         Field existingField2 = Field.of("existing_field2", LegacySQLTypeName.STRING);
