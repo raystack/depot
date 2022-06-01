@@ -10,6 +10,7 @@ import io.odpf.depot.common.TupleString;
 import io.odpf.depot.config.BigQuerySinkConfig;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -65,11 +66,11 @@ public class JsonErrorHandler implements ErrorHandler {
         List<Entry<Long, List<BigQueryError>>> unknownFieldBqErrors = getUnknownFieldBqErrors(insertErrors);
         if (!unknownFieldBqErrors.isEmpty()) {
             Set<Field> missingFields = unknownFieldBqErrors
-                    .parallelStream()
+                    .stream()
                     .map(x -> getColumnNamesForRecordsWhichHadUknownBqFieldErrors(records, x))
-                    .flatMap(keys -> keys.stream())
+                    .flatMap(Collection::stream)
                     .filter(key -> filterExistingFields(existingFieldList, key))
-                    .map(key -> getField(key))
+                    .map(this::getField)
                     .collect(Collectors.toSet());
             ArrayList<Field> bqSchemaFields = new ArrayList<>(missingFields);
             existingFieldList.iterator().forEachRemaining(bqSchemaFields::add);
@@ -78,7 +79,7 @@ public class JsonErrorHandler implements ErrorHandler {
     }
 
     private Set<String> getColumnNamesForRecordsWhichHadUknownBqFieldErrors(List<Record> records, Entry<Long, List<BigQueryError>> x) {
-        Integer recordKey = x.getKey().intValue();
+        int recordKey = x.getKey().intValue();
         return records.get(recordKey).getColumns().keySet();
     }
 
@@ -88,24 +89,14 @@ public class JsonErrorHandler implements ErrorHandler {
                 .filter((x) -> {
                     List<BigQueryError> value = x.getValue();
                     List<BigQueryError> bqErrorsWithNoSuchFields = getBqErrorsWithNoSuchFields(value);
-                    if (!bqErrorsWithNoSuchFields.isEmpty()) {
-                        return true;
-                    }
-                    return false;
-
+                    return !bqErrorsWithNoSuchFields.isEmpty();
                 }).collect(Collectors.toList());
         return unkownFieldFieldBqError;
     }
 
     private List<BigQueryError> getBqErrorsWithNoSuchFields(List<BigQueryError> value) {
-        return value.stream().filter(
-                bigQueryError -> {
-                    if (bigQueryError.getReason().equals("invalid")
-                            && bigQueryError.getMessage().contains("no such field")) {
-                        return true;
-                    }
-                    return false;
-                }
+        return value.stream()
+                .filter(bigQueryError ->  bigQueryError.getReason().equals("invalid") && bigQueryError.getMessage().contains("no such field")
         ).collect(Collectors.toList());
     }
 
