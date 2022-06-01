@@ -64,13 +64,13 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
         return Field.of(fieldName, fieldDataType);
     }
 
+    /**
+     *Range Bigquery partitioning is not supported, supported paritition fields have to be of DATE or TIMESTAMP type..
+     */
     private boolean isValidPartitionField(String fieldName, LegacySQLTypeName fieldDataType) {
         Boolean isPartitioningEnabled = config.isTablePartitioningEnabled();
         String partitionKey = config.getTablePartitionKey();
-        /*
-        BQTableDefinition.getPartitionedTableDefinition()
-        throws UnsupportedOperationException("Range Bigquery partitioning is not supported, supported paritition fields have to be of DATE or TIMESTAMP type");
-         */
+
         boolean isValidPartitionDataType = (fieldDataType == LegacySQLTypeName.TIMESTAMP || fieldDataType == LegacySQLTypeName.DATE);
 
         return isPartitioningEnabled && partitionKey.equals(fieldName) && isValidPartitionDataType;
