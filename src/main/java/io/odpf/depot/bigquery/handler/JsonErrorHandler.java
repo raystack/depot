@@ -85,13 +85,12 @@ public class JsonErrorHandler implements ErrorHandler {
 
 
     private List<Entry<Long, List<BigQueryError>>> getUnknownFieldBqErrors(Map<Long, List<BigQueryError>> insertErrors) {
-        List<Entry<Long, List<BigQueryError>>> unkownFieldFieldBqError = insertErrors.entrySet().parallelStream()
+        return insertErrors.entrySet().parallelStream()
                 .filter((x) -> {
                     List<BigQueryError> value = x.getValue();
                     List<BigQueryError> bqErrorsWithNoSuchFields = getBqErrorsWithNoSuchFields(value);
                     return !bqErrorsWithNoSuchFields.isEmpty();
                 }).collect(Collectors.toList());
-        return unkownFieldFieldBqError;
     }
 
     private List<BigQueryError> getBqErrorsWithNoSuchFields(List<BigQueryError> value) {
