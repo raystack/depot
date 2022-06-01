@@ -15,7 +15,6 @@ import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
@@ -40,13 +39,12 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
         Schema existingTableSchema = bigQueryClient.getSchema();
         FieldList existingTableFields = existingTableSchema.getFields();
         List<TupleString> defaultColumns = config.getSinkBigquerySchemaJsonOutputDefaultColumns();
-        Set<Field> defaultFields = defaultColumns
+        HashSet<Field> fieldsToBeUpdated = defaultColumns
                 .stream()
                 .map(tupleString -> getField(tupleString))
-                .collect(Collectors.toSet());
-        Set<Field> finalFieldList = new HashSet<Field>(defaultFields);
-        existingTableFields.iterator().forEachRemaining(finalFieldList::add);
-        bigQueryClient.upsertTable(new ArrayList<>(finalFieldList));
+                .collect(Collectors.toCollection(HashSet::new));
+        existingTableFields.iterator().forEachRemaining(fieldsToBeUpdated::add);
+        bigQueryClient.upsertTable(new ArrayList<>(fieldsToBeUpdated));
     }
 
     private Field getField(TupleString tupleString) {
