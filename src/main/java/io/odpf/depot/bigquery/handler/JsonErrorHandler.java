@@ -10,6 +10,7 @@ import io.odpf.depot.common.TupleString;
 import io.odpf.depot.config.BigQuerySinkConfig;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,10 +47,15 @@ public class JsonErrorHandler implements ErrorHandler {
         }
         castAllColumnsToStringDataType = bigQuerySinkConfig.getSinkConnectorSchemaJsonOutputDefaultDatatypeStringEnable();
         bqMetadataNamespace = bigQuerySinkConfig.getBqMetadataNamespace();
-        metadataColumnsTypesMap = bigQuerySinkConfig
-                .getMetadataColumnsTypes()
-                .stream()
-                .collect(Collectors.toMap(TupleString::getFirst, TupleString::getSecond));
+        if (!bigQuerySinkConfig.shouldAddMetadata()) {
+            metadataColumnsTypesMap = Collections.emptyMap();
+        } else {
+            metadataColumnsTypesMap = bigQuerySinkConfig
+                    .getMetadataColumnsTypes()
+                    .stream()
+                    .collect(Collectors.toMap(TupleString::getFirst, TupleString::getSecond));
+        }
+
     }
 
     public void handle(Map<Long, List<BigQueryError>> insertErrors, List<Record> records) {
