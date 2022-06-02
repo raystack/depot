@@ -67,7 +67,7 @@ public class JsonErrorHandler implements ErrorHandler {
         if (!unknownFieldBqErrors.isEmpty()) {
             ArrayList<Field> bqSchemaFields = unknownFieldBqErrors
                     .stream()
-                    .map(x -> getColumnNamesForRecordsWhichHadUknownBqFieldErrors(records, x))
+                    .map(x -> getColumnNamesForRecordsWhichHadUnknownBqFieldErrors(records, x))
                     .flatMap(Collection::stream)
                     .filter(key -> filterExistingFields(existingFieldList, key))
                     .map(this::getField)
@@ -78,7 +78,7 @@ public class JsonErrorHandler implements ErrorHandler {
         }
     }
 
-    private Set<String> getColumnNamesForRecordsWhichHadUknownBqFieldErrors(List<Record> records, Entry<Long, List<BigQueryError>> x) {
+    private Set<String> getColumnNamesForRecordsWhichHadUnknownBqFieldErrors(List<Record> records, Entry<Long, List<BigQueryError>> x) {
         int recordKey = x.getKey().intValue();
         return records.get(recordKey).getColumns().keySet();
     }
