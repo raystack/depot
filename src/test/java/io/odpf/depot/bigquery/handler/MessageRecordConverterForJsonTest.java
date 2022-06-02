@@ -11,6 +11,8 @@ import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.json.JsonOdpfMessageParser;
+import io.odpf.depot.metrics.Instrumentation;
+import io.odpf.depot.metrics.JsonParserMetrics;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Test;
 
@@ -27,6 +29,7 @@ import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 public class MessageRecordConverterForJsonTest {
 
@@ -35,10 +38,12 @@ public class MessageRecordConverterForJsonTest {
     private final Map<String, Object> emptyMetadata = Collections.emptyMap();
     private final Map<String, Object> emptyColumnsMap = Collections.emptyMap();
     private final ErrorInfo noError = null;
+    private final Instrumentation instrumentation = mock(Instrumentation.class);
+    private final JsonParserMetrics jsonParserMetrics = new JsonParserMetrics(defaultConfig);
 
     @Test
     public void shouldReturnEmptyRecordsforEmptyList() {
-        OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig);
+        OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
         OdpfMessageSchema schema = null;
         BigQuerySinkConfig bigQuerySinkConfig = null;
         MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
@@ -52,7 +57,7 @@ public class MessageRecordConverterForJsonTest {
 
     @Test
     public void shouldConvertJsonMessagesToRecordForLogMessage() {
-        OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig);
+        OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
         OdpfMessageSchema schema = null;
         HashMap<String, String> configMap = new HashMap<>();
         configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE");
@@ -91,7 +96,7 @@ public class MessageRecordConverterForJsonTest {
 
     @Test
     public void shouldConvertJsonMessagesToRecordForLogKey() {
-        OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig);
+        OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
         OdpfMessageSchema schema = null;
         HashMap<String, String> configMap = new HashMap<>();
         configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_KEY");
@@ -130,7 +135,7 @@ public class MessageRecordConverterForJsonTest {
 
     @Test
     public void shouldHandleBothInvalidAndValidJsonMessages() {
-        OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig);
+        OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
         OdpfMessageSchema schema = null;
         HashMap<String, String> configMap = new HashMap<>();
         configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE");
@@ -208,7 +213,7 @@ public class MessageRecordConverterForJsonTest {
 
     @Test
     public void shouldInjectEventTimestamp() {
-        OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig);
+        OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
         OdpfMessageSchema schema = null;
         Map<String, String> configMap = ImmutableMap.of(
                 "SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE",

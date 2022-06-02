@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.odpf.depot.bigquery.models.Record;
 import io.odpf.depot.config.BigQuerySinkConfig;
+import io.odpf.depot.metrics.Instrumentation;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +44,9 @@ public class JsonErrorHandlerTest {
     @Captor
     private ArgumentCaptor<List<Field>> fieldsArgumentCaptor;
 
+    @Mock
+    private Instrumentation instrumentation;
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -62,7 +66,7 @@ public class JsonErrorHandlerTest {
 
         List<Record> records = ImmutableList.of(validRecord);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig, instrumentation);
 
         jsonErrorHandler.handle(insertErrors, records);
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -86,7 +90,7 @@ public class JsonErrorHandlerTest {
 
         List<Record> records = ImmutableList.of(validRecord);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig, instrumentation);
         jsonErrorHandler.handle(insertErrors, records);
 
         verify(bigQueryClient, never()).upsertTable(any());
@@ -117,7 +121,7 @@ public class JsonErrorHandlerTest {
 
         List<Record> validRecords = ImmutableList.of(validRecordWithFirstName, validRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
 
@@ -149,7 +153,7 @@ public class JsonErrorHandlerTest {
 
         List<Record> validRecords = asList(validRecordWithFirstName, validRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -177,7 +181,7 @@ public class JsonErrorHandlerTest {
 
         List<Record> validRecords = asList(validRecordWithFirstName, validRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -212,7 +216,7 @@ public class JsonErrorHandlerTest {
 
         List<Record> validRecords = ImmutableList.of(validRecordWithFirstName, validRecordWithLastName, anotheRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -254,7 +258,7 @@ public class JsonErrorHandlerTest {
 
         List<Record> validRecords = ImmutableList.of(validRecordWithFirstName, validRecordWithLastName, anotheRecordWithLastName);
 
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -293,7 +297,7 @@ public class JsonErrorHandlerTest {
             "SINK_BIGQUERY_TABLE_PARTITION_KEY", "event_timestamp_partition",
             "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp_partition=timestamp");
         BigQuerySinkConfig partitionKeyConfig = ConfigFactory.create(BigQuerySinkConfig.class, envMap);
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, partitionKeyConfig);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, partitionKeyConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
 
@@ -320,7 +324,7 @@ public class JsonErrorHandlerTest {
         List<Record> records = asList(validRecord);
         BigQuerySinkConfig stringDisableConfig = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
             "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false"));
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, stringDisableConfig);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, stringDisableConfig, instrumentation);
         assertThrows(UnsupportedOperationException.class, () -> {
             jsonErrorHandler.handle(errorInfoMap, records);
         });
@@ -374,7 +378,7 @@ public class JsonErrorHandlerTest {
         Map<String, String> config = ImmutableMap.of("SINK_BIGQUERY_METADATA_COLUMNS_TYPES",
                 "message_offset=integer,load_time=timestamp");
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, config);
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -433,7 +437,7 @@ public class JsonErrorHandlerTest {
                 .of("SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "message_offset=integer,load_time=timestamp",
                         "SINK_BIGQUERY_ADD_METADATA_ENABLED", "false");
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, config);
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
         verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
@@ -486,7 +490,7 @@ public class JsonErrorHandlerTest {
                 "message_offset=integer,load_time=timestamp",
                 "SINK_BIGQUERY_METADATA_NAMESPACE", "hello_world_namespace");
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, config);
-        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig, instrumentation);
         assertThrows(UnsupportedOperationException.class, () -> {
             jsonErrorHandler.handle(errorInfoMap, validRecords);
         });

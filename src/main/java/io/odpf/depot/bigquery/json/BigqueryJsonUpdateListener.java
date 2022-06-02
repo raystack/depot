@@ -11,6 +11,7 @@ import io.odpf.depot.bigquery.proto.BigqueryFields;
 import io.odpf.depot.common.TupleString;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 
 import java.util.ArrayList;
@@ -24,11 +25,13 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
     private final MessageRecordConverterCache converterCache;
     private final BigQuerySinkConfig config;
     private final BigQueryClient bigQueryClient;
+    private final Instrumentation instrumentation;
 
-    public BigqueryJsonUpdateListener(BigQuerySinkConfig config, MessageRecordConverterCache converterCache, BigQueryClient bigQueryClient) {
+    public BigqueryJsonUpdateListener(BigQuerySinkConfig config, MessageRecordConverterCache converterCache, BigQueryClient bigQueryClient, Instrumentation instrumentation) {
         this.converterCache = converterCache;
         this.config = config;
         this.bigQueryClient = bigQueryClient;
+        this.instrumentation = instrumentation;
         if (!config.getSinkConnectorSchemaJsonDynamicSchemaEnable()) {
             throw new UnsupportedOperationException("currently only schema inferred from incoming data is supported, stencil schema support for json will be added in future");
         }

@@ -9,6 +9,7 @@ import io.odpf.depot.bigquery.handler.BigQueryClient;
 import io.odpf.depot.bigquery.handler.MessageRecordConverter;
 import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
 import io.odpf.depot.config.BigQuerySinkConfig;
+import io.odpf.depot.metrics.Instrumentation;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +31,7 @@ public class BigqueryJsonUpdateListenerTest {
 
     private MessageRecordConverterCache converterCache;
     private BigQueryClient mockBqClient;
+    private Instrumentation instrumentation;
 
     @Before
     public void setUp() throws Exception {
@@ -37,12 +39,13 @@ public class BigqueryJsonUpdateListenerTest {
         mockBqClient = mock(BigQueryClient.class);
         Schema emptySchema = Schema.of();
         when(mockBqClient.getSchema()).thenReturn(emptySchema);
+        instrumentation = mock(Instrumentation.class);
     }
 
     @Test
     public void shouldSetMessageRecordConverterAndUpsertTable() throws Exception {
         BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, Collections.emptyMap());
-        BigqueryJsonUpdateListener updateListener = new BigqueryJsonUpdateListener(bigQuerySinkConfig, converterCache, mockBqClient);
+        BigqueryJsonUpdateListener updateListener = new BigqueryJsonUpdateListener(bigQuerySinkConfig, converterCache, mockBqClient, instrumentation);
         updateListener.setOdpfMessageParser(null);
         updateListener.updateSchema();
         verify(converterCache, times(1)).setMessageRecordConverter(any(MessageRecordConverter.class));
@@ -56,7 +59,7 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
                 "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false"
         ));
-        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
         List<Field> bqSchemaFields = ImmutableList.of(
                 Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
@@ -72,7 +75,7 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "message_offset=integer,message_topic=string,message_timestamp=timestamp",
                 "SINK_BIGQUERY_ADD_METADATA_ENABLED", "true"
         ));
-        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
         List<Field> bqSchemaFields = ImmutableList.of(
                 Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
@@ -93,7 +96,7 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "message_offset=integer,message_topic=string,message_timestamp=timestamp",
                 "SINK_BIGQUERY_ADD_METADATA_ENABLED", "false"
         ));
-        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
         List<Field> bqSchemaFields = ImmutableList.of(
                 Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
@@ -111,7 +114,7 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "message_offset=integer,first_name=integer",
                 "SINK_BIGQUERY_ADD_METADATA_ENABLED", "true"
         ));
-        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         assertThrows(IllegalArgumentException.class, () -> bigqueryJsonUpdateListener.updateSchema());
     }
 
@@ -122,7 +125,7 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_ADD_METADATA_ENABLED", "true",
                 "SINK_BIGQUERY_METADATA_NAMESPACE", "metadata_namespace"
         ));
-        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         assertThrows(UnsupportedOperationException.class, () -> bigqueryJsonUpdateListener.updateSchema());
     }
 
@@ -136,7 +139,7 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
                 "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false"
         ));
-        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
         ArgumentCaptor<List<Field>> listArgumentCaptor = ArgumentCaptor.forClass(List.class);
         verify(mockBqClient, times(1)).upsertTable(listArgumentCaptor.capture());
@@ -152,7 +155,7 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "age=integer",
                 "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "true"
         ));
-        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         assertThrows(IllegalArgumentException.class, () -> bigqueryJsonUpdateListener.updateSchema());
     }
 
@@ -164,7 +167,7 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_TABLE_PARTITIONING_ENABLE", "true",
                 "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "true"
         ));
-        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient);
+        BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
         List<Field> bqSchemaFields = ImmutableList.of(
                 Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
@@ -177,7 +180,7 @@ public class BigqueryJsonUpdateListenerTest {
         BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class,
                 ImmutableMap.of("SINK_CONNECTOR_SCHEMA_JSON_DYNAMIC_SCHEMA_ENABLE", "false"));
         assertThrows(UnsupportedOperationException.class,
-                () -> new BigqueryJsonUpdateListener(bigQuerySinkConfig, converterCache, mockBqClient));
+                () -> new BigqueryJsonUpdateListener(bigQuerySinkConfig, converterCache, mockBqClient, instrumentation));
 
     }
 }
