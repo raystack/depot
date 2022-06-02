@@ -8,6 +8,7 @@ import com.google.cloud.bigquery.Schema;
 import io.odpf.depot.bigquery.models.Record;
 import io.odpf.depot.common.TupleString;
 import io.odpf.depot.config.BigQuerySinkConfig;
+import io.odpf.depot.metrics.Instrumentation;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,9 +32,11 @@ public class JsonErrorHandler implements ErrorHandler {
     private final boolean castAllColumnsToStringDataType;
     private final Map<String, String> metadataColumnsTypesMap;
     private final String bqMetadataNamespace;
+    private final Instrumentation instrumentation;
 
-    public JsonErrorHandler(BigQueryClient bigQueryClient, BigQuerySinkConfig bigQuerySinkConfig) {
+    public JsonErrorHandler(BigQueryClient bigQueryClient, BigQuerySinkConfig bigQuerySinkConfig, Instrumentation instrumentation) {
 
+        this.instrumentation = instrumentation;
         this.bigQueryClient = bigQueryClient;
         tablePartitionKey = bigQuerySinkConfig.isTablePartitioningEnabled() ? bigQuerySinkConfig.getTablePartitionKey() : "";
         if (bigQuerySinkConfig.isTablePartitioningEnabled()) {
@@ -73,6 +76,7 @@ public class JsonErrorHandler implements ErrorHandler {
                     .map(this::getField)
                     .distinct()
                     .collect(Collectors.toCollection(ArrayList::new));
+            instrumentation.logInfo("updating table with missing fields detected %s", bqSchemaFields);
             existingFieldList.iterator().forEachRemaining(bqSchemaFields::add);
             bigQueryClient.upsertTable(bqSchemaFields);
         }
