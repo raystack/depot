@@ -1,9 +1,11 @@
 package io.odpf.depot.bigquery.json;
 
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
+import io.odpf.depot.bigquery.exception.BQTableUpdateFailure;
 import io.odpf.depot.bigquery.handler.BigQueryClient;
 import io.odpf.depot.bigquery.handler.MessageRecordConverter;
 import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
@@ -42,8 +44,6 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
         OdpfMessageParser parser = getOdpfMessageParser();
         MessageRecordConverter messageRecordConverter = new MessageRecordConverter(parser, config, null);
         converterCache.setMessageRecordConverter(messageRecordConverter);
-        Schema existingTableSchema = bigQueryClient.getSchema();
-        FieldList existingTableFields = existingTableSchema.getFields();
         List<TupleString> defaultColumns = config.getSinkBigquerySchemaJsonOutputDefaultColumns();
         HashSet<Field> fieldsToBeUpdated = defaultColumns
                 .stream()
@@ -53,8 +53,16 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
             throw new UnsupportedOperationException("metadata namespace is not supported, because nested json structure is not supported");
         }
         addMetadataFields(fieldsToBeUpdated, defaultColumns);
-        existingTableFields.iterator().forEachRemaining(fieldsToBeUpdated::add);
-        bigQueryClient.upsertTable(new ArrayList<>(fieldsToBeUpdated));
+        try {
+            Schema existingTableSchema = bigQueryClient.getSchema();
+            FieldList existingTableFields = existingTableSchema.getFields();
+            existingTableFields.iterator().forEachRemaining(fieldsToBeUpdated::add);
+            bigQueryClient.upsertTable(new ArrayList<>(fieldsToBeUpdated));
+        } catch (BigQueryException e) {
+            String errMsg = "Error while updating bigquery table in json update listener:" + e.getMessage();
+            instrumentation.logError(errMsg);
+            throw new BQTableUpdateFailure(errMsg, e);
+        }
     }
 
     /*
@@ -72,8 +80,10 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
                     .stream()
                     .filter(m -> defaultColumnNames.contains(m.getName())).findFirst();
             if (duplicateField.isPresent()) {
+                String duplicateFieldName = duplicateField.get().getName();
+                instrumentation.logError("duplicate key found in default columns and metadata config %s", duplicateFieldName);
                 throw new IllegalArgumentException("duplicate field called "
-                        + duplicateField.get().getName()
+                        + duplicateFieldName
                         + " is present in both default columns config and metadata config");
             }
             fieldsToBeUpdated.addAll(metadataFields);
