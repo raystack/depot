@@ -2,23 +2,24 @@ package io.odpf.depot.bigquery.handler;
 
 import com.google.api.client.util.DateTime;
 import io.odpf.depot.bigquery.models.Record;
-import io.odpf.depot.common.TupleString;
-import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.bigquery.models.Records;
+import io.odpf.depot.common.TupleString;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.error.ErrorInfo;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.exception.EmptyMessageException;
 import io.odpf.depot.exception.UnknownFieldsException;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,6 +68,9 @@ public class MessageRecordConverter {
             Map<String, Object> columns = parsedOdpfMessage.getMapping(schema);
             if (config.shouldAddMetadata()) {
                 addMetadata(columns, message);
+            }
+            if (config.getSinkBigquerySchemaJsonOutputAddEventTimestampEnable()) {
+                columns.put("event_timestamp", new Timestamp(System.currentTimeMillis()));
             }
             return new Record(message.getMetadata(), columns, index, null);
         } catch (IOException e) {

@@ -14,13 +14,19 @@ import io.odpf.depot.message.json.JsonOdpfMessageParser;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Test;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class MessageRecordConverterForJsonTest {
 
@@ -199,6 +205,47 @@ public class MessageRecordConverterForJsonTest {
         assertEquals(expectedInvalidRecords, records.getInvalidRecords());
 
     }
+
+    @Test
+    public void shouldInjectEventTimestamp() {
+        OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig);
+        OdpfMessageSchema schema = null;
+        Map<String, String> configMap = ImmutableMap.of(
+                "SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE",
+                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_ADD_EVENT_TIMESTAMP_ENABLE", "true");
+
+        BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
+        MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
+        List<OdpfMessage> messages = new ArrayList<>();
+        messages.add(getOdpfMessageForString("{ \"first_name\": \"john doe\"}"));
+        messages.add(getOdpfMessageForString("{ \"last_name\": \"walker\"}"));
+
+        Records actualRecords = converter.convert(messages);
+
+        /*
+        cant do assert equals because of timestamp value
+        assertEquals(expectedRecords, records);
+         */
+        assertThat(actualRecords.getInvalidRecords(), empty());
+        assertEquals(2, actualRecords.getValidRecords().size());
+        Record validRecord1 = actualRecords.getValidRecords().get(0);
+        assertEquals(null, validRecord1.getErrorInfo());
+        assertThat(validRecord1.getColumns(), hasEntry("first_name", "john doe"));
+        Record validRecord2 = actualRecords.getValidRecords().get(1);
+        assertEquals(null, validRecord2.getErrorInfo());
+        assertThat(validRecord2.getColumns(), hasEntry("last_name", "walker"));
+
+        List<Timestamp> dateTimeList = actualRecords
+                .getValidRecords()
+                .stream()
+                .map(k -> (Timestamp) k.getColumns().get("event_timestamp"))
+                .collect(Collectors.toList());
+        long currentTimeMillis = System.currentTimeMillis();
+        //assert that time stamp injected is recent by checking the difference to be less than 10 seconds
+        assertTrue((currentTimeMillis - dateTimeList.get(0).getTime()) < 10000);
+        assertTrue((currentTimeMillis - dateTimeList.get(1).getTime()) < 10000);
+    }
+
 
     private OdpfMessage getOdpfMessageForString(String jsonStr) {
         byte[] logMessage = jsonStr.getBytes();

@@ -69,3 +69,16 @@ Global tags for StatsD metrics. Tags must be comma-separated.
 
 * Example value: `team=engineering,app=myapp`
 * Type: `optional`
+
+
+## SINK_CONNECTOR_SCHEMA_JSON_DYNAMIC_SCHEMA_ENABLE
+A boolean value to enable inferring schema from incoming data
+* Example value: true
+* Type: optional boolean
+* Default value: true
+
+## SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE
+A boolean value to enable converting all incoming json values to string
+* Example value: true
+* Type: optional boolean
+* Default value: true

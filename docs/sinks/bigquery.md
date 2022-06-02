@@ -6,6 +6,12 @@ second update the bigquery table schema based on the latest protobuf schema,
 third translate protobuf messages into bigquery records and insert them to bigquery tables.
 Bigquery utilise Bigquery [Streaming API](https://cloud.google.com/bigquery/streaming-data-into-bigquery) to insert record into bigquery tables.
 
+### Datatype JSON
+Bigquery Sink has several responsibilities, first creation of bigquery table and dataset when they are not exist,
+Currently we support dynamic schema by inferring from incoming json data; so the bigquery schema is updated by taking a diff of fields in json data and actual table fields.
+Currently we only support string data type for fields, so all incoming json data values are converted to string type, Except for metadata columns and partion key.
+
+
 ## Bigquery Table Schema Update
 
 ### Protobuf 
@@ -49,6 +55,11 @@ if `SINK_BIGQUERY_ADD_METADATA_ENABLED` is true then the metadata will be added.
 if namespace is empty, the metadata columns will be added in the root level.
 `SINK_BIGQUERY_METADATA_COLUMNS_TYPES` is set with kafka metadata column and their type,
 An example of metadata columns that can be added for kafka records.
+
+## Default columns for json data type
+With dynaminc schema for json we need to create table with some default columns, example like parition key needs to be set during creation of the table.
+Example `SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS =event_timestamp=timestamp`
+The metadata columns are added when input data contains values for the them which will result in missing fields error and will be added by the JSON error handler.
 
 | Fully Qualified Column Name | Type | Modifier |
 | --- | ----------- | ------- | 

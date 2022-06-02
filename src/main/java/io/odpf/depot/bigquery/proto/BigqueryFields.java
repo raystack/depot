@@ -19,6 +19,15 @@ public class BigqueryFields {
                         .build()).collect(Collectors.toList());
     }
 
+    /*
+    throws an exception if typeName is not recognized by LegacySQLTypeName.valueOfStric
+     */
+    public static List<Field> getMetadataFieldsStrict(List<TupleString> metadataColumnsTypes) {
+        return metadataColumnsTypes.stream().map(
+                tuple -> Field.newBuilder(tuple.getFirst(), LegacySQLTypeName.valueOfStrict(tuple.getSecond().toUpperCase()))
+                        .build()).collect(Collectors.toList());
+    }
+
     public static Field getNamespacedMetadataField(String namespace, List<TupleString> metadataColumnsTypes) {
         return Field.newBuilder(namespace, LegacySQLTypeName.RECORD, FieldList.of(getMetadataFields(metadataColumnsTypes)))
                 .setMode(Field.Mode.NULLABLE)

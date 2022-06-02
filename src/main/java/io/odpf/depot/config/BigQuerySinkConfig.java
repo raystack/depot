@@ -73,5 +73,14 @@ public interface BigQuerySinkConfig extends OdpfSinkConfig {
     @Separator(ConfToListConverter.ELEMENT_SEPARATOR)
     List<TupleString> getMetadataColumnsTypes();
 
+    @DefaultValue("false")
+    @Key("SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_ADD_EVENT_TIMESTAMP_ENABLE")
+    boolean getSinkBigquerySchemaJsonOutputAddEventTimestampEnable();
+
+    @DefaultValue("")
+    @Key("SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS")
+    @ConverterClass(ConfToListConverter.class)
+    @Separator(ConfToListConverter.ELEMENT_SEPARATOR)
+    List<TupleString> getSinkBigquerySchemaJsonOutputDefaultColumns();
 }
 
