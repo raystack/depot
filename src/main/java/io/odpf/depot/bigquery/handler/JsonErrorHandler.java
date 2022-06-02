@@ -65,14 +65,14 @@ public class JsonErrorHandler implements ErrorHandler {
         FieldList existingFieldList = schema.getFields();
         List<Entry<Long, List<BigQueryError>>> unknownFieldBqErrors = getUnknownFieldBqErrors(insertErrors);
         if (!unknownFieldBqErrors.isEmpty()) {
-            Set<Field> missingFields = unknownFieldBqErrors
+            ArrayList<Field> bqSchemaFields = unknownFieldBqErrors
                     .stream()
                     .map(x -> getColumnNamesForRecordsWhichHadUknownBqFieldErrors(records, x))
                     .flatMap(Collection::stream)
                     .filter(key -> filterExistingFields(existingFieldList, key))
                     .map(this::getField)
-                    .collect(Collectors.toSet());
-            ArrayList<Field> bqSchemaFields = new ArrayList<>(missingFields);
+                    .distinct()
+                    .collect(Collectors.toCollection(ArrayList::new));
             existingFieldList.iterator().forEachRemaining(bqSchemaFields::add);
             bigQueryClient.upsertTable(bqSchemaFields);
         }
@@ -85,7 +85,7 @@ public class JsonErrorHandler implements ErrorHandler {
 
 
     private List<Entry<Long, List<BigQueryError>>> getUnknownFieldBqErrors(Map<Long, List<BigQueryError>> insertErrors) {
-        return insertErrors.entrySet().parallelStream()
+        return insertErrors.entrySet().stream()
                 .filter((x) -> {
                     List<BigQueryError> value = x.getValue();
                     List<BigQueryError> bqErrorsWithNoSuchFields = getBqErrorsWithNoSuchFields(value);
