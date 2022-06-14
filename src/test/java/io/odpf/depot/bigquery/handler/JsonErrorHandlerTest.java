@@ -395,6 +395,71 @@ public class JsonErrorHandlerTest {
     }
 
     @Test
+    public void shouldUpdateMissingMetadataFieldsAndDefaultColumns() {
+        //existing table fields
+        Field lastName = Field.of("last_name", LegacySQLTypeName.STRING);
+        Field firstName = Field.of("first_name", LegacySQLTypeName.STRING);
+
+        Schema nonEmptyTableSchema = Schema.of(firstName, lastName);
+        when(bigQueryClient.getSchema()).thenReturn(nonEmptyTableSchema);
+
+        BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
+        Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(
+                0L, asList(noSuchFieldError),
+                1L, asList(noSuchFieldError),
+                2L, asList(noSuchFieldError));
+
+        Map<String, Object> columnsMapWithFistName = ImmutableMap.of(
+                "first_name", "john doe",
+                "newFieldAddress", "planet earth",
+                "depot", 123,
+                "message_offset", 111,
+                "load_time", new DateTime(System.currentTimeMillis()));
+        Record validRecordWithFirstName = Record.builder()
+                .columns(columnsMapWithFistName)
+                .metadata(ImmutableMap.of(
+                        "message_offset", 111,
+                        "load_time", new DateTime(System.currentTimeMillis())))
+                .build();
+
+        Map<String, Object> columnsMapWithNewFieldDog = ImmutableMap.of(
+                "newFieldDog", "golden retriever",
+                "load_time", new DateTime(System.currentTimeMillis()),
+                "message_offset", 11);
+        Record validRecordWithLastName = Record.builder()
+                .columns(columnsMapWithNewFieldDog)
+                .metadata(ImmutableMap.of(
+                        "load_time", new DateTime(System.currentTimeMillis()),
+                        "message_offset", 11))
+                .build();
+        Record anotheRecordWithLastName = Record.builder()
+                .columns(columnsMapWithNewFieldDog)
+                .build();
+
+        List<Record> validRecords = asList(validRecordWithFirstName, validRecordWithLastName, anotheRecordWithLastName);
+
+        Map<String, String> config = ImmutableMap.of("SINK_BIGQUERY_METADATA_COLUMNS_TYPES",
+                "message_offset=integer,load_time=timestamp",
+                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp_partition=timestamp,depot=integer");
+        BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, config);
+        JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig, instrumentation);
+        jsonErrorHandler.handle(errorInfoMap, validRecords);
+
+        verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
+
+        //missing fields
+        Field newFieldDog = Field.of("newFieldDog", LegacySQLTypeName.STRING);
+        Field newFieldAddress = Field.of("newFieldAddress", LegacySQLTypeName.STRING);
+
+        Field messageOffset = Field.of("message_offset", LegacySQLTypeName.INTEGER);
+        Field loadTime = Field.of("load_time", LegacySQLTypeName.TIMESTAMP);
+        Field depot = Field.of("depot", LegacySQLTypeName.INTEGER);
+        List<Field> actualFields = fieldsArgumentCaptor.getValue();
+        assertThat(actualFields,
+                containsInAnyOrder(messageOffset, loadTime, firstName, lastName, newFieldDog, newFieldAddress, depot));
+    }
+
+    @Test
     public void shouldNotAddMetadataFieldsWhenDisabled() {
         //existing table fields
         Field lastName = Field.of("last_name", LegacySQLTypeName.STRING);
