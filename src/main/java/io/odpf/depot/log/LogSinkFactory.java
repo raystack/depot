@@ -13,17 +13,19 @@ import java.util.Map;
 public class LogSinkFactory {
 
     private final StatsDReporter statsDReporter;
-    private final Map<String, String> config;
     private OdpfMessageParser odpfMessageParser;
-    private OdpfSinkConfig sinkConfig;
+    private final OdpfSinkConfig sinkConfig;
 
     public LogSinkFactory(Map<String, String> env, StatsDReporter statsDReporter) {
-        this.config = env;
+        this(ConfigFactory.create(OdpfSinkConfig.class, env), statsDReporter);
+    }
+
+    public LogSinkFactory(OdpfSinkConfig sinkConfig, StatsDReporter statsDReporter) {
+        this.sinkConfig = sinkConfig;
         this.statsDReporter = statsDReporter;
     }
 
     public void init() {
-        this.sinkConfig = ConfigFactory.create(OdpfSinkConfig.class, config);
         this.odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
     }
 
