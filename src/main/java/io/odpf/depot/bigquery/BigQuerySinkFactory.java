@@ -27,19 +27,22 @@ public class BigQuerySinkFactory {
     private BigQueryClient bigQueryClient;
     private BigQueryRow rowCreator;
     private final Function<Map<String, Object>, String> rowIDCreator;
-    private final Map<String, String> config;
     private BigQueryMetrics bigQueryMetrics;
     private ErrorHandler errorHandler;
     private MessageRecordConverterCache converterCache;
+    private final BigQuerySinkConfig sinkConfig;
 
     public BigQuerySinkFactory(Map<String, String> env, StatsDReporter statsDReporter, Function<Map<String, Object>, String> rowIDCreator) {
-        this.config = env;
+        this(ConfigFactory.create(BigQuerySinkConfig.class, env), statsDReporter, rowIDCreator);
+    }
+
+    public BigQuerySinkFactory(BigQuerySinkConfig sinkConfig, StatsDReporter statsDReporter, Function<Map<String, Object>, String> rowIDCreator) {
+        this.sinkConfig = sinkConfig;
         this.rowIDCreator = rowIDCreator;
         this.statsDReporter = statsDReporter;
     }
 
     public void init() {
-        BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, config);
         try {
             this.bigQueryMetrics = new BigQueryMetrics(sinkConfig);
             this.bigQueryClient = new BigQueryClient(sinkConfig, bigQueryMetrics, new Instrumentation(statsDReporter, BigQueryClient.class));
