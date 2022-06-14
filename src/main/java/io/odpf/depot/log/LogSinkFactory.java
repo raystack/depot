@@ -1,5 +1,6 @@
 package io.odpf.depot.log;
 
+import com.timgroup.statsd.NoOpStatsDClient;
 import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.OdpfSink;
 import io.odpf.depot.config.OdpfSinkConfig;
@@ -23,6 +24,10 @@ public class LogSinkFactory {
     public LogSinkFactory(OdpfSinkConfig sinkConfig, StatsDReporter statsDReporter) {
         this.sinkConfig = sinkConfig;
         this.statsDReporter = statsDReporter;
+    }
+
+    public LogSinkFactory(OdpfSinkConfig sinkConfig) {
+        this(sinkConfig, new StatsDReporter(new NoOpStatsDClient()));
     }
 
     public void init() {

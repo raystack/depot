@@ -1,5 +1,6 @@
 package io.odpf.depot.bigquery;
 
+import com.timgroup.statsd.NoOpStatsDClient;
 import io.odpf.depot.bigquery.handler.ErrorHandler;
 import io.odpf.depot.bigquery.handler.ErrorHandlerFactory;
 import io.odpf.depot.message.OdpfMessageParser;
@@ -41,6 +42,20 @@ public class BigQuerySinkFactory {
         this.rowIDCreator = rowIDCreator;
         this.statsDReporter = statsDReporter;
     }
+
+    public BigQuerySinkFactory(BigQuerySinkConfig sinkConfig) {
+        this(sinkConfig, new StatsDReporter(new NoOpStatsDClient()), null);
+    }
+
+    public BigQuerySinkFactory(BigQuerySinkConfig sinkConfig, StatsDReporter statsDReporter) {
+        this(sinkConfig, statsDReporter, null);
+    }
+
+
+    public BigQuerySinkFactory(BigQuerySinkConfig sinkConfig, Function<Map<String, Object>, String> rowIDCreator) {
+        this(sinkConfig, new StatsDReporter(new NoOpStatsDClient()), rowIDCreator);
+    }
+
 
     public void init() {
         try {
