@@ -16,12 +16,15 @@ import io.odpf.depot.metrics.JsonParserMetrics;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Test;
 
-import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,6 +43,11 @@ public class MessageRecordConverterForJsonTest {
     private final ErrorInfo noError = null;
     private final Instrumentation instrumentation = mock(Instrumentation.class);
     private final JsonParserMetrics jsonParserMetrics = new JsonParserMetrics(defaultConfig);
+    private static final TimeZone TZ = TimeZone.getTimeZone("UTC");
+    private static final DateFormat DF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+    static {
+        DF.setTimeZone(TZ);
+    }
 
     @Test
     public void shouldReturnEmptyRecordsforEmptyList() {
@@ -212,11 +220,12 @@ public class MessageRecordConverterForJsonTest {
     }
 
     @Test
-    public void shouldInjectEventTimestamp() {
+    public void shouldInjectEventTimestamp() throws ParseException {
         OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
         OdpfMessageSchema schema = null;
         Map<String, String> configMap = ImmutableMap.of(
                 "SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE",
+                "SINK_CONNECTOR_SCHEMA_DATA_TYPE", "json",
                 "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_ADD_EVENT_TIMESTAMP_ENABLE", "true");
 
         BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
@@ -240,15 +249,17 @@ public class MessageRecordConverterForJsonTest {
         assertEquals(null, validRecord2.getErrorInfo());
         assertThat(validRecord2.getColumns(), hasEntry("last_name", "walker"));
 
-        List<Timestamp> dateTimeList = actualRecords
+        List<String> dateTimeList = actualRecords
                 .getValidRecords()
                 .stream()
-                .map(k -> (Timestamp) k.getColumns().get("event_timestamp"))
+                .map(k -> (String) k.getColumns().get("event_timestamp"))
                 .collect(Collectors.toList());
         long currentTimeMillis = System.currentTimeMillis();
         //assert that time stamp injected is recent by checking the difference to be less than 10 seconds
-        assertTrue((currentTimeMillis - dateTimeList.get(0).getTime()) < 10000);
-        assertTrue((currentTimeMillis - dateTimeList.get(1).getTime()) < 10000);
+        boolean timedifferenceForFirstDate = (currentTimeMillis - DF.parse(dateTimeList.get(0)).getTime()) < 60000;
+        long timeDifferenceForSecondDate = currentTimeMillis - DF.parse(dateTimeList.get(1)).getTime();
+        assertTrue("the difference is " + timedifferenceForFirstDate, timedifferenceForFirstDate);
+        assertTrue("the difference is " + timeDifferenceForSecondDate, timeDifferenceForSecondDate < 60000);
     }
 
 

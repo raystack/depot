@@ -33,19 +33,18 @@ public class JsonErrorHandler implements ErrorHandler {
     private final Map<String, String> metadataColumnsTypesMap;
     private final String bqMetadataNamespace;
     private final Instrumentation instrumentation;
+    private final Map<String, String> defaultColumnsMap;
 
     public JsonErrorHandler(BigQueryClient bigQueryClient, BigQuerySinkConfig bigQuerySinkConfig, Instrumentation instrumentation) {
 
         this.instrumentation = instrumentation;
         this.bigQueryClient = bigQueryClient;
         tablePartitionKey = bigQuerySinkConfig.isTablePartitioningEnabled() ? bigQuerySinkConfig.getTablePartitionKey() : "";
+        defaultColumnsMap = bigQuerySinkConfig.getSinkBigquerySchemaJsonOutputDefaultColumns()
+                .stream()
+                .collect(Collectors.toMap(TupleString::getFirst, TupleString::getSecond));
         if (bigQuerySinkConfig.isTablePartitioningEnabled()) {
-            List<TupleString> defaultColumns = bigQuerySinkConfig.getSinkBigquerySchemaJsonOutputDefaultColumns();
-            partitionKeyDataType = defaultColumns
-                    .stream()
-                    .filter(column -> tablePartitionKey.equals(column.getFirst()))
-                    .findFirst()
-                    .map(tupleString -> LegacySQLTypeName.valueOfStrict(tupleString.getSecond().toUpperCase()));
+            partitionKeyDataType = Optional.of(LegacySQLTypeName.valueOfStrict(defaultColumnsMap.get(tablePartitionKey).toUpperCase()));
         } else {
             partitionKeyDataType = Optional.empty();
         }
@@ -76,7 +75,7 @@ public class JsonErrorHandler implements ErrorHandler {
                     .map(this::getField)
                     .distinct()
                     .collect(Collectors.toCollection(ArrayList::new));
-            instrumentation.logInfo("updating table with missing fields detected %s", bqSchemaFields);
+            instrumentation.logInfo("updating table with missing fields detected {}", bqSchemaFields);
             existingFieldList.iterator().forEachRemaining(bqSchemaFields::add);
             bigQueryClient.upsertTable(bqSchemaFields);
         }
@@ -99,8 +98,8 @@ public class JsonErrorHandler implements ErrorHandler {
 
     private List<BigQueryError> getBqErrorsWithNoSuchFields(List<BigQueryError> value) {
         return value.stream()
-                .filter(bigQueryError ->  bigQueryError.getReason().equals("invalid") && bigQueryError.getMessage().contains("no such field")
-        ).collect(Collectors.toList());
+                .filter(bigQueryError -> bigQueryError.getReason().equals("invalid") && bigQueryError.getMessage().contains("no such field")
+                ).collect(Collectors.toList());
     }
 
 
@@ -113,6 +112,9 @@ public class JsonErrorHandler implements ErrorHandler {
         }
         if (metadataColumnsTypesMap.containsKey(key)) {
             return Field.of(key, LegacySQLTypeName.valueOfStrict(metadataColumnsTypesMap.get(key).toUpperCase()));
+        }
+        if (defaultColumnsMap.containsKey(key)) {
+            return Field.of(key, LegacySQLTypeName.valueOfStrict(defaultColumnsMap.get(key).toUpperCase()));
         }
         if (!castAllColumnsToStringDataType) {
             throw new UnsupportedOperationException("only string data type is supported for fields other than partition key");
