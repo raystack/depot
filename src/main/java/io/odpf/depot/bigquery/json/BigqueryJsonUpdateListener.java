@@ -98,12 +98,6 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
             return Field.of(fieldName, fieldDataType);
         }
 
-        if (config.getSinkConnectorSchemaJsonOutputDefaultDatatypeStringEnable()
-                && fieldDataType != LegacySQLTypeName.STRING) {
-            throw new IllegalArgumentException("default columns data type should be string "
-                    + "when config for json output default data type string is enabled");
-        }
-
         return Field.of(fieldName, fieldDataType);
     }
 
@@ -112,10 +106,16 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
      */
     private boolean isValidPartitionField(String fieldName, LegacySQLTypeName fieldDataType) {
         Boolean isPartitioningEnabled = config.isTablePartitioningEnabled();
+        if (!isPartitioningEnabled) {
+            return false;
+        }
         String partitionKey = config.getTablePartitionKey();
 
         boolean isValidPartitionDataType = (fieldDataType == LegacySQLTypeName.TIMESTAMP || fieldDataType == LegacySQLTypeName.DATE);
+        if (partitionKey.equals(fieldName) && !isValidPartitionDataType) {
+            throw new UnsupportedOperationException(" supported paritition fields have to be of DATE or TIMESTAMP type..");
+        }
 
-        return isPartitioningEnabled && partitionKey.equals(fieldName) && isValidPartitionDataType;
+        return true;
     }
 }
