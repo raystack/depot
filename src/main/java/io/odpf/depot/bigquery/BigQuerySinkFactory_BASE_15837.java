@@ -1,6 +1,5 @@
 package io.odpf.depot.bigquery;
 
-import com.timgroup.statsd.NoOpStatsDClient;
 import io.odpf.depot.bigquery.handler.ErrorHandler;
 import io.odpf.depot.bigquery.handler.ErrorHandlerFactory;
 import io.odpf.depot.message.OdpfMessageParser;
@@ -28,46 +27,28 @@ public class BigQuerySinkFactory {
     private BigQueryClient bigQueryClient;
     private BigQueryRow rowCreator;
     private final Function<Map<String, Object>, String> rowIDCreator;
+    private final Map<String, String> config;
     private BigQueryMetrics bigQueryMetrics;
     private ErrorHandler errorHandler;
     private MessageRecordConverterCache converterCache;
-    private final BigQuerySinkConfig sinkConfig;
 
     public BigQuerySinkFactory(Map<String, String> env, StatsDReporter statsDReporter, Function<Map<String, Object>, String> rowIDCreator) {
-        this(ConfigFactory.create(BigQuerySinkConfig.class, env), statsDReporter, rowIDCreator);
-    }
-
-    public BigQuerySinkFactory(BigQuerySinkConfig sinkConfig, StatsDReporter statsDReporter, Function<Map<String, Object>, String> rowIDCreator) {
-        this.sinkConfig = sinkConfig;
+        this.config = env;
         this.rowIDCreator = rowIDCreator;
         this.statsDReporter = statsDReporter;
     }
 
-    public BigQuerySinkFactory(BigQuerySinkConfig sinkConfig) {
-        this(sinkConfig, new StatsDReporter(new NoOpStatsDClient()), null);
-    }
-
-    public BigQuerySinkFactory(BigQuerySinkConfig sinkConfig, StatsDReporter statsDReporter) {
-        this(sinkConfig, statsDReporter, null);
-    }
-
-
-    public BigQuerySinkFactory(BigQuerySinkConfig sinkConfig, Function<Map<String, Object>, String> rowIDCreator) {
-        this(sinkConfig, new StatsDReporter(new NoOpStatsDClient()), rowIDCreator);
-    }
-
-
     public void init() {
+        BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, config);
         try {
             this.bigQueryMetrics = new BigQueryMetrics(sinkConfig);
             this.bigQueryClient = new BigQueryClient(sinkConfig, bigQueryMetrics, new Instrumentation(statsDReporter, BigQueryClient.class));
             this.converterCache = new MessageRecordConverterCache();
-            this.errorHandler = ErrorHandlerFactory.create(sinkConfig, bigQueryClient, statsDReporter);
-            OdpfStencilUpdateListener odpfStencilUpdateListener = BigqueryStencilUpdateListenerFactory.create(sinkConfig, bigQueryClient, converterCache, statsDReporter);
+            this.errorHandler = ErrorHandlerFactory.create(sinkConfig, bigQueryClient);
+            OdpfStencilUpdateListener odpfStencilUpdateListener = BigqueryStencilUpdateListenerFactory.create(sinkConfig, bigQueryClient, converterCache);
             OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter, odpfStencilUpdateListener);
             odpfStencilUpdateListener.setOdpfMessageParser(odpfMessageParser);
-            odpfStencilUpdateListener.updateSchema();
-
+            odpfStencilUpdateListener.onSchemaUpdate(null);
             if (sinkConfig.isRowInsertIdEnabled()) {
                 this.rowCreator = new BigQueryRowWithInsertId(rowIDCreator);
             } else {
