@@ -5,6 +5,7 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
+import io.odpf.depot.bigquery.client.BigQueryClient;
 import io.odpf.depot.bigquery.models.Record;
 import io.odpf.depot.common.TupleString;
 import io.odpf.depot.config.BigQuerySinkConfig;

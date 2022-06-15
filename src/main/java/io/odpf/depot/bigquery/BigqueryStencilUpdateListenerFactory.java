@@ -1,7 +1,7 @@
 package io.odpf.depot.bigquery;
 
-import io.odpf.depot.bigquery.handler.BigQueryClient;
-import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
+import io.odpf.depot.bigquery.client.BigQueryClient;
+import io.odpf.depot.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.depot.bigquery.json.BigqueryJsonUpdateListener;
 import io.odpf.depot.bigquery.proto.BigqueryProtoUpdateListener;
 import io.odpf.depot.config.BigQuerySinkConfig;

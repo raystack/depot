@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery.handler;
+package io.odpf.depot.bigquery.converter;
 
 import lombok.Data;
 

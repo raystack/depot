@@ -10,11 +10,11 @@ import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 import io.odpf.depot.OdpfSink;
-import io.odpf.depot.bigquery.handler.BigQueryClient;
-import io.odpf.depot.bigquery.handler.BigQueryRow;
-import io.odpf.depot.bigquery.handler.BigQueryRowWithInsertId;
-import io.odpf.depot.bigquery.handler.BigQueryRowWithoutInsertId;
-import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
+import io.odpf.depot.bigquery.client.BigQueryClient;
+import io.odpf.depot.bigquery.client.BigQueryRow;
+import io.odpf.depot.bigquery.client.BigQueryRowWithInsertId;
+import io.odpf.depot.bigquery.client.BigQueryRowWithoutInsertId;
+import io.odpf.depot.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import org.aeonbits.owner.ConfigFactory;
 

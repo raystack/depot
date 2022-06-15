@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery.handler;
+package io.odpf.depot.bigquery.converter;
 
 import com.google.common.collect.ImmutableMap;
 import io.odpf.depot.bigquery.models.Record;

@@ -7,6 +7,7 @@ import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.odpf.depot.bigquery.client.BigQueryClient;
 import io.odpf.depot.bigquery.models.Record;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.metrics.Instrumentation;

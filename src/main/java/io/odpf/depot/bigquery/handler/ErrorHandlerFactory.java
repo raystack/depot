@@ -1,5 +1,6 @@
 package io.odpf.depot.bigquery.handler;
 
+import io.odpf.depot.bigquery.client.BigQueryClient;
 import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.metrics.Instrumentation;
