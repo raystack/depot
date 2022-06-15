@@ -81,7 +81,7 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
                     .filter(m -> defaultColumnNames.contains(m.getName())).findFirst();
             if (duplicateField.isPresent()) {
                 String duplicateFieldName = duplicateField.get().getName();
-                instrumentation.logError("duplicate key found in default columns and metadata config %s", duplicateFieldName);
+                instrumentation.logError("duplicate key found in default columns and metadata config {}", duplicateFieldName);
                 throw new IllegalArgumentException("duplicate field called "
                         + duplicateFieldName
                         + " is present in both default columns config and metadata config");

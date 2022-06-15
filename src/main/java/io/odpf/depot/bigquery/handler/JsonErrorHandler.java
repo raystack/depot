@@ -75,7 +75,7 @@ public class JsonErrorHandler implements ErrorHandler {
                     .map(this::getField)
                     .distinct()
                     .collect(Collectors.toCollection(ArrayList::new));
-            instrumentation.logInfo("updating table with missing fields detected %s", bqSchemaFields);
+            instrumentation.logInfo("updating table with missing fields detected {}", bqSchemaFields);
             existingFieldList.iterator().forEachRemaining(bqSchemaFields::add);
             bigQueryClient.upsertTable(bqSchemaFields);
         }
