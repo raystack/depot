@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery.handler;
+package io.odpf.depot.bigquery.client;
 
 
 import com.google.cloud.bigquery.Field;

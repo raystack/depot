@@ -56,13 +56,13 @@ public interface OdpfSinkConfig extends Config {
     @DefaultValue("application_")
     String getMetricsApplicationPrefix();
 
-    @Key("SINK_CONNECTOR_SCHEMA_MESSAGE_CLASS")
+    @Key("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS")
     @DefaultValue("")
-    String getSinkConnectorSchemaMessageClass();
+    String getSinkConnectorSchemaProtoMessageClass();
 
-    @Key("SINK_CONNECTOR_SCHEMA_KEY_CLASS")
+    @Key("SINK_CONNECTOR_SCHEMA_PROTO_KEY_CLASS")
     @DefaultValue("")
-    String getSinkConnectorSchemaKeyClass();
+    String getSinkConnectorSchemaProtoKeyClass();
 
     @Key("SINK_CONNECTOR_SCHEMA_DATA_TYPE")
     @ConverterClass(SinkConnectorSchemaDataTypeConverter.class)

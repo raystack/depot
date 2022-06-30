@@ -9,6 +9,7 @@ import io.odpf.depot.exception.OdpfSinkException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.metrics.Instrumentation;
+import io.odpf.depot.metrics.JsonParserMetrics;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,12 +35,14 @@ public class LogSinkTest {
     private OdpfSinkConfig config;
     private OdpfMessageParser odpfMessageParser;
     private Instrumentation instrumentation;
+    private JsonParserMetrics jsonParserMetrics;
 
     @Before
     public void setUp() throws Exception {
         config = mock(OdpfSinkConfig.class);
         odpfMessageParser = mock(OdpfMessageParser.class);
         instrumentation = mock(Instrumentation.class);
+        jsonParserMetrics = new JsonParserMetrics(config);
 
     }
 
@@ -61,7 +64,7 @@ public class LogSinkTest {
             put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "log_message");
         }};
         OdpfSinkConfig odpfSinkConfig = ConfigFactory.create(OdpfSinkConfig.class, configMap);
-        OdpfMessageParser messageParser = new JsonOdpfMessageParser(odpfSinkConfig);
+        OdpfMessageParser messageParser = new JsonOdpfMessageParser(odpfSinkConfig, instrumentation, jsonParserMetrics);
         LogSink logSink = new LogSink(odpfSinkConfig, messageParser, instrumentation);
         ArrayList<OdpfMessage> messages = new ArrayList<>();
         String validJsonFirstName = "{\"first_name\":\"john\"}";
@@ -89,7 +92,7 @@ public class LogSinkTest {
         }};
         OdpfSinkConfig odpfSinkConfig = ConfigFactory.create(OdpfSinkConfig.class, configMap);
 
-        OdpfMessageParser messageParser = new JsonOdpfMessageParser(odpfSinkConfig);
+        OdpfMessageParser messageParser = new JsonOdpfMessageParser(odpfSinkConfig, instrumentation, jsonParserMetrics);
         LogSink logSink = new LogSink(odpfSinkConfig, messageParser, instrumentation);
         ArrayList<OdpfMessage> messages = new ArrayList<>();
         String validJsonFirstName = "{\"first_name\":\"john\"}";

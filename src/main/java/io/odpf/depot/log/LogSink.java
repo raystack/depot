@@ -31,7 +31,7 @@ public class LogSink implements OdpfSink {
         OdpfSinkResponse response = new OdpfSinkResponse();
         SinkConnectorSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
         String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
-                ? config.getSinkConnectorSchemaMessageClass() : config.getSinkConnectorSchemaKeyClass();
+                ? config.getSinkConnectorSchemaProtoMessageClass() : config.getSinkConnectorSchemaProtoKeyClass();
         for (int ii = 0; ii < messages.size(); ii++) {
             OdpfMessage message = messages.get(ii);
             try {

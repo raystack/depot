@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery.handler;
+package io.odpf.depot.bigquery.client;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.TransportOptions;
@@ -16,10 +16,10 @@ import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
-import io.odpf.depot.metrics.BigQueryMetrics;
-import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.bigquery.exception.BQDatasetLocationChangedException;
 import io.odpf.depot.config.BigQuerySinkConfig;
+import io.odpf.depot.metrics.BigQueryMetrics;
+import io.odpf.depot.metrics.Instrumentation;
 import lombok.Getter;
 
 import java.io.FileInputStream;
@@ -84,6 +84,9 @@ public class BigQueryClient {
 
     public Schema getSchema() {
         Table table = bigquery.getTable(tableID);
+        if (table == null) {
+            return Schema.of();
+        }
         return table.getDefinition().getSchema();
     }
 

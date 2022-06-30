@@ -9,14 +9,14 @@ Application prefix for sink metrics.
 * Example value: `application_`
 * Type: `required`
 
-## `SINK_CONNECTOR_SCHEMA_MESSAGE_CLASS`
+## `SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS`
 
 OdpfMessage log-message schema class
 
 * Example value: `io.odpf.schema.MessageClass`
 * Type: `required`
 
-## `SINK_CONNECTOR_SCHEMA_KEY_CLASS`
+## `SINK_CONNECTOR_SCHEMA_PROTO_KEY_CLASS`
 
 OdpfMessage log-key schema class
 

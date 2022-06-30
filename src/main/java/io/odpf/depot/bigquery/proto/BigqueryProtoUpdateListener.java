@@ -5,9 +5,9 @@ import com.google.cloud.bigquery.Field;
 import com.google.protobuf.Descriptors.Descriptor;
 import io.odpf.depot.bigquery.exception.BQSchemaMappingException;
 import io.odpf.depot.bigquery.exception.BQTableUpdateFailure;
-import io.odpf.depot.bigquery.handler.BigQueryClient;
-import io.odpf.depot.bigquery.handler.MessageRecordConverter;
-import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
+import io.odpf.depot.bigquery.client.BigQueryClient;
+import io.odpf.depot.bigquery.converter.MessageRecordConverter;
+import io.odpf.depot.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.depot.common.TupleString;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.message.OdpfMessageSchema;
@@ -44,7 +44,7 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
         try {
             SinkConnectorSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
             String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
-                    ? config.getSinkConnectorSchemaMessageClass() : config.getSinkConnectorSchemaKeyClass();
+                    ? config.getSinkConnectorSchemaProtoMessageClass() : config.getSinkConnectorSchemaProtoKeyClass();
             ProtoOdpfMessageParser odpfMessageParser = (ProtoOdpfMessageParser) getOdpfMessageParser();
             OdpfMessageSchema schema;
             if (newDescriptors == null) {
@@ -62,6 +62,11 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
             log.error(errMsg);
             throw new BQTableUpdateFailure(errMsg, e);
         }
+    }
+
+    @Override
+    public void updateSchema() {
+        onSchemaUpdate(null);
     }
 
     private void addMetadataFields(List<Field> bqSchemaFields) {

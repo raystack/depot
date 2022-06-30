@@ -11,8 +11,8 @@ import io.odpf.depot.common.TupleString;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.message.proto.TestProtoUtil;
-import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
-import io.odpf.depot.bigquery.handler.BigQueryClient;
+import io.odpf.depot.bigquery.converter.MessageRecordConverterCache;
+import io.odpf.depot.bigquery.client.BigQueryClient;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.proto.ProtoField;
 import io.odpf.depot.bigquery.models.Records;
@@ -49,7 +49,7 @@ public class BigqueryProtoUpdateListenerTest {
 
     @Before
     public void setUp() throws InvalidProtocolBufferException {
-        System.setProperty("SINK_CONNECTOR_SCHEMA_MESSAGE_CLASS", "io.odpf.depot.TestKeyBQ");
+        System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "io.odpf.depot.TestKeyBQ");
         System.setProperty("SINK_BIGQUERY_ENABLE_AUTO_SCHEMA_UPDATE", "false");
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "");
         System.setProperty("SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "topic=string,partition=integer,offset=integer");

@@ -8,19 +8,27 @@ import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.metrics.Instrumentation;
+import io.odpf.depot.metrics.JsonParserMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.time.Instant;
 
 @Slf4j
 public class JsonOdpfMessageParser implements OdpfMessageParser {
 
     private final OdpfSinkConfig config;
+    private final Instrumentation instrumentation;
+    private final JsonParserMetrics jsonParserMetrics;
 
-    public JsonOdpfMessageParser(OdpfSinkConfig config) {
+    public JsonOdpfMessageParser(OdpfSinkConfig config, Instrumentation instrumentation, JsonParserMetrics jsonParserMetrics) {
+        this.instrumentation = instrumentation;
+        this.jsonParserMetrics = jsonParserMetrics;
         this.config = config;
+
     }
 
 
@@ -45,7 +53,22 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
                 log.info("empty message found {}", message.getMetadataString());
                 throw new EmptyMessageException();
             }
-            return new JsonOdpfParsedMessage(new JSONObject(new String(payload)));
+            Instant instant = Instant.now();
+            JSONObject jsonObject = new JSONObject(new String(payload));
+            JSONObject jsonWithStringValues = new JSONObject();
+            jsonObject.keySet()
+                    .forEach(k -> {
+                        Object value = jsonObject.get(k);
+                        if (value instanceof JSONObject) {
+                            throw new UnsupportedOperationException("nested json structure not supported yet");
+                        }
+                        if (JSONObject.NULL.equals(value)) {
+                            return;
+                        }
+                        jsonWithStringValues.put(k, value.toString());
+                    });
+            instrumentation.captureDurationSince(jsonParserMetrics.getJsonParseTimeTakenMetric(), instant);
+            return new JsonOdpfParsedMessage(jsonWithStringValues);
         } catch (JSONException ex) {
             throw new IOException("invalid json error", ex);
         }

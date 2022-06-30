@@ -21,7 +21,7 @@ public class ProtoOdpfMessageParserTest {
 
     private final HashMap<String, String> configMap = new HashMap<String, String>() {{
         put("SCHEMA_REGISTRY_STENCIL_ENABLE", "false");
-        put("SINK_CONNECTOR_SCHEMA_MESSAGE_CLASS", "io.odpf.depot.TestMessage");
+        put("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "io.odpf.depot.TestMessage");
     }};
 
     @Test

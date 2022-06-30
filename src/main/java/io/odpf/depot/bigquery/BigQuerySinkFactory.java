@@ -10,11 +10,11 @@ import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 import io.odpf.depot.OdpfSink;
-import io.odpf.depot.bigquery.handler.BigQueryClient;
-import io.odpf.depot.bigquery.handler.BigQueryRow;
-import io.odpf.depot.bigquery.handler.BigQueryRowWithInsertId;
-import io.odpf.depot.bigquery.handler.BigQueryRowWithoutInsertId;
-import io.odpf.depot.bigquery.handler.MessageRecordConverterCache;
+import io.odpf.depot.bigquery.client.BigQueryClient;
+import io.odpf.depot.bigquery.client.BigQueryRow;
+import io.odpf.depot.bigquery.client.BigQueryRowWithInsertId;
+import io.odpf.depot.bigquery.client.BigQueryRowWithoutInsertId;
+import io.odpf.depot.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import org.aeonbits.owner.ConfigFactory;
 
@@ -62,11 +62,12 @@ public class BigQuerySinkFactory {
             this.bigQueryMetrics = new BigQueryMetrics(sinkConfig);
             this.bigQueryClient = new BigQueryClient(sinkConfig, bigQueryMetrics, new Instrumentation(statsDReporter, BigQueryClient.class));
             this.converterCache = new MessageRecordConverterCache();
-            this.errorHandler = ErrorHandlerFactory.create(sinkConfig, bigQueryClient);
-            OdpfStencilUpdateListener odpfStencilUpdateListener = BigqueryStencilUpdateListenerFactory.create(sinkConfig, bigQueryClient, converterCache);
+            this.errorHandler = ErrorHandlerFactory.create(sinkConfig, bigQueryClient, statsDReporter);
+            OdpfStencilUpdateListener odpfStencilUpdateListener = BigqueryStencilUpdateListenerFactory.create(sinkConfig, bigQueryClient, converterCache, statsDReporter);
             OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter, odpfStencilUpdateListener);
             odpfStencilUpdateListener.setOdpfMessageParser(odpfMessageParser);
-            odpfStencilUpdateListener.onSchemaUpdate(null);
+            odpfStencilUpdateListener.updateSchema();
+
             if (sinkConfig.isRowInsertIdEnabled()) {
                 this.rowCreator = new BigQueryRowWithInsertId(rowIDCreator);
             } else {
