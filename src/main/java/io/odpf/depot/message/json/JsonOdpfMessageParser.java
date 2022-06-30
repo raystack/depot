@@ -27,9 +27,6 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
     public JsonOdpfMessageParser(OdpfSinkConfig config, Instrumentation instrumentation, JsonParserMetrics jsonParserMetrics) {
         this.instrumentation = instrumentation;
         this.jsonParserMetrics = jsonParserMetrics;
-        if (!config.getSinkConnectorSchemaJsonOutputDefaultDatatypeStringEnable()) {
-            throw new UnsupportedOperationException("currently only string data type for values is supported");
-        }
         this.config = config;
 
     }

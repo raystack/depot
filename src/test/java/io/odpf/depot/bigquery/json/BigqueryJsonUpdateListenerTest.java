@@ -43,7 +43,7 @@ public class BigqueryJsonUpdateListenerTest {
     }
 
     @Test
-    public void shouldSetMessageRecordConverterAndUpsertTable() throws Exception {
+    public void shouldSetMessageRecordConverterAndUpsertTable() {
         BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, Collections.emptyMap());
         BigqueryJsonUpdateListener updateListener = new BigqueryJsonUpdateListener(bigQuerySinkConfig, converterCache, mockBqClient, instrumentation);
         updateListener.setOdpfMessageParser(null);
@@ -56,8 +56,8 @@ public class BigqueryJsonUpdateListenerTest {
     public void shouldCreateTableWithDefaultColumns() {
 
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
-                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
-                "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false"
+                "SINK_BIGQUERY_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
+                "SINK_CONNECTOR_DEFAULT_DATATYPE_STRING_ENABLE", "false"
         ));
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
@@ -70,8 +70,8 @@ public class BigqueryJsonUpdateListenerTest {
     @Test
     public void shouldCreateTableWithDefaultColumnsAndMetadataFields() {
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
-                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
-                "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false",
+                "SINK_BIGQUERY_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
+                "SINK_BIGQUERY_DEFAULT_DATATYPE_STRING_ENABLE", "false",
                 "SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "message_offset=integer,message_topic=string,message_timestamp=timestamp",
                 "SINK_BIGQUERY_ADD_METADATA_ENABLED", "true"
         ));
@@ -92,8 +92,8 @@ public class BigqueryJsonUpdateListenerTest {
     @Test
     public void shouldCreateTableWithDefaultColumnsWithDdifferentTypesAndMetadataFields() {
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
-                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=integer",
-                "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "true",
+                "SINK_BIGQUERY_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=integer",
+                "SINK_BIGQUERY_DEFAULT_DATATYPE_STRING_ENABLE", "true",
                 "SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "message_offset=integer,message_topic=string,message_timestamp=timestamp",
                 "SINK_BIGQUERY_ADD_METADATA_ENABLED", "true"
         ));
@@ -109,11 +109,12 @@ public class BigqueryJsonUpdateListenerTest {
         verify(mockBqClient, times(1)).upsertTable(listArgumentCaptor.capture());
         assertThat(listArgumentCaptor.getValue(), containsInAnyOrder(bqSchemaFields.toArray()));
     }
+
     @Test
     public void shouldNotAddMetadataFields() {
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
-                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
-                "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false",
+                "SINK_BIGQUERY_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
+                "SINK_BIGQUERY_DEFAULT_DATATYPE_STRING_ENABLE", "false",
                 "SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "message_offset=integer,message_topic=string,message_timestamp=timestamp",
                 "SINK_BIGQUERY_ADD_METADATA_ENABLED", "false"
         ));
@@ -130,13 +131,13 @@ public class BigqueryJsonUpdateListenerTest {
     @Test
     public void shouldThrowErrorIfDefaultColumnsAndMetadataFieldsContainSameEntryCalledFirstName() {
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
-                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
-                "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false",
+                "SINK_BIGQUERY_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
+                "SINK_BIGQUERY_DEFAULT_DATATYPE_STRING_ENABLE", "false",
                 "SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "message_offset=integer,first_name=integer",
                 "SINK_BIGQUERY_ADD_METADATA_ENABLED", "true"
         ));
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
-        assertThrows(IllegalArgumentException.class, () -> bigqueryJsonUpdateListener.updateSchema());
+        assertThrows(IllegalArgumentException.class, bigqueryJsonUpdateListener::updateSchema);
     }
 
     @Test
@@ -147,7 +148,7 @@ public class BigqueryJsonUpdateListenerTest {
                 "SINK_BIGQUERY_METADATA_NAMESPACE", "metadata_namespace"
         ));
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
-        assertThrows(UnsupportedOperationException.class, () -> bigqueryJsonUpdateListener.updateSchema());
+        assertThrows(UnsupportedOperationException.class, bigqueryJsonUpdateListener::updateSchema);
     }
 
     @Test
@@ -157,8 +158,8 @@ public class BigqueryJsonUpdateListenerTest {
         when(mockBqClient.getSchema()).thenReturn(Schema.of(existingField1,
                 existingField2));
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
-                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
-                "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false"
+                "SINK_BIGQUERY_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
+                "SINK_BIGQUERY_DEFAULT_DATATYPE_STRING_ENABLE", "false"
         ));
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
@@ -173,10 +174,10 @@ public class BigqueryJsonUpdateListenerTest {
     @Test
     public void shouldNotCastPartitionKeyToString() {
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
-                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
+                "SINK_BIGQUERY_DEFAULT_COLUMNS", "event_timestamp=timestamp,first_name=string",
                 "SINK_BIGQUERY_TABLE_PARTITION_KEY", "event_timestamp",
                 "SINK_BIGQUERY_TABLE_PARTITIONING_ENABLE", "true",
-                "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "true"
+                "SINK_BIGQUERY_DEFAULT_DATATYPE_STRING_ENABLE", "true"
         ));
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
@@ -187,24 +188,21 @@ public class BigqueryJsonUpdateListenerTest {
     }
 
     @Test
-    public void shouldThrowErroWhenParitionKeyTypeIsNotCorrect() {
+    public void shouldThrowErrorWhenPartitionKeyTypeIsNotCorrect() {
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
-                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp=integer,first_name=string",
+                "SINK_BIGQUERY_DEFAULT_COLUMNS", "event_timestamp=integer,first_name=string",
                 "SINK_BIGQUERY_TABLE_PARTITION_KEY", "event_timestamp",
                 "SINK_BIGQUERY_TABLE_PARTITIONING_ENABLE", "true",
-                "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "true"
+                "SINK_BIGQUERY_DEFAULT_DATATYPE_STRING_ENABLE", "true"
         ));
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
-        List<Field> bqSchemaFields = ImmutableList.of(
-                Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
-                Field.of("first_name", LegacySQLTypeName.STRING));
-        assertThrows(UnsupportedOperationException.class, () -> bigqueryJsonUpdateListener.updateSchema());
+        assertThrows(UnsupportedOperationException.class, bigqueryJsonUpdateListener::updateSchema);
     }
 
     @Test
     public void shouldThrowExceptionWhenDynamicSchemaNotEnabled() {
         BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class,
-                ImmutableMap.of("SINK_CONNECTOR_SCHEMA_JSON_DYNAMIC_SCHEMA_ENABLE", "false"));
+                ImmutableMap.of("SINK_BIGQUERY_DYNAMIC_SCHEMA_ENABLE", "false"));
         assertThrows(UnsupportedOperationException.class,
                 () -> new BigqueryJsonUpdateListener(bigQuerySinkConfig, converterCache, mockBqClient, instrumentation));
 

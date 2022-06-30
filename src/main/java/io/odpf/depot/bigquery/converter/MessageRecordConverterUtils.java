@@ -39,7 +39,7 @@ public class MessageRecordConverterUtils {
 
     public static void addTimeStampColumnForJson(Map<String, Object> columns, BigQuerySinkConfig config) {
         if (config.getSinkConnectorSchemaDataType() == SinkConnectorSchemaDataType.JSON
-                && config.getSinkBigquerySchemaJsonOutputAddEventTimestampEnable()) {
+                && config.getSinkBigqueryAddEventTimestampEnable()) {
             columns.put(JSON_TIME_STAMP_COLUMN, DateUtils.formatCurrentTimeAsUTC());
         }
     }

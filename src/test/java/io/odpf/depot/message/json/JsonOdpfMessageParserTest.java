@@ -66,17 +66,6 @@ public class JsonOdpfMessageParserTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenCastTheJSONValuesToStringNotSet() {
-        Map<String, String> configMap = of("SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false");
-        OdpfSinkConfig config = ConfigFactory.create(OdpfSinkConfig.class, configMap);
-
-        UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
-                () -> new JsonOdpfMessageParser(config, instrumentation, jsonParserMetrics));
-        assertEquals("currently only string data type for values is supported", exception.getMessage());
-    }
-
-
-    @Test
     public void shouldCastTheJSONValuesToString() throws IOException {
         Map<String, String> configMap = of("SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "true");
         OdpfSinkConfig config = ConfigFactory.create(OdpfSinkConfig.class, configMap);

@@ -37,7 +37,7 @@ public class JsonErrorHandlerTest {
 
     private final Schema emptyTableSchema = Schema.of();
 
-    private BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, Collections.emptyMap());
+    private final BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, Collections.emptyMap());
 
     @Mock
     private BigQueryClient bigQueryClient;
@@ -51,7 +51,6 @@ public class JsonErrorHandlerTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-
     }
 
     @Test
@@ -59,7 +58,7 @@ public class JsonErrorHandlerTest {
         when(bigQueryClient.getSchema()).thenReturn(emptyTableSchema);
 
         BigQueryError bigQueryError = new BigQueryError("invalid", "first_name", "no such field: first_name");
-        Map<Long, List<BigQueryError>> insertErrors = ImmutableMap.of(0L, asList(bigQueryError));
+        Map<Long, List<BigQueryError>> insertErrors = ImmutableMap.of(0L, Collections.singletonList(bigQueryError));
 
         Record validRecord = Record.builder()
                 .columns(ImmutableMap.of("first_name", "john doe"))
@@ -70,7 +69,7 @@ public class JsonErrorHandlerTest {
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig, instrumentation);
 
         jsonErrorHandler.handle(insertErrors, records);
-        verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
+        verify(bigQueryClient, times(1)).upsertTable(fieldsArgumentCaptor.capture());
 
         Field firstName = Field.of("first_name", LegacySQLTypeName.STRING);
         List<Field> actualFields = fieldsArgumentCaptor.getValue();
@@ -108,7 +107,7 @@ public class JsonErrorHandlerTest {
         BigQueryError lastNameNotFoundError = new BigQueryError("invalid", "first_name", "no such field: last_name");
         Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(
                 0L, asList(firstNameNotFoundError, anotherError),
-                1L, asList(lastNameNotFoundError));
+                1L, Collections.singletonList(lastNameNotFoundError));
 
 
         Record validRecordWithFirstName = Record.builder()
@@ -126,7 +125,7 @@ public class JsonErrorHandlerTest {
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
 
-        verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
+        verify(bigQueryClient, times(1)).upsertTable(fieldsArgumentCaptor.capture());
 
         Field firstName = Field.of("first_name", LegacySQLTypeName.STRING);
         Field lastName = Field.of("last_name", LegacySQLTypeName.STRING);
@@ -142,7 +141,7 @@ public class JsonErrorHandlerTest {
         BigQueryError otherError = new BigQueryError("otherresons", "planet eart", "server error");
         Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(
                 1L, asList(noSuchFieldError, otherError),
-                0L, asList(otherError));
+                0L, Collections.singletonList(otherError));
 
         Record validRecordWithFirstName = Record.builder()
                 .columns(ImmutableMap.of("first_name", "john doe"))
@@ -157,7 +156,7 @@ public class JsonErrorHandlerTest {
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
-        verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
+        verify(bigQueryClient, times(1)).upsertTable(fieldsArgumentCaptor.capture());
 
         Field lastName = Field.of("last_name", LegacySQLTypeName.STRING);
         List<Field> actualFields = fieldsArgumentCaptor.getValue();
@@ -170,7 +169,7 @@ public class JsonErrorHandlerTest {
 
 
         BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
-        Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(1L, asList(noSuchFieldError));
+        Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(1L, Collections.singletonList(noSuchFieldError));
 
         Record validRecordWithFirstName = Record.builder()
                 .columns(ImmutableMap.of("first_name", "john doe"))
@@ -185,7 +184,7 @@ public class JsonErrorHandlerTest {
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
-        verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
+        verify(bigQueryClient, times(1)).upsertTable(fieldsArgumentCaptor.capture());
 
         Field lastName = Field.of("last_name", LegacySQLTypeName.STRING);
         List<Field> actualFields = fieldsArgumentCaptor.getValue();
@@ -199,9 +198,9 @@ public class JsonErrorHandlerTest {
 
         BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
         Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(
-        0L, asList(noSuchFieldError),
-        1L, asList(noSuchFieldError),
-        2L, asList(noSuchFieldError));
+        0L, Collections.singletonList(noSuchFieldError),
+        1L, Collections.singletonList(noSuchFieldError),
+        2L, Collections.singletonList(noSuchFieldError));
 
         Record validRecordWithFirstName = Record.builder()
                 .columns(ImmutableMap.of("first_name", "john doe"))
@@ -220,7 +219,7 @@ public class JsonErrorHandlerTest {
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
-        verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
+        verify(bigQueryClient, times(1)).upsertTable(fieldsArgumentCaptor.capture());
 
         Field lastName = Field.of("last_name", LegacySQLTypeName.STRING);
         Field firstName = Field.of("first_name", LegacySQLTypeName.STRING);
@@ -239,9 +238,9 @@ public class JsonErrorHandlerTest {
 
         BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
         Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(
-        0L, asList(noSuchFieldError),
-        1L, asList(noSuchFieldError),
-        2L, asList(noSuchFieldError));
+        0L, Collections.singletonList(noSuchFieldError),
+        1L, Collections.singletonList(noSuchFieldError),
+        2L, Collections.singletonList(noSuchFieldError));
 
         Map<String, Object> columnsMapWithFistName = ImmutableMap.of(
         "first_name", "john doe",
@@ -262,7 +261,7 @@ public class JsonErrorHandlerTest {
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, bigQuerySinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
-        verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
+        verify(bigQueryClient, times(1)).upsertTable(fieldsArgumentCaptor.capture());
 
         //missing fields
         Field newFieldDog = Field.of("newFieldDog", LegacySQLTypeName.STRING);
@@ -279,8 +278,8 @@ public class JsonErrorHandlerTest {
 
         BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
         Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(
-        0L, asList(noSuchFieldError),
-        1L, asList(noSuchFieldError));
+        0L, Collections.singletonList(noSuchFieldError),
+        1L, Collections.singletonList(noSuchFieldError));
 
         Record validRecordWithFirstName = Record.builder()
                 .columns(ImmutableMap.of("first_name", "john doe"))
@@ -296,13 +295,13 @@ public class JsonErrorHandlerTest {
         Map<String, String> envMap = ImmutableMap.of(
             "SINK_BIGQUERY_TABLE_PARTITIONING_ENABLE", "true",
             "SINK_BIGQUERY_TABLE_PARTITION_KEY", "event_timestamp_partition",
-            "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp_partition=timestamp");
+            "SINK_BIGQUERY_DEFAULT_COLUMNS", "event_timestamp_partition=timestamp");
         BigQuerySinkConfig partitionKeyConfig = ConfigFactory.create(BigQuerySinkConfig.class, envMap);
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, partitionKeyConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
 
-        verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
+        verify(bigQueryClient, times(1)).upsertTable(fieldsArgumentCaptor.capture());
 
         Field firstName = Field.of("first_name", LegacySQLTypeName.STRING);
         Field lastName = Field.of("last_name", LegacySQLTypeName.STRING);
@@ -316,21 +315,19 @@ public class JsonErrorHandlerTest {
         when(bigQueryClient.getSchema()).thenReturn(emptyTableSchema);
 
         BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
-        Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(0L, asList(noSuchFieldError));
+        Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(0L, Collections.singletonList(noSuchFieldError));
 
         Record validRecord = Record.builder()
                 .columns(ImmutableMap.of("first_name", "john doe"))
                 .build();
 
-        List<Record> records = asList(validRecord);
+        List<Record> records = Collections.singletonList(validRecord);
         BigQuerySinkConfig stringDisableConfig = ConfigFactory.create(BigQuerySinkConfig.class, ImmutableMap.of(
-            "SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "false"));
+            "SINK_BIGQUERY_DEFAULT_DATATYPE_STRING_ENABLE", "false"));
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, stringDisableConfig, instrumentation);
-        assertThrows(UnsupportedOperationException.class, () -> {
-            jsonErrorHandler.handle(errorInfoMap, records);
-        });
+        assertThrows(UnsupportedOperationException.class, () -> jsonErrorHandler.handle(errorInfoMap, records));
 
-        verify(bigQueryClient, never()).upsertTable((List<Field>) any());
+        verify(bigQueryClient, never()).upsertTable(any());
     }
 
     @Test
@@ -344,9 +341,9 @@ public class JsonErrorHandlerTest {
 
         BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
         Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(
-        0L, asList(noSuchFieldError),
-        1L, asList(noSuchFieldError),
-        2L, asList(noSuchFieldError));
+        0L, Collections.singletonList(noSuchFieldError),
+        1L, Collections.singletonList(noSuchFieldError),
+        2L, Collections.singletonList(noSuchFieldError));
 
         Map<String, Object> columnsMapWithFistName = ImmutableMap.of(
         "first_name", "john doe",
@@ -370,11 +367,11 @@ public class JsonErrorHandlerTest {
                         "load_time", new DateTime(System.currentTimeMillis()),
                         "message_offset", 11))
                 .build();
-        Record anotheRecordWithLastName = Record.builder()
+        Record anotherRecordWithLastName = Record.builder()
                 .columns(columnsMapWithNewFieldDog)
                 .build();
 
-        List<Record> validRecords = asList(validRecordWithFirstName, validRecordWithLastName, anotheRecordWithLastName);
+        List<Record> validRecords = asList(validRecordWithFirstName, validRecordWithLastName, anotherRecordWithLastName);
 
         Map<String, String> config = ImmutableMap.of("SINK_BIGQUERY_METADATA_COLUMNS_TYPES",
                 "message_offset=integer,load_time=timestamp");
@@ -382,7 +379,7 @@ public class JsonErrorHandlerTest {
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
-        verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
+        verify(bigQueryClient, times(1)).upsertTable(fieldsArgumentCaptor.capture());
 
         //missing fields
         Field newFieldDog = Field.of("newFieldDog", LegacySQLTypeName.STRING);
@@ -406,9 +403,9 @@ public class JsonErrorHandlerTest {
 
         BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
         Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(
-                0L, asList(noSuchFieldError),
-                1L, asList(noSuchFieldError),
-                2L, asList(noSuchFieldError));
+                0L, Collections.singletonList(noSuchFieldError),
+                1L, Collections.singletonList(noSuchFieldError),
+                2L, Collections.singletonList(noSuchFieldError));
 
         Map<String, Object> columnsMapWithFistName = ImmutableMap.of(
                 "first_name", "john doe",
@@ -441,12 +438,12 @@ public class JsonErrorHandlerTest {
 
         Map<String, String> config = ImmutableMap.of("SINK_BIGQUERY_METADATA_COLUMNS_TYPES",
                 "message_offset=integer,load_time=timestamp",
-                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS", "event_timestamp_partition=timestamp,depot=integer");
+                "SINK_BIGQUERY_DEFAULT_COLUMNS", "event_timestamp_partition=timestamp,depot=integer");
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, config);
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
-        verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
+        verify(bigQueryClient, times(1)).upsertTable(fieldsArgumentCaptor.capture());
 
         //missing fields
         Field newFieldDog = Field.of("newFieldDog", LegacySQLTypeName.STRING);
@@ -471,9 +468,9 @@ public class JsonErrorHandlerTest {
 
         BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
         Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(
-                0L, asList(noSuchFieldError),
-                1L, asList(noSuchFieldError),
-                2L, asList(noSuchFieldError));
+                0L, Collections.singletonList(noSuchFieldError),
+                1L, Collections.singletonList(noSuchFieldError),
+                2L, Collections.singletonList(noSuchFieldError));
 
         Map<String, Object> columnsMapWithFistName = ImmutableMap.of(
                 "first_name", "john doe",
@@ -506,7 +503,7 @@ public class JsonErrorHandlerTest {
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig, instrumentation);
         jsonErrorHandler.handle(errorInfoMap, validRecords);
 
-        verify(bigQueryClient, times(1)).upsertTable((List<Field>) fieldsArgumentCaptor.capture());
+        verify(bigQueryClient, times(1)).upsertTable(fieldsArgumentCaptor.capture());
 
         //missing fields
         Field newFieldDog = Field.of("newFieldDog", LegacySQLTypeName.STRING);
@@ -528,9 +525,9 @@ public class JsonErrorHandlerTest {
 
         BigQueryError noSuchFieldError = new BigQueryError("invalid", "first_name", "no such field: first_name");
         Map<Long, List<BigQueryError>> errorInfoMap = ImmutableMap.of(
-                0L, asList(noSuchFieldError),
-                1L, asList(noSuchFieldError),
-                2L, asList(noSuchFieldError));
+                0L, Collections.singletonList(noSuchFieldError),
+                1L, Collections.singletonList(noSuchFieldError),
+                2L, Collections.singletonList(noSuchFieldError));
 
         Map<String, Object> columnsMapWithFistName = ImmutableMap.of(
         "first_name", "john doe",
@@ -557,9 +554,7 @@ public class JsonErrorHandlerTest {
                 "SINK_BIGQUERY_METADATA_NAMESPACE", "hello_world_namespace");
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, config);
         JsonErrorHandler jsonErrorHandler = new JsonErrorHandler(bigQueryClient, sinkConfig, instrumentation);
-        assertThrows(UnsupportedOperationException.class, () -> {
-            jsonErrorHandler.handle(errorInfoMap, validRecords);
-        });
+        assertThrows(UnsupportedOperationException.class, () -> jsonErrorHandler.handle(errorInfoMap, validRecords));
         verify(bigQueryClient, never()).upsertTable(any());
     }
 }

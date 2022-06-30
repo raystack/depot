@@ -56,13 +56,13 @@ public interface OdpfSinkConfig extends Config {
     @DefaultValue("application_")
     String getMetricsApplicationPrefix();
 
-    @Key("SINK_CONNECTOR_SCHEMA_MESSAGE_CLASS")
+    @Key("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS")
     @DefaultValue("")
-    String getSinkConnectorSchemaMessageClass();
+    String getSinkConnectorSchemaProtoMessageClass();
 
-    @Key("SINK_CONNECTOR_SCHEMA_KEY_CLASS")
+    @Key("SINK_CONNECTOR_SCHEMA_PROTO_KEY_CLASS")
     @DefaultValue("")
-    String getSinkConnectorSchemaKeyClass();
+    String getSinkConnectorSchemaProtoKeyClass();
 
     @Key("SINK_CONNECTOR_SCHEMA_DATA_TYPE")
     @ConverterClass(SinkConnectorSchemaDataTypeConverter.class)
@@ -77,12 +77,4 @@ public interface OdpfSinkConfig extends Config {
     @Key("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE")
     @DefaultValue("false")
     boolean getSinkConnectorSchemaProtoAllowUnknownFieldsEnable();
-
-    @DefaultValue("true")
-    @Key("SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE")
-    boolean getSinkConnectorSchemaJsonOutputDefaultDatatypeStringEnable();
-
-    @DefaultValue("true")
-    @Key("SINK_CONNECTOR_SCHEMA_JSON_DYNAMIC_SCHEMA_ENABLE")
-    boolean getSinkConnectorSchemaJsonDynamicSchemaEnable();
 }

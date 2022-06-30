@@ -41,7 +41,7 @@ public class JsonErrorHandler implements ErrorHandler {
         this.instrumentation = instrumentation;
         this.bigQueryClient = bigQueryClient;
         tablePartitionKey = bigQuerySinkConfig.isTablePartitioningEnabled() ? bigQuerySinkConfig.getTablePartitionKey() : "";
-        defaultColumnsMap = bigQuerySinkConfig.getSinkBigquerySchemaJsonOutputDefaultColumns()
+        defaultColumnsMap = bigQuerySinkConfig.getSinkBigqueryDefaultColumns()
                 .stream()
                 .collect(Collectors.toMap(TupleString::getFirst, TupleString::getSecond));
         if (bigQuerySinkConfig.isTablePartitioningEnabled()) {
@@ -49,7 +49,7 @@ public class JsonErrorHandler implements ErrorHandler {
         } else {
             partitionKeyDataType = Optional.empty();
         }
-        castAllColumnsToStringDataType = bigQuerySinkConfig.getSinkConnectorSchemaJsonOutputDefaultDatatypeStringEnable();
+        castAllColumnsToStringDataType = bigQuerySinkConfig.getSinkBigqueryDefaultDatatypeStringEnable();
         bqMetadataNamespace = bigQuerySinkConfig.getBqMetadataNamespace();
         if (!bigQuerySinkConfig.shouldAddMetadata()) {
             metadataColumnsTypesMap = Collections.emptyMap();
@@ -105,7 +105,7 @@ public class JsonErrorHandler implements ErrorHandler {
 
 
     private Field getField(String key) {
-        if ((!tablePartitionKey.isEmpty()) && tablePartitionKey.equals(key)) {
+        if (!tablePartitionKey.isEmpty() && tablePartitionKey.equals(key) && partitionKeyDataType.isPresent()) {
             return Field.of(key, partitionKeyDataType.get());
         }
         if (!bqMetadataNamespace.isEmpty()) {

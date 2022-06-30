@@ -34,7 +34,7 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
         this.config = config;
         this.bigQueryClient = bigQueryClient;
         this.instrumentation = instrumentation;
-        if (!config.getSinkConnectorSchemaJsonDynamicSchemaEnable()) {
+        if (!config.getSinkBigqueryDynamicSchemaEnable()) {
             throw new UnsupportedOperationException("currently only schema inferred from incoming data is supported, stencil schema support for json will be added in future");
         }
     }
@@ -44,7 +44,7 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
         OdpfMessageParser parser = getOdpfMessageParser();
         MessageRecordConverter messageRecordConverter = new MessageRecordConverter(parser, config, null);
         converterCache.setMessageRecordConverter(messageRecordConverter);
-        List<TupleString> defaultColumns = config.getSinkBigquerySchemaJsonOutputDefaultColumns();
+        List<TupleString> defaultColumns = config.getSinkBigqueryDefaultColumns();
         HashSet<Field> fieldsToBeUpdated = defaultColumns
                 .stream()
                 .map(this::getField)

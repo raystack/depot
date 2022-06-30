@@ -44,7 +44,7 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
         try {
             SinkConnectorSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
             String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
-                    ? config.getSinkConnectorSchemaMessageClass() : config.getSinkConnectorSchemaKeyClass();
+                    ? config.getSinkConnectorSchemaProtoMessageClass() : config.getSinkConnectorSchemaProtoKeyClass();
             ProtoOdpfMessageParser odpfMessageParser = (ProtoOdpfMessageParser) getOdpfMessageParser();
             OdpfMessageSchema schema;
             if (newDescriptors == null) {

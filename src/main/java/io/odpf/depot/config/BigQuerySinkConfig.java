@@ -73,14 +73,23 @@ public interface BigQuerySinkConfig extends OdpfSinkConfig {
     @Separator(ConfToListConverter.ELEMENT_SEPARATOR)
     List<TupleString> getMetadataColumnsTypes();
 
+    // Json schema related configs
     @DefaultValue("false")
-    @Key("SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_ADD_EVENT_TIMESTAMP_ENABLE")
-    boolean getSinkBigquerySchemaJsonOutputAddEventTimestampEnable();
+    @Key("SINK_BIGQUERY_ADD_EVENT_TIMESTAMP_ENABLE")
+    boolean getSinkBigqueryAddEventTimestampEnable();
 
     @DefaultValue("")
-    @Key("SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS")
+    @Key("SINK_BIGQUERY_DEFAULT_COLUMNS")
     @ConverterClass(ConfToListConverter.class)
     @Separator(ConfToListConverter.ELEMENT_SEPARATOR)
-    List<TupleString> getSinkBigquerySchemaJsonOutputDefaultColumns();
+    List<TupleString> getSinkBigqueryDefaultColumns();
+
+    @DefaultValue("true")
+    @Key("SINK_BIGQUERY_DEFAULT_DATATYPE_STRING_ENABLE")
+    boolean getSinkBigqueryDefaultDatatypeStringEnable();
+
+    @DefaultValue("true")
+    @Key("SINK_BIGQUERY_DYNAMIC_SCHEMA_ENABLE")
+    boolean getSinkBigqueryDynamicSchemaEnable();
 }
 

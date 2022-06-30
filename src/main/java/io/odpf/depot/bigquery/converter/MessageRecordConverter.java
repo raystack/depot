@@ -56,7 +56,7 @@ public class MessageRecordConverter {
         try {
             SinkConnectorSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
             String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
-                    ? config.getSinkConnectorSchemaMessageClass() : config.getSinkConnectorSchemaKeyClass();
+                    ? config.getSinkConnectorSchemaProtoMessageClass() : config.getSinkConnectorSchemaProtoKeyClass();
             ParsedOdpfMessage parsedOdpfMessage = parser.parse(message, mode, schemaClass);
             parsedOdpfMessage.validate(config);
             Map<String, Object> columns = parsedOdpfMessage.getMapping(schema);

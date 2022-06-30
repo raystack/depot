@@ -43,7 +43,7 @@ public class MessageRecordConverterUtilsTest {
         }};
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, new HashMap<String, String>() {{
             put("SINK_CONNECTOR_SCHEMA_DATA_TYPE", "json");
-            put("SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_ADD_EVENT_TIMESTAMP_ENABLE", "true");
+            put("SINK_BIGQUERY_ADD_EVENT_TIMESTAMP_ENABLE", "true");
         }});
         MessageRecordConverterUtils.addTimeStampColumnForJson(columns, config);
         Assert.assertEquals(2, columns.size());

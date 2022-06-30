@@ -30,8 +30,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 public class MessageRecordConverterForJsonTest {
@@ -226,7 +225,7 @@ public class MessageRecordConverterForJsonTest {
         Map<String, String> configMap = ImmutableMap.of(
                 "SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE",
                 "SINK_CONNECTOR_SCHEMA_DATA_TYPE", "json",
-                "SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_ADD_EVENT_TIMESTAMP_ENABLE", "true");
+                "SINK_BIGQUERY_ADD_EVENT_TIMESTAMP_ENABLE", "true");
 
         BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
         MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
@@ -243,10 +242,10 @@ public class MessageRecordConverterForJsonTest {
         assertThat(actualRecords.getInvalidRecords(), empty());
         assertEquals(2, actualRecords.getValidRecords().size());
         Record validRecord1 = actualRecords.getValidRecords().get(0);
-        assertEquals(null, validRecord1.getErrorInfo());
+        assertNull(validRecord1.getErrorInfo());
         assertThat(validRecord1.getColumns(), hasEntry("first_name", "john doe"));
         Record validRecord2 = actualRecords.getValidRecords().get(1);
-        assertEquals(null, validRecord2.getErrorInfo());
+        assertNull(validRecord2.getErrorInfo());
         assertThat(validRecord2.getColumns(), hasEntry("last_name", "walker"));
 
         List<String> dateTimeList = actualRecords
@@ -265,7 +264,6 @@ public class MessageRecordConverterForJsonTest {
 
     private OdpfMessage getOdpfMessageForString(String jsonStr) {
         byte[] logMessage = jsonStr.getBytes();
-        OdpfMessage odpfMessage = new OdpfMessage(null, logMessage);
-        return odpfMessage;
+        return new OdpfMessage(null, logMessage);
     }
 }
