@@ -49,7 +49,7 @@ The time partitioning type that is currently supported is `DAY` partitioning.
 
 ## Metadata
 
-For data quality checking purpose sometimes some metadata need to be added on the record. 
+For data quality checking purposes, sometimes some metadata need to be added on the record. 
 if `SINK_BIGQUERY_ADD_METADATA_ENABLED` is true then the metadata will be added. 
 `SINK_BIGQUERY_METADATA_NAMESPACE` is used for another namespace to add columns
 if namespace is empty, the metadata columns will be added in the root level.
@@ -57,8 +57,8 @@ if namespace is empty, the metadata columns will be added in the root level.
 An example of metadata columns that can be added for kafka records.
 
 ## Default columns for json data type
-With dynaminc schema for json we need to create table with some default columns, example like parition key needs to be set during creation of the table.
-Example `SINK_BIGQUERY_SCHEMA_JSON_OUTPUT_DEFAULT_COLUMNS =event_timestamp=timestamp`
+With dynamic schema for json we need to create table with some default columns, example like parition key needs to be set during creation of the table.
+Example `SINK_BIGQUERY_DEFAULT_COLUMNS =event_timestamp=timestamp`
 The metadata columns are added when input data contains values for the them which will result in missing fields error and will be added by the JSON error handler.
 
 | Fully Qualified Column Name | Type | Modifier |

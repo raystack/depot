@@ -67,7 +67,7 @@ public class JsonOdpfMessageParserTest {
 
     @Test
     public void shouldCastTheJSONValuesToString() throws IOException {
-        Map<String, String> configMap = of("SINK_CONNECTOR_SCHEMA_JSON_OUTPUT_DEFAULT_DATATYPE_STRING_ENABLE", "true");
+        Map<String, String> configMap = of("SINK_BIGQUERY_DEFAULT_DATATYPE_STRING_ENABLE", "true");
         OdpfSinkConfig config = ConfigFactory.create(OdpfSinkConfig.class, configMap);
         JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(config, instrumentation, jsonParserMetrics);
         String validJsonStr = "{\n"
