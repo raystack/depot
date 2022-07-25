@@ -27,7 +27,6 @@ the job of the class is to handle unknown field errors and then update the bq ta
 public class JsonErrorHandler implements ErrorHandler {
 
     private final BigQueryClient bigQueryClient;
-    private final String tablePartitionKey;
     private final boolean castAllColumnsToStringDataType;
     private final Map<String, String> metadataColumnsTypesMap;
     private final String bqMetadataNamespace;
@@ -38,7 +37,6 @@ public class JsonErrorHandler implements ErrorHandler {
 
         this.instrumentation = instrumentation;
         this.bigQueryClient = bigQueryClient;
-        tablePartitionKey = bigQuerySinkConfig.isTablePartitioningEnabled() ? bigQuerySinkConfig.getTablePartitionKey() : "";
         defaultColumnsMap = bigQuerySinkConfig.getSinkBigqueryDefaultColumns()
                 .stream()
                 .collect(Collectors.toMap(TupleString::getFirst, TupleString::getSecond));
@@ -96,6 +94,9 @@ public class JsonErrorHandler implements ErrorHandler {
                 ).collect(Collectors.toList());
     }
 
+    /**
+     * This method only used for unknown fields.
+     */
 
     private Field getField(String key) {
         if (!bqMetadataNamespace.isEmpty()) {
