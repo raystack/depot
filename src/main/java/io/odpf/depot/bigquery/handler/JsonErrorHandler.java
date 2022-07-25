@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,7 +28,6 @@ public class JsonErrorHandler implements ErrorHandler {
 
     private final BigQueryClient bigQueryClient;
     private final String tablePartitionKey;
-    private final Optional<LegacySQLTypeName> partitionKeyDataType;
     private final boolean castAllColumnsToStringDataType;
     private final Map<String, String> metadataColumnsTypesMap;
     private final String bqMetadataNamespace;
@@ -44,11 +42,6 @@ public class JsonErrorHandler implements ErrorHandler {
         defaultColumnsMap = bigQuerySinkConfig.getSinkBigqueryDefaultColumns()
                 .stream()
                 .collect(Collectors.toMap(TupleString::getFirst, TupleString::getSecond));
-        if (bigQuerySinkConfig.isTablePartitioningEnabled()) {
-            partitionKeyDataType = Optional.of(LegacySQLTypeName.valueOfStrict(defaultColumnsMap.get(tablePartitionKey).toUpperCase()));
-        } else {
-            partitionKeyDataType = Optional.empty();
-        }
         castAllColumnsToStringDataType = bigQuerySinkConfig.getSinkBigqueryDefaultDatatypeStringEnable();
         bqMetadataNamespace = bigQuerySinkConfig.getBqMetadataNamespace();
         if (!bigQuerySinkConfig.shouldAddMetadata()) {
@@ -105,9 +98,6 @@ public class JsonErrorHandler implements ErrorHandler {
 
 
     private Field getField(String key) {
-        if (!tablePartitionKey.isEmpty() && tablePartitionKey.equals(key) && partitionKeyDataType.isPresent()) {
-            return Field.of(key, partitionKeyDataType.get());
-        }
         if (!bqMetadataNamespace.isEmpty()) {
             throw new UnsupportedOperationException("metadata namespace is not supported, because nested json structure is not supported");
         }
