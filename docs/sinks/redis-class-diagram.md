@@ -1,0 +1,1 @@
+![redis-diagram drawio (1)](https://user-images.githubusercontent.com/85827404/181119279-98bc4e50-1a4e-46f6-86d3-9b1904183d9a.png)
