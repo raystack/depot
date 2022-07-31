@@ -1,20 +1,17 @@
 package io.odpf.depot.redis.parsers;
 
-import com.google.protobuf.DynamicMessage;
-import io.odpf.depot.bigquery.converter.MessageRecordConverterUtils;
-import io.odpf.depot.bigquery.models.Record;
-import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.exception.DeserializerException;
-import io.odpf.depot.message.*;
-import io.odpf.depot.metrics.Instrumentation;
+import io.odpf.depot.config.RedisSinkConfig;
+import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.dataentry.RedisDataEntry;
-import io.odpf.depot.redis.dataentry.RedisKeyValueEntry;
-import io.odpf.stencil.Parser;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +37,7 @@ public class RedisKeyValueParser extends RedisParser {
             ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
             OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass);
             Map<String, Object> columns = parsedOdpfMessage.getMapping(schema);
-            //TODO: use columns to build Redisdataentry
+            // use columns to build Redisdataentry
             List<RedisDataEntry> list = new ArrayList<>();
             return list;
         } catch (IOException e) {

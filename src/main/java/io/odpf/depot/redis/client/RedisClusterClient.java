@@ -2,7 +2,6 @@ package io.odpf.depot.redis.client;
 
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.redis.dataentry.RedisDataEntry;
 import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import redis.clients.jedis.JedisCluster;

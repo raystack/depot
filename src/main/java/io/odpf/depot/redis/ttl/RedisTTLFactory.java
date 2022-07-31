@@ -7,9 +7,9 @@ public class RedisTTLFactory {
 
     public static RedisTtl getTTl(RedisSinkConfig redisSinkConfig) {
         long redisTTLValue = redisSinkConfig.getSinkRedisTtlValue();
-        if (redisTTLValue < 0) {
-            //throw new ConfigurationException("Provide a positive TTL value");
-        }
+//        if (redisTTLValue < 0) {
+//            throw new ConfigurationException("Provide a positive TTL value");
+//        }
         switch (redisSinkConfig.getSinkRedisTtlType()) {
             case EXACT_TIME:
                 return new ExactTimeTtl(redisTTLValue);

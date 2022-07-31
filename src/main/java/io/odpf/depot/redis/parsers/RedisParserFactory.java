@@ -1,10 +1,8 @@
 package io.odpf.depot.redis.parsers;
 
 import io.odpf.depot.config.RedisSinkConfig;
-import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.stencil.Parser;
 
 /**
  * Redis parser factory.
