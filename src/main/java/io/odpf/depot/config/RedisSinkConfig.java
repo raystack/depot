@@ -41,5 +41,7 @@ public interface RedisSinkConfig extends OdpfSinkConfig {
     @Config.Key("SINK_REDIS_KEY_VALUE_DATA_PROTO_INDEX")
     String getSinkRedisKeyValuetDataProtoIndex();
 
-
+    @Config.Key("REDIS_VALUE_BY_NAME")
+    @DefaultValue("order_url")
+    String getRedisValueByName();
 }
