@@ -40,7 +40,7 @@ public class RedisKeyValueParser extends RedisParser {
             OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass);
             Map<String, Object> columns = parsedOdpfMessage.getMapping(schema);
             // use columns to build Key and Redisdataentry
-            String redisKey = redisSinkConfig.getSinkRedisKeyTemplate();
+            String redisKey = parseKeyTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), columns);
             String redisValue = (String) columns.get(redisSinkConfig.getRedisValueByName());
             if (redisValue == null) {
                 throw new IllegalArgumentException("Please provide REDIS_VALUE_BY_NAME in key value sink");

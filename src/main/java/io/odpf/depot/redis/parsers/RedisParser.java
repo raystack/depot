@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Convert kafka messages to RedisDataEntry.
@@ -24,6 +25,31 @@ public abstract class RedisParser {
     private RedisSinkConfig redisSinkConfig;
 
     public abstract List<RedisDataEntry> parse(OdpfMessage message);
+
+    String parseKeyTemplate(String template, Map<String, Object> columns) {
+        String key = "";
+        String field = "";
+        // example template: "ID_{order_number}_URL_{order_url}"
+        for (int i = 0; i < template.length(); i++) {
+            char c = template.charAt(i);
+            if (c == '{') {
+                for (int ii = i + 1; ii < template.length(); ii++) {
+                    char f = template.charAt(ii);
+                    if (f == '}') {
+                        i = ii;
+                        break;
+                    }
+                    field += f;
+                }
+                key += (String) columns.get(field);
+                field = "";
+            } else {
+                key += c;
+            }
+
+        }
+        return key;
+    }
 
     public RedisRecords convert(List<OdpfMessage> messages) {
         List<RedisRecord> valid = new ArrayList<>();
