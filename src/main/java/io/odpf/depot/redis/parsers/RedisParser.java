@@ -1,6 +1,10 @@
 package io.odpf.depot.redis.parsers;
 
 
+import com.google.gson.Gson;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
@@ -10,10 +14,13 @@ import io.odpf.depot.redis.dataentry.RedisDataEntry;
 import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.models.RedisRecords;
 import lombok.AllArgsConstructor;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+
 
 /**
  * Convert kafka messages to RedisDataEntry.
@@ -41,7 +48,15 @@ public abstract class RedisParser {
                     }
                     field += f;
                 }
-                key += (String) columns.get(field);
+                JSONObject jObject = new JSONObject(new Gson().toJson(columns));
+
+                Configuration configuration = Configuration.builder()
+                        .jsonProvider(new JsonOrgJsonProvider())
+                        .build();
+
+                JsonPath jsonPath = JsonPath.compile(field);
+                Object jsonPathString = jsonPath.read(jObject, configuration);
+                key += jsonPathString;
                 field = "";
             } else {
                 key += c;

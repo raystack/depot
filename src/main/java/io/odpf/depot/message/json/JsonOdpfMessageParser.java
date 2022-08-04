@@ -55,20 +55,22 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
             }
             Instant instant = Instant.now();
             JSONObject jsonObject = new JSONObject(new String(payload));
-            JSONObject jsonWithStringValues = new JSONObject();
-            jsonObject.keySet()
-                    .forEach(k -> {
-                        Object value = jsonObject.get(k);
-                        if (value instanceof JSONObject) {
-                            throw new UnsupportedOperationException("nested json structure not supported yet");
-                        }
-                        if (JSONObject.NULL.equals(value)) {
-                            return;
-                        }
-                        jsonWithStringValues.put(k, value.toString());
-                    });
-            instrumentation.captureDurationSince(jsonParserMetrics.getJsonParseTimeTakenMetric(), instant);
-            return new JsonOdpfParsedMessage(jsonWithStringValues);
+//            JSONObject jsonWithStringValues = new JSONObject();
+//            jsonObject.keySet()
+//                    .forEach(k -> {
+//                        Object value = jsonObject.get(k);
+//                        if (value instanceof JSONObject) {
+//                            throw new UnsupportedOperationException("nested json structure not supported yet");
+//                        }
+//                        if (JSONObject.NULL.equals(value)) {
+//                            return;
+//                        }
+//                        jsonWithStringValues.put(k, value.toString());
+//                    });
+//            instrumentation.captureDurationSince(jsonParserMetrics.getJsonParseTimeTakenMetric(), instant);
+//            return new JsonOdpfParsedMessage(jsonWithStringValues);
+            return new JsonOdpfParsedMessage(jsonObject);
+
         } catch (JSONException ex) {
             throw new IOException("invalid json error", ex);
         }
