@@ -125,4 +125,10 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
         }
         row.put(columnName, repeatedNestedFields);
     }
+
+    public String getFieldByName(String name) {
+        DynamicMessage dynamicMessage1 = (DynamicMessage) this.getRaw();
+        Descriptors.FieldDescriptor fieldDescriptor = dynamicMessage1.getDescriptorForType().findFieldByName(name);
+        return dynamicMessage1.getField(fieldDescriptor).toString();
+    }
 }

@@ -1,10 +1,5 @@
 package io.odpf.depot.redis.parsers;
 
-
-import com.google.gson.Gson;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
@@ -14,11 +9,11 @@ import io.odpf.depot.redis.dataentry.RedisDataEntry;
 import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.models.RedisRecords;
 import lombok.AllArgsConstructor;
-import org.json.JSONObject;
+import io.odpf.depot.message.ParsedOdpfMessage;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 
@@ -33,7 +28,7 @@ public abstract class RedisParser {
 
     public abstract List<RedisDataEntry> parse(OdpfMessage message);
 
-    String parseKeyTemplate(String template, Map<String, Object> columns) {
+    String parseKeyTemplate(String template, ParsedOdpfMessage parsedOdpfMessage) throws IOException {
         String key = "";
         String field = "";
         // example template: "ID_{order_number}_URL_{order_url}"
@@ -48,15 +43,7 @@ public abstract class RedisParser {
                     }
                     field += f;
                 }
-                JSONObject jObject = new JSONObject(new Gson().toJson(columns));
-
-                Configuration configuration = Configuration.builder()
-                        .jsonProvider(new JsonOrgJsonProvider())
-                        .build();
-
-                JsonPath jsonPath = JsonPath.compile(field);
-                Object jsonPathString = jsonPath.read(jObject, configuration);
-                key += jsonPathString;
+                key += parsedOdpfMessage.getFieldByName(field);
                 field = "";
             } else {
                 key += c;

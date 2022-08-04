@@ -1,6 +1,9 @@
 package io.odpf.depot.message.json;
 
 import com.google.gson.Gson;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
@@ -37,5 +40,14 @@ public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
             return  Collections.emptyMap();
         }
         return new Gson().fromJson(jsonObject.toString(), HashMap.class);
+    }
+    public String getFieldByName(String name) {
+        Configuration configuration = Configuration.builder()
+                .jsonProvider(new JsonOrgJsonProvider())
+                .build();
+
+        JsonPath jsonPath = JsonPath.compile(name);
+        Object jsonPathString = jsonPath.read(this.getRaw(), configuration);
+        return jsonPathString.toString();
     }
 }
