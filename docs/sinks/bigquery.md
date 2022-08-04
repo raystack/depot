@@ -10,7 +10,8 @@ Bigquery utilise Bigquery [Streaming API](https://cloud.google.com/bigquery/stre
 Bigquery Sink has several responsibilities, first creation of bigquery table and dataset when they are not exist,
 Currently we support dynamic schema by inferring from incoming json data; so the bigquery schema is updated by taking a diff of fields in json data and actual table fields.
 Currently we only support string data type for fields, so all incoming json data values are converted to string type, Except for metadata columns and partion key.
-
+## Flow chart for data type json
+![](../images/bigquery-json-flow-diagram.svg)
 
 ## Bigquery Table Schema Update
 
