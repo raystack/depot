@@ -35,16 +35,14 @@ public class RedisKeyValueParser extends RedisParser {
             String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
                     ? redisSinkConfig.getSinkConnectorSchemaProtoMessageClass() : redisSinkConfig.getSinkConnectorSchemaProtoKeyClass();
             ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
-            // use columns to build Key and Redisdataentry
             String redisKey = parseKeyTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage);
             String redisValue = parsedOdpfMessage.getFieldByName(redisSinkConfig.getRedisValueByName());
             if (redisValue == null) {
-                throw new IllegalArgumentException("Please provide REDIS_VALUE_BY_NAME in key value sink");
+                throw new IllegalArgumentException("Empty or invalid config REDIS_VALUE_BY_NAME found");
             }
             RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, redisValue, new Instrumentation(statsDReporter, RedisKeyValueEntry.class));
             return Collections.singletonList(redisKeyValueEntry);
         } catch (IOException e) {
-            //log.error("failed to deserialize message: {}, {} ", e, message.getMetadataString());
             throw new DeserializerException("failed to deserialize ", e);
         }
     }

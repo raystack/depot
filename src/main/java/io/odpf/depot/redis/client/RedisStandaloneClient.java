@@ -2,6 +2,7 @@ package io.odpf.depot.redis.client;
 
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
+import io.odpf.depot.redis.exception.NoResponseException;
 import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import redis.clients.jedis.Jedis;
@@ -42,9 +43,9 @@ public class RedisStandaloneClient implements RedisClient {
         Response<List<Object>> responses = jedisPipelined.exec();
         instrumentation.logDebug("jedis responses: {}", responses);
         jedisPipelined.sync();
-//        if (responses.get() == null || responses.get().isEmpty()) {
-//            throw new NoResponseException();
-//        }
+        if (responses.get() == null || responses.get().isEmpty()) {
+            throw new NoResponseException();
+        }
         return new ArrayList<>();
     }
 

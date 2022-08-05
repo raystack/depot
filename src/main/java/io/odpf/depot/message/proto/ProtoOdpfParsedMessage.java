@@ -129,6 +129,9 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     public String getFieldByName(String name) {
         DynamicMessage dynamicMessage1 = (DynamicMessage) this.getRaw();
         Descriptors.FieldDescriptor fieldDescriptor = dynamicMessage1.getDescriptorForType().findFieldByName(name);
+        if (fieldDescriptor == null) {
+            throw new ConfigurationException("Invalid proto field config found:" + name);
+        }
         return dynamicMessage1.getField(fieldDescriptor).toString();
     }
 }

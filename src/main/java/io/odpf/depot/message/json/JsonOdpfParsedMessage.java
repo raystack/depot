@@ -5,6 +5,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.config.OdpfSinkConfig;
+import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import org.json.JSONObject;
@@ -48,6 +49,9 @@ public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
 
         JsonPath jsonPath = JsonPath.compile(name);
         Object jsonPathString = jsonPath.read(this.getRaw(), configuration);
+        if (jsonPathString == null) {
+            throw new ConfigurationException("Invalid JsonPath found:" + name);
+        }
         return jsonPathString.toString();
     }
 }

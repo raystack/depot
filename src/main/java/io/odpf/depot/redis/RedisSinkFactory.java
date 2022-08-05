@@ -45,6 +45,6 @@ public class RedisSinkFactory {
     }
 
     public OdpfSink create() {
-        return new RedisSink(redisClient, redisParser, instrumentation);
+        return new RedisSink(redisClient, redisParser, new Instrumentation(statsDReporter, RedisSink.class));
     }
 }

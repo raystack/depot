@@ -3,6 +3,8 @@ package io.odpf.depot.redis.parsers;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.redis.dataentry.RedisDataEntry;
@@ -29,9 +31,11 @@ public abstract class RedisParser {
     public abstract List<RedisDataEntry> parse(OdpfMessage message);
 
     String parseKeyTemplate(String template, ParsedOdpfMessage parsedOdpfMessage) throws IOException {
+        if (template.isEmpty() || template.equals("")) {
+            throw new ConfigurationException("Set config SINK_REDIS_KEY_TEMPLATE");
+        }
         String key = "";
         String field = "";
-        // example template: "ID_{order_number}_URL_{order_url}"
         for (int i = 0; i < template.length(); i++) {
             char c = template.charAt(i);
             if (c == '{') {
@@ -62,9 +66,12 @@ public abstract class RedisParser {
                 for (int ii = 0; ii < p.size(); ii++) {
                     valid.add(new RedisRecord(p.get(ii), (long) valid.size(), new ErrorInfo(null, null)));
                 }
-            } catch (Exception e) {
-                // generic handler
-                invalid.add(new RedisRecord(null, (long) i, new ErrorInfo(e, ErrorType.DEFAULT_ERROR)));
+            } catch (ConfigurationException e) {
+                ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.UNKNOWN_FIELDS_ERROR);
+                invalid.add(new RedisRecord(null, (long) i, errorInfo));
+            } catch (DeserializerException e) {
+                ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR);
+                invalid.add(new RedisRecord(null, (long) i, errorInfo));
             }
         }
         return new RedisRecords(valid, invalid);
