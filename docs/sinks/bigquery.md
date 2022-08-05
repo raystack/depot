@@ -11,12 +11,16 @@ Bigquery Sink has several responsibilities, first creation of bigquery table and
 Currently we support dynamic schema by inferring from incoming json data; so the bigquery schema is updated by taking a diff of fields in json data and actual table fields.
 Currently we only support string data type for fields, so all incoming json data values are converted to string type, Except for metadata columns and partion key.
 
-
 ## Bigquery Table Schema Update
 
 ### Protobuf 
 Bigquery Sink update the bigquery table schema on separate table update operation. Bigquery utilise [Stencil](https://github.com/odpf/stencil) to parse protobuf messages generate schema and update bigquery tables with the latest schema. 
 The stencil client periodically reload the descriptor cache. Table schema update happened after the descriptor caches uploaded. 
+
+### JSON
+Bigquery Sink creates the table with initial columns mentioned in the config. When new fields arrive in json data they are added to bigquery table.
+### Flow chart for data type json sink and schema update
+![](../images/bigquery-json-flow-diagram.svg)
 
 ## Protobuf - Bigquery Table Type Mapping
 
