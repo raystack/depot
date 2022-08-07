@@ -102,13 +102,13 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
     private Field checkAndCreateField(String fieldName, LegacySQLTypeName fieldDataType) {
         Boolean isPartitioningEnabled = config.isTablePartitioningEnabled();
         if (!isPartitioningEnabled) {
-            return Field.of(fieldName, fieldDataType);
+            return Field.newBuilder(fieldName, fieldDataType).setMode(Field.Mode.NULLABLE).build();
         }
         String partitionKey = config.getTablePartitionKey();
         boolean isValidPartitionDataType = (fieldDataType == LegacySQLTypeName.TIMESTAMP || fieldDataType == LegacySQLTypeName.DATE);
         if (partitionKey.equals(fieldName) && !isValidPartitionDataType) {
             throw new UnsupportedOperationException("supported partition fields have to be of DATE or TIMESTAMP type..");
         }
-        return Field.of(fieldName, fieldDataType);
+        return Field.newBuilder(fieldName, fieldDataType).setMode(Field.Mode.NULLABLE).build();
     }
 }
