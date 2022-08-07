@@ -39,6 +39,13 @@ public interface BigQuerySinkConfig extends OdpfSinkConfig {
     @Key("SINK_BIGQUERY_TABLE_PARTITION_KEY")
     String getTablePartitionKey();
 
+    @Key("SINK_BIGQUERY_TABLE_CLUSTERING_ENABLE")
+    @DefaultValue("false")
+    Boolean isTableClusteringEnabled();
+
+    @Key("SINK_BIGQUERY_TABLE_CLUSTERING_KEY")
+    String getTableClusteringKey();
+
     @Key("SINK_BIGQUERY_ROW_INSERT_ID_ENABLE")
     @DefaultValue("true")
     Boolean isRowInsertIdEnabled();

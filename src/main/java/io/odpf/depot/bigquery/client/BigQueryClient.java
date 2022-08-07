@@ -17,6 +17,7 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
 import io.odpf.depot.bigquery.exception.BQDatasetLocationChangedException;
+import io.odpf.depot.bigquery.table.BigQueryTableDefinition;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.metrics.BigQueryMetrics;
 import io.odpf.depot.metrics.Instrumentation;
@@ -33,7 +34,7 @@ public class BigQueryClient {
     @Getter
     private final TableId tableID;
     private final BigQuerySinkConfig bqConfig;
-    private final BQTableDefinition bqTableDefinition;
+    private final BigQueryTableDefinition bigQueryTableDefinition;
     private final Instrumentation instrumentation;
     private static final int TABLE_INFO_UPDATE_RETRIES = 10;
     private static final int DEFAULT_SLEEP_RETRY = 10000;
@@ -48,10 +49,9 @@ public class BigQueryClient {
         this.bigquery = bq;
         this.bqConfig = bqConfig;
         this.tableID = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
-        this.bqTableDefinition = new BQTableDefinition(bqConfig);
+        this.bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
         this.instrumentation = instrumentation;
         this.bigqueryMetrics = bigQueryMetrics;
-
     }
 
     private static BigQuery getBigQueryInstance(BigQuerySinkConfig sinkConfig) throws IOException {
@@ -201,6 +201,6 @@ public class BigQueryClient {
     }
 
     private TableDefinition getTableDefinition(Schema schema) {
-        return bqTableDefinition.getTableDefinition(schema);
+        return bigQueryTableDefinition.getTableDefinition(schema);
     }
 }
