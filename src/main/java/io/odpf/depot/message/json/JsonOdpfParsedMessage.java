@@ -42,13 +42,13 @@ public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
         }
         return new Gson().fromJson(jsonObject.toString(), HashMap.class);
     }
-    public String getFieldByName(String name, OdpfMessageSchema odpfMessageSchema
-    ) {
+    public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
+        String jsonPathName = "$." + name;
         Configuration configuration = Configuration.builder()
                 .jsonProvider(new JsonOrgJsonProvider())
                 .build();
 
-        JsonPath jsonPath = JsonPath.compile(name);
+        JsonPath jsonPath = JsonPath.compile(jsonPathName);
         Object jsonPathString = jsonPath.read(this.getRaw(), configuration);
         if (jsonPathString == null) {
             throw new ConfigurationException("Invalid JsonPath found:" + name);
