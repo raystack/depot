@@ -42,7 +42,8 @@ public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
         }
         return new Gson().fromJson(jsonObject.toString(), HashMap.class);
     }
-    public String getFieldByName(String name) {
+    public String getFieldByName(String name, OdpfMessageSchema odpfMessageSchema
+    ) {
         Configuration configuration = Configuration.builder()
                 .jsonProvider(new JsonOrgJsonProvider())
                 .build();

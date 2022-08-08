@@ -36,7 +36,7 @@ public class RedisKeyValueParser extends RedisParser {
                     ? redisSinkConfig.getSinkConnectorSchemaProtoMessageClass() : redisSinkConfig.getSinkConnectorSchemaProtoKeyClass();
             ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
             String redisKey = parseKeyTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage);
-            String redisValue = parsedOdpfMessage.getFieldByName(redisSinkConfig.getRedisValueByName());
+            String redisValue = parsedOdpfMessage.getFieldByName(redisSinkConfig.getRedisValueByName(), odpfMessageParser.getSchema(schemaClass));
             if (redisValue == null) {
                 throw new IllegalArgumentException("Empty or invalid config REDIS_VALUE_BY_NAME found");
             }

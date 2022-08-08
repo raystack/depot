@@ -7,6 +7,7 @@ import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.redis.dataentry.RedisDataEntry;
 import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.models.RedisRecords;
@@ -47,7 +48,10 @@ public abstract class RedisParser {
                     }
                     field += f;
                 }
-                key += parsedOdpfMessage.getFieldByName(field);
+                SinkConnectorSchemaMessageMode mode = redisSinkConfig.getSinkConnectorSchemaMessageMode();
+                String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
+                        ? redisSinkConfig.getSinkConnectorSchemaProtoMessageClass() : redisSinkConfig.getSinkConnectorSchemaProtoKeyClass();
+                key += parsedOdpfMessage.getFieldByName(field, odpfMessageParser.getSchema(schemaClass));
                 field = "";
             } else {
                 key += c;

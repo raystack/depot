@@ -126,12 +126,27 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
         row.put(columnName, repeatedNestedFields);
     }
 
-    public String getFieldByName(String name) {
-        DynamicMessage dynamicMessage1 = (DynamicMessage) this.getRaw();
-        Descriptors.FieldDescriptor fieldDescriptor = dynamicMessage1.getDescriptorForType().findFieldByName(name);
-        if (fieldDescriptor == null) {
-            throw new ConfigurationException("Invalid proto field config found:" + name);
+    public String getFieldByNameHelper(int i, String[] namePath, Map<String, Object> map) {
+        if (i == namePath.length - 1) {
+            return map.get(namePath[i]).toString();
+        } else  {
+            return getFieldByNameHelper(i + 1, namePath, (Map<String, Object>) map.get(namePath[i]));
         }
-        return dynamicMessage1.getField(fieldDescriptor).toString();
+    }
+
+    public String getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
+        Map<String, Object> map;
+        try {
+            map = this.getMapping(odpfMessageSchema);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        String[] namePath = name.split("\\.");
+        try {
+            String field =  getFieldByNameHelper(0, namePath, map);
+            return field;
+        } catch (Exception e) {
+            throw new ConfigurationException("Invalid nested proto field");
+        }
     }
 }
