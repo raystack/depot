@@ -12,6 +12,7 @@ import io.odpf.depot.message.proto.converter.fields.NestedProtoField;
 import io.odpf.depot.message.proto.converter.fields.ProtoField;
 import io.odpf.depot.message.proto.converter.fields.ProtoFieldFactory;
 import io.odpf.depot.utils.ProtoUtils;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -22,8 +23,12 @@ import java.util.Map;
 import java.util.Properties;
 
 @Slf4j
+@EqualsAndHashCode
 public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     private final DynamicMessage dynamicMessage;
+    @EqualsAndHashCode.Exclude
+    private final Map<OdpfMessageSchema, Map<String, Object>> cachedMapping = new HashMap<>();
+
 
     public ProtoOdpfParsedMessage(DynamicMessage dynamicMessage) {
         this.dynamicMessage = dynamicMessage;
@@ -51,7 +56,10 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
         if (schema.getSchema() == null) {
             throw new ConfigurationException("BQ_PROTO_COLUMN_MAPPING is not configured");
         }
-        return getMappings(dynamicMessage, (Properties) schema.getSchema());
+        if(!cachedMapping.containsKey(schema)) {
+            cachedMapping.put(schema, getMappings(dynamicMessage, (Properties) schema.getSchema()));
+        }
+        return cachedMapping.get(schema);
     }
 
     @SuppressWarnings("unchecked")
