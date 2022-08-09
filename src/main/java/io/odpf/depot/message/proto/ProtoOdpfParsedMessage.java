@@ -12,7 +12,6 @@ import io.odpf.depot.message.proto.converter.fields.NestedProtoField;
 import io.odpf.depot.message.proto.converter.fields.ProtoField;
 import io.odpf.depot.message.proto.converter.fields.ProtoFieldFactory;
 import io.odpf.depot.utils.ProtoUtils;
-import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -23,12 +22,10 @@ import java.util.Map;
 import java.util.Properties;
 
 @Slf4j
-@EqualsAndHashCode
 public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     private final DynamicMessage dynamicMessage;
-    @EqualsAndHashCode.Exclude
-    private final Map<OdpfMessageSchema, Map<String, Object>> cachedMapping = new HashMap<>();
 
+    private final Map<OdpfMessageSchema, Map<String, Object>> cachedMapping = new HashMap<>();
 
     public ProtoOdpfParsedMessage(DynamicMessage dynamicMessage) {
         this.dynamicMessage = dynamicMessage;
@@ -54,9 +51,9 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     @Override
     public Map<String, Object> getMapping(OdpfMessageSchema schema) throws IOException {
         if (schema.getSchema() == null) {
-            throw new ConfigurationException("BQ_PROTO_COLUMN_MAPPING is not configured");
+            throw new ConfigurationException("Schema is not configured");
         }
-        if(!cachedMapping.containsKey(schema)) {
+        if (!cachedMapping.containsKey(schema)) {
             cachedMapping.put(schema, getMappings(dynamicMessage, (Properties) schema.getSchema()));
         }
         return cachedMapping.get(schema);
@@ -151,6 +148,8 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
             }
             if (localValue instanceof Map) {
                 value = (Map) localValue;
+            } else {
+                return localValue;
             }
         }
         return value;

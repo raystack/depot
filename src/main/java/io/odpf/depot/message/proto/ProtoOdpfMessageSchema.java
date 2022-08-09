@@ -3,6 +3,7 @@ package io.odpf.depot.message.proto;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.odpf.depot.message.OdpfMessageSchema;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Properties;
 
+@EqualsAndHashCode
 public class ProtoOdpfMessageSchema implements OdpfMessageSchema {
 
     @Getter

@@ -64,6 +64,10 @@ public interface OdpfSinkConfig extends Config {
     @DefaultValue("")
     String getSinkConnectorSchemaProtoKeyClass();
 
+    @Key("SINK_CONNECTOR_SCHEMA_JSON_PARSER_STRING_MODE_ENABLED")
+    @DefaultValue("true")
+    boolean getSinkConnectorSchemaJsonParserStringModeEnabled();
+
     @Key("SINK_CONNECTOR_SCHEMA_DATA_TYPE")
     @ConverterClass(SinkConnectorSchemaDataTypeConverter.class)
     @DefaultValue("PROTOBUF")
@@ -77,8 +81,4 @@ public interface OdpfSinkConfig extends Config {
     @Key("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE")
     @DefaultValue("false")
     boolean getSinkConnectorSchemaProtoAllowUnknownFieldsEnable();
-
-    @Key("SINK_DEFAULT_DATATYPE_STRING_ENABLE")
-    @DefaultValue("true")
-    boolean getSinkDefaultDatatypeStringEnable();
 }
