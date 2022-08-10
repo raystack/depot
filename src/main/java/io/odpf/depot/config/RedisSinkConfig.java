@@ -1,5 +1,6 @@
 package io.odpf.depot.config;
 
+import io.odpf.depot.config.converter.ProtoIndexToFieldMapConverter;
 import io.odpf.depot.redis.converter.RedisSinkDataTypeConverter;
 import io.odpf.depot.redis.converter.RedisSinkDeploymentTypeConverter;
 import io.odpf.depot.redis.converter.RedisSinkTtlTypeConverter;
@@ -7,6 +8,8 @@ import io.odpf.depot.redis.enums.RedisSinkDataType;
 import io.odpf.depot.redis.enums.RedisSinkDeploymentType;
 import io.odpf.depot.redis.enums.RedisSinkTtlType;
 import org.aeonbits.owner.Config;
+
+import java.util.Properties;
 
 
 public interface RedisSinkConfig extends OdpfSinkConfig {
@@ -48,4 +51,8 @@ public interface RedisSinkConfig extends OdpfSinkConfig {
     @Config.Key("SINK_REDIS_LIST_DATA_FIELD_NAME")
     @DefaultValue("")
     String getSinkRedisListDataFieldName();
+
+    @Key("SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING")
+    @ConverterClass(ProtoIndexToFieldMapConverter.class)
+    Properties getSinkRedisHashsetFieldToColumnMapping();
 }

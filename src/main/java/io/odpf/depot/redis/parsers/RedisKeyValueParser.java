@@ -9,7 +9,6 @@ import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.dataentry.RedisDataEntry;
 import io.odpf.depot.redis.dataentry.RedisKeyValueEntry;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,12 +26,12 @@ public class RedisKeyValueParser extends RedisParser {
     }
 
     @Override
-    public List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, String redisKey, OdpfMessageSchema schema) throws IOException {
-            String redisValue = parsedOdpfMessage.getFieldByName(redisSinkConfig.getSinkRedisKeyValueDataFieldName(), schema).toString();
-            if (redisValue == null) {
-                throw new IllegalArgumentException("Empty or invalid config SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME found");
-            }
-            RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, redisValue, new Instrumentation(statsDReporter, RedisKeyValueEntry.class));
-            return Collections.singletonList(redisKeyValueEntry);
+    public List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, String redisKey, OdpfMessageSchema schema) {
+        String redisValue = parsedOdpfMessage.getFieldByName(redisSinkConfig.getSinkRedisKeyValueDataFieldName(), schema).toString();
+        if (redisValue == null) {
+            throw new IllegalArgumentException("Empty or invalid config SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME found");
+        }
+        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, redisValue, new Instrumentation(statsDReporter, RedisKeyValueEntry.class));
+        return Collections.singletonList(redisKeyValueEntry);
     }
 }

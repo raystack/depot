@@ -29,9 +29,9 @@ public abstract class RedisParser {
     private OdpfMessageParser odpfMessageParser;
     private RedisSinkConfig redisSinkConfig;
 
-    public abstract List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, String redisKey, OdpfMessageSchema schema) throws IOException;
+    public abstract List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, String redisKey, OdpfMessageSchema schema);
 
-    String parseKeyTemplate(String template, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) throws IOException {
+    String parseKeyTemplate(String template, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
         if (template.isEmpty() || template.equals("")) {
             throw new ConfigurationException("Set config SINK_REDIS_KEY_TEMPLATE");
         }
