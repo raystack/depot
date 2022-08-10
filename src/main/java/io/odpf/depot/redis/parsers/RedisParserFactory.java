@@ -20,6 +20,8 @@ public class RedisParserFactory {
         switch (redisSinkConfig.getSinkRedisDataType()) {
             case KEYVALUE:
                 return new RedisKeyValueParser(OdpfMessageParserFactory.getParser(redisSinkConfig, statsDReporter), redisSinkConfig, statsDReporter);
+            case LIST:
+                return new RedisListParser(OdpfMessageParserFactory.getParser(redisSinkConfig, statsDReporter), redisSinkConfig, statsDReporter);
             default:
                 return null;
         }
