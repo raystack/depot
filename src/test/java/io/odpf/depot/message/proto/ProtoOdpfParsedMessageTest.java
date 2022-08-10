@@ -7,12 +7,9 @@ import com.google.protobuf.ListValue;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
-import io.odpf.depot.StatusBQ;
-import io.odpf.depot.TestKeyBQ;
-import io.odpf.depot.TestMessageBQ;
-import io.odpf.depot.TestNestedMessageBQ;
-import io.odpf.depot.TestNestedRepeatedMessageBQ;
+import io.odpf.depot.*;
 import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
@@ -312,4 +309,22 @@ public class ProtoOdpfParsedMessageTest {
 
         assertEquals(Arrays.asList("{\"name\":\"John\",\"age\":\"50\"}", "{\"name\":\"John\",\"age\":\"60\"}"), fields.get("attributes"));
     }
+
+    @Test
+    public void shouldCacheMappingForSameSchema() throws IOException {
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
+        TestMessageBQ message = TestMessageBQ.newBuilder()
+                .addAttributes(Struct.newBuilder().putFields("name", Value.newBuilder().setStringValue("John").build())
+                        .putFields("age", Value.newBuilder().setStringValue("50").build()).build())
+                .addAttributes(Struct.newBuilder().putFields("name", Value.newBuilder().setStringValue("John").build())
+                        .putFields("age", Value.newBuilder().setStringValue("60").build()).build())
+                .build();
+        OdpfMessageSchema odpfMessageSchema1 = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        OdpfMessageSchema odpfMessageSchema2 = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()));
+        Map<String, Object> map1 = parsedOdpfMessage.getMapping(odpfMessageSchema1);
+        Map<String, Object> map2 = parsedOdpfMessage.getMapping(odpfMessageSchema2);
+        assertEquals(map1, map2);
+    }
+
 }

@@ -7,6 +7,7 @@ import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.redis.dataentry.RedisDataEntry;
 import io.odpf.depot.redis.models.RedisRecord;
@@ -26,12 +27,11 @@ import java.util.List;
 @AllArgsConstructor
 public abstract class RedisParser {
     private OdpfMessageParser odpfMessageParser;
-
     private RedisSinkConfig redisSinkConfig;
 
-    public abstract List<RedisDataEntry> parse(OdpfMessage message);
+    public abstract List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, String redisKey, OdpfMessageSchema schema) throws IOException;
 
-    String parseKeyTemplate(String template, ParsedOdpfMessage parsedOdpfMessage) throws IOException {
+    String parseKeyTemplate(String template, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) throws IOException {
         if (template.isEmpty() || template.equals("")) {
             throw new ConfigurationException("Set config SINK_REDIS_KEY_TEMPLATE");
         }
@@ -48,10 +48,7 @@ public abstract class RedisParser {
                     }
                     field += f;
                 }
-                SinkConnectorSchemaMessageMode mode = redisSinkConfig.getSinkConnectorSchemaMessageMode();
-                String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
-                        ? redisSinkConfig.getSinkConnectorSchemaProtoMessageClass() : redisSinkConfig.getSinkConnectorSchemaProtoKeyClass();
-                key += parsedOdpfMessage.getFieldByName(field, odpfMessageParser.getSchema(schemaClass));
+                key += parsedOdpfMessage.getFieldByName(field, schema);
                 field = "";
             } else {
                 key += c;
@@ -66,7 +63,13 @@ public abstract class RedisParser {
         List<RedisRecord> invalid = new ArrayList<>();
         for (int i = 0; i < messages.size(); i++) {
             try {
-                List<RedisDataEntry> p = parse(messages.get(i));
+                SinkConnectorSchemaMessageMode mode = redisSinkConfig.getSinkConnectorSchemaMessageMode();
+                String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
+                        ? redisSinkConfig.getSinkConnectorSchemaProtoMessageClass() : redisSinkConfig.getSinkConnectorSchemaProtoKeyClass();
+                OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass);
+                ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(messages.get(i), mode, schemaClass);
+                String redisKey = parseKeyTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
+                List<RedisDataEntry> p = parseRedisEntry(parsedOdpfMessage, redisKey, schema);
                 for (int ii = 0; ii < p.size(); ii++) {
                     valid.add(new RedisRecord(p.get(ii), (long) valid.size(), new ErrorInfo(null, null)));
                 }
@@ -76,6 +79,8 @@ public abstract class RedisParser {
             } catch (DeserializerException e) {
                 ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR);
                 invalid.add(new RedisRecord(null, (long) i, errorInfo));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
         return new RedisRecords(valid, invalid);

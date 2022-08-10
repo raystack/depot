@@ -23,13 +23,13 @@ public class ProtoOdpfMessageSchema implements OdpfMessageSchema {
         this(protoField, createProperties(protoField));
     }
 
-    public ProtoOdpfMessageSchema(ProtoField protoField, Properties properties) throws IOException {
+    public ProtoOdpfMessageSchema(ProtoField protoField, Properties properties) {
         this.protoField = protoField;
         this.properties = properties;
     }
 
     @Override
-    public Properties getSchema() throws IOException {
+    public Properties getSchema() {
         return this.properties;
     }
 

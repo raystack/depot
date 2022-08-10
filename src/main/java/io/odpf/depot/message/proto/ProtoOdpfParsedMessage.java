@@ -14,7 +14,6 @@ import io.odpf.depot.message.proto.converter.fields.ProtoFieldFactory;
 import io.odpf.depot.utils.ProtoUtils;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +48,7 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     }
 
     @Override
-    public Map<String, Object> getMapping(OdpfMessageSchema schema) throws IOException {
+    public Map<String, Object> getMapping(OdpfMessageSchema schema) {
         if (schema.getSchema() == null) {
             throw new ConfigurationException("Schema is not configured");
         }
@@ -134,11 +133,7 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
 
     public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
         Map<String, Object> mapping;
-        try {
-            mapping = this.getMapping(odpfMessageSchema);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        mapping = this.getMapping(odpfMessageSchema);
         String[] keys = name.split("\\.");
         Map<String, Object> value = mapping;
         for (String key: keys) {
