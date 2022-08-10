@@ -103,15 +103,21 @@ public class JsonErrorHandler implements ErrorHandler {
             throw new UnsupportedOperationException("metadata namespace is not supported, because nested json structure is not supported");
         }
         if (metadataColumnsTypesMap.containsKey(key)) {
-            return Field.of(key, LegacySQLTypeName.valueOfStrict(metadataColumnsTypesMap.get(key).toUpperCase()));
+            return Field.newBuilder(key, LegacySQLTypeName.valueOfStrict(metadataColumnsTypesMap.get(key).toUpperCase()))
+                    .setMode(Field.Mode.NULLABLE)
+                    .build();
         }
         if (defaultColumnsMap.containsKey(key)) {
-            return Field.of(key, LegacySQLTypeName.valueOfStrict(defaultColumnsMap.get(key).toUpperCase()));
+            return Field.newBuilder(key, LegacySQLTypeName.valueOfStrict(defaultColumnsMap.get(key).toUpperCase()))
+                    .setMode(Field.Mode.NULLABLE)
+                    .build();
         }
         if (!castAllColumnsToStringDataType) {
             throw new UnsupportedOperationException("only string data type is supported for fields other than partition key");
         }
-        return Field.of(key, LegacySQLTypeName.STRING);
+        return Field.newBuilder(key, LegacySQLTypeName.STRING)
+                .setMode(Field.Mode.NULLABLE)
+                .build();
     }
 
     private boolean filterExistingFields(FieldList existingFieldList, String key) {
