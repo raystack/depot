@@ -10,7 +10,7 @@ import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.JsonParserMetrics;
-import io.odpf.depot.utils.JsonOdpfMessageParserUtils;
+import io.odpf.depot.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,7 +55,7 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
                 throw new EmptyMessageException();
             }
             Instant instant = Instant.now();
-            JSONObject jsonObject = JsonOdpfMessageParserUtils.getJsonObject(config, payload);
+            JSONObject jsonObject = JsonUtils.getJsonObject(config, payload);
             instrumentation.captureDurationSince(jsonParserMetrics.getJsonParseTimeTakenMetric(), instant);
             return new JsonOdpfParsedMessage(jsonObject);
         } catch (JSONException ex) {

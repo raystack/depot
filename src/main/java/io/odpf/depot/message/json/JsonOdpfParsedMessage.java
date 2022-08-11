@@ -1,6 +1,5 @@
 package io.odpf.depot.message.json;
 
-import com.google.gson.Gson;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
@@ -11,7 +10,6 @@ import io.odpf.depot.message.ParsedOdpfMessage;
 import org.json.JSONObject;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
@@ -40,7 +38,7 @@ public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
         if (jsonObject == null || jsonObject.isEmpty()) {
             return  Collections.emptyMap();
         }
-        return new Gson().fromJson(jsonObject.toString(), HashMap.class);
+        return jsonObject.toMap();
     }
     public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
         String jsonPathName = "$." + name;

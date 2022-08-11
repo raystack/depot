@@ -52,10 +52,7 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
         if (schema.getSchema() == null) {
             throw new ConfigurationException("Schema is not configured");
         }
-        if (!cachedMapping.containsKey(schema)) {
-            cachedMapping.put(schema, getMappings(dynamicMessage, (Properties) schema.getSchema()));
-        }
-        return cachedMapping.get(schema);
+        return cachedMapping.computeIfAbsent(schema, x -> getMappings(dynamicMessage, (Properties) schema.getSchema()));
     }
 
     @SuppressWarnings("unchecked")
@@ -132,21 +129,19 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
 
 
     public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
-        Map<String, Object> mapping;
-        mapping = this.getMapping(odpfMessageSchema);
         String[] keys = name.split("\\.");
-        Map<String, Object> value = mapping;
+        Map<String, Object> fields = this.getMapping(odpfMessageSchema);
         for (String key: keys) {
-            Object localValue = value.get(key);
-            if (value == null) {
+            Object localValue = fields.get(key);
+            if (localValue == null) {
                 throw new ConfigurationException("Invalid nested proto field");
             }
             if (localValue instanceof Map) {
-                value = (Map) localValue;
+                fields = (Map<String, Object>) localValue;
             } else {
                 return localValue;
             }
         }
-        return value;
+        return fields;
     }
 }

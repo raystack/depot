@@ -3,7 +3,7 @@ package io.odpf.depot.utils;
 import io.odpf.depot.config.OdpfSinkConfig;
 import org.json.JSONObject;
 
-public class JsonOdpfMessageParserUtils {
+public class JsonUtils {
     public static JSONObject getJsonObject(OdpfSinkConfig config, byte[] payload) {
         JSONObject jsonObject = new JSONObject(new String(payload));
         if (!config.getSinkConnectorSchemaJsonParserStringModeEnabled()) {

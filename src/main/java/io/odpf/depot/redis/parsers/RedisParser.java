@@ -14,9 +14,11 @@ import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.models.RedisRecords;
 import lombok.AllArgsConstructor;
 import io.odpf.depot.message.ParsedOdpfMessage;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -32,30 +34,35 @@ public abstract class RedisParser {
     public abstract List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, String redisKey, OdpfMessageSchema schema);
 
     String parseKeyTemplate(String template, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
-        if (template.isEmpty() || template.equals("")) {
-            throw new ConfigurationException("Set config SINK_REDIS_KEY_TEMPLATE");
+        if (StringUtils.isEmpty(template)) {
+            throw new ConfigurationException("Empty config SINK_REDIS_KEY_TEMPLATE found");
         }
-        String key = "";
-        String field = "";
-        for (int i = 0; i < template.length(); i++) {
-            char c = template.charAt(i);
-            if (c == '{') {
-                for (int ii = i + 1; ii < template.length(); ii++) {
-                    char f = template.charAt(ii);
-                    if (f == '}') {
-                        i = ii;
-                        break;
-                    }
-                    field += f;
-                }
-                key += parsedOdpfMessage.getFieldByName(field, schema);
-                field = "";
-            } else {
-                key += c;
-            }
+        String[] templateStrings = template.split(",");
+        if (templateStrings.length == 0) {
+            throw new ConfigurationException("Invalid key configuration SINK_REDIS_KEY_TEMPLATE: '" + template + "'");
+        }
+        templateStrings = Arrays
+                .stream(templateStrings)
+                .map(String::trim)
+                .toArray(String[]::new);
+        String templatePattern = templateStrings[0];
+        String templateVariables = StringUtils.join(Arrays.copyOfRange(templateStrings, 1, templateStrings.length), ",");
+        String renderedTemplate = renderStringTemplate(parsedOdpfMessage, schema, templatePattern, templateVariables);
+        return StringUtils.isEmpty(templateVariables)
+                ? templatePattern
+                : renderedTemplate;
+    }
 
+    private String renderStringTemplate(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema, String pattern, String patternVariables) {
+        if (StringUtils.isEmpty(patternVariables)) {
+            return pattern;
         }
-        return key;
+        List<String> patternVariableFieldNames = Arrays.asList(patternVariables.split(","));
+        Object[] patternVariableData = patternVariableFieldNames
+                .stream()
+                .map(fieldName -> parsedOdpfMessage.getFieldByName(fieldName, schema))
+                .toArray();
+        return String.format(pattern, patternVariableData);
     }
 
     public RedisRecords convert(List<OdpfMessage> messages) {
