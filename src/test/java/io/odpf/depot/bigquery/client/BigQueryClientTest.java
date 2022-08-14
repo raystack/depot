@@ -320,7 +320,7 @@ public class BigQueryClientTest {
         when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
         when(bqConfig.getTablePartitionKey()).thenReturn("timestamp_field");
         when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
-        when(bqConfig.getTableClusteringKey()).thenReturn("string_field");
+        when(bqConfig.getTableClusteringKeys()).thenReturn(Collections.singletonList("string_field"));
         when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(-1L);
         when(bqConfig.getTableName()).thenReturn("bq-table");
         when(bqConfig.getDatasetName()).thenReturn("bq-proto");
@@ -408,7 +408,7 @@ public class BigQueryClientTest {
     public void shouldCreateBigQueryTableWithClusteringOnly() {
         when(bqConfig.isTablePartitioningEnabled()).thenReturn(false);
         when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
-        when(bqConfig.getTableClusteringKey()).thenReturn("string_field");
+        when(bqConfig.getTableClusteringKeys()).thenReturn(Collections.singletonList("string_field"));
         when(bqConfig.getTableName()).thenReturn("bq-table");
         when(bqConfig.getDatasetName()).thenReturn("bq-proto");
         when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");

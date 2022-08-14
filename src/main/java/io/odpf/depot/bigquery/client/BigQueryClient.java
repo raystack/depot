@@ -17,7 +17,7 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
 import io.odpf.depot.bigquery.exception.BQDatasetLocationChangedException;
-import io.odpf.depot.bigquery.table.BigQueryTableDefinition;
+
 import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.metrics.BigQueryMetrics;
 import io.odpf.depot.metrics.Instrumentation;
