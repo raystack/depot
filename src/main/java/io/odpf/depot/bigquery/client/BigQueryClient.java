@@ -34,7 +34,7 @@ public class BigQueryClient {
     @Getter
     private final TableId tableID;
     private final BigQuerySinkConfig bqConfig;
-    private final BigQueryTableDefinition bigQueryTableDefinition;
+    private final BQTableDefinition bqTableDefinition;
     private final Instrumentation instrumentation;
     private static final int TABLE_INFO_UPDATE_RETRIES = 10;
     private static final int DEFAULT_SLEEP_RETRY = 10000;
@@ -49,7 +49,7 @@ public class BigQueryClient {
         this.bigquery = bq;
         this.bqConfig = bqConfig;
         this.tableID = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
-        this.bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        this.bqTableDefinition = new BQTableDefinition(bqConfig);
         this.instrumentation = instrumentation;
         this.bigqueryMetrics = bigQueryMetrics;
     }
@@ -201,6 +201,6 @@ public class BigQueryClient {
     }
 
     private TableDefinition getTableDefinition(Schema schema) {
-        return bigQueryTableDefinition.getTableDefinition(schema);
+        return bqTableDefinition.getTableDefinition(schema);
     }
 }

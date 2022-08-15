@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-public class BigQueryTableDefinition {
+public class BQTableDefinition {
 
     private static final int MAX_CLUSTERING_KEYS = 4;
     private final BigQuerySinkConfig bqConfig;
