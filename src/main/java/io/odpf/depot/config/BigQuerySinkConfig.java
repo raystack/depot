@@ -60,7 +60,7 @@ public interface BigQuerySinkConfig extends OdpfSinkConfig {
     int getBqClientConnectTimeoutMS();
 
     @Key("SINK_BIGQUERY_TABLE_PARTITION_EXPIRY_MS")
-    @DefaultValue("-1")
+    @DefaultValue("0")
     Long getBigQueryTablePartitionExpiryMS();
 
     @Key("SINK_BIGQUERY_DATASET_LOCATION")

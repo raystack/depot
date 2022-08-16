@@ -321,7 +321,7 @@ public class BigQueryClientTest {
         when(bqConfig.getTablePartitionKey()).thenReturn("timestamp_field");
         when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
         when(bqConfig.getTableClusteringKeys()).thenReturn(Collections.singletonList("string_field"));
-        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(-1L);
+        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(0L);
         when(bqConfig.getTableName()).thenReturn("bq-table");
         when(bqConfig.getDatasetName()).thenReturn("bq-proto");
         when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
@@ -334,7 +334,7 @@ public class BigQueryClientTest {
         TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
                 .setField("timestamp_field")
                 .setRequirePartitionFilter(true)
-                .setExpirationMs(-1L)
+                .setExpirationMs(0L)
                 .build();
         Clustering clustering = Clustering.newBuilder()
                 .setFields(Collections.singletonList("string_field"))
@@ -366,7 +366,7 @@ public class BigQueryClientTest {
     public void shouldCreateBigQueryTableWithPartitionOnly() {
         when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
         when(bqConfig.getTablePartitionKey()).thenReturn("partition_column");
-        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(-1L);
+        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(0L);
         when(bqConfig.getTableName()).thenReturn("bq-table");
         when(bqConfig.getDatasetName()).thenReturn("bq-proto");
         when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
@@ -385,7 +385,7 @@ public class BigQueryClientTest {
         TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
                 .setField("partition_column")
                 .setRequirePartitionFilter(true)
-                .setExpirationMs(-1L)
+                .setExpirationMs(0L)
                 .build();
         StandardTableDefinition standardTableDefinition = StandardTableDefinition.newBuilder()
                 .setSchema(bqSchema)
