@@ -82,40 +82,6 @@ public class BigqueryTableDefinitionTest {
     }
 
     @Test
-    public void shouldReturnTimePartitioningWithNullPartitionExpiryIfLessThanZero() {
-        long partitionExpiry = -1L;
-        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(partitionExpiry);
-        when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
-        when(bqConfig.getTablePartitionKey()).thenReturn("timestamp_field");
-        Schema bqSchema = Schema.of(
-                Field.newBuilder("timestamp_field", LegacySQLTypeName.TIMESTAMP).build()
-        );
-
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        StandardTableDefinition tableDefinition = bigqueryTableDefinition.getTableDefinition(bqSchema);
-
-        assertEquals("timestamp_field", tableDefinition.getTimePartitioning().getField());
-        assertNull(tableDefinition.getTimePartitioning().getExpirationMs());
-    }
-
-    @Test
-    public void shouldReturnTimePartitioningWithNullPartitionExpiryIfEqualsZero() {
-        long partitionExpiry = 0L;
-        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(partitionExpiry);
-        when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
-        when(bqConfig.getTablePartitionKey()).thenReturn("timestamp_field");
-        Schema bqSchema = Schema.of(
-                Field.newBuilder("timestamp_field", LegacySQLTypeName.TIMESTAMP).build()
-        );
-
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        StandardTableDefinition tableDefinition = bigqueryTableDefinition.getTableDefinition(bqSchema);
-
-        assertEquals("timestamp_field", tableDefinition.getTimePartitioning().getField());
-        assertNull(tableDefinition.getTimePartitioning().getExpirationMs());
-    }
-
-    @Test
     public void shouldReturnClusteringWithSingleColumns() {
         when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
         when(bqConfig.getTableClusteringKeys()).thenReturn(Collections.singletonList("string_field"));

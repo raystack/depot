@@ -17,7 +17,6 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
 import io.odpf.depot.bigquery.exception.BQDatasetLocationChangedException;
-
 import io.odpf.depot.config.BigQuerySinkConfig;
 import io.odpf.depot.metrics.BigQueryMetrics;
 import io.odpf.depot.metrics.Instrumentation;
@@ -30,14 +29,14 @@ import java.util.List;
 import java.util.Random;
 
 public class BigQueryClient {
+    private static final int TABLE_INFO_UPDATE_RETRIES = 10;
+    private static final int DEFAULT_SLEEP_RETRY = 10000;
     private final BigQuery bigquery;
     @Getter
     private final TableId tableID;
     private final BigQuerySinkConfig bqConfig;
     private final BigqueryTableDefinition bigqueryTableDefinition;
     private final Instrumentation instrumentation;
-    private static final int TABLE_INFO_UPDATE_RETRIES = 10;
-    private static final int DEFAULT_SLEEP_RETRY = 10000;
     private final Random random = new Random(System.currentTimeMillis());
     private final BigQueryMetrics bigqueryMetrics;
 

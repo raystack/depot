@@ -334,6 +334,7 @@ public class BigQueryClientTest {
         TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
                 .setField("timestamp_field")
                 .setRequirePartitionFilter(true)
+                .setExpirationMs(-1L)
                 .build();
         Clustering clustering = Clustering.newBuilder()
                 .setFields(Collections.singletonList("string_field"))
@@ -384,6 +385,7 @@ public class BigQueryClientTest {
         TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
                 .setField("partition_column")
                 .setRequirePartitionFilter(true)
+                .setExpirationMs(-1L)
                 .build();
         StandardTableDefinition standardTableDefinition = StandardTableDefinition.newBuilder()
                 .setSchema(bqSchema)
