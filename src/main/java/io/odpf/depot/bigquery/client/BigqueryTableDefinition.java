@@ -1,11 +1,6 @@
 package io.odpf.depot.bigquery.client;
 
-import com.google.cloud.bigquery.Clustering;
-import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.LegacySQLTypeName;
-import com.google.cloud.bigquery.Schema;
-import com.google.cloud.bigquery.StandardTableDefinition;
-import com.google.cloud.bigquery.TimePartitioning;
+import com.google.cloud.bigquery.*;
 import io.odpf.depot.bigquery.exception.BQClusteringKeysException;
 import io.odpf.depot.bigquery.exception.BQPartitionKeyNotSpecified;
 import io.odpf.depot.config.BigQuerySinkConfig;
@@ -52,7 +47,7 @@ public class BigqueryTableDefinition {
             return TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
                     .setField(tablePartitionKey)
                     .setRequirePartitionFilter(true)
-                    .setExpirationMs(partitionExpiry < 0 ? 0 : partitionExpiry)
+                    .setExpirationMs(partitionExpiry <= 0 ? null : partitionExpiry)
                     .build();
         } else {
             throw new UnsupportedOperationException("Range BigQuery partitioning is not supported, supported partition fields have to be of DATE or TIMESTAMP type");
