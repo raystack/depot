@@ -134,7 +134,7 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
         for (String key: keys) {
             Object localValue = fields.get(key);
             if (localValue == null) {
-                throw new ConfigurationException("Invalid field config : "+name);
+                throw new ConfigurationException("Invalid field config : " + name);
             }
             if (localValue instanceof Map) {
                 fields = (Map<String, Object>) localValue;

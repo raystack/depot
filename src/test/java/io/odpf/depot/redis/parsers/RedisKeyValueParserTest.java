@@ -34,7 +34,7 @@ public class RedisKeyValueParserTest {
     @Mock
     private StatsDReporter statsDReporter;
 
-    Map<String, Descriptors.Descriptor> descriptorsMap;
+    private Map<String, Descriptors.Descriptor> descriptorsMap;
 
     @Before
     public void setup() {
