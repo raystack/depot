@@ -52,7 +52,11 @@ public class BigqueryTableDefinition {
             return TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
                     .setField(tablePartitionKey)
                     .setRequirePartitionFilter(true)
-                    .setExpirationMs(partitionExpiry)
+<<<<<<< HEAD
+                    .setExpirationMs(partitionExpiry <= 0 ? null : partitionExpiry)
+=======
+                    .setExpirationMs(partitionExpiry < 0 ? 0 : partitionExpiry)
+>>>>>>> bq-sink-clustering
                     .build();
         } else {
             throw new UnsupportedOperationException("Range BigQuery partitioning is not supported, supported partition fields have to be of DATE or TIMESTAMP type");
