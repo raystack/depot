@@ -1,6 +1,11 @@
 package io.odpf.depot.bigquery.client;
 
-import com.google.cloud.bigquery.*;
+import com.google.cloud.bigquery.Clustering;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.LegacySQLTypeName;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.TimePartitioning;
 import io.odpf.depot.bigquery.exception.BQClusteringKeysException;
 import io.odpf.depot.bigquery.exception.BQPartitionKeyNotSpecified;
 import io.odpf.depot.config.BigQuerySinkConfig;
@@ -11,7 +16,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-public class BigqueryTableDefinition {
+public class BigQueryTableDefinition {
 
     private static final int MAX_CLUSTERING_KEYS = 4;
     private final BigQuerySinkConfig bqConfig;

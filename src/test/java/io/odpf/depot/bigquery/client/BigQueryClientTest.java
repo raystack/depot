@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -30,14 +31,14 @@ public class BigQueryClientTest {
     private StandardTableDefinition mockTableDefinition;
     @Mock
     private TimePartitioning mockTimePartitioning;
-
-    private BigQueryClient bqClient;
-
+    @Mock
+    private Clustering mockClustering;
     @Mock
     private Instrumentation instrumentation;
-
     @Mock
     private BigQueryMetrics metrics;
+
+    private BigQueryClient bqClient;
 
     @Test
     public void shouldIgnoreExceptionIfDatasetAlreadyExists() {
@@ -57,7 +58,8 @@ public class BigQueryClientTest {
             add(Field.newBuilder("partition", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
         }};
 
-        StandardTableDefinition standardTableDefinition = getTableDefinition(bqSchemaFields);
+        Schema bqSchema = Schema.of(bqSchemaFields);
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
         TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
         TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();
 
@@ -92,13 +94,15 @@ public class BigQueryClientTest {
             add(Field.newBuilder("partition", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
         }};
 
-        StandardTableDefinition standardTableDefinition = getTableDefinition(bqSchemaFields);
+        Schema bqSchema = Schema.of(bqSchemaFields);
+        BigQueryTableDefinition bqDefinition = new BigQueryTableDefinition(bqConfig);
+        StandardTableDefinition standardTableDefinition = bqDefinition.getTableDefinition(bqSchema);
         ArrayList<Field> updatedBQSchemaFields = new ArrayList<>(bqSchemaFields);
         updatedBQSchemaFields.add(Field.newBuilder("new-field", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
-        StandardTableDefinition updatedBQTableDefinition = getTableDefinition(updatedBQSchemaFields);
+        StandardTableDefinition updatedBigQueryTableDefinition = bqDefinition.getTableDefinition(Schema.of(updatedBQSchemaFields));
 
         TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
-        TableInfo tableInfo = TableInfo.newBuilder(tableId, updatedBQTableDefinition).build();
+        TableInfo tableInfo = TableInfo.newBuilder(tableId, updatedBigQueryTableDefinition).build();
         when(bigquery.getDataset(tableId.getDataset())).thenReturn(dataset);
         when(dataset.exists()).thenReturn(true);
         when(dataset.getLabels()).thenReturn(new HashMap<String, String>() {{
@@ -107,8 +111,7 @@ public class BigQueryClientTest {
         when(dataset.getLocation()).thenReturn("US");
         when(table.exists()).thenReturn(true);
         when(bigquery.getTable(tableId)).thenReturn(table);
-        when(table.getDefinition()).thenReturn(mockTableDefinition);
-        when(mockTableDefinition.getSchema()).thenReturn(standardTableDefinition.getSchema());
+        when(table.getDefinition()).thenReturn(standardTableDefinition);
         when(bigquery.update(tableInfo))
                 .thenThrow(new BigQueryException(500, " Error while updating bigquery table on callback:Exceeded rate limits: too many table update operations"))
                 .thenThrow(new BigQueryException(500, " Error while updating bigquery table on callback:Exceeded rate limits: too many table update operations"))
@@ -137,7 +140,8 @@ public class BigQueryClientTest {
             add(Field.newBuilder("partition", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
         }};
 
-        StandardTableDefinition standardTableDefinition = getTableDefinition(bqSchemaFields);
+        Schema bqSchema = Schema.of(bqSchemaFields);
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
 
         TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
         TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();
@@ -146,9 +150,7 @@ public class BigQueryClientTest {
         when(dataset.getLocation()).thenReturn("US");
         when(table.exists()).thenReturn(true);
         when(bigquery.getTable(tableId)).thenReturn(table);
-        when(table.getDefinition()).thenReturn(mockTableDefinition);
-        when(mockTableDefinition.getType()).thenReturn(TableDefinition.Type.TABLE);
-        when(mockTableDefinition.getSchema()).thenReturn(standardTableDefinition.getSchema());
+        when(table.getDefinition()).thenReturn(standardTableDefinition);
         when(table.exists()).thenReturn(true);
 
         bqClient.upsertTable(bqSchemaFields);
@@ -174,20 +176,21 @@ public class BigQueryClientTest {
             add(Field.newBuilder("partition", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
         }};
 
-        StandardTableDefinition standardTableDefinition = getTableDefinition(bqSchemaFields);
+        Schema bqSchema = Schema.of(bqSchemaFields);
+        BigQueryTableDefinition bqDefinition = new BigQueryTableDefinition(bqConfig);
+        StandardTableDefinition standardTableDefinition = bqDefinition.getTableDefinition(bqSchema);
         ArrayList<Field> updatedBQSchemaFields = new ArrayList<>(bqSchemaFields);
         updatedBQSchemaFields.add(Field.newBuilder("new-field", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
-        StandardTableDefinition updatedBQTableDefinition = getTableDefinition(updatedBQSchemaFields);
+        StandardTableDefinition updatedBigQueryTableDefinition = bqDefinition.getTableDefinition(Schema.of(updatedBQSchemaFields));
 
         TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
-        TableInfo tableInfo = TableInfo.newBuilder(tableId, updatedBQTableDefinition).build();
+        TableInfo tableInfo = TableInfo.newBuilder(tableId, updatedBigQueryTableDefinition).build();
         when(bigquery.getDataset(tableId.getDataset())).thenReturn(dataset);
         when(dataset.exists()).thenReturn(true);
         when(dataset.getLocation()).thenReturn("US");
         when(table.exists()).thenReturn(true);
         when(bigquery.getTable(tableId)).thenReturn(table);
-        when(table.getDefinition()).thenReturn(mockTableDefinition);
-        when(mockTableDefinition.getSchema()).thenReturn(standardTableDefinition.getSchema());
+        when(table.getDefinition()).thenReturn(standardTableDefinition);
         when(bigquery.update(tableInfo)).thenReturn(table);
 
         bqClient.upsertTable(updatedBQSchemaFields);
@@ -217,15 +220,7 @@ public class BigQueryClientTest {
         }};
 
         Schema bqSchema = Schema.of(bqSchemaFields);
-        TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
-                .setField("partition_column")
-                .setRequirePartitionFilter(true)
-                .setExpirationMs(partitionExpiry)
-                .build();
-        StandardTableDefinition standardTableDefinition = StandardTableDefinition.newBuilder()
-                .setSchema(bqSchema)
-                .setTimePartitioning(partitioning)
-                .build();
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
 
         TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
         TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();
@@ -235,11 +230,10 @@ public class BigQueryClientTest {
         when(table.exists()).thenReturn(true);
         when(bigquery.getTable(tableId)).thenReturn(table);
         when(table.getDefinition()).thenReturn(mockTableDefinition);
-        when(mockTableDefinition.getType()).thenReturn(TableDefinition.Type.TABLE);
+        when(mockTableDefinition.getType()).thenReturn(standardTableDefinition.getType());
         when(mockTableDefinition.getTimePartitioning()).thenReturn(mockTimePartitioning);
         when(mockTimePartitioning.getExpirationMs()).thenReturn(null);
         when(mockTableDefinition.getSchema()).thenReturn(standardTableDefinition.getSchema());
-        when(table.exists()).thenReturn(true);
 
         bqClient.upsertTable(bqSchemaFields);
         verify(bigquery, never()).create(tableInfo);
@@ -264,20 +258,21 @@ public class BigQueryClientTest {
             add(Field.newBuilder("partition", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
         }};
 
-        StandardTableDefinition standardTableDefinition = getTableDefinition(bqSchemaFields);
+        Schema bqSchema = Schema.of(bqSchemaFields);
+        BigQueryTableDefinition bqDefinition = new BigQueryTableDefinition(bqConfig);
+        StandardTableDefinition standardTableDefinition = bqDefinition.getTableDefinition(bqSchema);
         ArrayList<Field> updatedBQSchemaFields = new ArrayList<>(bqSchemaFields);
         updatedBQSchemaFields.add(Field.newBuilder("new-field", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
-        StandardTableDefinition updatedBQTableDefinition = getTableDefinition(updatedBQSchemaFields);
+        StandardTableDefinition updatedBigQueryTableDefinition = bqDefinition.getTableDefinition(Schema.of(updatedBQSchemaFields));
 
         TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
-        TableInfo tableInfo = TableInfo.newBuilder(tableId, updatedBQTableDefinition).build();
+        TableInfo tableInfo = TableInfo.newBuilder(tableId, updatedBigQueryTableDefinition).build();
         when(bigquery.getDataset(tableId.getDataset())).thenReturn(dataset);
         when(dataset.exists()).thenReturn(true);
         when(dataset.getLocation()).thenReturn("US");
         when(table.exists()).thenReturn(true);
         when(bigquery.getTable(tableId)).thenReturn(table);
-        when(table.getDefinition()).thenReturn(mockTableDefinition);
-        when(mockTableDefinition.getSchema()).thenReturn(standardTableDefinition.getSchema());
+        when(table.getDefinition()).thenReturn(standardTableDefinition);
         when(bigquery.update(tableInfo)).thenThrow(new BigQueryException(404, "Failed to update"));
 
         bqClient = new BigQueryClient(bigquery, bqConfig, metrics, instrumentation);
@@ -302,7 +297,8 @@ public class BigQueryClientTest {
             add(Field.newBuilder("partition", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
         }};
 
-        StandardTableDefinition standardTableDefinition = getTableDefinition(bqSchemaFields);
+        Schema bqSchema = Schema.of(bqSchemaFields);
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
         TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
         TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();
 
@@ -321,7 +317,7 @@ public class BigQueryClientTest {
         when(bqConfig.getTablePartitionKey()).thenReturn("timestamp_field");
         when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
         when(bqConfig.getTableClusteringKeys()).thenReturn(Collections.singletonList("string_field"));
-        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(0L);
+        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(-1L);
         when(bqConfig.getTableName()).thenReturn("bq-table");
         when(bqConfig.getDatasetName()).thenReturn("bq-proto");
         when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
@@ -331,19 +327,7 @@ public class BigQueryClientTest {
             add(Field.newBuilder("string_field", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
         }};
         Schema bqSchema = Schema.of(bqSchemaFields);
-        TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
-                .setField("timestamp_field")
-                .setRequirePartitionFilter(true)
-                .setExpirationMs(0L)
-                .build();
-        Clustering clustering = Clustering.newBuilder()
-                .setFields(Collections.singletonList("string_field"))
-                .build();
-        StandardTableDefinition standardTableDefinition = StandardTableDefinition.newBuilder()
-                .setSchema(bqSchema)
-                .setTimePartitioning(partitioning)
-                .setClustering(clustering)
-                .build();
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
 
         TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
         TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();
@@ -366,7 +350,7 @@ public class BigQueryClientTest {
     public void shouldCreateBigQueryTableWithPartitionOnly() {
         when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
         when(bqConfig.getTablePartitionKey()).thenReturn("partition_column");
-        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(0L);
+        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(-1L);
         when(bqConfig.getTableName()).thenReturn("bq-table");
         when(bqConfig.getDatasetName()).thenReturn("bq-proto");
         when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
@@ -382,15 +366,7 @@ public class BigQueryClientTest {
             add(Field.newBuilder("partition", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
         }};
         Schema bqSchema = Schema.of(bqSchemaFields);
-        TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
-                .setField("partition_column")
-                .setRequirePartitionFilter(true)
-                .setExpirationMs(0L)
-                .build();
-        StandardTableDefinition standardTableDefinition = StandardTableDefinition.newBuilder()
-                .setSchema(bqSchema)
-                .setTimePartitioning(partitioning)
-                .build();
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
 
         TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
         TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();
@@ -419,15 +395,9 @@ public class BigQueryClientTest {
             add(Field.newBuilder("timestamp_field", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
             add(Field.newBuilder("string_field", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
         }};
-        Schema bqSchema = Schema.of(bqSchemaFields);
-        Clustering clustering = Clustering.newBuilder()
-                .setFields(Collections.singletonList("string_field"))
-                .build();
-        StandardTableDefinition standardTableDefinition = StandardTableDefinition.newBuilder()
-                .setSchema(bqSchema)
-                .setClustering(clustering)
-                .build();
 
+        Schema bqSchema = Schema.of(bqSchemaFields);
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
         TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
         TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();
 
@@ -464,8 +434,11 @@ public class BigQueryClientTest {
             add(Field.newBuilder("partition", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
         }};
 
+        Schema bqSchema = Schema.of(bqSchemaFields);
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
+
         TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
-        TableInfo tableInfo = TableInfo.newBuilder(tableId, getTableDefinition(bqSchemaFields)).build();
+        TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();
 
         when(bigquery.getDataset(tableId.getDataset())).thenReturn(dataset);
         when(dataset.exists()).thenReturn(true);
@@ -481,11 +454,150 @@ public class BigQueryClientTest {
         verify(bigquery, never()).update(tableInfo);
     }
 
-    private StandardTableDefinition getTableDefinition(ArrayList<Field> bqSchemaFields) {
-        Schema schema = Schema.of(bqSchemaFields);
+    @Test
+    public void shouldModifyClusteringColumnsFromExistingClusteredTable() {
+        when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
+        when(bqConfig.getTableClusteringKeys()).thenReturn(Arrays.asList("id", "city"));
+        when(bqConfig.getTableName()).thenReturn("bq-table");
+        when(bqConfig.getDatasetName()).thenReturn("bq-proto");
+        when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
+        bqClient = new BigQueryClient(bigquery, bqConfig, metrics, instrumentation);
 
-        return StandardTableDefinition.newBuilder()
-                .setSchema(schema)
-                .build();
+        ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
+            add(Field.newBuilder("event_timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder("id", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder("city", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+        }};
+
+        Schema bqSchema = Schema.of(bqSchemaFields);
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
+
+        TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
+        TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();
+        when(bigquery.getDataset(tableId.getDataset())).thenReturn(dataset);
+        when(dataset.exists()).thenReturn(true);
+        when(dataset.getLocation()).thenReturn("US");
+        when(table.exists()).thenReturn(true);
+        when(bigquery.getTable(tableId)).thenReturn(table);
+        when(table.getDefinition()).thenReturn(mockTableDefinition);
+        when(mockTableDefinition.getType()).thenReturn(standardTableDefinition.getType());
+        when(mockTableDefinition.getSchema()).thenReturn(standardTableDefinition.getSchema());
+        when(mockTableDefinition.getClustering()).thenReturn(mockClustering);
+        when(mockClustering.getFields()).thenReturn(Collections.singletonList("id"));
+
+        bqClient.upsertTable(bqSchemaFields);
+        verify(bigquery, never()).create(tableInfo);
+        verify(bigquery).update(tableInfo);
+    }
+
+    @Test
+    public void shouldAddClusteringColumnsFromExistingUnPartitionedAndUnClusteredTable() {
+        when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
+        when(bqConfig.getTableClusteringKeys()).thenReturn(Arrays.asList("id", "city"));
+        when(bqConfig.getTableName()).thenReturn("bq-table");
+        when(bqConfig.getDatasetName()).thenReturn("bq-proto");
+        when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
+        bqClient = new BigQueryClient(bigquery, bqConfig, metrics, instrumentation);
+
+        ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
+            add(Field.newBuilder("event_timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder("id", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder("city", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+        }};
+
+        Schema bqSchema = Schema.of(bqSchemaFields);
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
+
+        TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
+        TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();
+        when(bigquery.getDataset(tableId.getDataset())).thenReturn(dataset);
+        when(dataset.exists()).thenReturn(true);
+        when(dataset.getLocation()).thenReturn("US");
+        when(bigquery.getTable(tableId)).thenReturn(table);
+        when(table.exists()).thenReturn(true);
+        when(table.getDefinition()).thenReturn(mockTableDefinition);
+        when(mockTableDefinition.getType()).thenReturn(standardTableDefinition.getType());
+        when(mockTableDefinition.getSchema()).thenReturn(standardTableDefinition.getSchema());
+        when(mockTableDefinition.getClustering()).thenReturn(null);
+        when(mockTableDefinition.getTimePartitioning()).thenReturn(null);
+
+        bqClient.upsertTable(bqSchemaFields);
+        verify(bigquery, never()).create(tableInfo);
+        verify(bigquery).update(tableInfo);
+    }
+
+    @Test
+    public void shouldAddClusteringColumnsFromExistingPartitionedAndUnClusteredTable() {
+        when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
+        when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
+        when(bqConfig.getTablePartitionKey()).thenReturn("event_timestamp");
+        when(bqConfig.getTableClusteringKeys()).thenReturn(Arrays.asList("id", "city"));
+        when(bqConfig.getTableName()).thenReturn("bq-table");
+        when(bqConfig.getDatasetName()).thenReturn("bq-proto");
+        when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
+        bqClient = new BigQueryClient(bigquery, bqConfig, metrics, instrumentation);
+
+        ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
+            add(Field.newBuilder("event_timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder("id", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder("city", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+        }};
+
+        Schema bqSchema = Schema.of(bqSchemaFields);
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
+
+        TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
+        TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();
+        when(bigquery.getDataset(tableId.getDataset())).thenReturn(dataset);
+        when(dataset.exists()).thenReturn(true);
+        when(dataset.getLocation()).thenReturn("US");
+        when(bigquery.getTable(tableId)).thenReturn(table);
+        when(table.exists()).thenReturn(true);
+        when(table.getDefinition()).thenReturn(mockTableDefinition);
+        when(mockTableDefinition.getType()).thenReturn(standardTableDefinition.getType());
+        when(mockTableDefinition.getSchema()).thenReturn(standardTableDefinition.getSchema());
+        when(mockTableDefinition.getTimePartitioning()).thenReturn(mockTimePartitioning);
+        when(mockTableDefinition.getClustering()).thenReturn(null);
+
+        bqClient.upsertTable(bqSchemaFields);
+        verify(bigquery, never()).create(tableInfo);
+        verify(bigquery).update(tableInfo);
+    }
+
+    @Test
+    public void shouldNotModifyClusteringColumns() {
+        when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
+        when(bqConfig.getTableClusteringKeys()).thenReturn(Arrays.asList("id", "city"));
+        when(bqConfig.getTableName()).thenReturn("bq-table");
+        when(bqConfig.getDatasetName()).thenReturn("bq-proto");
+        when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
+        bqClient = new BigQueryClient(bigquery, bqConfig, metrics, instrumentation);
+
+        ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
+            add(Field.newBuilder("event_timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder("id", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+            add(Field.newBuilder("city", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+        }};
+
+        Schema bqSchema = Schema.of(bqSchemaFields);
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
+
+        TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
+        TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();
+        when(bigquery.getDataset(tableId.getDataset())).thenReturn(dataset);
+        when(dataset.exists()).thenReturn(true);
+        when(dataset.getLocation()).thenReturn("US");
+        when(bigquery.getTable(tableId)).thenReturn(table);
+        when(table.exists()).thenReturn(true);
+        when(table.getDefinition()).thenReturn(mockTableDefinition);
+        when(mockTableDefinition.getType()).thenReturn(standardTableDefinition.getType());
+        when(mockTableDefinition.getSchema()).thenReturn(standardTableDefinition.getSchema());
+        when(mockTableDefinition.getClustering()).thenReturn(mockClustering);
+        when(mockClustering.getFields()).thenReturn(Arrays.asList("id", "city"));
+
+        bqClient.upsertTable(bqSchemaFields);
+        verify(bigquery, never()).create(tableInfo);
+        verify(bigquery, never()).update(tableInfo);
+        verify(instrumentation, times(1)).logInfo("Skipping bigquery table update, since proto schema hasn't changed");
     }
 }

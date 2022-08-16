@@ -1,6 +1,11 @@
 package io.odpf.depot.bigquery.client;
 
-import com.google.cloud.bigquery.*;
+import com.google.cloud.bigquery.Clustering;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.LegacySQLTypeName;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.TimePartitioning;
 import io.odpf.depot.bigquery.exception.BQClusteringKeysException;
 import io.odpf.depot.config.BigQuerySinkConfig;
 import org.junit.Before;
@@ -14,10 +19,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
-public class BigqueryTableDefinitionTest {
+public class BigQueryTableDefinitionTest {
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
@@ -36,8 +43,8 @@ public class BigqueryTableDefinitionTest {
         when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
         when(bqConfig.getTableClusteringKeys()).thenReturn(Collections.singletonList("string_field"));
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        bigqueryTableDefinition.getTableDefinition(null);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        bigQueryTableDefinition.getTableDefinition(null);
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -49,8 +56,8 @@ public class BigqueryTableDefinitionTest {
                 Field.newBuilder("int_field", LegacySQLTypeName.INTEGER).build()
         );
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        bigqueryTableDefinition.getTableDefinition(bqSchema);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        bigQueryTableDefinition.getTableDefinition(bqSchema);
     }
 
     @Test(expected = RuntimeException.class)
@@ -60,8 +67,8 @@ public class BigqueryTableDefinitionTest {
                 Field.newBuilder("int_field", LegacySQLTypeName.INTEGER).build()
         );
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        bigqueryTableDefinition.getTableDefinition(bqSchema);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        bigQueryTableDefinition.getTableDefinition(bqSchema);
     }
 
     @Test
@@ -74,8 +81,8 @@ public class BigqueryTableDefinitionTest {
                 Field.newBuilder("timestamp_field", LegacySQLTypeName.TIMESTAMP).build()
         );
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        StandardTableDefinition tableDefinition = bigqueryTableDefinition.getTableDefinition(bqSchema);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        StandardTableDefinition tableDefinition = bigQueryTableDefinition.getTableDefinition(bqSchema);
 
         assertEquals("timestamp_field", tableDefinition.getTimePartitioning().getField());
         assertEquals(partitionExpiry, tableDefinition.getTimePartitioning().getExpirationMs().longValue());
@@ -90,8 +97,8 @@ public class BigqueryTableDefinitionTest {
                 Field.of("string_field", LegacySQLTypeName.STRING)
         );
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        StandardTableDefinition tableDefinition = bigqueryTableDefinition.getTableDefinition(bqSchema);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        StandardTableDefinition tableDefinition = bigQueryTableDefinition.getTableDefinition(bqSchema);
 
         List<String> expectedColumns = Collections.singletonList("string_field");
         assertEquals(expectedColumns, tableDefinition.getClustering().getFields());
@@ -109,8 +116,8 @@ public class BigqueryTableDefinitionTest {
                 Field.of("timestamp_field", LegacySQLTypeName.TIMESTAMP)
         );
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        StandardTableDefinition tableDefinition = bigqueryTableDefinition.getTableDefinition(bqSchema);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        StandardTableDefinition tableDefinition = bigQueryTableDefinition.getTableDefinition(bqSchema);
 
         List<String> expectedColumns = Arrays.asList("string_field", "int_field", "bool_field", "timestamp_field");
         assertEquals(expectedColumns, tableDefinition.getClustering().getFields());
@@ -128,8 +135,8 @@ public class BigqueryTableDefinitionTest {
                 Field.of("string_field", LegacySQLTypeName.STRING)
         );
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        bigqueryTableDefinition.getTableDefinition(bqSchema);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        bigQueryTableDefinition.getTableDefinition(bqSchema);
     }
 
     @Test
@@ -148,8 +155,8 @@ public class BigqueryTableDefinitionTest {
                 Field.of("another_field", LegacySQLTypeName.STRING)
         );
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        bigqueryTableDefinition.getTableDefinition(bqSchema);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        bigQueryTableDefinition.getTableDefinition(bqSchema);
     }
 
     @Test
@@ -165,8 +172,8 @@ public class BigqueryTableDefinitionTest {
                 Field.of("int_field2", LegacySQLTypeName.STRING)
         );
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        bigqueryTableDefinition.getTableDefinition(bqSchema);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        bigQueryTableDefinition.getTableDefinition(bqSchema);
     }
 
     @Test
@@ -189,8 +196,8 @@ public class BigqueryTableDefinitionTest {
                 .setFields(Collections.singletonList("string_field"))
                 .build();
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        StandardTableDefinition tableDefinition = bigqueryTableDefinition.getTableDefinition(bqSchema);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        StandardTableDefinition tableDefinition = bigQueryTableDefinition.getTableDefinition(bqSchema);
 
         Schema returnedSchema = tableDefinition.getSchema();
         TimePartitioning returnedPartitioning = tableDefinition.getTimePartitioning();
@@ -224,8 +231,8 @@ public class BigqueryTableDefinitionTest {
                 .setField("timestamp_field")
                 .build();
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        StandardTableDefinition tableDefinition = bigqueryTableDefinition.getTableDefinition(bqSchema);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        StandardTableDefinition tableDefinition = bigQueryTableDefinition.getTableDefinition(bqSchema);
 
         Schema returnedSchema = tableDefinition.getSchema();
         TimePartitioning returnedPartitioning = tableDefinition.getTimePartitioning();
@@ -258,8 +265,8 @@ public class BigqueryTableDefinitionTest {
                 .setFields(Collections.singletonList("string_field"))
                 .build();
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        StandardTableDefinition tableDefinition = bigqueryTableDefinition.getTableDefinition(bqSchema);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        StandardTableDefinition tableDefinition = bigQueryTableDefinition.getTableDefinition(bqSchema);
 
         Schema returnedSchema = tableDefinition.getSchema();
         TimePartitioning returnedPartitioning = tableDefinition.getTimePartitioning();
@@ -287,8 +294,8 @@ public class BigqueryTableDefinitionTest {
                 Field.of("string_field", LegacySQLTypeName.STRING)
         );
 
-        BigqueryTableDefinition bigqueryTableDefinition = new BigqueryTableDefinition(bqConfig);
-        StandardTableDefinition tableDefinition = bigqueryTableDefinition.getTableDefinition(bqSchema);
+        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+        StandardTableDefinition tableDefinition = bigQueryTableDefinition.getTableDefinition(bqSchema);
 
         Schema returnedSchema = tableDefinition.getSchema();
         TimePartitioning returnedPartitioning = tableDefinition.getTimePartitioning();
