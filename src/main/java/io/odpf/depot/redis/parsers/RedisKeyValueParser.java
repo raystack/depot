@@ -23,9 +23,10 @@ public class RedisKeyValueParser extends RedisParser {
     }
 
     @Override
-    public List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, String redisKey, OdpfMessageSchema schema) {
+    public List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
+        String redisKey = parseKeyTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
         String fieldName = redisSinkConfig.getSinkRedisKeyValueDataFieldName();
-        if (fieldName.isEmpty() || fieldName == "") {
+        if (fieldName == null || fieldName.isEmpty()) {
             throw new IllegalArgumentException("Empty config SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME found");
         }
         String redisValue = parsedOdpfMessage.getFieldByName(fieldName, schema).toString();

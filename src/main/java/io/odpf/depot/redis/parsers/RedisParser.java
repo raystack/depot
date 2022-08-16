@@ -31,15 +31,15 @@ public abstract class RedisParser {
     private OdpfMessageParser odpfMessageParser;
     private RedisSinkConfig redisSinkConfig;
 
-    public abstract List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, String redisKey, OdpfMessageSchema schema);
+    public abstract List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema);
 
     String parseKeyTemplate(String template, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
         if (StringUtils.isEmpty(template)) {
-            throw new ConfigurationException("Empty config SINK_REDIS_KEY_TEMPLATE found");
+            throw new IllegalArgumentException("Template '" + template + "' is invalid");
         }
         String[] templateStrings = template.split(",");
         if (templateStrings.length == 0) {
-            throw new ConfigurationException("Invalid key configuration SINK_REDIS_KEY_TEMPLATE: '" + template + "'");
+            throw new ConfigurationException("Template " + template + " is invalid");
         }
         templateStrings = Arrays
                 .stream(templateStrings)
@@ -75,8 +75,7 @@ public abstract class RedisParser {
                         ? redisSinkConfig.getSinkConnectorSchemaProtoMessageClass() : redisSinkConfig.getSinkConnectorSchemaProtoKeyClass();
                 OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass);
                 ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(messages.get(i), mode, schemaClass);
-                String redisKey = parseKeyTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
-                List<RedisDataEntry> p = parseRedisEntry(parsedOdpfMessage, redisKey, schema);
+                List<RedisDataEntry> p = parseRedisEntry(parsedOdpfMessage, schema);
                 for (int ii = 0; ii < p.size(); ii++) {
                     valid.add(new RedisRecord(p.get(ii), (long) valid.size(), new ErrorInfo(null, null)));
                 }

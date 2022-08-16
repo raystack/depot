@@ -29,16 +29,19 @@ public class RedisHashSetParser extends RedisParser {
     }
 
     @Override
-    public List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, String redisKey, OdpfMessageSchema schema) {
+    public List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
+        String redisKey = parseKeyTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
         List<RedisDataEntry> messageEntries = new ArrayList<>();
         Properties properties = redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping();
         Set<String> keys =  properties.stringPropertyNames();
-        for (String field : keys) {
-            String column = parsedOdpfMessage.getFieldByName(field, schema).toString();
-            if (column == null) {
+        for (String key : keys) {
+            String value = properties.get(key).toString();
+            String field = parseKeyTemplate(value, parsedOdpfMessage, schema);
+            String redisValue = parsedOdpfMessage.getFieldByName(key, schema).toString();
+            if (field == null) {
                 throw new IllegalArgumentException("Empty or invalid config SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING found");
             }
-            messageEntries.add(new RedisHashSetFieldEntry(redisKey, properties.getProperty(field), column, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)));
+            messageEntries.add(new RedisHashSetFieldEntry(redisKey, field, redisValue, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)));
         }
         return messageEntries;
     }

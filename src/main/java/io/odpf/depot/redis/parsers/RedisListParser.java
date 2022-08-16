@@ -27,10 +27,15 @@ public class RedisListParser extends RedisParser {
     }
 
     @Override
-    public List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, String redisKey, OdpfMessageSchema schema) {
-        String redisValue = parsedOdpfMessage.getFieldByName(redisSinkConfig.getSinkRedisListDataFieldName(), schema).toString();
+    public List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
+        String redisKey = parseKeyTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
+        String field = redisSinkConfig.getSinkRedisListDataFieldName();
+        if (field == null || field == "") {
+            throw new IllegalArgumentException("Empty config SINK_REDIS_LIST_DATA_FIELD_NAME found");
+        }
+        String redisValue = parsedOdpfMessage.getFieldByName(field, schema).toString();
         if (redisValue == null) {
-            throw new IllegalArgumentException("Empty or invalid config SINK_REDIS_LIST_DATA_FIELD_NAME found");
+            throw new IllegalArgumentException("Invalid config SINK_REDIS_LIST_DATA_FIELD_NAME found");
         }
         List<RedisDataEntry> messageEntries = new ArrayList<>();
         messageEntries.add(new RedisListEntry(redisKey, redisValue, new Instrumentation(statsDReporter, RedisListEntry.class)));
