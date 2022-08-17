@@ -11,7 +11,6 @@ import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.dataentry.RedisHashSetFieldEntry;
-import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +43,6 @@ public class RedisHashSetParserTest {
 
     @Before
     public void setUp() throws Exception {
-
         TestKey testKey = TestKey.newBuilder().setOrderNumber("ORDER-1-FROM-KEY").build();
         TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder().setOrderNumber(bookingOrderNumber).setCustomerTotalFareWithoutSurge(2000L).setAmountPaidByCash(12.3F).build();
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS").build();
@@ -55,7 +53,6 @@ public class RedisHashSetParserTest {
             put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
             put(String.format("%s", TestBookingLogMessage.class.getName()), TestBookingLogMessage.getDescriptor());
             put(String.format("%s", TestLocation.class.getName()), TestLocation.getDescriptor());
-
         }};
     }
 
@@ -64,127 +61,6 @@ public class RedisHashSetParserTest {
         Properties properties = new JsonToPropertiesConverter().convert(null, mapping);
         when(redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping()).thenReturn(properties);
     }
-
-    @Test
-    public void shouldParseStringMessageForCollectionKeyTemplate() throws IOException {
-        setRedisSinkConfig("test-key", "{\"order_details\":\"details\"}");
-        SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
-        String schemaClass = "io.odpf.depot.TestMessage";
-        ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
-        ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
-        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-        assertEquals("ORDER-DETAILS", redisHashSetFieldEntry.getValue());
-        assertEquals("details", redisHashSetFieldEntry.getField());
-        assertEquals("test-key", redisHashSetFieldEntry.getKey());
-    }
-
-    @Test
-    public void shouldParseStringMessageWithSpacesForCollectionKeyTemplate() throws IOException {
-        setRedisSinkConfig("Test-%s, order_number", "{\"order_details\":\"details\"}");
-        SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
-        String schemaClass = "io.odpf.depot.TestMessage";
-        ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
-        ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
-        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-        assertEquals("ORDER-DETAILS", redisHashSetFieldEntry.getValue());
-        assertEquals("details", redisHashSetFieldEntry.getField());
-        assertEquals("Test-test-order", redisHashSetFieldEntry.getKey());
-    }
-
-    @Test
-    public void shouldParseFloatMessageForCollectionKeyTemplate() throws IOException {
-        setRedisSinkConfig("Test-%.2f,amount_paid_by_cash", "{\"order_number\":\"ORDER_NUMBER\"}");
-        SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
-        String schemaClass = "io.odpf.depot.TestBookingLogMessage";
-        ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
-        ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
-        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-
-        TestCase.assertEquals("Test-12.30", redisHashSetFieldEntry.getKey());
-        TestCase.assertEquals("ORDER_NUMBER", redisHashSetFieldEntry.getField());
-        TestCase.assertEquals("booking-order-1", redisHashSetFieldEntry.getValue());
-    }
-    @Test
-    public void shouldParseLongMessageForCollectionKeyTemplate() throws IOException {
-        setRedisSinkConfig("Test-%d,customer_total_fare_without_surge", "{\"order_number\":\"ORDER_NUMBER\"}");
-        SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
-        String schemaClass = "io.odpf.depot.TestBookingLogMessage";
-        ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
-        ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
-        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-        assertEquals("Test-2000", redisHashSetFieldEntry.getKey());
-        TestCase.assertEquals("ORDER_NUMBER", redisHashSetFieldEntry.getField());
-        TestCase.assertEquals("booking-order-1", redisHashSetFieldEntry.getValue());
-    }
-
-    @Test
-    public void shouldThrowExceptionForNullCollectionKeyTemplate() throws IOException {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Template 'null' is invalid");
-        setRedisSinkConfig(null, "{\"order_number\":\"ORDER_NUMBER\"}");
-        SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
-        String schemaClass = "io.odpf.depot.TestBookingLogMessage";
-        ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
-        ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
-        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-    }
-
-    @Test
-    public void shouldThrowExceptionForEmptyCollectionKeyTemplate() throws IOException {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Template '' is invalid");
-        setRedisSinkConfig("", "{\"order_number\":\"ORDER_NUMBER\"}");
-        SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
-        String schemaClass = "io.odpf.depot.TestBookingLogMessage";
-        ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
-        ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
-        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-    }
-
-    @Test
-    public void shouldAcceptStringForCollectionKey() throws IOException {
-        setRedisSinkConfig("Test", "{\"order_number\":\"ORDER_NUMBER\"}");
-        SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
-        String schemaClass = "io.odpf.depot.TestBookingLogMessage";
-        ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
-        ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
-        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-
-        TestCase.assertEquals("Test", redisHashSetFieldEntry.getKey());
-        TestCase.assertEquals("ORDER_NUMBER", redisHashSetFieldEntry.getField());
-        TestCase.assertEquals("booking-order-1", redisHashSetFieldEntry.getValue());
-    }
-
-    @Test
-    public void shouldAcceptStringWithPatternForCollectionKeyWithEmptyVariables() throws IOException {
-        setRedisSinkConfig("Test-%s", "{\"order_number\":\"ORDER_NUMBER\"}");
-        SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
-        String schemaClass = "io.odpf.depot.TestBookingLogMessage";
-        ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
-        ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
-        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-
-        TestCase.assertEquals("Test-%s", redisHashSetFieldEntry.getKey());
-        TestCase.assertEquals("ORDER_NUMBER", redisHashSetFieldEntry.getField());
-        TestCase.assertEquals("booking-order-1", redisHashSetFieldEntry.getValue());
-    }
-
     @Test
     public void shouldParseLongMessageForKey() throws IOException {
         setRedisSinkConfig("test-key", "{\"order_number\":\"ORDER_NUMBER_%d,customer_total_fare_without_surge\"}");
@@ -195,10 +71,8 @@ public class RedisHashSetParserTest {
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-
-        TestCase.assertEquals("test-key", redisHashSetFieldEntry.getKey());
-        TestCase.assertEquals("ORDER_NUMBER_2000", redisHashSetFieldEntry.getField());
-        TestCase.assertEquals("booking-order-1", redisHashSetFieldEntry.getValue());
+        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_2000", "booking-order-1", null);
+        assertEquals(expectedEntry, redisHashSetFieldEntry);
     }
     @Test
     public void shouldParseLongMessageWithSpaceForKey() throws IOException {
@@ -210,10 +84,8 @@ public class RedisHashSetParserTest {
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-
-        TestCase.assertEquals("test-key", redisHashSetFieldEntry.getKey());
-        TestCase.assertEquals("ORDER_NUMBER_2000", redisHashSetFieldEntry.getField());
-        TestCase.assertEquals("booking-order-1", redisHashSetFieldEntry.getValue());
+        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_2000", "booking-order-1", null);
+        assertEquals(expectedEntry, redisHashSetFieldEntry);
     }
     @Test
     public void shouldParseStringMessageForKey() throws IOException {
@@ -225,10 +97,8 @@ public class RedisHashSetParserTest {
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-
-        TestCase.assertEquals("test-key", redisHashSetFieldEntry.getKey());
-        TestCase.assertEquals("ORDER_NUMBER_booking-order-1", redisHashSetFieldEntry.getField());
-        TestCase.assertEquals("booking-order-1", redisHashSetFieldEntry.getValue());
+        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_booking-order-1", "booking-order-1", null);
+        assertEquals(expectedEntry, redisHashSetFieldEntry);
     }
 
     @Test
@@ -241,10 +111,8 @@ public class RedisHashSetParserTest {
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-
-        TestCase.assertEquals("test-key", redisHashSetFieldEntry.getKey());
-        TestCase.assertEquals("ORDER_NUMBER", redisHashSetFieldEntry.getField());
-        TestCase.assertEquals("booking-order-1", redisHashSetFieldEntry.getValue());
+        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER", "booking-order-1", null);
+        assertEquals(expectedEntry, redisHashSetFieldEntry);
     }
 
     @Test
@@ -257,10 +125,8 @@ public class RedisHashSetParserTest {
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-
-        TestCase.assertEquals("test-key", redisHashSetFieldEntry.getKey());
-        TestCase.assertEquals("ORDER_NUMBER%s", redisHashSetFieldEntry.getField());
-        TestCase.assertEquals("booking-order-1", redisHashSetFieldEntry.getValue());
+        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER%s", "booking-order-1", null);
+        assertEquals(expectedEntry, redisHashSetFieldEntry);
     }
 
     @Test
@@ -316,9 +182,8 @@ public class RedisHashSetParserTest {
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-        assertEquals("ORDER-1-FROM-KEY", redisHashSetFieldEntry.getValue());
-        assertEquals("ORDER_NUMBER", redisHashSetFieldEntry.getField());
-        assertEquals("test-key", redisHashSetFieldEntry.getKey());
+        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER", "ORDER-1-FROM-KEY", null);
+        assertEquals(expectedEntry, redisHashSetFieldEntry);
     }
 
 //    @Test(expected = IllegalArgumentException.class)

@@ -68,21 +68,22 @@ public class RedisListParserTest {
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         RedisListEntry redisListEntry = (RedisListEntry) redisListParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-        assertEquals("test-order", redisListEntry.getValue());
-        assertEquals("Test-test-order", redisListEntry.getKey());
+        RedisListEntry expectedEntry = new RedisListEntry("Test-test-order", "test-order", null);
+        assertEquals(expectedEntry, redisListEntry);
     }
 
     @Test
     public void shouldParseKeyWhenKafkaMessageParseModeSetToKey() throws IOException {
-        setRedisSinkConfig(SinkConnectorSchemaMessageMode.LOG_KEY, "Test-%s,order_number");
+        setRedisSinkConfig(SinkConnectorSchemaMessageMode.LOG_KEY, "test-key");
         SinkConnectorSchemaMessageMode mode = redisSinkConfig.getSinkConnectorSchemaMessageMode();
-        String schemaClass = "io.odpf.depot.TestMessage";
+        String schemaClass = "io.odpf.depot.TestKey";
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
         RedisParser redisListParser = new RedisListParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         RedisListEntry redisListEntry = (RedisListEntry) redisListParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-        assertEquals("ORDER-1-FROM-KEY", redisListEntry.getValue());
+        RedisListEntry expectedEntry = new RedisListEntry("test-key", "ORDER-1-FROM-KEY", null);
+        assertEquals(expectedEntry, redisListEntry);
     }
     @Test
     public void shouldThrowExceptionForEmptyKey() throws IOException {
