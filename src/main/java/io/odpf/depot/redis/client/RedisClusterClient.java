@@ -1,12 +1,11 @@
 package io.odpf.depot.redis.client;
 
-import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.Response;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,9 +13,10 @@ import java.util.List;
  */
 public class RedisClusterClient implements RedisClient {
 
-    private Instrumentation instrumentation;
-    private RedisTtl redisTTL;
-    private JedisCluster jedisCluster;
+    private final Instrumentation instrumentation;
+    private final RedisTtl redisTTL;
+    private final JedisCluster jedisCluster;
+
     public RedisClusterClient(Instrumentation instrumentation, RedisTtl redisTTL, JedisCluster jedisCluster) {
         this.instrumentation = instrumentation;
         this.redisTTL = redisTTL;
@@ -25,9 +25,9 @@ public class RedisClusterClient implements RedisClient {
 
 
     @Override
-    public List<OdpfMessage> execute(List<RedisRecord> records) {
+    public Response execute(List<RedisRecord> records) {
         records.forEach(record -> record.getRedisDataEntry().pushMessage(jedisCluster, redisTTL));
-        return new ArrayList<>();
+        return null;
     }
 
     @Override

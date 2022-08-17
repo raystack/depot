@@ -9,7 +9,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,9 +16,9 @@ import java.util.List;
  */
 public class RedisStandaloneClient implements RedisClient {
 
-    private Instrumentation instrumentation;
-    private RedisTtl redisTTL;
-    private Jedis jedis;
+    private final Instrumentation instrumentation;
+    private final RedisTtl redisTTL;
+    private final Jedis jedis;
     private Pipeline jedisPipelined;
 
     /**
@@ -36,17 +35,14 @@ public class RedisStandaloneClient implements RedisClient {
     }
 
     @Override
-    public List<OdpfMessage> execute(List<RedisRecord> records) {
+    public Response execute(List<RedisRecord> records) {
         jedisPipelined = jedis.pipelined();
         jedisPipelined.multi();
         records.forEach(record -> record.getRedisDataEntry().pushMessage(jedisPipelined, redisTTL));
         Response<List<Object>> responses = jedisPipelined.exec();
         instrumentation.logDebug("jedis responses: {}", responses);
         jedisPipelined.sync();
-        if (responses.get() == null || responses.get().isEmpty()) {
-            throw new NoResponseException();
-        }
-        return new ArrayList<>();
+        return responses;
     }
 
     @Override

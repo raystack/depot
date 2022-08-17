@@ -130,7 +130,7 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
 
     public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
         String[] keys = name.split("\\.");
-        Map<String, Object> fields = this.getMapping(odpfMessageSchema);
+        Map<String, Object> fields = getMapping(odpfMessageSchema);
         for (String key: keys) {
             Object localValue = fields.get(key);
             if (localValue == null) {

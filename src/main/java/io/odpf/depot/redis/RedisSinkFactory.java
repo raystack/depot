@@ -17,7 +17,6 @@ public class RedisSinkFactory {
     private final StatsDReporter statsDReporter;
     private RedisParser redisParser;
     private RedisClient redisClient;
-    private Instrumentation instrumentation;
 
 
     public RedisSinkFactory(RedisSinkConfig sinkConfig, StatsDReporter statsDReporter) {
@@ -26,7 +25,7 @@ public class RedisSinkFactory {
     }
 
     public void init() {
-        this.instrumentation = new Instrumentation(statsDReporter, RedisSinkFactory.class);
+        Instrumentation instrumentation = new Instrumentation(statsDReporter, RedisSinkFactory.class);
         String redisConfig = String.format("\n\tredis.urls = %s\n\tredis.key.template = %s\n\tredis.sink.type = %s"
                         + "\n\tredis.list.data.proto.index = %s\n\tredis.ttl.type = %s\n\tredis.ttl.value = %d",
                 sinkConfig.getSinkRedisUrls(),

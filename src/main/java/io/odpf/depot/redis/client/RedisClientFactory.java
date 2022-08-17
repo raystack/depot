@@ -21,8 +21,8 @@ import java.util.HashSet;
 public class RedisClientFactory {
 
     private static final String DELIMITER = ",";
-    private StatsDReporter statsDReporter;
-    private RedisSinkConfig redisSinkConfig;
+    private final StatsDReporter statsDReporter;
+    private final RedisSinkConfig redisSinkConfig;
 
     public RedisClientFactory(StatsDReporter statsDReporter, RedisSinkConfig redisSinkConfig) {
         this.statsDReporter = statsDReporter;

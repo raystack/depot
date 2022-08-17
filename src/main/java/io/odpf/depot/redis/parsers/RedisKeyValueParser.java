@@ -13,8 +13,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class RedisKeyValueParser extends RedisParser {
-    private RedisSinkConfig redisSinkConfig;
-    private StatsDReporter statsDReporter;
+    private final RedisSinkConfig redisSinkConfig;
+    private final StatsDReporter statsDReporter;
 
     public RedisKeyValueParser(OdpfMessageParser odpfMessageParser, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
         super(odpfMessageParser, redisSinkConfig);

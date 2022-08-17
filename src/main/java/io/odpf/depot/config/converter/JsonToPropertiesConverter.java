@@ -6,17 +6,19 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
-import java.util.HashSet;
-import java.util.ArrayList;
 
 
-public class ProtoIndexToFieldMapConverter implements org.aeonbits.owner.Converter<Properties> {
+public class JsonToPropertiesConverter implements org.aeonbits.owner.Converter<Properties> {
+    private static final Gson gson = new Gson();
+
     @Override
     public Properties convert(Method method, String input) {
         if (Strings.isNullOrEmpty(input)) {
@@ -24,7 +26,7 @@ public class ProtoIndexToFieldMapConverter implements org.aeonbits.owner.Convert
         }
         Type type = new TypeToken<Map<String, Object>>() {
         }.getType();
-        Map<String, Object> m = new Gson().fromJson(input, type);
+        Map<String, Object> m = gson.fromJson(input, type);
         Properties properties = getProperties(m);
         validate(properties);
         return properties;
@@ -53,9 +55,8 @@ public class ProtoIndexToFieldMapConverter implements org.aeonbits.owner.Convert
 
     private Stream<String> flattenValues(Properties properties) {
         return properties
-                .entrySet()
+                .values()
                 .stream()
-                .map(Map.Entry::getValue)
                 .flatMap(v -> {
                     if (v instanceof String) {
                         return Stream.of((String) v);
@@ -67,9 +68,9 @@ public class ProtoIndexToFieldMapConverter implements org.aeonbits.owner.Convert
                 });
     }
 
-    private class DuplicateFinder implements Consumer<String> {
-        private Set<String> processedValues = new HashSet<>();
-        private List<String> duplicates = new ArrayList<>();
+    private static class DuplicateFinder implements Consumer<String> {
+        private final Set<String> processedValues = new HashSet<>();
+        private final List<String> duplicates = new ArrayList<>();
 
         @Override
         public void accept(String o) {

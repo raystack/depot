@@ -40,7 +40,7 @@ public class JsonUtilsTest {
         originalJson.put("name", "foo");
         originalJson.put("num", new Integer(100));
         originalJson.put("balance", new Double(1000.21));
-        originalJson.put("is_vip", new Boolean(true));
+        originalJson.put("is_vip", Boolean.TRUE);
         byte[] payload = originalJson.toString().getBytes();
         JSONObject parsedJson = JsonUtils.getJsonObject(odpfSinkConfig, payload);
         JSONObject stringJson = new JSONObject();
@@ -75,7 +75,7 @@ public class JsonUtilsTest {
         expectedJson.put("name", "foo");
         expectedJson.put("num", new Integer(100));
         expectedJson.put("balance", new Double(1000.21));
-        expectedJson.put("is_vip", new Boolean(true));
+        expectedJson.put("is_vip", Boolean.TRUE);
         byte[] payload = expectedJson.toString().getBytes();
         JSONObject parsedJson = JsonUtils.getJsonObject(odpfSinkConfig, payload);
         Assert.assertTrue(parsedJson.similar(expectedJson));
@@ -88,7 +88,7 @@ public class JsonUtilsTest {
         nestedJsonField.put("name", "foo");
         nestedJsonField.put("num", new Integer(100));
         nestedJsonField.put("balance", new Double(1000.21));
-        nestedJsonField.put("is_vip", new Boolean(true));
+        nestedJsonField.put("is_vip", Boolean.TRUE);
         JSONObject nestedJson = new JSONObject();
         nestedJson.put("ID", 1);
         nestedJson.put("nestedField", nestedJsonField);

@@ -1,13 +1,9 @@
 package io.odpf.depot.message.proto;
 
 import com.google.api.client.util.DateTime;
-import com.google.protobuf.Descriptors;
-import com.google.protobuf.DynamicMessage;
-import com.google.protobuf.ListValue;
-import com.google.protobuf.Struct;
-import com.google.protobuf.Timestamp;
-import com.google.protobuf.Value;
+import com.google.protobuf.*;
 import io.odpf.depot.*;
+import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.stencil.Parser;
@@ -26,9 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class ProtoOdpfParsedMessageTest {
 
@@ -294,8 +288,6 @@ public class ProtoOdpfParsedMessageTest {
 
     @Test
     public void shouldParseRepeatableStructField() throws IOException {
-        Value val = Value.newBuilder().setStringValue("test").build();
-
         TestMessageBQ message = TestMessageBQ.newBuilder()
                 .addAttributes(Struct.newBuilder().putFields("name", Value.newBuilder().setStringValue("John").build())
                         .putFields("age", Value.newBuilder().setStringValue("50").build()).build())
@@ -306,7 +298,6 @@ public class ProtoOdpfParsedMessageTest {
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
         Map<String, Object> fields = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray())).getMapping(odpfMessageSchema);
-
         assertEquals(Arrays.asList("{\"name\":\"John\",\"age\":\"50\"}", "{\"name\":\"John\",\"age\":\"60\"}"), fields.get("attributes"));
     }
 
@@ -327,4 +318,36 @@ public class ProtoOdpfParsedMessageTest {
         assertEquals(map1, map2);
     }
 
+
+    @Test
+    public void shouldGetFieldByName() throws IOException {
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(dynamicMessage);
+        Assert.assertEquals("order-1", protoOdpfParsedMessage.getFieldByName("order_number", odpfMessageSchema));
+    }
+
+
+    @Test
+    public void shouldGetFieldByNameFromNested() throws IOException {
+        TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestNestedMessageBQ", descriptorsMap);
+        TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test").setSingleMessage(message1).build();
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(nestedMessage.toByteArray()));
+        Assert.assertEquals("test", protoOdpfParsedMessage.getFieldByName("nested_id", odpfMessageSchema));
+        Assert.assertEquals(message1.getOrderNumber(), protoOdpfParsedMessage.getFieldByName("single_message.order_number", odpfMessageSchema));
+    }
+
+
+    @Test
+    public void shouldThrowExceptionIfColumnIsNotPresentInProto() throws IOException {
+        TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestNestedMessageBQ", descriptorsMap);
+        TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test").setSingleMessage(message1).build();
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(nestedMessage.toByteArray()));
+        Assert.assertEquals("test", protoOdpfParsedMessage.getFieldByName("nested_id", odpfMessageSchema));
+        ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> protoOdpfParsedMessage.getFieldByName("single_message.order_id", odpfMessageSchema));
+        Assert.assertEquals("Invalid field config : single_message.order_id", configurationException.getMessage());
+    }
 }

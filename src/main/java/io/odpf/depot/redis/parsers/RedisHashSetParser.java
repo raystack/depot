@@ -20,8 +20,9 @@ import java.util.Set;
  * Redis hash set parser.
  */
 public class RedisHashSetParser extends RedisParser {
-    private RedisSinkConfig redisSinkConfig;
-    private StatsDReporter statsDReporter;
+    private final RedisSinkConfig redisSinkConfig;
+    private final StatsDReporter statsDReporter;
+
     public RedisHashSetParser(OdpfMessageParser odpfMessageParser, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
         super(odpfMessageParser, redisSinkConfig);
         this.redisSinkConfig = redisSinkConfig;
@@ -33,7 +34,7 @@ public class RedisHashSetParser extends RedisParser {
         String redisKey = parseKeyTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
         List<RedisDataEntry> messageEntries = new ArrayList<>();
         Properties properties = redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping();
-        Set<String> keys =  properties.stringPropertyNames();
+        Set<String> keys = properties.stringPropertyNames();
         for (String key : keys) {
             String value = properties.get(key).toString();
             String field = parseKeyTemplate(value, parsedOdpfMessage, schema);

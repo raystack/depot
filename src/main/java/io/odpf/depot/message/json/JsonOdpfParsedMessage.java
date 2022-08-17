@@ -4,7 +4,6 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import org.json.JSONObject;
@@ -36,21 +35,17 @@ public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
     @Override
     public Map<String, Object> getMapping(OdpfMessageSchema schema) {
         if (jsonObject == null || jsonObject.isEmpty()) {
-            return  Collections.emptyMap();
+            return Collections.emptyMap();
         }
         return jsonObject.toMap();
     }
+
     public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
         String jsonPathName = "$." + name;
         Configuration configuration = Configuration.builder()
                 .jsonProvider(new JsonOrgJsonProvider())
                 .build();
-
         JsonPath jsonPath = JsonPath.compile(jsonPathName);
-        Object jsonPathString = jsonPath.read(this.getRaw(), configuration);
-        if (jsonPathString == null) {
-            throw new ConfigurationException("Invalid JsonPath found:" + name);
-        }
-        return jsonPathString.toString();
+        return jsonPath.read(jsonObject, configuration);
     }
 }

@@ -1,58 +1,56 @@
 package io.odpf.depot.config;
 
-import io.odpf.depot.config.converter.ProtoIndexToFieldMapConverter;
+import io.odpf.depot.config.converter.JsonToPropertiesConverter;
 import io.odpf.depot.redis.converter.RedisSinkDataTypeConverter;
 import io.odpf.depot.redis.converter.RedisSinkDeploymentTypeConverter;
 import io.odpf.depot.redis.converter.RedisSinkTtlTypeConverter;
 import io.odpf.depot.redis.enums.RedisSinkDataType;
 import io.odpf.depot.redis.enums.RedisSinkDeploymentType;
 import io.odpf.depot.redis.enums.RedisSinkTtlType;
-import org.aeonbits.owner.Config;
 
 import java.util.Properties;
 
 
 public interface RedisSinkConfig extends OdpfSinkConfig {
-    @Config.Key("SINK_REDIS_URLS")
+    @Key("SINK_REDIS_URLS")
     String getSinkRedisUrls();
 
-    @Config.Key("SINK_REDIS_KEY_TEMPLATE")
+    @Key("SINK_REDIS_KEY_TEMPLATE")
     String getSinkRedisKeyTemplate();
 
-    @Config.Key("SINK_REDIS_DATA_TYPE")
-    @Config.DefaultValue("HASHSET")
-    @Config.ConverterClass(RedisSinkDataTypeConverter.class)
+    @Key("SINK_REDIS_DATA_TYPE")
+    @DefaultValue("HASHSET")
+    @ConverterClass(RedisSinkDataTypeConverter.class)
     RedisSinkDataType getSinkRedisDataType();
 
-    @Config.Key("SINK_REDIS_TTL_TYPE")
-    @Config.DefaultValue("DISABLE")
-    @Config.ConverterClass(RedisSinkTtlTypeConverter.class)
+    @Key("SINK_REDIS_TTL_TYPE")
+    @DefaultValue("DISABLE")
+    @ConverterClass(RedisSinkTtlTypeConverter.class)
     RedisSinkTtlType getSinkRedisTtlType();
 
-    @Config.Key("SINK_REDIS_TTL_VALUE")
-    @Config.DefaultValue("0")
+    @Key("SINK_REDIS_TTL_VALUE")
+    @DefaultValue("0")
     long getSinkRedisTtlValue();
 
-    @Config.Key("SINK_REDIS_DEPLOYMENT_TYPE")
-    @Config.DefaultValue("Standalone")
-    @Config.ConverterClass(RedisSinkDeploymentTypeConverter.class)
+    @Key("SINK_REDIS_DEPLOYMENT_TYPE")
+    @DefaultValue("Standalone")
+    @ConverterClass(RedisSinkDeploymentTypeConverter.class)
     RedisSinkDeploymentType getSinkRedisDeploymentType();
 
-    @Config.Key("SINK_REDIS_LIST_DATA_PROTO_INDEX")
+    @Key("SINK_REDIS_LIST_DATA_PROTO_INDEX")
     String getSinkRedisListDataProtoIndex();
 
-    @Config.Key("SINK_REDIS_KEY_VALUE_DATA_PROTO_INDEX")
-    String getSinkRedisKeyValuetDataProtoIndex();
+    @Key("SINK_REDIS_KEY_VALUE_DATA_PROTO_INDEX")
+    String getSinkRedisKeyValueDataProtoIndex();
 
-    @Config.Key("SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME")
-    @DefaultValue("")
+    @Key("SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME")
     String getSinkRedisKeyValueDataFieldName();
 
-    @Config.Key("SINK_REDIS_LIST_DATA_FIELD_NAME")
-    @DefaultValue("")
+    @Key("SINK_REDIS_LIST_DATA_FIELD_NAME")
     String getSinkRedisListDataFieldName();
 
     @Key("SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING")
-    @ConverterClass(ProtoIndexToFieldMapConverter.class)
+    @ConverterClass(JsonToPropertiesConverter.class)
+    @DefaultValue("")
     Properties getSinkRedisHashsetFieldToColumnMapping();
 }

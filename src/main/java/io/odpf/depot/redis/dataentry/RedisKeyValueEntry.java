@@ -4,18 +4,16 @@ import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
 
 @AllArgsConstructor
-@Getter
 @EqualsAndHashCode
 public class RedisKeyValueEntry implements RedisDataEntry {
-
-    private String key;
-    private String value;
-    @EqualsAndHashCode.Exclude  private Instrumentation instrumentation;
+    private final String key;
+    private final String value;
+    @EqualsAndHashCode.Exclude
+    private final Instrumentation instrumentation;
 
     @Override
     public void pushMessage(Pipeline jedisPipelined, RedisTtl redisTTL) {
@@ -29,7 +27,6 @@ public class RedisKeyValueEntry implements RedisDataEntry {
         instrumentation.logDebug("key: {}, value: {}", key, value);
         jedisCluster.set(key, value);
         redisTTL.setTtl(jedisCluster, key);
-
     }
 
     @Override

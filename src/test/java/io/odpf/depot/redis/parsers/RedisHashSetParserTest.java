@@ -3,7 +3,7 @@ package io.odpf.depot.redis.parsers;
 import com.google.protobuf.Descriptors;
 import io.odpf.depot.*;
 import io.odpf.depot.config.RedisSinkConfig;
-import io.odpf.depot.config.converter.ProtoIndexToFieldMapConverter;
+import io.odpf.depot.config.converter.JsonToPropertiesConverter;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
@@ -61,7 +61,7 @@ public class RedisHashSetParserTest {
 
     private void setRedisSinkConfig(String redisKeyTemplate, String mapping) {
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn(redisKeyTemplate);
-        Properties properties = new ProtoIndexToFieldMapConverter().convert(null, mapping);
+        Properties properties = new JsonToPropertiesConverter().convert(null, mapping);
         when(redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping()).thenReturn(properties);
     }
 

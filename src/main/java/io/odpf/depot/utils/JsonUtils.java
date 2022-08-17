@@ -4,6 +4,14 @@ import io.odpf.depot.config.OdpfSinkConfig;
 import org.json.JSONObject;
 
 public class JsonUtils {
+    /**
+     * Creates a json Object based on the configuration.
+     * If String mode is enabled, it converts all the fields in string.
+     *
+     * @param config  Sink Configuration
+     * @param payload Json Payload in byyes
+     * @return Json object
+     */
     public static JSONObject getJsonObject(OdpfSinkConfig config, byte[] payload) {
         JSONObject jsonObject = new JSONObject(new String(payload));
         if (!config.getSinkConnectorSchemaJsonParserStringModeEnabled()) {
