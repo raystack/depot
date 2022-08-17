@@ -29,8 +29,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisListParserTest {
-    private final long bookingCustomerTotalFare = 2000L;
-    private final float bookingAmountPaidByCash = 12.3F;
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     @Mock
@@ -39,18 +37,14 @@ public class RedisListParserTest {
     private StatsDReporter statsDReporter;
 
     private OdpfMessage message;
-    private OdpfMessage bookingMessage;
-    private String bookingOrderNumber = "booking-order-1";
 
     private Map<String, Descriptors.Descriptor> descriptorsMap;
 
     @Before
     public void setUp() throws Exception {
         TestKey testKey = TestKey.newBuilder().setOrderNumber("ORDER-1-FROM-KEY").build();
-        TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder().setOrderNumber(bookingOrderNumber).setCustomerTotalFareWithoutSurge(bookingCustomerTotalFare).setAmountPaidByCash(bookingAmountPaidByCash).build();
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS").build();
         this.message = new OdpfMessage(testKey.toByteArray(), testMessage.toByteArray());
-        this.bookingMessage = new OdpfMessage(testKey.toByteArray(), testBookingLogMessage.toByteArray());
         descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
             put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
             put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
