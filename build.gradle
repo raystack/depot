@@ -22,7 +22,7 @@ plugins {
 }
 
 group 'io.odpf'
-version '0.2.0'
+version '0.3.0'
 
 repositories {
     mavenCentral()
@@ -37,6 +37,7 @@ dependencies {
     implementation group: 'io.odpf', name: 'stencil', version: '0.2.1' exclude group: 'org.slf4j'
     implementation group: 'org.aeonbits.owner', name: 'owner', version: '1.0.9'
     implementation 'com.google.cloud:google-cloud-bigquery:1.115.0'
+    implementation 'com.google.cloud:google-cloud-bigtable:2.10.0'
     implementation "io.grpc:grpc-all:1.38.0"
     implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.35'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.1'
