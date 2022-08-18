@@ -30,7 +30,7 @@ public class RedisHashSetParser extends RedisParser {
     }
 
     @Override
-    public List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
+    public List<RedisDataEntry> getRedisEntry(long index, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
         String redisKey = parseKeyTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
         List<RedisDataEntry> messageEntries = new ArrayList<>();
         Properties properties = redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping();
@@ -42,7 +42,7 @@ public class RedisHashSetParser extends RedisParser {
             if (field == null) {
                 throw new IllegalArgumentException("Empty or invalid config SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING found");
             }
-            messageEntries.add(new RedisHashSetFieldEntry(redisKey, field, redisValue, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)));
+            messageEntries.add(new RedisHashSetFieldEntry(redisKey, field, redisValue, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class), index));
         }
         return messageEntries;
     }

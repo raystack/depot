@@ -15,7 +15,7 @@ public interface RedisDataEntry {
      * @param jedisPipelined the jedis pipelined
      * @param redisTTL       the redis ttl
      */
-    void pushMessage(Pipeline jedisPipelined, RedisTtl redisTTL);
+    RedisStandaloneResponse pushMessage(Pipeline jedisPipelined, RedisTtl redisTTL);
 
     /**
      * Push message to jedis cluster.
@@ -23,5 +23,5 @@ public interface RedisDataEntry {
      * @param jedisCluster the jedis cluster
      * @param redisTTL     the redis ttl
      */
-    void pushMessage(JedisCluster jedisCluster, RedisTtl redisTTL);
+    RedisClusterResponse pushMessage(JedisCluster jedisCluster, RedisTtl redisTTL);
 }

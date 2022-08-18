@@ -27,7 +27,7 @@ public abstract class RedisParser {
     private OdpfMessageParser odpfMessageParser;
     private RedisSinkConfig redisSinkConfig;
 
-    public abstract List<RedisDataEntry> parseRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema);
+    public abstract List<RedisDataEntry> getRedisEntry(long index, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema);
 
     String parseKeyTemplate(String template, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
         if (StringUtils.isEmpty(template)) {
@@ -71,16 +71,16 @@ public abstract class RedisParser {
                         ? redisSinkConfig.getSinkConnectorSchemaProtoMessageClass() : redisSinkConfig.getSinkConnectorSchemaProtoKeyClass();
                 OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass);
                 ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(messages.get(index), mode, schemaClass);
-                List<RedisDataEntry> p = parseRedisEntry(parsedOdpfMessage, schema);
+                List<RedisDataEntry> p = getRedisEntry(index, parsedOdpfMessage, schema);
                 for (RedisDataEntry redisDataEntry : p) {
-                    valid.add(new RedisRecord(redisDataEntry, (long) valid.size(), new ErrorInfo(null, null)));
+                    valid.add(new RedisRecord(redisDataEntry, (long) index, null, messages.get(index).getMetadata()));
                 }
             } catch (ConfigurationException e) {
                 ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.UNKNOWN_FIELDS_ERROR);
-                invalid.add(new RedisRecord(null, (long) index, errorInfo));
+                invalid.add(new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadata()));
             } catch (DeserializerException | IOException e) {
                 ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR);
-                invalid.add(new RedisRecord(null, (long) index, errorInfo));
+                invalid.add(new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadata()));
             }
         });
         return new RedisRecords(valid, invalid);

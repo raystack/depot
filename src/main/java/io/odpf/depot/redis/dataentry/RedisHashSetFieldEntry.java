@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.exceptions.JedisException;
 
 /**
  * Class for Redis Hash set entry.
@@ -19,18 +21,30 @@ public class RedisHashSetFieldEntry implements RedisDataEntry {
     private final String value;
     @EqualsAndHashCode.Exclude
     private final Instrumentation instrumentation;
+    private final long index;
 
     @Override
-    public void pushMessage(Pipeline jedisPipelined, RedisTtl redisTTL) {
+    public RedisStandaloneResponse pushMessage(Pipeline jedisPipelined, RedisTtl redisTTL) {
         instrumentation.logDebug("key: {}, field: {}, value: {}", key, field, value);
-        jedisPipelined.hset(key, field, value);
+        Response<Long> response = jedisPipelined.hset(key, field, value);
         redisTTL.setTtl(jedisPipelined, key);
+        return new RedisStandaloneResponse(response, index);
     }
 
     @Override
-    public void pushMessage(JedisCluster jedisCluster, RedisTtl redisTTL) {
+    public RedisClusterResponse pushMessage(JedisCluster jedisCluster, RedisTtl redisTTL) {
         instrumentation.logDebug("key: {}, field: {}, value: {}", key, field, value);
-        jedisCluster.hset(key, field, value);
-        redisTTL.setTtl(jedisCluster, key);
+        try {
+            Long response = jedisCluster.hset(key, field, value);
+            redisTTL.setTtl(jedisCluster, key);
+            return new RedisClusterResponse(index, response.toString(), false);
+        } catch (JedisException e) {
+            return new RedisClusterResponse(index, e.getMessage(), true);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("RedisHashSetFieldEntry Key %s, Field %s, Value %s", key, field, value);
     }
 }

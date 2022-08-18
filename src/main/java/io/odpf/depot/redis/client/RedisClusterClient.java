@@ -1,12 +1,14 @@
 package io.odpf.depot.redis.client;
 
 import io.odpf.depot.metrics.Instrumentation;
+import io.odpf.depot.redis.dataentry.RedisClusterResponse;
+import io.odpf.depot.redis.dataentry.RedisResponse;
 import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Response;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Redis cluster client.
@@ -25,9 +27,11 @@ public class RedisClusterClient implements RedisClient {
 
 
     @Override
-    public Response execute(List<RedisRecord> records) {
-        records.forEach(record -> record.getRedisDataEntry().pushMessage(jedisCluster, redisTTL));
-        return null;
+    public List<RedisResponse> execute(List<RedisRecord> records) {
+        return records.stream()
+                .map(record -> record.getRedisDataEntry().pushMessage(jedisCluster, redisTTL))
+                .filter(RedisClusterResponse::isFailed)
+                .collect(Collectors.toList());
     }
 
     @Override

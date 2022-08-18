@@ -1,8 +1,8 @@
 package io.odpf.depot.redis.client;
 
-import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.redis.exception.NoResponseException;
+import io.odpf.depot.redis.dataentry.RedisResponse;
+import io.odpf.depot.redis.dataentry.RedisStandaloneResponse;
 import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import redis.clients.jedis.Jedis;
@@ -10,6 +10,7 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Redis standalone client.
@@ -34,15 +35,24 @@ public class RedisStandaloneClient implements RedisClient {
         this.jedis = jedis;
     }
 
+    /**
+     * Pushes records in a transaction.
+     * if the transaction fails, whole batch should be retried.
+     *
+     * @param records records to send
+     * @return Custom response
+     */
     @Override
-    public Response execute(List<RedisRecord> records) {
+    public List<RedisResponse> execute(List<RedisRecord> records) {
         jedisPipelined = jedis.pipelined();
         jedisPipelined.multi();
-        records.forEach(record -> record.getRedisDataEntry().pushMessage(jedisPipelined, redisTTL));
-        Response<List<Object>> responses = jedisPipelined.exec();
-        instrumentation.logDebug("jedis responses: {}", responses);
+        List<RedisStandaloneResponse> responses = records.stream()
+                .map(redisRecord -> redisRecord.getRedisDataEntry().pushMessage(jedisPipelined, redisTTL))
+                .collect(Collectors.toList());
+        Response<List<Object>> r = jedisPipelined.exec();
         jedisPipelined.sync();
-        return responses;
+        instrumentation.logDebug("jedis responses: {}", r.get());
+        return responses.stream().map(RedisStandaloneResponse::process).filter(RedisStandaloneResponse::isFailed).collect(Collectors.toList());
     }
 
     @Override
