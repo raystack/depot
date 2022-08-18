@@ -36,11 +36,18 @@ public class RedisStandaloneClientTest {
     @Mock
     private Instrumentation instrumentation;
 
-    private final RedisRecord firstRedisSetRecord = new RedisRecord(new RedisHashSetFieldEntry("key1", "field1", "value1", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 1L, null);
-    private final RedisRecord secondRedisSetRecord = new RedisRecord(new RedisHashSetFieldEntry("key2", "field2", "value2", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 2L, null);
+    private final String key1 = "key1";
+    private final String key2 = "key2";
+    private final String field1 = "field1";
+    private final String field2 = "field2";
+    private final String value1 = "value1";
+    private final String value2 = "value2";
 
-    private final RedisRecord firstRedisListRecord = new RedisRecord(new RedisListEntry("key1", "value1", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 1L, null);
-    private final RedisRecord secondRedisListRecord = new RedisRecord(new RedisListEntry("key2", "value2", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 2L, null);
+    private final RedisRecord firstRedisSetRecord = new RedisRecord(new RedisHashSetFieldEntry(key1, field1, value1, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 1L, null);
+    private final RedisRecord secondRedisSetRecord = new RedisRecord(new RedisHashSetFieldEntry(key2, field2, value2, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 2L, null);
+
+    private final RedisRecord firstRedisListRecord = new RedisRecord(new RedisListEntry(key1, value1, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 1L, null);
+    private final RedisRecord secondRedisListRecord = new RedisRecord(new RedisListEntry(key2, value2, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 2L, null);
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
     private RedisClient redisClient;
@@ -79,16 +86,16 @@ public class RedisStandaloneClientTest {
         populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
         redisClient.execute(records);
         verify(jedisPipeline, times(1)).multi();
-        verify(jedisPipeline).lpush(((RedisListEntry) firstRedisListRecord.getRedisDataEntry()).getKey(), ((RedisListEntry) firstRedisListRecord.getRedisDataEntry()).getValue());
-        verify(jedisPipeline).lpush(((RedisListEntry) secondRedisListRecord.getRedisDataEntry()).getKey(), ((RedisListEntry) secondRedisListRecord.getRedisDataEntry()).getValue());
+        verify(jedisPipeline).lpush(key1, value1);
+        verify(jedisPipeline).lpush(key2, value2);
     }
 
     @Test
     public void setsTTLForListItemsInATransaction() throws DeserializerException {
         populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
         redisClient.execute(records);
-        verify(redisTTL).setTtl(jedisPipeline, ((RedisListEntry) firstRedisListRecord.getRedisDataEntry()).getKey());
-        verify(redisTTL).setTtl(jedisPipeline, ((RedisListEntry) firstRedisListRecord.getRedisDataEntry()).getKey());
+        verify(redisTTL).setTtl(jedisPipeline, key1);
+        verify(redisTTL).setTtl(jedisPipeline, key2);
     }
 
     @Test
@@ -96,16 +103,16 @@ public class RedisStandaloneClientTest {
         populateRedisDataEntry(firstRedisSetRecord, secondRedisSetRecord);
         redisClient.execute(records);
         verify(jedisPipeline, times(1)).multi();
-        verify(jedisPipeline).hset(((RedisHashSetFieldEntry) firstRedisSetRecord.getRedisDataEntry()).getKey(), ((RedisHashSetFieldEntry) firstRedisSetRecord.getRedisDataEntry()).getField(), ((RedisHashSetFieldEntry) firstRedisSetRecord.getRedisDataEntry()).getValue());
-        verify(jedisPipeline).hset(((RedisHashSetFieldEntry) secondRedisSetRecord.getRedisDataEntry()).getKey(), ((RedisHashSetFieldEntry) secondRedisSetRecord.getRedisDataEntry()).getField(), ((RedisHashSetFieldEntry) secondRedisSetRecord.getRedisDataEntry()).getValue());
+        verify(jedisPipeline).hset(key1, field1, value1);
+        verify(jedisPipeline).hset(key2, field2, value2);
     }
 
     @Test
     public void setsTTLForSetItemsInATransaction() throws DeserializerException {
         populateRedisDataEntry(firstRedisSetRecord, secondRedisSetRecord);
         redisClient.execute(records);
-        verify(redisTTL).setTtl(jedisPipeline, ((RedisHashSetFieldEntry) firstRedisSetRecord.getRedisDataEntry()).getKey());
-        verify(redisTTL).setTtl(jedisPipeline, ((RedisHashSetFieldEntry) secondRedisSetRecord.getRedisDataEntry()).getKey());
+        verify(redisTTL).setTtl(jedisPipeline, key1);
+        verify(redisTTL).setTtl(jedisPipeline, key2);
     }
 
     @Test
@@ -123,37 +130,28 @@ public class RedisStandaloneClientTest {
         verify(jedisPipeline).sync();
     }
 
-    @Test
-    public void shouldThrowExceptionWhenResponseIsNullInExec() {
-        expectedException.expect(NoResponseException.class);
+//    @Test
+//    public void shouldThrowExceptionWhenResponseIsNullInExec() {
+//        expectedException.expect(NoResponseException.class);
+//
+//        populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
+//        when(jedisPipeline.exec()).thenReturn(responses);
+//        when(responses.get()).thenReturn(null);
+//
+//        redisClient.execute(records);
+//    }
 
-        populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
-        when(jedisPipeline.exec()).thenReturn(responses);
-        when(responses.get()).thenReturn(null);
+//    @Test
+//    public void shouldThrowExceptionWhenResponseIsEmptyInExec() {
+//        expectedException.expect(NoResponseException.class);
+//
+//        populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
+//        when(jedisPipeline.exec()).thenReturn(responses);
+//        when(responses.get()).thenReturn(new ArrayList<>());
+//
+//        redisClient.execute(records);
+//    }
 
-        redisClient.execute(records);
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenResponseIsEmptyInExec() {
-        expectedException.expect(NoResponseException.class);
-
-        populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
-        when(jedisPipeline.exec()).thenReturn(responses);
-        when(responses.get()).thenReturn(new ArrayList<>());
-
-        redisClient.execute(records);
-    }
-
-    @Test
-    public void shouldReturnEmptyArrayInExec() {
-        populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
-        when(jedisPipeline.exec()).thenReturn(responses);
-        when(responses.get()).thenReturn(Collections.singletonList("MOCK_LIST_ITEM"));
-
-        Response elementsToRetry = redisClient.execute(records);
-//        Assert.assertEquals(0, elementsToRetry.size());
-    }
 
 //    @Test
 //    public void shouldCloseTheClient() {

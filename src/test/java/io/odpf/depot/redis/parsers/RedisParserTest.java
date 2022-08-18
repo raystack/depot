@@ -6,7 +6,6 @@ import io.odpf.depot.TestKey;
 import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestMessage;
 import io.odpf.depot.config.RedisSinkConfig;
-import io.odpf.depot.config.converter.JsonToPropertiesConverter;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
@@ -25,9 +24,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
-
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisParserTest {

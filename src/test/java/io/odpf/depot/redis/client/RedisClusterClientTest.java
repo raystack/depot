@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.Response;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,14 +30,21 @@ public class RedisClusterClientTest {
     @Mock
     private StatsDReporter statsDReporter;
 
+    private final String key1 = "key1";
+    private final String key2 = "key2";
+    private final String field1 = "field1";
+    private final String field2 = "field2";
+    private final String value1 = "value1";
+    private final String value2 = "value2";
+
     @Mock
     private Instrumentation instrumentation;
 
-    private final RedisRecord firstRedisSetRecord = new RedisRecord(new RedisHashSetFieldEntry("key1", "field1", "value1", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 1L, null);
-    private final RedisRecord secondRedisSetRecord = new RedisRecord(new RedisHashSetFieldEntry("key2", "field2", "value2", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 2L, null);
+    private final RedisRecord firstRedisSetRecord = new RedisRecord(new RedisHashSetFieldEntry(key1, field1, value1, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 1L, null);
+    private final RedisRecord secondRedisSetRecord = new RedisRecord(new RedisHashSetFieldEntry(key2, field2, value2, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 2L, null);
 
-    private final RedisRecord firstRedisListRecord = new RedisRecord(new RedisListEntry("key1", "value1", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 1L, null);
-    private final RedisRecord secondRedisListRecord = new RedisRecord(new RedisListEntry("key2", "value2", new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 2L, null);
+    private final RedisRecord firstRedisListRecord = new RedisRecord(new RedisListEntry(key1, value1, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 1L, null);
+    private final RedisRecord secondRedisListRecord = new RedisRecord(new RedisListEntry(key2, value2, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 2L, null);
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -68,8 +76,8 @@ public class RedisClusterClientTest {
         populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
         redisClusterClient.execute(records);
 
-        verify(jedisCluster).lpush(((RedisListEntry) firstRedisListRecord.getRedisDataEntry()).getKey(), ((RedisListEntry) firstRedisListRecord.getRedisDataEntry()).getValue());
-        verify(jedisCluster).lpush(((RedisListEntry) secondRedisListRecord.getRedisDataEntry()).getKey(), ((RedisListEntry) secondRedisListRecord.getRedisDataEntry()).getValue());
+        verify(jedisCluster).lpush(key1, value1);
+        verify(jedisCluster).lpush(key2, value2);
     }
 
     @Test
@@ -77,16 +85,8 @@ public class RedisClusterClientTest {
         populateRedisDataEntry(firstRedisSetRecord, secondRedisSetRecord);
         redisClusterClient.execute(records);
 
-        verify(jedisCluster).hset(((RedisHashSetFieldEntry) firstRedisSetRecord.getRedisDataEntry()).getKey(), ((RedisHashSetFieldEntry) firstRedisSetRecord.getRedisDataEntry()).getField(), ((RedisHashSetFieldEntry) firstRedisSetRecord.getRedisDataEntry()).getValue());
-        verify(jedisCluster).hset(((RedisHashSetFieldEntry) secondRedisSetRecord.getRedisDataEntry()).getKey(), ((RedisHashSetFieldEntry) secondRedisSetRecord.getRedisDataEntry()).getField(), ((RedisHashSetFieldEntry) secondRedisSetRecord.getRedisDataEntry()).getValue());
-    }
-
-    @Test
-    public void shouldReturnEmptyArrayAfterExecuting() {
-        populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
-        List<OdpfMessage> retryElements = redisClusterClient.execute(records);
-
-        Assert.assertEquals(0, retryElements.size());
+        verify(jedisCluster).hset(key1, field1, value1);
+        verify(jedisCluster).hset(key2, field2, value2);
     }
 
     @Test
