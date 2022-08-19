@@ -43,7 +43,7 @@ public class RedisKeyValueEntryTest {
     public void pushMessageWithNoTtl() {
         String key = "key";
         String value = "value";
-        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(key, value, instrumentation);
+        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(key, value, instrumentation, 0);
         redisKeyValueEntry.pushMessage(pipeline, new NoRedisTtl());
         inOrderPipeline.verify(pipeline, times(1)).set(key, value);
         inOrderPipeline.verify(pipeline, times(0)).expireAt(any(String.class), any(Long.class));
@@ -54,7 +54,7 @@ public class RedisKeyValueEntryTest {
     public void pushMessageWithTtl() {
         String key = "key";
         String value = "value";
-        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(key, value, instrumentation);
+        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(key, value, instrumentation, 0);
         redisKeyValueEntry.pushMessage(pipeline, new DurationTtl(100));
         inOrderPipeline.verify(pipeline, times(1)).set(key, value);
         inOrderPipeline.verify(pipeline, times(1)).expire(key, 100);
@@ -64,7 +64,7 @@ public class RedisKeyValueEntryTest {
     public void pushMessageVerifyInstrumentation() {
         String key = "this-key";
         String value = "john";
-        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(key, value, instrumentation);
+        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(key, value, instrumentation, 0);
         redisKeyValueEntry.pushMessage(pipeline, new DurationTtl(100));
         verify(instrumentation, times(1)).logDebug("key: {}, value: {}", key, value);
     }
@@ -74,7 +74,7 @@ public class RedisKeyValueEntryTest {
     public void pushMessageWithNoTtlUsingJedisCluster() {
         String key = "key";
         String value = "value";
-        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(key, value, instrumentation);
+        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(key, value, instrumentation, 0);
         redisKeyValueEntry.pushMessage(jedisCluster, new NoRedisTtl());
         inOrderJedis.verify(jedisCluster, times(1)).set(key, value);
         inOrderJedis.verify(jedisCluster, times(0)).expireAt(any(String.class), any(Long.class));
@@ -85,7 +85,7 @@ public class RedisKeyValueEntryTest {
     public void pushMessageWithTtlUsingJedisCluster() {
         String key = "key";
         String value = "value";
-        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(key, value, instrumentation);
+        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(key, value, instrumentation, 0);
         redisKeyValueEntry.pushMessage(jedisCluster, new DurationTtl(100));
         inOrderJedis.verify(jedisCluster, times(1)).set(key, value);
         inOrderJedis.verify(jedisCluster, times(1)).expire(key, 100);
@@ -95,7 +95,7 @@ public class RedisKeyValueEntryTest {
     public void pushMessageVerifyInstrumentationUsingJedisCluster() {
         String key = "this-key";
         String value = "john";
-        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(key, value, instrumentation);
+        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(key, value, instrumentation, 0);
         redisKeyValueEntry.pushMessage(jedisCluster, new DurationTtl(100));
         verify(instrumentation, times(1)).logDebug("key: {}, value: {}", key, value);
     }

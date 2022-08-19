@@ -6,12 +6,10 @@ import io.odpf.depot.TestKey;
 import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestMessage;
 import io.odpf.depot.config.RedisSinkConfig;
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import io.odpf.depot.message.*;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
+import io.odpf.depot.redis.models.RedisRecords;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,8 +20,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisParserTest {
@@ -40,7 +42,12 @@ public class RedisParserTest {
     private OdpfMessage bookingMessage;
     private String bookingOrderNumber = "booking-order-1";
 
+    private List<OdpfMessage> messages = new ArrayList<>();
+
     private Map<String, Descriptors.Descriptor> descriptorsMap;
+
+    @Mock
+    private ProtoOdpfMessageParser odpfMessageParser;
 
     @Before
     public void setUp() throws Exception {
@@ -49,6 +56,19 @@ public class RedisParserTest {
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS").build();
         this.message = new OdpfMessage(testKey.toByteArray(), testMessage.toByteArray());
         this.bookingMessage = new OdpfMessage(testKey.toByteArray(), testBookingLogMessage.toByteArray());
+
+        byte[] message1 = TestMessage.newBuilder().setOrderNumber("test-order-1").setOrderDetails("ORDER-DETAILS-1").build().toByteArray();
+        byte[] message2 = TestMessage.newBuilder().setOrderNumber("test-order-2").setOrderDetails("ORDER-DETAILS-2").build().toByteArray();
+        byte[] message3 = TestMessage.newBuilder().setOrderNumber("test-order-3").setOrderDetails("ORDER-DETAILS-3").build().toByteArray();
+        byte[] message4 = TestMessage.newBuilder().setOrderNumber("test-order-4").setOrderDetails("ORDER-DETAILS-4").build().toByteArray();
+        byte[] message5 = TestMessage.newBuilder().setOrderNumber("test-order-5").setOrderDetails("ORDER-DETAILS-5").build().toByteArray();
+
+        messages.add(new OdpfMessage(new byte[0], message1));
+        messages.add(new OdpfMessage(new byte[0], message2));
+        messages.add(new OdpfMessage(new byte[0], message3));
+        messages.add(new OdpfMessage(new byte[0], message4));
+        messages.add(new OdpfMessage(new byte[0], message5));
+
         descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
             put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
             put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
@@ -152,5 +172,16 @@ public class RedisParserTest {
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         String parsedTemplate = redisParser.parseKeyTemplate("Test-%s", parsedOdpfMessage, schema);
         Assert.assertEquals("Test-%s", parsedTemplate);
+    }
+
+    @Test
+    public void shouldAcceptStringWithPatternForCollectionKeyWithMultipleVariables() throws IOException {SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
+        String schemaClass = "io.odpf.depot.TestMessage";
+        ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
+        RedisParser redisParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
+        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
+        String parsedTemplate = redisParser.parseKeyTemplate("Test-%s::%s, order_number, order_details", parsedOdpfMessage, schema);
+        Assert.assertEquals("Test-test-order::ORDER-DETAILS", parsedTemplate);
     }
 }

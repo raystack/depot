@@ -42,23 +42,15 @@ public abstract class RedisParser {
                 .map(String::trim)
                 .toArray(String[]::new);
         String templatePattern = templateStrings[0];
-        String templateVariables = StringUtils.join(Arrays.copyOfRange(templateStrings, 1, templateStrings.length), ",");
-        String renderedTemplate = renderStringTemplate(parsedOdpfMessage, schema, templatePattern, templateVariables);
-        return StringUtils.isEmpty(templateVariables)
-                ? templatePattern
-                : renderedTemplate;
-    }
-
-    private String renderStringTemplate(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema, String pattern, String patternVariables) {
-        if (StringUtils.isEmpty(patternVariables)) {
-            return pattern;
+        List<String> patternVariableFieldNames = Arrays.asList(templateStrings).subList(1, templateStrings.length);
+        if (patternVariableFieldNames.isEmpty()) {
+            return templatePattern;
         }
-        List<String> patternVariableFieldNames = Arrays.asList(patternVariables.split(","));
         Object[] patternVariableData = patternVariableFieldNames
                 .stream()
                 .map(fieldName -> parsedOdpfMessage.getFieldByName(fieldName, schema))
                 .toArray();
-        return String.format(pattern, patternVariableData);
+        return String.format(templatePattern, patternVariableData);
     }
 
     public RedisRecords convert(List<OdpfMessage> messages) {

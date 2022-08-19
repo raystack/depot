@@ -41,7 +41,7 @@ public class RedisHashSetFieldEntryTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         redisTTL = new NoRedisTtl();
-        redisHashSetFieldEntry = new RedisHashSetFieldEntry("test-key", "test-field", "test-value", instrumentation);
+        redisHashSetFieldEntry = new RedisHashSetFieldEntry("test-key", "test-field", "test-value", instrumentation,0);
         inOrderPipeline = Mockito.inOrder(pipeline);
         inOrderJedis = Mockito.inOrder(jedisCluster);
     }

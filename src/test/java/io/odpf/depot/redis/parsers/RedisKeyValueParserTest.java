@@ -64,8 +64,8 @@ public class RedisKeyValueParserTest {
         String schemaClass = "io.odpf.depot.TestMessage";
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
-        List<RedisDataEntry> redisDataEntries = redisKeyValueParser.getRedisEntry(parsedOdpfMessage, schema);
-        RedisKeyValueEntry expectedEntry = new RedisKeyValueEntry("test-key", "new-eureka-order", null);
+        List<RedisDataEntry> redisDataEntries = redisKeyValueParser.getRedisEntry(0, parsedOdpfMessage, schema);
+        RedisKeyValueEntry expectedEntry = new RedisKeyValueEntry("test-key", "new-eureka-order", null, 0);
         assertEquals(asList(expectedEntry), redisDataEntries);
     }
 
@@ -85,7 +85,7 @@ public class RedisKeyValueParserTest {
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         IllegalArgumentException illegalArgumentException =
-                assertThrows(IllegalArgumentException.class, () -> redisKeyValueParser.getRedisEntry(parsedOdpfMessage, schema));
+                assertThrows(IllegalArgumentException.class, () -> redisKeyValueParser.getRedisEntry(0, parsedOdpfMessage, schema));
         assertEquals("Empty config SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME found", illegalArgumentException.getMessage());
     }
 
@@ -105,7 +105,7 @@ public class RedisKeyValueParserTest {
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         ConfigurationException configurationException =
-                assertThrows(ConfigurationException.class, () -> redisKeyValueParser.getRedisEntry(parsedOdpfMessage, schema));
+                assertThrows(ConfigurationException.class, () -> redisKeyValueParser.getRedisEntry(0, parsedOdpfMessage, schema));
         assertEquals("Invalid field config : random-field", configurationException.getMessage());
     }
 }

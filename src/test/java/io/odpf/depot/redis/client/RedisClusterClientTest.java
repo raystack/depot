@@ -40,11 +40,12 @@ public class RedisClusterClientTest {
     @Mock
     private Instrumentation instrumentation;
 
-    private final RedisRecord firstRedisSetRecord = new RedisRecord(new RedisHashSetFieldEntry(key1, field1, value1, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 1L, null);
-    private final RedisRecord secondRedisSetRecord = new RedisRecord(new RedisHashSetFieldEntry(key2, field2, value2, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 2L, null);
 
-    private final RedisRecord firstRedisListRecord = new RedisRecord(new RedisListEntry(key1, value1, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 1L, null);
-    private final RedisRecord secondRedisListRecord = new RedisRecord(new RedisListEntry(key2, value2, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 2L, null);
+    private final RedisRecord firstRedisSetRecord = new RedisRecord(new RedisHashSetFieldEntry(key1, field1, value1, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class), 0), 1l, null, null);
+    private final RedisRecord secondRedisSetRecord = new RedisRecord(new RedisHashSetFieldEntry(key2, field2, value2, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class), 0), 2l, null, null);
+
+    private final RedisRecord firstRedisListRecord = new RedisRecord(new RedisListEntry(key1, value1, new Instrumentation(statsDReporter, RedisListEntry.class), 0), 1L, null, null);
+    private final RedisRecord secondRedisListRecord = new RedisRecord(new RedisListEntry(key2, value2, new Instrumentation(statsDReporter, RedisListEntry.class), 0), 2L, null, null);
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();

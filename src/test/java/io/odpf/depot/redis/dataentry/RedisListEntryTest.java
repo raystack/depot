@@ -35,7 +35,7 @@ public class RedisListEntryTest {
     @Before
     public void setup() {
         redisTTL = new NoRedisTtl();
-        redisListEntry = new RedisListEntry("test-key", "test-value", instrumentation);
+        redisListEntry = new RedisListEntry("test-key", "test-value", instrumentation, 0);
     }
 
     @Test

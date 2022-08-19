@@ -70,8 +70,8 @@ public class RedisHashSetParserTest {
         RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_2000", "booking-order-1", null);
+        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.getRedisEntry(0, parsedOdpfMessage, schema).get(0);
+        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_2000", "booking-order-1", null, 0);
         assertEquals(expectedEntry, redisHashSetFieldEntry);
     }
     @Test
@@ -83,8 +83,8 @@ public class RedisHashSetParserTest {
         RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_2000", "booking-order-1", null);
+        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.getRedisEntry(0, parsedOdpfMessage, schema).get(0);
+        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_2000", "booking-order-1", null, 0);
         assertEquals(expectedEntry, redisHashSetFieldEntry);
     }
     @Test
@@ -96,8 +96,8 @@ public class RedisHashSetParserTest {
         RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_booking-order-1", "booking-order-1", null);
+        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.getRedisEntry(0, parsedOdpfMessage, schema).get(0);
+        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_booking-order-1", "booking-order-1", null, 0);
         assertEquals(expectedEntry, redisHashSetFieldEntry);
     }
 
@@ -110,8 +110,8 @@ public class RedisHashSetParserTest {
         RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER", "booking-order-1", null);
+        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.getRedisEntry(0, parsedOdpfMessage, schema).get(0);
+        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER", "booking-order-1", null, 0);
         assertEquals(expectedEntry, redisHashSetFieldEntry);
     }
 
@@ -124,8 +124,8 @@ public class RedisHashSetParserTest {
         RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER%s", "booking-order-1", null);
+        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.getRedisEntry(0, parsedOdpfMessage, schema).get(0);
+        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER%s", "booking-order-1", null, 0);
         assertEquals(expectedEntry, redisHashSetFieldEntry);
     }
 
@@ -140,7 +140,7 @@ public class RedisHashSetParserTest {
         RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema);
+        redisMessageParser.getRedisEntry(0, parsedOdpfMessage, schema);
     }
 
     //    @Test
@@ -169,7 +169,7 @@ public class RedisHashSetParserTest {
         RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema);
+        redisMessageParser.getRedisEntry(0, parsedOdpfMessage, schema);
     }
 
     @Test
@@ -181,8 +181,8 @@ public class RedisHashSetParserTest {
         RedisParser redisMessageParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
-        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.parseRedisEntry(parsedOdpfMessage, schema).get(0);
-        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER", "ORDER-1-FROM-KEY", null);
+        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisMessageParser.getRedisEntry(0, parsedOdpfMessage, schema).get(0);
+        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER", "ORDER-1-FROM-KEY", null, 0);
         assertEquals(expectedEntry, redisHashSetFieldEntry);
     }
 
