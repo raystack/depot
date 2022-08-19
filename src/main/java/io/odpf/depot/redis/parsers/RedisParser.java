@@ -5,9 +5,13 @@ import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.DeserializerException;
-import io.odpf.depot.message.*;
-import io.odpf.depot.redis.dataentry.RedisDataEntry;
-import io.odpf.depot.redis.models.RedisRecord;
+import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import io.odpf.depot.redis.entry.RedisEntry;
+import io.odpf.depot.redis.record.RedisRecord;
 import lombok.AllArgsConstructor;
 
 import java.io.IOException;
@@ -34,9 +38,9 @@ public class RedisParser {
                         ? redisSinkConfig.getSinkConnectorSchemaProtoMessageClass() : redisSinkConfig.getSinkConnectorSchemaProtoKeyClass();
                 OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass);
                 ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(messages.get(index), mode, schemaClass);
-                List<RedisDataEntry> redisDataEntries = redisEntryParser.getRedisEntry(parsedOdpfMessage, schema);
-                for (RedisDataEntry redisDataEntry : redisDataEntries) {
-                    records.add(new RedisRecord(redisDataEntry, (long) index, null, messages.get(index).getMetadataString(), true));
+                List<RedisEntry> redisDataEntries = redisEntryParser.getRedisEntry(parsedOdpfMessage, schema);
+                for (RedisEntry redisEntry : redisDataEntries) {
+                    records.add(new RedisRecord(redisEntry, (long) index, null, messages.get(index).getMetadataString(), true));
                 }
             } catch (ConfigurationException e) {
                 ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.UNKNOWN_FIELDS_ERROR);

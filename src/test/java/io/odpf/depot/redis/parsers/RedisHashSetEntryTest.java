@@ -10,7 +10,7 @@ import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.dataentry.RedisHashSetFieldEntry;
+import io.odpf.depot.redis.entry.RedisHashSetFieldEntry;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

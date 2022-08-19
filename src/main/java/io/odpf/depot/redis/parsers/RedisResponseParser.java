@@ -4,7 +4,7 @@ import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.redis.client.response.RedisResponse;
-import io.odpf.depot.redis.models.RedisRecord;
+import io.odpf.depot.redis.record.RedisRecord;
 
 import java.util.HashMap;
 import java.util.List;

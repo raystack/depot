@@ -7,7 +7,7 @@ import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.message.*;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.dataentry.RedisDataEntry;
+import io.odpf.depot.redis.entry.RedisEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,8 +63,8 @@ public class RedisKeyValueEntryTest {
         String schemaClass = "io.odpf.depot.TestMessage";
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
-        List<RedisDataEntry> redisDataEntries = redisKeyValueEntry.getRedisEntry(0, parsedOdpfMessage, schema);
-        io.odpf.depot.redis.dataentry.RedisKeyValueEntry expectedEntry = new io.odpf.depot.redis.dataentry.RedisKeyValueEntry("test-key", "new-eureka-order", null, 0);
+        List<RedisEntry> redisDataEntries = redisKeyValueEntry.getRedisEntry(0, parsedOdpfMessage, schema);
+        io.odpf.depot.redis.entry.RedisKeyValueEntry expectedEntry = new io.odpf.depot.redis.entry.RedisKeyValueEntry("test-key", "new-eureka-order", null, 0);
         assertEquals(asList(expectedEntry), redisDataEntries);
     }
 

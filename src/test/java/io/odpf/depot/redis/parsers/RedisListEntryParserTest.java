@@ -11,7 +11,7 @@ import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.dataentry.RedisListEntry;
+import io.odpf.depot.redis.entry.RedisListEntry;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

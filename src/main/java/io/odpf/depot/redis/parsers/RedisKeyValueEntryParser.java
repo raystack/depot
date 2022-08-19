@@ -5,8 +5,8 @@ import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.dataentry.RedisDataEntry;
-import io.odpf.depot.redis.dataentry.RedisKeyValueEntry;
+import io.odpf.depot.redis.entry.RedisEntry;
+import io.odpf.depot.redis.entry.RedisKeyValueEntry;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,14 +21,14 @@ public class RedisKeyValueEntryParser implements RedisEntryParser {
     }
 
     @Override
-    public List<RedisDataEntry> getRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
+    public List<RedisEntry> getRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
         String redisKey = RedisParserUtils.parseTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
         String fieldName = redisSinkConfig.getSinkRedisKeyValueDataFieldName();
         if (fieldName == null || fieldName.isEmpty()) {
             throw new IllegalArgumentException("Empty config SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME found");
         }
         String redisValue = parsedOdpfMessage.getFieldByName(fieldName, schema).toString();
-        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, redisValue, new Instrumentation(statsDReporter, io.odpf.depot.redis.dataentry.RedisKeyValueEntry.class));
+        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, redisValue, new Instrumentation(statsDReporter, io.odpf.depot.redis.entry.RedisKeyValueEntry.class));
         return Collections.singletonList(redisKeyValueEntry);
     }
 }

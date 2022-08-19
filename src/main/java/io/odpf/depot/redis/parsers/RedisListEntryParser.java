@@ -6,8 +6,8 @@ import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.dataentry.RedisDataEntry;
-import io.odpf.depot.redis.dataentry.RedisListEntry;
+import io.odpf.depot.redis.entry.RedisEntry;
+import io.odpf.depot.redis.entry.RedisListEntry;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +25,7 @@ public class RedisListEntryParser implements RedisEntryParser {
     }
 
     @Override
-    public List<RedisDataEntry> getRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
+    public List<RedisEntry> getRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
         String redisKey = RedisParserUtils.parseTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
         String field = redisSinkConfig.getSinkRedisListDataFieldName();
         if (field == null || field.isEmpty()) {

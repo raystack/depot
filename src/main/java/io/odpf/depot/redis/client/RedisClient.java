@@ -1,7 +1,7 @@
 package io.odpf.depot.redis.client;
 
 import io.odpf.depot.redis.client.response.RedisResponse;
-import io.odpf.depot.redis.models.RedisRecord;
+import io.odpf.depot.redis.record.RedisRecord;
 
 import java.io.Closeable;
 import java.util.List;

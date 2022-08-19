@@ -1,4 +1,4 @@
-package io.odpf.depot.redis.dataentry;
+package io.odpf.depot.redis.entry;
 
 
 import io.odpf.depot.metrics.Instrumentation;
@@ -48,7 +48,7 @@ public class RedisHashSetFieldEntryTest {
 
     @Test
     public void shouldIOnlyPushDataWithoutTTLByDefaultForPipeline() {
-        redisHashSetFieldEntry.pushToRedis(pipeline, redisTTL);
+        redisHashSetFieldEntry.send(pipeline, redisTTL);
 
         verify(pipeline, times(1)).hset("test-key", "test-field", "test-value");
         verify(pipeline, times(0)).expireAt(any(String.class), any(Long.class));
@@ -59,7 +59,7 @@ public class RedisHashSetFieldEntryTest {
     @Test
     public void shouldSetProperTTLForExactTimeForPipeline() {
         redisTTL = new ExactTimeTtl(1000L);
-        redisHashSetFieldEntry.pushToRedis(pipeline, redisTTL);
+        redisHashSetFieldEntry.send(pipeline, redisTTL);
 
         inOrderPipeline.verify(pipeline, times(1)).hset("test-key", "test-field", "test-value");
         inOrderPipeline.verify(pipeline, times(1)).expireAt("test-key", 1000L);
@@ -69,7 +69,7 @@ public class RedisHashSetFieldEntryTest {
     @Test
     public void shouldSetProperTTLForDurationForPipeline() {
         redisTTL = new DurationTtl(1000);
-        redisHashSetFieldEntry.pushToRedis(pipeline, redisTTL);
+        redisHashSetFieldEntry.send(pipeline, redisTTL);
 
         inOrderPipeline.verify(pipeline, times(1)).hset("test-key", "test-field", "test-value");
         inOrderPipeline.verify(pipeline, times(1)).expire("test-key", 1000);
@@ -78,7 +78,7 @@ public class RedisHashSetFieldEntryTest {
 
     @Test
     public void shouldIOnlyPushDataWithoutTTLByDefaultForCluster() {
-        redisHashSetFieldEntry.pushToRedis(jedisCluster, redisTTL);
+        redisHashSetFieldEntry.send(jedisCluster, redisTTL);
 
         verify(jedisCluster, times(1)).hset("test-key", "test-field", "test-value");
         verify(jedisCluster, times(0)).expireAt(any(String.class), any(Long.class));
@@ -89,7 +89,7 @@ public class RedisHashSetFieldEntryTest {
     @Test
     public void shouldSetProperTTLForExactTimeForCluster() {
         redisTTL = new ExactTimeTtl(1000L);
-        redisHashSetFieldEntry.pushToRedis(jedisCluster, redisTTL);
+        redisHashSetFieldEntry.send(jedisCluster, redisTTL);
 
         inOrderJedis.verify(jedisCluster, times(1)).hset("test-key", "test-field", "test-value");
         inOrderJedis.verify(jedisCluster, times(1)).expireAt("test-key", 1000L);
@@ -99,7 +99,7 @@ public class RedisHashSetFieldEntryTest {
     @Test
     public void shouldSetProperTTLForDuration() {
         redisTTL = new DurationTtl(1000);
-        redisHashSetFieldEntry.pushToRedis(jedisCluster, redisTTL);
+        redisHashSetFieldEntry.send(jedisCluster, redisTTL);
 
         inOrderJedis.verify(jedisCluster, times(1)).hset("test-key", "test-field", "test-value");
         inOrderJedis.verify(jedisCluster, times(1)).expire("test-key", 1000);

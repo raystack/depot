@@ -6,8 +6,8 @@ import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.redis.client.RedisClient;
+import io.odpf.depot.redis.record.RedisRecord;
 import io.odpf.depot.redis.client.response.RedisResponse;
-import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.parsers.RedisParser;
 import io.odpf.depot.redis.parsers.RedisResponseParser;
 

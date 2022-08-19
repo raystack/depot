@@ -1,4 +1,4 @@
-package io.odpf.depot.redis.dataentry;
+package io.odpf.depot.redis.entry;
 
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.redis.client.response.RedisClusterResponse;
@@ -16,14 +16,14 @@ import redis.clients.jedis.exceptions.JedisException;
  */
 @AllArgsConstructor
 @EqualsAndHashCode
-public class RedisListEntry implements RedisDataEntry {
+public class RedisListEntry implements RedisEntry {
     private final String key;
     private final String value;
     @EqualsAndHashCode.Exclude
     private final Instrumentation instrumentation;
 
     @Override
-    public RedisStandaloneResponse pushToRedis(Pipeline jedisPipelined, RedisTtl redisTTL) {
+    public RedisStandaloneResponse send(Pipeline jedisPipelined, RedisTtl redisTTL) {
         instrumentation.logDebug("key: {}, value: {}", key, value);
         Response<Long> response = jedisPipelined.lpush(key, value);
         redisTTL.setTtl(jedisPipelined, key);
@@ -31,7 +31,7 @@ public class RedisListEntry implements RedisDataEntry {
     }
 
     @Override
-    public RedisClusterResponse pushToRedis(JedisCluster jedisCluster, RedisTtl redisTTL) {
+    public RedisClusterResponse send(JedisCluster jedisCluster, RedisTtl redisTTL) {
         instrumentation.logDebug("key: {}, value: {}", key, value);
         try {
             Long response = jedisCluster.lpush(key, value);

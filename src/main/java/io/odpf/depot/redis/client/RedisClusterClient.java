@@ -2,7 +2,7 @@ package io.odpf.depot.redis.client;
 
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.redis.client.response.RedisResponse;
-import io.odpf.depot.redis.models.RedisRecord;
+import io.odpf.depot.redis.record.RedisRecord;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import lombok.AllArgsConstructor;
 import redis.clients.jedis.JedisCluster;
