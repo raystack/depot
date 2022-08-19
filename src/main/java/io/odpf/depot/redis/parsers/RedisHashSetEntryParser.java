@@ -8,6 +8,7 @@ import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.entry.RedisEntry;
 import io.odpf.depot.redis.entry.RedisHashSetFieldEntry;
+import io.odpf.depot.redis.util.RedisSinkUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +30,13 @@ public class RedisHashSetEntryParser implements RedisEntryParser {
 
     @Override
     public List<RedisEntry> getRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
-        String redisKey = RedisParserUtils.parseTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
+        String redisKey = RedisSinkUtils.parseTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
         List<RedisEntry> messageEntries = new ArrayList<>();
         Properties properties = redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping();
         Set<String> keys = properties.stringPropertyNames();
         for (String key : keys) {
             String value = properties.get(key).toString();
-            String field = RedisParserUtils.parseTemplate(value, parsedOdpfMessage, schema);
+            String field = RedisSinkUtils.parseTemplate(value, parsedOdpfMessage, schema);
             String redisValue = parsedOdpfMessage.getFieldByName(key, schema).toString();
             if (field == null) {
                 throw new IllegalArgumentException("Empty or invalid config SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING found");

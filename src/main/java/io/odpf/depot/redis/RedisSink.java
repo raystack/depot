@@ -6,10 +6,10 @@ import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.redis.client.RedisClient;
-import io.odpf.depot.redis.record.RedisRecord;
 import io.odpf.depot.redis.client.response.RedisResponse;
 import io.odpf.depot.redis.parsers.RedisParser;
-import io.odpf.depot.redis.parsers.RedisResponseParser;
+import io.odpf.depot.redis.util.RedisSinkUtils;
+import io.odpf.depot.redis.record.RedisRecord;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,10 +37,8 @@ public class RedisSink implements OdpfSink {
         invalidRecords.forEach(invalidRecord -> odpfSinkResponse.addErrors(invalidRecord.getIndex(), invalidRecord.getErrorInfo()));
         if (validRecords.size() > 0) {
             List<RedisResponse> responses = redisClient.send(validRecords);
-            if (responses.stream().anyMatch(RedisResponse::isFailed)) {
-                Map<Long, ErrorInfo> errorInfoMap = RedisResponseParser.parse(validRecords, responses, instrumentation);
-                errorInfoMap.forEach(odpfSinkResponse::addErrors);
-            }
+            Map<Long, ErrorInfo> errorInfoMap = RedisSinkUtils.getErrorsFromResponse(validRecords, responses, instrumentation);
+            errorInfoMap.forEach(odpfSinkResponse::addErrors);
             instrumentation.logInfo("Pushed a batch of {} records to Redis", validRecords.size());
         }
         return odpfSinkResponse;

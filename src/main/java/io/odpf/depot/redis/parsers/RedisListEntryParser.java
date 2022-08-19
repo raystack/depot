@@ -8,6 +8,7 @@ import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.entry.RedisEntry;
 import io.odpf.depot.redis.entry.RedisListEntry;
+import io.odpf.depot.redis.util.RedisSinkUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +27,7 @@ public class RedisListEntryParser implements RedisEntryParser {
 
     @Override
     public List<RedisEntry> getRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
-        String redisKey = RedisParserUtils.parseTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
+        String redisKey = RedisSinkUtils.parseTemplate(redisSinkConfig.getSinkRedisKeyTemplate(), parsedOdpfMessage, schema);
         String field = redisSinkConfig.getSinkRedisListDataFieldName();
         if (field == null || field.isEmpty()) {
             throw new IllegalArgumentException("Empty config SINK_REDIS_LIST_DATA_FIELD_NAME found");
