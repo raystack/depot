@@ -1,6 +1,6 @@
 package io.odpf.depot.config;
 
-public interface BigTableSinkConfig extends OdpfSinkConfig{
+public interface BigTableSinkConfig extends OdpfSinkConfig {
     @Key("SINK_BIGTABLE_GOOGLE_CLOUD_PROJECT_ID")
     String getGCloudProjectID();
 
@@ -9,4 +9,7 @@ public interface BigTableSinkConfig extends OdpfSinkConfig{
 
     @Key("SINK_BIGTABLE_TABLE_ID")
     String getTableId();
+
+    @Key("SINK_BIGTABLE_CREDENTIAL_PATH")
+    String getBigTableCredentialPath();
 }

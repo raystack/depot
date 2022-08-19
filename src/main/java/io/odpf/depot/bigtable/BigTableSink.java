@@ -45,12 +45,12 @@ public class BigTableSink implements OdpfSink {
                                 message,
                                 mode,
                                 schemaClass);
-                batch.add(String.valueOf(i), Mutation.create().setCell(COLUMN_FAMILY_NAME, "odpf_message", parsedOdpfMessage.toString()));
+                batch.add("key#" + i, Mutation.create().setCell(COLUMN_FAMILY_NAME, "odpf_message", parsedOdpfMessage.toString()));
             }
 
             dataClient.bulkMutateRows(batch);
 
-            System.out.print("Successfully wrote " + messages.size() + "rows");
+            System.out.println("Successfully wrote " + messages.size() + "rows");
         } catch (IOException e) {
             System.out.println("Error during WriteBatch: \n" + e);
         }
