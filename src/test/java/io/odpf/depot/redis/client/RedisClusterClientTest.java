@@ -1,13 +1,11 @@
 package io.odpf.depot.redis.client;
 
-import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.dataentry.RedisHashSetFieldEntry;
 import io.odpf.depot.redis.dataentry.RedisListEntry;
 import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.ttl.RedisTtl;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Response;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,7 +72,7 @@ public class RedisClusterClientTest {
     @Test
     public void shouldSendAllListDataWhenExecuting() {
         populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
-        redisClusterClient.execute(records);
+        redisClusterClient.send(records);
 
         verify(jedisCluster).lpush(key1, value1);
         verify(jedisCluster).lpush(key2, value2);
@@ -84,7 +81,7 @@ public class RedisClusterClientTest {
     @Test
     public void shouldSendAllSetDataWhenExecuting() {
         populateRedisDataEntry(firstRedisSetRecord, secondRedisSetRecord);
-        redisClusterClient.execute(records);
+        redisClusterClient.send(records);
 
         verify(jedisCluster).hset(key1, field1, value1);
         verify(jedisCluster).hset(key2, field2, value2);

@@ -1,8 +1,6 @@
-package io.odpf.depot.redis.dataentry;
+package io.odpf.depot.redis.client.response;
 
 public interface RedisResponse {
-    long getIndex();
-
     String getMessage();
 
     boolean isFailed();

@@ -3,12 +3,15 @@ package io.odpf.depot.redis;
 
 import io.odpf.depot.OdpfSink;
 import io.odpf.depot.config.RedisSinkConfig;
+import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.client.RedisClient;
 import io.odpf.depot.redis.client.RedisClientFactory;
+import io.odpf.depot.redis.parsers.RedisEntryParser;
+import io.odpf.depot.redis.parsers.RedisEntryParserFactory;
 import io.odpf.depot.redis.parsers.RedisParser;
-import io.odpf.depot.redis.parsers.RedisParserFactory;
 
 public class RedisSinkFactory {
 
@@ -39,7 +42,9 @@ public class RedisSinkFactory {
 
         RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, sinkConfig);
         this.redisClient = redisClientFactory.getClient();
-        this.redisParser = RedisParserFactory.getParser(sinkConfig, statsDReporter);
+        OdpfMessageParser messageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
+        RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(sinkConfig, statsDReporter);
+        this.redisParser = new RedisParser(sinkConfig, messageParser, redisEntryParser);
         instrumentation.logInfo("Connection to redis established successfully");
     }
 

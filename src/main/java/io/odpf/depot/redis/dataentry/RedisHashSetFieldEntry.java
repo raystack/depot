@@ -1,6 +1,8 @@
 package io.odpf.depot.redis.dataentry;
 
 import io.odpf.depot.metrics.Instrumentation;
+import io.odpf.depot.redis.client.response.RedisClusterResponse;
+import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -21,25 +23,24 @@ public class RedisHashSetFieldEntry implements RedisDataEntry {
     private final String value;
     @EqualsAndHashCode.Exclude
     private final Instrumentation instrumentation;
-    private final long index;
 
     @Override
-    public RedisStandaloneResponse pushMessage(Pipeline jedisPipelined, RedisTtl redisTTL) {
+    public RedisStandaloneResponse pushToRedis(Pipeline jedisPipelined, RedisTtl redisTTL) {
         instrumentation.logDebug("key: {}, field: {}, value: {}", key, field, value);
         Response<Long> response = jedisPipelined.hset(key, field, value);
         redisTTL.setTtl(jedisPipelined, key);
-        return new RedisStandaloneResponse(response, index);
+        return new RedisStandaloneResponse(response);
     }
 
     @Override
-    public RedisClusterResponse pushMessage(JedisCluster jedisCluster, RedisTtl redisTTL) {
+    public RedisClusterResponse pushToRedis(JedisCluster jedisCluster, RedisTtl redisTTL) {
         instrumentation.logDebug("key: {}, field: {}, value: {}", key, field, value);
         try {
             Long response = jedisCluster.hset(key, field, value);
             redisTTL.setTtl(jedisCluster, key);
-            return new RedisClusterResponse(index, response.toString(), false);
+            return new RedisClusterResponse(response.toString(), false);
         } catch (JedisException e) {
-            return new RedisClusterResponse(index, e.getMessage(), true);
+            return new RedisClusterResponse(e.getMessage(), true);
         }
     }
 

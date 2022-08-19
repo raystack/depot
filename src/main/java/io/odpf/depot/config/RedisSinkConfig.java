@@ -1,9 +1,9 @@
 package io.odpf.depot.config;
 
 import io.odpf.depot.config.converter.JsonToPropertiesConverter;
-import io.odpf.depot.redis.converter.RedisSinkDataTypeConverter;
-import io.odpf.depot.redis.converter.RedisSinkDeploymentTypeConverter;
-import io.odpf.depot.redis.converter.RedisSinkTtlTypeConverter;
+import io.odpf.depot.config.converter.RedisSinkDataTypeConverter;
+import io.odpf.depot.config.converter.RedisSinkDeploymentTypeConverter;
+import io.odpf.depot.config.converter.RedisSinkTtlTypeConverter;
 import io.odpf.depot.redis.enums.RedisSinkDataType;
 import io.odpf.depot.redis.enums.RedisSinkDeploymentType;
 import io.odpf.depot.redis.enums.RedisSinkTtlType;

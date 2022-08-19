@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class RedisParserFactoryTest {
+public class RedisEntryParserFactoryTest {
     @Mock
     private RedisSinkConfig redisSinkConfig;
     @Mock
@@ -29,26 +29,26 @@ public class RedisParserFactoryTest {
     public void shouldReturnNewRedisListParser() {
         setRedisSinkConfig(RedisSinkDataType.LIST, SinkConnectorSchemaDataType.PROTOBUF);
 
-        RedisParser parser = RedisParserFactory.getParser(redisSinkConfig, statsDReporter);
+        RedisParser parser = RedisEntryParserFactory.getParser(redisSinkConfig, statsDReporter);
 
-        assertEquals(RedisListParser.class, parser.getClass());
+        assertEquals(RedisListEntryParser.class, parser.getClass());
     }
 
     @Test
     public void shouldReturnNewRedisHashSetParser() {
         setRedisSinkConfig(RedisSinkDataType.HASHSET, SinkConnectorSchemaDataType.PROTOBUF);
 
-        RedisParser parser = RedisParserFactory.getParser(redisSinkConfig, statsDReporter);
+        RedisParser parser = RedisEntryParserFactory.getParser(redisSinkConfig, statsDReporter);
 
-        assertEquals(RedisHashSetParser.class, parser.getClass());
+        assertEquals(RedisHashSetEntryParser.class, parser.getClass());
     }
 
     @Test
     public void shouldReturnNewRedisKeyValueParser() {
         setRedisSinkConfig(RedisSinkDataType.KEYVALUE, SinkConnectorSchemaDataType.PROTOBUF);
 
-        RedisParser parser = RedisParserFactory.getParser(redisSinkConfig, statsDReporter);
+        RedisParser parser = RedisEntryParserFactory.getParser(redisSinkConfig, statsDReporter);
 
-        assertEquals(RedisKeyValueParser.class, parser.getClass());
+        assertEquals(RedisKeyValueEntryParser.class, parser.getClass());
     }
 }

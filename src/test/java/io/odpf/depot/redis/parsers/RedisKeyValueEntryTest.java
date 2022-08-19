@@ -8,7 +8,6 @@ import io.odpf.depot.message.*;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.dataentry.RedisDataEntry;
-import io.odpf.depot.redis.dataentry.RedisKeyValueEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +25,7 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RedisKeyValueParserTest {
+public class RedisKeyValueEntryTest {
     @Mock
     private RedisSinkConfig redisSinkConfig;
     @Mock
@@ -53,7 +52,7 @@ public class RedisKeyValueParserTest {
     public void shouldConvertParsedOdpfMessageToRedisKeyValueEntry() throws IOException {
         setRedisSinkConfig("test-key", "order_details");
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisKeyValueParser redisKeyValueParser = new RedisKeyValueParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        RedisKeyValueEntryParser redisKeyValueEntry = new RedisKeyValueEntryParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         byte[] logMessage = TestMessage.newBuilder()
                 .setOrderNumber("xyz-order")
                 .setOrderDetails("new-eureka-order")
@@ -64,8 +63,8 @@ public class RedisKeyValueParserTest {
         String schemaClass = "io.odpf.depot.TestMessage";
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
-        List<RedisDataEntry> redisDataEntries = redisKeyValueParser.getRedisEntry(0, parsedOdpfMessage, schema);
-        RedisKeyValueEntry expectedEntry = new RedisKeyValueEntry("test-key", "new-eureka-order", null, 0);
+        List<RedisDataEntry> redisDataEntries = redisKeyValueEntry.getRedisEntry(0, parsedOdpfMessage, schema);
+        io.odpf.depot.redis.dataentry.RedisKeyValueEntry expectedEntry = new io.odpf.depot.redis.dataentry.RedisKeyValueEntry("test-key", "new-eureka-order", null, 0);
         assertEquals(asList(expectedEntry), redisDataEntries);
     }
 
@@ -73,7 +72,7 @@ public class RedisKeyValueParserTest {
     public void shouldThrowExceptionForEmptyKeyValueDataFieldName() throws IOException {
         setRedisSinkConfig("test-key", "");
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisKeyValueParser redisKeyValueParser = new RedisKeyValueParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        RedisKeyValueEntryParser redisKeyValueEntry = new RedisKeyValueEntryParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         byte[] logMessage = TestMessage.newBuilder()
                 .setOrderNumber("xyz-order")
                 .setOrderDetails("new-eureka-order")
@@ -85,7 +84,7 @@ public class RedisKeyValueParserTest {
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         IllegalArgumentException illegalArgumentException =
-                assertThrows(IllegalArgumentException.class, () -> redisKeyValueParser.getRedisEntry(0, parsedOdpfMessage, schema));
+                assertThrows(IllegalArgumentException.class, () -> redisKeyValueEntry.getRedisEntry(0, parsedOdpfMessage, schema));
         assertEquals("Empty config SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME found", illegalArgumentException.getMessage());
     }
 
@@ -93,7 +92,7 @@ public class RedisKeyValueParserTest {
     public void shouldThrowExceptionForInvalidKeyValueDataFieldName() throws IOException {
         setRedisSinkConfig("test-key", "random-field");
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisKeyValueParser redisKeyValueParser = new RedisKeyValueParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        RedisKeyValueEntryParser redisKeyValueEntry = new RedisKeyValueEntryParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         byte[] logMessage = TestMessage.newBuilder()
                 .setOrderNumber("xyz-order")
                 .setOrderDetails("new-eureka-order")
@@ -105,7 +104,7 @@ public class RedisKeyValueParserTest {
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         ConfigurationException configurationException =
-                assertThrows(ConfigurationException.class, () -> redisKeyValueParser.getRedisEntry(0, parsedOdpfMessage, schema));
+                assertThrows(ConfigurationException.class, () -> redisKeyValueEntry.getRedisEntry(0, parsedOdpfMessage, schema));
         assertEquals("Invalid field config : random-field", configurationException.getMessage());
     }
 }

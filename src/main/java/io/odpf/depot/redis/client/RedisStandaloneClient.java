@@ -1,10 +1,11 @@
 package io.odpf.depot.redis.client;
 
 import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.redis.dataentry.RedisResponse;
-import io.odpf.depot.redis.dataentry.RedisStandaloneResponse;
+import io.odpf.depot.redis.client.response.RedisResponse;
+import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
 import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.ttl.RedisTtl;
+import lombok.AllArgsConstructor;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
@@ -15,44 +16,31 @@ import java.util.stream.Collectors;
 /**
  * Redis standalone client.
  */
+@AllArgsConstructor
 public class RedisStandaloneClient implements RedisClient {
 
     private final Instrumentation instrumentation;
     private final RedisTtl redisTTL;
     private final Jedis jedis;
-    private Pipeline jedisPipelined;
-
-    /**
-     * Instantiates a new Redis standalone client.
-     *
-     * @param instrumentation the instrumentation
-     * @param redisTTL        the redis ttl
-     * @param jedis           the jedis
-     */
-    public RedisStandaloneClient(Instrumentation instrumentation, RedisTtl redisTTL, Jedis jedis) {
-        this.instrumentation = instrumentation;
-        this.redisTTL = redisTTL;
-        this.jedis = jedis;
-    }
 
     /**
      * Pushes records in a transaction.
-     * if the transaction fails, whole batch should be retried.
+     * if the transaction fails, whole batch can be retried.
      *
      * @param records records to send
-     * @return Custom response
+     * @return Custom response containing status of the API calls.
      */
     @Override
-    public List<RedisResponse> execute(List<RedisRecord> records) {
-        jedisPipelined = jedis.pipelined();
+    public List<RedisResponse> send(List<RedisRecord> records) {
+        Pipeline jedisPipelined = jedis.pipelined();
         jedisPipelined.multi();
         List<RedisStandaloneResponse> responses = records.stream()
-                .map(redisRecord -> redisRecord.getRedisDataEntry().pushMessage(jedisPipelined, redisTTL))
+                .map(redisRecord -> redisRecord.send(jedisPipelined, redisTTL))
                 .collect(Collectors.toList());
-        Response<List<Object>> r = jedisPipelined.exec();
+        Response<List<Object>> executeResponse = jedisPipelined.exec();
         jedisPipelined.sync();
-        instrumentation.logDebug("jedis responses: {}", r.get());
-        return responses.stream().map(RedisStandaloneResponse::process).filter(RedisStandaloneResponse::isFailed).collect(Collectors.toList());
+        instrumentation.logDebug("jedis responses: {}", executeResponse.get());
+        return responses.stream().map(RedisStandaloneResponse::process).collect(Collectors.toList());
     }
 
     @Override

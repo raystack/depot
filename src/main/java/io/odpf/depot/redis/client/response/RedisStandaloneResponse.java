@@ -1,4 +1,4 @@
-package io.odpf.depot.redis.dataentry;
+package io.odpf.depot.redis.client.response;
 
 import lombok.Getter;
 import redis.clients.jedis.Response;
@@ -7,14 +7,11 @@ import redis.clients.jedis.exceptions.JedisException;
 public class RedisStandaloneResponse implements RedisResponse {
     private final Response response;
     @Getter
-    private final long index;
-    @Getter
     private String message;
     @Getter
     private boolean failed = true;
 
-    public RedisStandaloneResponse(Response response, long index) {
-        this.index = index;
+    public RedisStandaloneResponse(Response response) {
         this.response = response;
     }
 

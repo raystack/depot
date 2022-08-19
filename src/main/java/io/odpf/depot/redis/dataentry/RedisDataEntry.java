@@ -1,5 +1,7 @@
 package io.odpf.depot.redis.dataentry;
 
+import io.odpf.depot.redis.client.response.RedisClusterResponse;
+import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
@@ -15,7 +17,7 @@ public interface RedisDataEntry {
      * @param jedisPipelined the jedis pipelined
      * @param redisTTL       the redis ttl
      */
-    RedisStandaloneResponse pushMessage(Pipeline jedisPipelined, RedisTtl redisTTL);
+    RedisStandaloneResponse pushToRedis(Pipeline jedisPipelined, RedisTtl redisTTL);
 
     /**
      * Push message to jedis cluster.
@@ -23,5 +25,5 @@ public interface RedisDataEntry {
      * @param jedisCluster the jedis cluster
      * @param redisTTL     the redis ttl
      */
-    RedisClusterResponse pushMessage(JedisCluster jedisCluster, RedisTtl redisTTL);
+    RedisClusterResponse pushToRedis(JedisCluster jedisCluster, RedisTtl redisTTL);
 }

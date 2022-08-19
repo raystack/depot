@@ -38,13 +38,15 @@ public class RedisClientFactory {
     }
 
     private RedisStandaloneClient getRedisStandaloneClient(RedisTtl redisTTL) {
-        Jedis jedis = null;
+        HostAndPort hostAndPort;
         try {
-            jedis = new Jedis(HostAndPort.parseString(StringUtils.trim(redisSinkConfig.getSinkRedisUrls())));
+            hostAndPort = HostAndPort.parseString(StringUtils.trim(redisSinkConfig.getSinkRedisUrls()));
         } catch (IllegalArgumentException e) {
             throw new ConfigurationException(String.format("Invalid url for redis standalone: %s", redisSinkConfig.getSinkRedisUrls()));
         }
+        Jedis jedis = new Jedis(hostAndPort);
         return new RedisStandaloneClient(new Instrumentation(statsDReporter, RedisStandaloneClient.class), redisTTL, jedis);
+
     }
 
     private RedisClusterClient getRedisClusterClient(RedisTtl redisTTL) {

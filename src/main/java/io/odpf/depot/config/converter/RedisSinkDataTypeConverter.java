@@ -1,4 +1,4 @@
-package io.odpf.depot.redis.converter;
+package io.odpf.depot.config.converter;
 
 import io.odpf.depot.redis.enums.RedisSinkDataType;
 import org.aeonbits.owner.Converter;

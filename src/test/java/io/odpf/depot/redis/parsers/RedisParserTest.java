@@ -9,7 +9,6 @@ import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.message.*;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.models.RedisRecords;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,8 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisParserTest {
@@ -82,7 +79,7 @@ public class RedisParserTest {
         SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
         String schemaClass = "io.odpf.depot.TestMessage";
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        RedisParser redisParser = new RedisHashSetEntryParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         String parsedTemplate = redisParser.parseKeyTemplate("Test-%s,order_number", parsedOdpfMessage, schema);
@@ -94,7 +91,7 @@ public class RedisParserTest {
         SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
         String schemaClass = "io.odpf.depot.TestMessage";
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        RedisParser redisParser = new RedisHashSetEntryParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         String parsedTemplate = redisParser.parseKeyTemplate("Test-%s, order_number", parsedOdpfMessage, schema);
@@ -106,7 +103,7 @@ public class RedisParserTest {
         SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
         String schemaClass = "io.odpf.depot.TestBookingLogMessage";
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        RedisParser redisParser = new RedisHashSetEntryParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         String parsedTemplate = redisParser.parseKeyTemplate("Test-%.2f,amount_paid_by_cash", parsedOdpfMessage, schema);
@@ -118,7 +115,7 @@ public class RedisParserTest {
         SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
         String schemaClass = "io.odpf.depot.TestBookingLogMessage";
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        RedisParser redisParser = new RedisHashSetEntryParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         String parsedTemplate = redisParser.parseKeyTemplate("Test-%d,customer_total_fare_without_surge", parsedOdpfMessage, schema);
@@ -132,7 +129,7 @@ public class RedisParserTest {
         SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
         String schemaClass = "io.odpf.depot.TestBookingLogMessage";
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        RedisParser redisParser = new RedisHashSetEntryParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         redisParser.parseKeyTemplate(null, parsedOdpfMessage, schema);
@@ -145,7 +142,7 @@ public class RedisParserTest {
         SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
         String schemaClass = "io.odpf.depot.TestBookingLogMessage";
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        RedisParser redisParser = new RedisHashSetEntryParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(bookingMessage, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         redisParser.parseKeyTemplate("", parsedOdpfMessage, schema);
@@ -156,7 +153,7 @@ public class RedisParserTest {
         SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
         String schemaClass = "io.odpf.depot.TestMessage";
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        RedisParser redisParser = new RedisHashSetEntryParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         String parsedTemplate = redisParser.parseKeyTemplate("Test", parsedOdpfMessage, schema);
@@ -167,7 +164,7 @@ public class RedisParserTest {
     public void shouldAcceptStringWithPatternForCollectionKeyWithEmptyVariables() throws IOException {SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
         String schemaClass = "io.odpf.depot.TestMessage";
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        RedisParser redisParser = new RedisHashSetEntryParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         String parsedTemplate = redisParser.parseKeyTemplate("Test-%s", parsedOdpfMessage, schema);
@@ -178,7 +175,7 @@ public class RedisParserTest {
     public void shouldAcceptStringWithPatternForCollectionKeyWithMultipleVariables() throws IOException {SinkConnectorSchemaMessageMode mode = SinkConnectorSchemaMessageMode.LOG_MESSAGE;
         String schemaClass = "io.odpf.depot.TestMessage";
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        RedisParser redisParser = new RedisHashSetParser(odpfMessageParser, redisSinkConfig, statsDReporter);
+        RedisParser redisParser = new RedisHashSetEntryParser(odpfMessageParser, redisSinkConfig, statsDReporter);
         ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, mode, schemaClass);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         String parsedTemplate = redisParser.parseKeyTemplate("Test-%s::%s, order_number, order_details", parsedOdpfMessage, schema);

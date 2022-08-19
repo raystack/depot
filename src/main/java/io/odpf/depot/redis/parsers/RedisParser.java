@@ -8,54 +8,25 @@ import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.message.*;
 import io.odpf.depot.redis.dataentry.RedisDataEntry;
 import io.odpf.depot.redis.models.RedisRecord;
-import io.odpf.depot.redis.models.RedisRecords;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
 
 /**
- * Convert kafka messages to RedisDataEntry.
+ * Convert Odpf messages to RedisRecords.
  */
 @AllArgsConstructor
-public abstract class RedisParser {
-    private OdpfMessageParser odpfMessageParser;
-    private RedisSinkConfig redisSinkConfig;
+public class RedisParser {
+    private final RedisSinkConfig redisSinkConfig;
+    private final OdpfMessageParser odpfMessageParser;
+    private final RedisEntryParser redisEntryParser;
 
-    public abstract List<RedisDataEntry> getRedisEntry(long index, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema);
-
-    String parseKeyTemplate(String template, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
-        if (StringUtils.isEmpty(template)) {
-            throw new IllegalArgumentException("Template '" + template + "' is invalid");
-        }
-        String[] templateStrings = template.split(",");
-        if (templateStrings.length == 0) {
-            throw new ConfigurationException("Template " + template + " is invalid");
-        }
-        templateStrings = Arrays
-                .stream(templateStrings)
-                .map(String::trim)
-                .toArray(String[]::new);
-        String templatePattern = templateStrings[0];
-        List<String> patternVariableFieldNames = Arrays.asList(templateStrings).subList(1, templateStrings.length);
-        if (patternVariableFieldNames.isEmpty()) {
-            return templatePattern;
-        }
-        Object[] patternVariableData = patternVariableFieldNames
-                .stream()
-                .map(fieldName -> parsedOdpfMessage.getFieldByName(fieldName, schema))
-                .toArray();
-        return String.format(templatePattern, patternVariableData);
-    }
-
-    public RedisRecords convert(List<OdpfMessage> messages) {
-        List<RedisRecord> valid = new ArrayList<>();
-        List<RedisRecord> invalid = new ArrayList<>();
+    public List<RedisRecord> convert(List<OdpfMessage> messages) {
+        List<RedisRecord> records = new ArrayList<>();
         IntStream.range(0, messages.size()).forEach(index -> {
             try {
                 SinkConnectorSchemaMessageMode mode = redisSinkConfig.getSinkConnectorSchemaMessageMode();
@@ -63,18 +34,18 @@ public abstract class RedisParser {
                         ? redisSinkConfig.getSinkConnectorSchemaProtoMessageClass() : redisSinkConfig.getSinkConnectorSchemaProtoKeyClass();
                 OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass);
                 ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(messages.get(index), mode, schemaClass);
-                List<RedisDataEntry> p = getRedisEntry(index, parsedOdpfMessage, schema);
-                for (RedisDataEntry redisDataEntry : p) {
-                    valid.add(new RedisRecord(redisDataEntry, (long) index, null, messages.get(index).getMetadata()));
+                List<RedisDataEntry> redisDataEntries = redisEntryParser.getRedisEntry(parsedOdpfMessage, schema);
+                for (RedisDataEntry redisDataEntry : redisDataEntries) {
+                    records.add(new RedisRecord(redisDataEntry, (long) index, null, messages.get(index).getMetadataString(), true));
                 }
             } catch (ConfigurationException e) {
                 ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.UNKNOWN_FIELDS_ERROR);
-                invalid.add(new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadata()));
+                records.add(new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadataString(), false));
             } catch (DeserializerException | IOException e) {
                 ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR);
-                invalid.add(new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadata()));
+                records.add(new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadataString(), false));
             }
         });
-        return new RedisRecords(valid, invalid);
+        return records;
     }
 }

@@ -1,15 +1,12 @@
 package io.odpf.depot.redis.client;
 
 import io.odpf.depot.exception.DeserializerException;
-import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.dataentry.RedisHashSetFieldEntry;
 import io.odpf.depot.redis.dataentry.RedisListEntry;
-import io.odpf.depot.redis.exception.NoResponseException;
 import io.odpf.depot.redis.models.RedisRecord;
 import io.odpf.depot.redis.ttl.RedisTtl;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -84,7 +81,7 @@ public class RedisStandaloneClientTest {
     @Test
     public void pushesDataEntryForListInATransaction() throws DeserializerException {
         populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
-        redisClient.execute(records);
+        redisClient.send(records);
         verify(jedisPipeline, times(1)).multi();
         verify(jedisPipeline).lpush(key1, value1);
         verify(jedisPipeline).lpush(key2, value2);
@@ -93,7 +90,7 @@ public class RedisStandaloneClientTest {
     @Test
     public void setsTTLForListItemsInATransaction() throws DeserializerException {
         populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
-        redisClient.execute(records);
+        redisClient.send(records);
         verify(redisTTL).setTtl(jedisPipeline, key1);
         verify(redisTTL).setTtl(jedisPipeline, key2);
     }
@@ -101,7 +98,7 @@ public class RedisStandaloneClientTest {
     @Test
     public void pushesDataEntryForSetInATransaction() throws DeserializerException {
         populateRedisDataEntry(firstRedisSetRecord, secondRedisSetRecord);
-        redisClient.execute(records);
+        redisClient.send(records);
         verify(jedisPipeline, times(1)).multi();
         verify(jedisPipeline).hset(key1, field1, value1);
         verify(jedisPipeline).hset(key2, field2, value2);
@@ -110,7 +107,7 @@ public class RedisStandaloneClientTest {
     @Test
     public void setsTTLForSetItemsInATransaction() throws DeserializerException {
         populateRedisDataEntry(firstRedisSetRecord, secondRedisSetRecord);
-        redisClient.execute(records);
+        redisClient.send(records);
         verify(redisTTL).setTtl(jedisPipeline, key1);
         verify(redisTTL).setTtl(jedisPipeline, key2);
     }
@@ -118,7 +115,7 @@ public class RedisStandaloneClientTest {
     @Test
     public void shouldCompleteTransaction() {
         populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
-        redisClient.execute(records);
+        redisClient.send(records);
         verify(jedisPipeline).exec();
         verify(instrumentation, times(1)).logDebug("jedis responses: {}", responses);
     }
@@ -126,7 +123,7 @@ public class RedisStandaloneClientTest {
     @Test
     public void shouldWaitForResponseInExec() {
         populateRedisDataEntry(firstRedisListRecord, secondRedisListRecord);
-        redisClient.execute(records);
+        redisClient.send(records);
         verify(jedisPipeline).sync();
     }
 
