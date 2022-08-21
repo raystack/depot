@@ -13,7 +13,7 @@ import redis.clients.jedis.Pipeline;
 
 @AllArgsConstructor
 public class RedisRecord {
-    private final RedisEntry redisEntry;
+    private RedisEntry redisEntry;
     @Getter
     private final Long index;
     @Getter

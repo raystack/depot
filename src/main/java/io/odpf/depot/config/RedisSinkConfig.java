@@ -40,9 +40,6 @@ public interface RedisSinkConfig extends OdpfSinkConfig {
     @Key("SINK_REDIS_LIST_DATA_PROTO_INDEX")
     String getSinkRedisListDataProtoIndex();
 
-    @Key("SINK_REDIS_KEY_VALUE_DATA_PROTO_INDEX")
-    String getSinkRedisKeyValueDataProtoIndex();
-
     @Key("SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME")
     String getSinkRedisKeyValueDataFieldName();
 

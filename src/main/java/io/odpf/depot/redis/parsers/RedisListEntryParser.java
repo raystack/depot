@@ -33,9 +33,6 @@ public class RedisListEntryParser implements RedisEntryParser {
             throw new IllegalArgumentException("Empty config SINK_REDIS_LIST_DATA_FIELD_NAME found");
         }
         String redisValue = parsedOdpfMessage.getFieldByName(field, schema).toString();
-        if (redisValue == null) {
-            throw new IllegalArgumentException("Invalid config SINK_REDIS_LIST_DATA_FIELD_NAME found");
-        }
         return Collections.singletonList(new RedisListEntry(redisKey, redisValue, new Instrumentation(statsDReporter, RedisListEntry.class)));
     }
 }

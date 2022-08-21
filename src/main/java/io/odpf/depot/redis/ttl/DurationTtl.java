@@ -1,13 +1,11 @@
 package io.odpf.depot.redis.ttl;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
 
 
 @AllArgsConstructor
-@Getter
 public class DurationTtl implements RedisTtl {
     private int ttlInSeconds;
 

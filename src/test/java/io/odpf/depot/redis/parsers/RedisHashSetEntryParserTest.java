@@ -128,4 +128,20 @@ public class RedisHashSetEntryParserTest {
         RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER", "ORDER-1-FROM-KEY", null);
         assertEquals(Collections.singletonList(expectedEntry), redisEntries);
     }
+
+    @Test
+    public void shouldThrowExceptionForEmptyMapping() throws IOException {
+        redisSinkSetup("");
+        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class,
+                () -> redisHashSetEntryParser.getRedisEntry(parsedBookingMessage, schemaBooking));
+        assertEquals("Empty config SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING found", e.getMessage());
+    }
+
+    @Test
+    public void shouldThrowExceptionForNullMapping() throws IOException {
+        redisSinkSetup(null);
+        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class,
+                () -> redisHashSetEntryParser.getRedisEntry(parsedBookingMessage, schemaBooking));
+        assertEquals("Empty config SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING found", e.getMessage());
+    }
 }

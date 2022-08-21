@@ -49,7 +49,7 @@ public class JsonToPropertiesConverter implements org.aeonbits.owner.Converter<P
         DuplicateFinder duplicateFinder = flattenValues(properties)
                 .collect(DuplicateFinder::new, DuplicateFinder::accept, DuplicateFinder::combine);
         if (duplicateFinder.duplicates.size() > 0) {
-            throw new IllegalArgumentException("duplicates found in INPUT_SCHEMA_PROTO_TO_COLUMN_MAPPING for : " + duplicateFinder.duplicates);
+            throw new IllegalArgumentException("duplicates found in SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING for : " + duplicateFinder.duplicates);
         }
     }
 

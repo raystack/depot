@@ -14,10 +14,8 @@ public class RedisEntryParserFactory {
                 return new RedisKeyValueEntryParser(redisSinkConfig, statsDReporter);
             case LIST:
                 return new RedisListEntryParser(redisSinkConfig, statsDReporter);
-            case HASHSET:
-                return new RedisHashSetEntryParser(redisSinkConfig, statsDReporter);
             default:
-                return null;
+                return new RedisHashSetEntryParser(redisSinkConfig, statsDReporter);
         }
     }
 }

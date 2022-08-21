@@ -2,6 +2,7 @@ package io.odpf.depot.redis.entry;
 
 
 import io.odpf.depot.metrics.Instrumentation;
+import io.odpf.depot.redis.client.response.RedisClusterResponse;
 import io.odpf.depot.redis.ttl.DurationTtl;
 import io.odpf.depot.redis.ttl.NoRedisTtl;
 import org.junit.Assert;
@@ -14,10 +15,10 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.exceptions.JedisException;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisKeyValueEntryTest {
@@ -83,5 +84,13 @@ public class RedisKeyValueEntryTest {
     public void shouldGetListEntryToString() {
         String expected = "RedisKeyValueEntry: Key key, Value value";
         Assert.assertEquals(expected, redisKeyValueEntry.toString());
+    }
+
+    @Test
+    public void shouldReportFailedForJedisExceptionForCluster() {
+        when(jedisCluster.set("key", "value")).thenThrow(new JedisException("jedis error occurred"));
+        RedisClusterResponse response = redisKeyValueEntry.send(jedisCluster, new NoRedisTtl());
+        Assert.assertTrue(response.isFailed());
+        Assert.assertEquals("jedis error occurred", response.getMessage());
     }
 }

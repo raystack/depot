@@ -29,9 +29,6 @@ public class RedisKeyValueEntryParser implements RedisEntryParser {
             throw new IllegalArgumentException("Empty config SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME found");
         }
         String redisValue = parsedOdpfMessage.getFieldByName(fieldName, schema).toString();
-        if (redisValue == null) {
-            throw new IllegalArgumentException("Invalid config SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME found");
-        }
         RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, redisValue, new Instrumentation(statsDReporter, io.odpf.depot.redis.entry.RedisKeyValueEntry.class));
         return Collections.singletonList(redisKeyValueEntry);
     }

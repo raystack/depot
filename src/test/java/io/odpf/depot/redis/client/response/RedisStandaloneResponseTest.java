@@ -18,29 +18,17 @@ public class RedisStandaloneResponseTest {
 
     @Test
     public void shouldReportNotFailedWhenJedisExceptionNotThrown() {
-        when(response.get()).thenReturn("");
+        when(response.get()).thenReturn("Success response");
         redisResponse = new RedisStandaloneResponse(response);
         Assert.assertFalse(redisResponse.process().isFailed());
+        Assert.assertEquals("Success response", redisResponse.process().getMessage());
     }
 
     @Test
     public void shouldReportFailedWhenJedisExceptionThrown() {
-        when(response.get()).thenThrow(new JedisException(""));
+        when(response.get()).thenThrow(new JedisException("Failed response"));
         redisResponse = new RedisStandaloneResponse(response);
         Assert.assertTrue(redisResponse.process().isFailed());
-    }
-
-    @Test
-    public void shouldSetResponseMessageWhenJedisExceptionNotThrown() {
-        when(response.get()).thenReturn("Success reponse");
-        redisResponse = new RedisStandaloneResponse(response);
-        Assert.assertEquals("Success reponse", redisResponse.process().getMessage());
-    }
-
-    @Test
-    public void shouldSetResponseMessageWhenJedisExceptionThrown() {
-        when(response.get()).thenReturn("Failed reponse");
-        redisResponse = new RedisStandaloneResponse(response);
-        Assert.assertEquals("Failed reponse", redisResponse.process().getMessage());
+        Assert.assertEquals("Failed response", redisResponse.process().getMessage());
     }
 }
