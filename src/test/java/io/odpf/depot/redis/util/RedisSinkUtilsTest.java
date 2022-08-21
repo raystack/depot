@@ -6,20 +6,30 @@ import io.odpf.depot.TestKey;
 import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestMessage;
 import io.odpf.depot.config.RedisSinkConfig;
+import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.message.*;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
+import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import static org.junit.Assert.assertEquals;
+
+import io.odpf.depot.redis.client.response.RedisClusterResponse;
+import io.odpf.depot.redis.client.response.RedisResponse;
+import io.odpf.depot.redis.entry.RedisListEntry;
+import io.odpf.depot.redis.record.RedisRecord;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
-
 @RunWith(MockitoJUnitRunner.class)
 public class RedisSinkUtilsTest {
     @Mock
@@ -106,5 +116,26 @@ public class RedisSinkUtilsTest {
     public void shouldAcceptStringWithPatternForCollectionKeyWithMultipleVariables() {
         String parsedTemplate = RedisSinkUtils.parseTemplate("Test-%s::%s, order_number, order_details", parsedTestMessage, schemaTest);
         assertEquals("Test-test-order::ORDER-DETAILS", parsedTemplate);
+    }
+
+    @Test
+    public void shouldGetErrorsFromResponse() {
+        List<RedisRecord> records = new ArrayList<>();
+        records.add(new RedisRecord(new RedisListEntry("key1", "val1", null), 1L, null, null, true));
+        records.add(new RedisRecord(new RedisListEntry("key1", "val1", null), 4L, null, null, true));
+        records.add(new RedisRecord(new RedisListEntry("key1", "val1", null), 7L, null, null, true));
+        records.add(new RedisRecord(new RedisListEntry("key1", "val1", null), 10L, null, null, true));
+        records.add(new RedisRecord(new RedisListEntry("key1", "val1", null), 15L, null, null, true));
+        List<RedisResponse> responses = new ArrayList<>();
+        responses.add(new RedisClusterResponse("OK", false));
+        responses.add(new RedisClusterResponse("FAILED AT 4", true));
+        responses.add(new RedisClusterResponse("FAILED AT 7", true));
+        responses.add(new RedisClusterResponse("FAILED AT 10", true));
+        responses.add(new RedisClusterResponse("OK", false));
+        Map<Long, ErrorInfo> errors = RedisSinkUtils.getErrorsFromResponse(records, responses, new Instrumentation(statsDReporter, RedisSinkUtils.class));
+        Assert.assertEquals(3, errors.size());
+        Assert.assertEquals("FAILED AT 4", errors.get(4L).getException().getMessage());
+        Assert.assertEquals("FAILED AT 7", errors.get(7L).getException().getMessage());
+        Assert.assertEquals("FAILED AT 10", errors.get(10L).getException().getMessage());
     }
 }

@@ -3,7 +3,6 @@ package io.odpf.depot.redis.util;
 import com.google.common.base.Splitter;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
@@ -23,9 +22,6 @@ public class RedisSinkUtils {
         }
         List<String> templateStrings = new ArrayList<>();
         Splitter.on(",").omitEmptyStrings().split(template).forEach(s -> templateStrings.add(s.trim()));
-        if (templateStrings.size() == 0) {
-            throw new ConfigurationException("Template " + template + " is invalid");
-        }
         String templatePattern = templateStrings.get(0);
         List<String> patternVariableFieldNames = templateStrings.subList(1, templateStrings.size());
         if (patternVariableFieldNames.isEmpty()) {
