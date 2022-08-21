@@ -8,7 +8,7 @@ import io.odpf.depot.message.*;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.entry.RedisEntry;
-import io.odpf.depot.redis.entry.RedisListEntry;
+import io.odpf.depot.redis.entry.RedisKeyValueEntry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -25,12 +25,12 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RedisListEntryParserTest {
+public class RedisKeyValueEntryParserTest {
     @Mock
     private RedisSinkConfig redisSinkConfig;
     @Mock
     private StatsDReporter statsDReporter;
-    private RedisListEntryParser redisListEntryParser;
+    private RedisKeyValueEntryParser redisKeyValueEntryParser;
 
     private OdpfMessageSchema schema;
     private ParsedOdpfMessage parsedOdpfMessage;
@@ -42,7 +42,7 @@ public class RedisListEntryParserTest {
     }};
 
     private void redisSinkSetup(String template, String field) throws IOException {
-        when(redisSinkConfig.getSinkRedisListDataFieldName()).thenReturn(field);
+        when(redisSinkConfig.getSinkRedisKeyValueDataFieldName()).thenReturn(field);
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn(template);
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
         String schemaClass = "io.odpf.depot.TestMessage";
@@ -54,14 +54,14 @@ public class RedisListEntryParserTest {
                 .toByteArray();
         OdpfMessage message = new OdpfMessage(null, logMessage);
         parsedOdpfMessage = odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass);
-        redisListEntryParser = new RedisListEntryParser(redisSinkConfig, statsDReporter);
+        redisKeyValueEntryParser = new RedisKeyValueEntryParser(redisSinkConfig, statsDReporter);
     }
 
     @Test
     public void shouldConvertParsedOdpfMessageToRedisKeyValueEntry() throws IOException {
         redisSinkSetup("test-key", "order_details");
-        List<RedisEntry> redisDataEntries = redisListEntryParser.getRedisEntry(parsedOdpfMessage, schema);
-        RedisListEntry expectedEntry = new RedisListEntry("test-key", "new-eureka-order", null);
+        List<RedisEntry> redisDataEntries = redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage, schema);
+        RedisKeyValueEntry expectedEntry = new RedisKeyValueEntry("test-key", "new-eureka-order", null);
         assertEquals(Collections.singletonList(expectedEntry), redisDataEntries);
     }
 
@@ -69,15 +69,15 @@ public class RedisListEntryParserTest {
     public void shouldThrowExceptionForEmptyKeyValueDataFieldName() throws IOException {
         redisSinkSetup("test-key", "");
         IllegalArgumentException illegalArgumentException =
-                assertThrows(IllegalArgumentException.class, () -> redisListEntryParser.getRedisEntry(parsedOdpfMessage, schema));
-        assertEquals("Empty config SINK_REDIS_LIST_DATA_FIELD_NAME found", illegalArgumentException.getMessage());
+                assertThrows(IllegalArgumentException.class, () -> redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage, schema));
+        assertEquals("Empty config SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME found", illegalArgumentException.getMessage());
     }
 
     @Test
     public void shouldThrowExceptionForInvalidKeyValueDataFieldName() throws IOException {
         redisSinkSetup("test-key", "random-field");
         ConfigurationException configurationException =
-                assertThrows(ConfigurationException.class, () -> redisListEntryParser.getRedisEntry(parsedOdpfMessage, schema));
+                assertThrows(ConfigurationException.class, () -> redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage, schema));
         assertEquals("Invalid field config : random-field", configurationException.getMessage());
     }
 }

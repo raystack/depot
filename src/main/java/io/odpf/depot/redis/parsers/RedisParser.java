@@ -45,6 +45,9 @@ public class RedisParser {
             } catch (ConfigurationException e) {
                 ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.UNKNOWN_FIELDS_ERROR);
                 records.add(new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadataString(), false));
+            } catch (IllegalArgumentException e) {
+                ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DEFAULT_ERROR);
+                records.add(new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadataString(), false));
             } catch (DeserializerException | IOException e) {
                 ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR);
                 records.add(new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadataString(), false));

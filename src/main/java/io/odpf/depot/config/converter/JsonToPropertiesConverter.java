@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 
 public class JsonToPropertiesConverter implements org.aeonbits.owner.Converter<Properties> {
-    private static final Gson gson = new Gson();
+    private static final Gson GSON = new Gson();
 
     @Override
     public Properties convert(Method method, String input) {
@@ -26,7 +26,7 @@ public class JsonToPropertiesConverter implements org.aeonbits.owner.Converter<P
         }
         Type type = new TypeToken<Map<String, Object>>() {
         }.getType();
-        Map<String, Object> m = gson.fromJson(input, type);
+        Map<String, Object> m = GSON.fromJson(input, type);
         Properties properties = getProperties(m);
         validate(properties);
         return properties;

@@ -49,22 +49,22 @@ public class JsonOdpfParsedMessageTest {
 
     @Test
     public void shouldReturnValueFromNestedJson() {
-        JSONObject personDetails = new JSONObject("" +
-                "{\"first_name\": \"john doe\"," +
-                " \"address\": \"planet earth\", " +
-                "\"family\" : {\"brother\" : \"david doe\"}" +
-                "}");
+        JSONObject personDetails = new JSONObject(""
+                + "{\"first_name\": \"john doe\","
+                + " \"address\": \"planet earth\", "
+                + "\"family\" : {\"brother\" : \"david doe\"}"
+                + "}");
         JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails);
         Assert.assertEquals("david doe", parsedMessage.getFieldByName("family.brother", null));
     }
 
     @Test
     public void shouldThrowExceptionIfNotFound() {
-        JSONObject personDetails = new JSONObject("" +
-                "{\"first_name\": \"john doe\"," +
-                " \"address\": \"planet earth\", " +
-                "\"family\" : {\"brother\" : \"david doe\"}" +
-                "}");
+        JSONObject personDetails = new JSONObject(""
+                + "{\"first_name\": \"john doe\","
+                + " \"address\": \"planet earth\", "
+                + "\"family\" : {\"brother\" : \"david doe\"}"
+                + "}");
         JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails);
         JsonPathException jsonPathException = Assert.assertThrows(JsonPathException.class, () -> parsedMessage.getFieldByName("family.sister", null));
         Assert.assertEquals("No results for path: $['family']['sister']", jsonPathException.getMessage());
@@ -72,11 +72,11 @@ public class JsonOdpfParsedMessageTest {
 
     @Test
     public void shouldReturnListFromNestedJson() {
-        JSONObject personDetails = new JSONObject("" +
-                "{\"first_name\": \"john doe\"," +
-                " \"address\": \"planet earth\", " +
-                "\"family\" : [{\"brother\" : \"david doe\"}, {\"brother\" : \"cain doe\"}]" +
-                "}");
+        JSONObject personDetails = new JSONObject(""
+                + "{\"first_name\": \"john doe\","
+                + " \"address\": \"planet earth\", "
+                + "\"family\" : [{\"brother\" : \"david doe\"}, {\"brother\" : \"cain doe\"}]"
+                + "}");
         JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails);
         JSONArray family = (JSONArray) parsedMessage.getFieldByName("family", null);
         Assert.assertEquals(2, family.length());

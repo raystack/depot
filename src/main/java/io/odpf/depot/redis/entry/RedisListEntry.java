@@ -46,5 +46,4 @@ public class RedisListEntry implements RedisEntry {
     public String toString() {
         return String.format("RedisListEntry: Key %s, Value %s", key, value);
     }
-
 }

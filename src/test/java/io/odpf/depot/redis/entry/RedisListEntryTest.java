@@ -4,7 +4,7 @@ import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.redis.ttl.DurationTtl;
 import io.odpf.depot.redis.ttl.ExactTimeTtl;
 import io.odpf.depot.redis.ttl.NoRedisTtl;
-import io.odpf.depot.redis.ttl.RedisTtl;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,29 +19,22 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisListEntryTest {
-
     @Mock
     private Instrumentation instrumentation;
-
     @Mock
     private Pipeline pipeline;
-
     @Mock
     private JedisCluster jedisCluster;
-
-    private RedisTtl redisTTL;
     private RedisListEntry redisListEntry;
 
     @Before
     public void setup() {
-        redisTTL = new NoRedisTtl();
-        redisListEntry = new RedisListEntry("test-key", "test-value", instrumentation, 0);
+        redisListEntry = new RedisListEntry("test-key", "test-value", instrumentation);
     }
 
     @Test
     public void shouldIOnlyPushDataWithoutTTLByDefaultForPipeline() {
-        redisListEntry.send(pipeline, redisTTL);
-
+        redisListEntry.send(pipeline, new NoRedisTtl());
         verify(pipeline, times(1)).lpush("test-key", "test-value");
         verify(pipeline, times(0)).expireAt(any(String.class), any(Long.class));
         verify(pipeline, times(0)).expireAt(any(String.class), any(Long.class));
@@ -50,26 +43,21 @@ public class RedisListEntryTest {
 
     @Test
     public void shouldSetProperTTLForExactTimeForPipeline() {
-        redisTTL = new ExactTimeTtl(1000L);
-        redisListEntry.send(pipeline, redisTTL);
-
+        redisListEntry.send(pipeline, new ExactTimeTtl(1000L));
         verify(pipeline, times(1)).expireAt("test-key", 1000L);
         verify(instrumentation, times(1)).logDebug("key: {}, value: {}", "test-key", "test-value");
     }
 
     @Test
     public void shouldSetProperTTLForDurationForPipeline() {
-        redisTTL = new DurationTtl(1000);
-        redisListEntry.send(pipeline, redisTTL);
-
+        redisListEntry.send(pipeline, new DurationTtl(1000));
         verify(pipeline, times(1)).expire("test-key", 1000);
         verify(instrumentation, times(1)).logDebug("key: {}, value: {}", "test-key", "test-value");
     }
 
     @Test
     public void shouldIOnlyPushDataWithoutTTLByDefaultForCluster() {
-        redisListEntry.send(jedisCluster, redisTTL);
-
+        redisListEntry.send(jedisCluster, new NoRedisTtl());
         verify(jedisCluster, times(1)).lpush("test-key", "test-value");
         verify(jedisCluster, times(0)).expireAt(any(String.class), any(Long.class));
         verify(jedisCluster, times(0)).expireAt(any(String.class), any(Long.class));
@@ -78,19 +66,21 @@ public class RedisListEntryTest {
 
     @Test
     public void shouldSetProperTTLForExactTimeForCluster() {
-        redisTTL = new ExactTimeTtl(1000L);
-        redisListEntry.send(jedisCluster, redisTTL);
-
+        redisListEntry.send(jedisCluster, new ExactTimeTtl(1000L));
         verify(jedisCluster, times(1)).expireAt("test-key", 1000L);
         verify(instrumentation, times(1)).logDebug("key: {}, value: {}", "test-key", "test-value");
     }
 
     @Test
     public void shouldSetProperTTLForDurationForCluster() {
-        redisTTL = new DurationTtl(1000);
-        redisListEntry.send(jedisCluster, redisTTL);
-
+        redisListEntry.send(jedisCluster, new DurationTtl(1000));
         verify(jedisCluster, times(1)).expire("test-key", 1000);
         verify(instrumentation, times(1)).logDebug("key: {}, value: {}", "test-key", "test-value");
+    }
+
+    @Test
+    public void shouldGetListEntryToString() {
+        String expected = "RedisListEntry: Key test-key, Value test-value";
+        Assert.assertEquals(expected, redisListEntry.toString());
     }
 }

@@ -8,11 +8,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
+@RunWith(MockitoJUnitRunner.class)
 public class RedisTtlFactoryTest {
 
     @Mock
@@ -23,7 +24,6 @@ public class RedisTtlFactoryTest {
 
     @Before
     public void setup() {
-        initMocks(this);
         when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DISABLE);
     }
 
@@ -53,8 +53,6 @@ public class RedisTtlFactoryTest {
     public void shouldThrowExceptionInCaseOfInvalidConfiguration() {
         expectedException.expect(ConfigurationException.class);
         expectedException.expectMessage("Provide a positive TTL value");
-
-        when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
         when(redisSinkConfig.getSinkRedisTtlValue()).thenReturn(-1L);
         RedisTTLFactory.getTTl(redisSinkConfig);
     }

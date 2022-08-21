@@ -2,14 +2,15 @@ package io.odpf.depot.redis.ttl;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
-
+@RunWith(MockitoJUnitRunner.class)
 public class ExactTimeTTLTest {
 
     private ExactTimeTtl exactTimeTTL;
@@ -21,7 +22,6 @@ public class ExactTimeTTLTest {
 
     @Before
     public void setup() {
-        initMocks(this);
         exactTimeTTL = new ExactTimeTtl(10000000L);
     }
 

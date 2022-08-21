@@ -9,7 +9,6 @@ import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.redis.client.response.RedisResponse;
 import io.odpf.depot.redis.record.RedisRecord;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +18,7 @@ import java.util.stream.IntStream;
 
 public class RedisSinkUtils {
     public static String parseTemplate(String template, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
-        if (StringUtils.isEmpty(template)) {
+        if (template == null || template.isEmpty()) {
             throw new IllegalArgumentException("Template '" + template + "' is invalid");
         }
         List<String> templateStrings = new ArrayList<>();
