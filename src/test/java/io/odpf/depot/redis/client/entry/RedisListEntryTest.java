@@ -1,4 +1,4 @@
-package io.odpf.depot.redis.entry;
+package io.odpf.depot.redis.client.entry;
 
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.redis.client.response.RedisClusterResponse;

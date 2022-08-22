@@ -3,7 +3,7 @@ package io.odpf.depot.redis.record;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.redis.client.response.RedisClusterResponse;
 import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
-import io.odpf.depot.redis.entry.RedisEntry;
+import io.odpf.depot.redis.client.entry.RedisEntry;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

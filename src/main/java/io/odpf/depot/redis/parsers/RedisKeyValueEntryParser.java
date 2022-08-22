@@ -4,8 +4,8 @@ import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.entry.RedisEntry;
-import io.odpf.depot.redis.entry.RedisKeyValueEntry;
+import io.odpf.depot.redis.client.entry.RedisEntry;
+import io.odpf.depot.redis.client.entry.RedisKeyValueEntry;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +25,7 @@ public class RedisKeyValueEntryParser implements RedisEntryParser {
     public List<RedisEntry> getRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
         String redisKey = keyTemplate.parse(parsedOdpfMessage, schema);
         String redisValue = parsedOdpfMessage.getFieldByName(fieldName, schema).toString();
-        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, redisValue, new Instrumentation(statsDReporter, io.odpf.depot.redis.entry.RedisKeyValueEntry.class));
+        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, redisValue, new Instrumentation(statsDReporter, io.odpf.depot.redis.client.entry.RedisKeyValueEntry.class));
         return Collections.singletonList(redisKeyValueEntry);
     }
 }

@@ -2,9 +2,9 @@ package io.odpf.depot.redis.client;
 
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.entry.RedisHashSetFieldEntry;
-import io.odpf.depot.redis.entry.RedisKeyValueEntry;
-import io.odpf.depot.redis.entry.RedisListEntry;
+import io.odpf.depot.redis.client.entry.RedisHashSetFieldEntry;
+import io.odpf.depot.redis.client.entry.RedisKeyValueEntry;
+import io.odpf.depot.redis.client.entry.RedisListEntry;
 import io.odpf.depot.redis.record.RedisRecord;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import org.junit.Before;

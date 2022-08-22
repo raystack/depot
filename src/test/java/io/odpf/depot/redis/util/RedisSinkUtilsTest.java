@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 
 import io.odpf.depot.redis.client.response.RedisClusterResponse;
 import io.odpf.depot.redis.client.response.RedisResponse;
-import io.odpf.depot.redis.entry.RedisListEntry;
+import io.odpf.depot.redis.client.entry.RedisListEntry;
 import io.odpf.depot.redis.record.RedisRecord;
 import org.junit.Assert;
 import org.junit.Before;

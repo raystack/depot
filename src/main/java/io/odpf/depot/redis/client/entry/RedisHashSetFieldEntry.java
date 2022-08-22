@@ -1,4 +1,4 @@
-package io.odpf.depot.redis.entry;
+package io.odpf.depot.redis.client.entry;
 
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.redis.client.response.RedisClusterResponse;
@@ -16,25 +16,27 @@ import redis.clients.jedis.exceptions.JedisException;
  */
 @AllArgsConstructor
 @EqualsAndHashCode
-public class RedisListEntry implements RedisEntry {
+public class RedisHashSetFieldEntry implements RedisEntry {
+
     private final String key;
+    private final String field;
     private final String value;
     @EqualsAndHashCode.Exclude
     private final Instrumentation instrumentation;
 
     @Override
     public RedisStandaloneResponse send(Pipeline jedisPipelined, RedisTtl redisTTL) {
-        instrumentation.logDebug("key: {}, value: {}", key, value);
-        Response<Long> response = jedisPipelined.lpush(key, value);
+        instrumentation.logDebug("key: {}, field: {}, value: {}", key, field, value);
+        Response<Long> response = jedisPipelined.hset(key, field, value);
         redisTTL.setTtl(jedisPipelined, key);
         return new RedisStandaloneResponse(response);
     }
 
     @Override
     public RedisClusterResponse send(JedisCluster jedisCluster, RedisTtl redisTTL) {
-        instrumentation.logDebug("key: {}, value: {}", key, value);
+        instrumentation.logDebug("key: {}, field: {}, value: {}", key, field, value);
         try {
-            Long response = jedisCluster.lpush(key, value);
+            Long response = jedisCluster.hset(key, field, value);
             redisTTL.setTtl(jedisCluster, key);
             return new RedisClusterResponse(response.toString(), false);
         } catch (JedisException e) {
@@ -44,6 +46,6 @@ public class RedisListEntry implements RedisEntry {
 
     @Override
     public String toString() {
-        return String.format("RedisListEntry: Key %s, Value %s", key, value);
+        return String.format("RedisHashSetFieldEntry Key %s, Field %s, Value %s", key, field, value);
     }
 }

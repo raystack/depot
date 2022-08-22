@@ -8,7 +8,7 @@ import io.odpf.depot.message.*;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.message.proto.ProtoOdpfParsedMessage;
 import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.entry.RedisKeyValueEntry;
+import io.odpf.depot.redis.client.entry.RedisKeyValueEntry;
 import io.odpf.depot.redis.record.RedisRecord;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
