@@ -66,6 +66,24 @@ bigquery [column time partitioning](https://cloud.google.com/bigquery/docs/creat
 * Example value: `event_timestamp`
 * Type: `required`
 
+## `SINK_BIGQUERY_TABLE_CLUSTERING_ENABLE`
+
+Configuration for enable table clustering. This config will be used for provide clustering config when creating and modifying
+bigquery table. Changing this value of this config later for the existing table will modify the existing clustered table config. 
+Here is further documentation of bigquery [table clustering](https://cloud.google.com/bigquery/docs/clustered-tables).
+
+* Example value: `true`
+* Type: `required`
+* Default value: `false`
+
+## `SINK_BIGQUERY_TABLE_CLUSTERING_KEYS`
+
+Define bigquery field names that will be used for bigquery table clustering. You can specify up to four clustering columns.
+Here is further documentation of bigquery [table clustering columns](https://cloud.google.com/bigquery/docs/creating-clustered-tables).
+
+* Example value: `id,name,age,city`
+* Type: `required`
+
 ## `SINK_BIGQUERY_ROW_INSERT_ID_ENABLE`
 
 This config enables adding of ID row intended for deduplication when inserting new records into bigquery. Here is
