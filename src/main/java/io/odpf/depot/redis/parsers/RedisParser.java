@@ -12,7 +12,6 @@ import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.redis.entry.RedisEntry;
 import io.odpf.depot.redis.record.RedisRecord;
-import lombok.AllArgsConstructor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,11 +22,17 @@ import java.util.stream.IntStream;
 /**
  * Convert Odpf messages to RedisRecords.
  */
-@AllArgsConstructor
 public class RedisParser {
-    private final RedisSinkConfig redisSinkConfig;
+    private RedisSinkConfig redisSinkConfig;
     private final OdpfMessageParser odpfMessageParser;
     private final RedisEntryParser redisEntryParser;
+    private OdpfMessageSchema schema;
+
+    public RedisParser(RedisSinkConfig redisSinkConfig, OdpfMessageParser odpfMessageParser, RedisEntryParser redisEntryParser) {
+        this.redisSinkConfig = redisSinkConfig;
+        this.odpfMessageParser = odpfMessageParser;
+        this.redisEntryParser = redisEntryParser;
+    }
 
     public List<RedisRecord> convert(List<OdpfMessage> messages) {
         List<RedisRecord> records = new ArrayList<>();
@@ -36,7 +41,9 @@ public class RedisParser {
                 SinkConnectorSchemaMessageMode mode = redisSinkConfig.getSinkConnectorSchemaMessageMode();
                 String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
                         ? redisSinkConfig.getSinkConnectorSchemaProtoMessageClass() : redisSinkConfig.getSinkConnectorSchemaProtoKeyClass();
-                OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass);
+                if (schema == null) {
+                    schema = odpfMessageParser.getSchema(schemaClass);
+                }
                 ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(messages.get(index), mode, schemaClass);
                 List<RedisEntry> redisDataEntries = redisEntryParser.getRedisEntry(parsedOdpfMessage, schema);
                 for (RedisEntry redisEntry : redisDataEntries) {
