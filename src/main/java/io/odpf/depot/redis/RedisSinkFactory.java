@@ -19,12 +19,9 @@ import io.odpf.depot.utils.MessageConfigUtils;
 import java.io.IOException;
 
 public class RedisSinkFactory {
-
     private final RedisSinkConfig sinkConfig;
-
     private final StatsDReporter statsDReporter;
     private RedisParser redisParser;
-
 
     public RedisSinkFactory(RedisSinkConfig sinkConfig, StatsDReporter statsDReporter) {
         this.sinkConfig = sinkConfig;

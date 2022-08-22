@@ -12,6 +12,7 @@ import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.client.entry.RedisEntry;
 import io.odpf.depot.redis.client.entry.RedisHashSetFieldEntry;
+import io.odpf.depot.redis.enums.RedisSinkDataType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,7 +31,7 @@ public class RedisHashSetEntryParserTest {
     private RedisSinkConfig redisSinkConfig;
     @Mock
     private StatsDReporter statsDReporter;
-    private RedisHashSetEntryParser redisHashSetEntryParser;
+    private RedisEntryParser redisHashSetEntryParser;
     private ParsedOdpfMessage parsedBookingMessage;
     private ParsedOdpfMessage parsedOdpfKey;
     private OdpfMessageSchema schemaBooking;
@@ -42,6 +43,7 @@ public class RedisHashSetEntryParserTest {
     }};
 
     private void redisSinkSetup(String field) throws IOException {
+        when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.HASHSET);
         when(redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping()).thenReturn(new JsonToPropertiesConverter().convert(null, field));
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn("test-key");
         String schemaBookingClass = "io.odpf.depot.TestBookingLogMessage";
@@ -54,7 +56,7 @@ public class RedisHashSetEntryParserTest {
         parsedOdpfKey = odpfMessageParser.parse(bookingMessage, SinkConnectorSchemaMessageMode.LOG_KEY, schemaKeyClass);
         schemaBooking = odpfMessageParser.getSchema(schemaBookingClass, descriptorsMap);
         schemaKey = odpfMessageParser.getSchema(schemaKeyClass, descriptorsMap);
-        redisHashSetEntryParser = new RedisHashSetEntryParser(redisSinkConfig, statsDReporter, keyTemplateVariables, fieldsToTemplateMapping);
+        redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
     }
 
     @Test
@@ -114,34 +116,10 @@ public class RedisHashSetEntryParserTest {
     }
 
     @Test
-    public void shouldThrowExceptionForEmptyKey() throws IOException {
-        redisSinkSetup("{\"order_details\":\"\"}");
-        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class,
-                () -> redisHashSetEntryParser.getRedisEntry(parsedBookingMessage, schemaBooking));
-        assertEquals("Template '' is invalid", e.getMessage());
-    }
-
-    @Test
     public void shouldParseKeyWhenKafkaMessageParseModeSetToKey() throws IOException {
         redisSinkSetup("{\"order_number\":\"ORDER_NUMBER\"}");
         List<RedisEntry> redisEntries = redisHashSetEntryParser.getRedisEntry(parsedOdpfKey, schemaKey);
         RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER", "ORDER-1-FROM-KEY", null);
         assertEquals(Collections.singletonList(expectedEntry), redisEntries);
-    }
-
-    @Test
-    public void shouldThrowExceptionForEmptyMapping() throws IOException {
-        redisSinkSetup("");
-        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class,
-                () -> redisHashSetEntryParser.getRedisEntry(parsedBookingMessage, schemaBooking));
-        assertEquals("Empty config SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING found", e.getMessage());
-    }
-
-    @Test
-    public void shouldThrowExceptionForNullMapping() throws IOException {
-        redisSinkSetup(null);
-        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class,
-                () -> redisHashSetEntryParser.getRedisEntry(parsedBookingMessage, schemaBooking));
-        assertEquals("Empty config SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING found", e.getMessage());
     }
 }

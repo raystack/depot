@@ -25,7 +25,7 @@ public class RedisKeyValueEntryParser implements RedisEntryParser {
     public List<RedisEntry> getRedisEntry(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
         String redisKey = keyTemplate.parse(parsedOdpfMessage, schema);
         String redisValue = parsedOdpfMessage.getFieldByName(fieldName, schema).toString();
-        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, redisValue, new Instrumentation(statsDReporter, io.odpf.depot.redis.client.entry.RedisKeyValueEntry.class));
+        RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, redisValue, new Instrumentation(statsDReporter, RedisKeyValueEntry.class));
         return Collections.singletonList(redisKeyValueEntry);
     }
 }

@@ -2,14 +2,18 @@ package io.odpf.depot.redis.parsers;
 
 import com.google.protobuf.Descriptors;
 import io.odpf.depot.*;
+import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.RedisSinkConfig;
+import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
 import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.message.*;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.message.proto.ProtoOdpfParsedMessage;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.client.entry.RedisKeyValueEntry;
+import io.odpf.depot.redis.enums.RedisSinkDataType;
 import io.odpf.depot.redis.record.RedisRecord;
+import io.odpf.depot.utils.MessageConfigUtils;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
@@ -52,13 +56,12 @@ public class RedisParserTest {
 
     @Before
     public void setup() throws IOException {
-        ProtoOdpfMessageParser realOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
-        OdpfMessageSchema schema = realOdpfMessageParser.getSchema(schemaClass, descriptorsMap);
+        when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.KEYVALUE);
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn("test-key");
         when(redisSinkConfig.getSinkRedisKeyValueDataFieldName()).thenReturn("order_number");
         when(redisSinkConfig.getSinkConnectorSchemaMessageMode()).thenReturn(SinkConnectorSchemaMessageMode.LOG_MESSAGE);
         when(redisSinkConfig.getSinkConnectorSchemaProtoMessageClass()).thenReturn(schemaClass);
-        when(odpfMessageParser.getSchema(schemaClass)).thenReturn(schema);
+        when(redisSinkConfig.getSinkConnectorSchemaDataType()).thenReturn(SinkConnectorSchemaDataType.PROTOBUF);
         TestMessage message1 = TestMessage.newBuilder().setOrderNumber("test-order-1").setOrderDetails("ORDER-DETAILS-1").build();
         TestMessage message2 = TestMessage.newBuilder().setOrderNumber("test-order-2").setOrderDetails("ORDER-DETAILS-2").build();
         TestMessage message3 = TestMessage.newBuilder().setOrderNumber("test-order-3").setOrderDetails("ORDER-DETAILS-3").build();
@@ -77,8 +80,11 @@ public class RedisParserTest {
             ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(protoParser.parse((byte[]) message.getLogMessage()));
             when(odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass)).thenReturn(parsedOdpfMessage);
         }
-        RedisEntryParser redisEntryParser = new RedisKeyValueEntryParser(redisSinkConfig, statsDReporter, keyTemplateVariables);
-        redisParser = new RedisParser(redisSinkConfig, odpfMessageParser, redisEntryParser);
+        ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(redisSinkConfig, statsDReporter);
+        RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
+        Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(redisSinkConfig);
+        OdpfMessageSchema schema = messageParser.getSchema(modeAndSchema.getSecond(), descriptorsMap);
+        redisParser = new RedisParser(odpfMessageParser, redisEntryParser, schema, modeAndSchema);
     }
 
     @Test
@@ -114,17 +120,5 @@ public class RedisParserTest {
         assertEquals(IOException.class, parsedRecords.get(2).getErrorInfo().getException().getClass());
         assertEquals(ConfigurationException.class, parsedRecords.get(3).getErrorInfo().getException().getClass());
         assertEquals(IllegalArgumentException.class, parsedRecords.get(4).getErrorInfo().getException().getClass());
-    }
-
-    @Test
-    public void shouldProcessSchemaOnlyOnce() throws IOException {
-        setupParserResponse();
-        List<RedisRecord> parsedRecords = redisParser.convert(messages);
-        Map<Boolean, List<RedisRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(RedisRecord::isValid));
-        List<RedisRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
-        List<RedisRecord> validRecords = splitterRecords.get(Boolean.TRUE);
-        assertEquals(5, validRecords.size());
-        assertTrue(invalidRecords.isEmpty());
-        verify(odpfMessageParser, times(1)).getSchema(schemaClass);
     }
 }

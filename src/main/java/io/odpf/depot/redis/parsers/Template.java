@@ -22,6 +22,9 @@ public class Template {
     }
 
     public String parse(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
+        if (patternVariableFieldNames.isEmpty()) {
+            return templatePattern;
+        }
         Object[] patternVariableData = patternVariableFieldNames
                 .stream()
                 .map(fieldName -> parsedOdpfMessage.getFieldByName(fieldName, schema))

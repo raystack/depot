@@ -5,10 +5,14 @@ import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.DeserializerException;
-import io.odpf.depot.message.*;
+import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.redis.client.entry.RedisEntry;
 import io.odpf.depot.redis.record.RedisRecord;
 import lombok.AllArgsConstructor;
+import io.odpf.depot.message.ParsedOdpfMessage;
 
 import java.io.IOException;
 import java.util.ArrayList;

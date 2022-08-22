@@ -9,6 +9,7 @@ import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.client.entry.RedisEntry;
 import io.odpf.depot.redis.client.entry.RedisListEntry;
+import io.odpf.depot.redis.enums.RedisSinkDataType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -30,7 +31,7 @@ public class RedisListEntryParserTest {
     private RedisSinkConfig redisSinkConfig;
     @Mock
     private StatsDReporter statsDReporter;
-    private RedisListEntryParser redisListEntryParser;
+    private RedisEntryParser redisListEntryParser;
 
     private OdpfMessageSchema schema;
     private ParsedOdpfMessage parsedOdpfMessage;
@@ -42,6 +43,7 @@ public class RedisListEntryParserTest {
     }};
 
     private void redisSinkSetup(String template, String field) throws IOException {
+        when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
         when(redisSinkConfig.getSinkRedisListDataFieldName()).thenReturn(field);
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn(template);
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
@@ -54,23 +56,15 @@ public class RedisListEntryParserTest {
                 .toByteArray();
         OdpfMessage message = new OdpfMessage(null, logMessage);
         parsedOdpfMessage = odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass);
-        redisListEntryParser = new RedisListEntryParser(redisSinkConfig, statsDReporter, keyTemplateVariables, field);
+        redisListEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
     }
 
     @Test
-    public void shouldConvertParsedOdpfMessageToRedisKeyValueEntry() throws IOException {
+    public void shouldConvertParsedOdpfMessageToRedisListEntry() throws IOException {
         redisSinkSetup("test-key", "order_details");
         List<RedisEntry> redisDataEntries = redisListEntryParser.getRedisEntry(parsedOdpfMessage, schema);
         RedisListEntry expectedEntry = new RedisListEntry("test-key", "new-eureka-order", null);
         assertEquals(Collections.singletonList(expectedEntry), redisDataEntries);
-    }
-
-    @Test
-    public void shouldThrowExceptionForEmptyKeyValueDataFieldName() throws IOException {
-        redisSinkSetup("test-key", "");
-        IllegalArgumentException illegalArgumentException =
-                assertThrows(IllegalArgumentException.class, () -> redisListEntryParser.getRedisEntry(parsedOdpfMessage, schema));
-        assertEquals("Empty config SINK_REDIS_LIST_DATA_FIELD_NAME found", illegalArgumentException.getMessage());
     }
 
     @Test

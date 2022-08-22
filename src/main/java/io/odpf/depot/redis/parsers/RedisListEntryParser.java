@@ -23,7 +23,6 @@ public class RedisListEntryParser implements RedisEntryParser {
         this.statsDReporter = statsDReporter;
         this.keyTemplate = keyTemplate;
         this.field = field;
-
     }
 
     @Override

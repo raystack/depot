@@ -35,9 +35,7 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
         when(redisSinkConfig.getSinkRedisUrls()).thenReturn("0.0.0.0:0");
 
-        RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig);
-
-        RedisClient client = redisClientFactory.getClient();
+        RedisClient client = RedisClientFactory.getClient(redisSinkConfig, statsDReporter);
 
         Assert.assertEquals(RedisStandaloneClient.class, client.getClass());
     }
@@ -47,9 +45,8 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
         when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
         when(redisSinkConfig.getSinkRedisUrls()).thenReturn(" 0.0.0.0:0 ");
-        RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig);
 
-        RedisClient client = redisClientFactory.getClient();
+        RedisClient client = RedisClientFactory.getClient(redisSinkConfig, statsDReporter);
 
         Assert.assertEquals(RedisStandaloneClient.class, client.getClass());
     }
@@ -59,9 +56,8 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
         when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.CLUSTER);
         when(redisSinkConfig.getSinkRedisUrls()).thenReturn("0.0.0.0:0, 1.1.1.1:1");
-        RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig);
 
-        RedisClient client = redisClientFactory.getClient();
+        RedisClient client = RedisClientFactory.getClient(redisSinkConfig, statsDReporter);
 
         Assert.assertEquals(RedisClusterClient.class, client.getClass());
     }
@@ -71,9 +67,8 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
         when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.CLUSTER);
         when(redisSinkConfig.getSinkRedisUrls()).thenReturn(" 0.0.0.0:0, 1.1.1.1:1 ");
-        RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig);
 
-        RedisClient client = redisClientFactory.getClient();
+        RedisClient client = RedisClientFactory.getClient(redisSinkConfig, statsDReporter);
 
         Assert.assertEquals(RedisClusterClient.class, client.getClass());
     }
@@ -87,9 +82,7 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.CLUSTER);
         when(redisSinkConfig.getSinkRedisUrls()).thenReturn("localhost:6379,localhost:6378,localhost");
 
-        RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig);
-
-        redisClientFactory.getClient();
+        RedisClient client = RedisClientFactory.getClient(redisSinkConfig, statsDReporter);
     }
 
     @Test
@@ -101,8 +94,6 @@ public class RedisClientFactoryTest {
         when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
         when(redisSinkConfig.getSinkRedisUrls()).thenReturn("localhost");
 
-        RedisClientFactory redisClientFactory = new RedisClientFactory(statsDReporter, redisSinkConfig);
-
-        redisClientFactory.getClient();
+        RedisClientFactory.getClient(redisSinkConfig, statsDReporter);
     }
 }
