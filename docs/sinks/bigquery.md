@@ -51,6 +51,13 @@ Bigquery Sink supports creation of table with partition configuration. Currently
 To have time based partitioning protobuf `Timestamp` as field is needed on the protobuf message. The protobuf field will be used as partitioning column on table creation. 
 The time partitioning type that is currently supported is `DAY` partitioning.
 
+## Clustering 
+
+Bigquery Sink support for creating and modifying clustering on the table. Clustering can improve the performance of certain types of queries such as queries that use filter clauses and queries that aggregate data. 
+When data is written to a clustered table by a query job or a load job, BigQuery sorts the data using the values in the clustering columns. These values are used to organize the data into multiple blocks in BigQuery storage. 
+When you submit a query that contains a clause that filters data based on the clustering columns, BigQuery uses the sorted blocks to eliminate scans of unnecessary data. You might not see a significant difference in query performance between a clustered and unclustered table if the table or partition is under 1 GB.
+Follow [this](https://cloud.google.com/bigquery/docs/clustered-tables) for more details on Bigquery table clustering.
+
 ## Metadata
 
 For data quality checking purposes, sometimes some metadata need to be added on the record. 
