@@ -40,7 +40,6 @@ public class RedisSinkUtilsTest {
     private ParsedOdpfMessage parsedBookingMessage;
     private OdpfMessageSchema schemaTest;
     private OdpfMessageSchema schemaBooking;
-    private Map<String, Descriptors.Descriptor> descriptorsMap;
 
     @Before
     public void setUp() throws Exception {
@@ -49,7 +48,7 @@ public class RedisSinkUtilsTest {
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS").build();
         OdpfMessage message = new OdpfMessage(testKey.toByteArray(), testMessage.toByteArray());
         OdpfMessage bookingMessage = new OdpfMessage(testKey.toByteArray(), testBookingLogMessage.toByteArray());
-        descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
+        Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
             put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
             put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
             put(String.format("%s", TestBookingLogMessage.class.getName()), TestBookingLogMessage.getDescriptor());

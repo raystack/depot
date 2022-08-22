@@ -35,12 +35,12 @@ public class RedisHashSetEntryParser implements RedisEntryParser {
         if (properties == null || properties.isEmpty()) {
             throw new IllegalArgumentException("Empty config SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING found");
         }
-        for (String key : properties.stringPropertyNames()) {
+        properties.stringPropertyNames().forEach(key -> {
             String value = properties.get(key).toString();
             String field = RedisSinkUtils.parseTemplate(value, parsedOdpfMessage, schema);
             String redisValue = parsedOdpfMessage.getFieldByName(key, schema).toString();
             messageEntries.add(new RedisHashSetFieldEntry(redisKey, field, redisValue, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)));
-        }
+        });
         return messageEntries;
     }
 }
