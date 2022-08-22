@@ -21,23 +21,16 @@ import java.util.HashSet;
 public class RedisClientFactory {
 
     private static final String DELIMITER = ",";
-    private final StatsDReporter statsDReporter;
-    private final RedisSinkConfig redisSinkConfig;
 
-    public RedisClientFactory(StatsDReporter statsDReporter, RedisSinkConfig redisSinkConfig) {
-        this.statsDReporter = statsDReporter;
-        this.redisSinkConfig = redisSinkConfig;
-    }
-
-    public RedisClient getClient() {
+    public static RedisClient getClient(RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
         RedisSinkDeploymentType redisSinkDeploymentType = redisSinkConfig.getSinkRedisDeploymentType();
         RedisTtl redisTTL = RedisTTLFactory.getTTl(redisSinkConfig);
         return RedisSinkDeploymentType.CLUSTER.equals(redisSinkDeploymentType)
-                ? getRedisClusterClient(redisTTL)
-                : getRedisStandaloneClient(redisTTL);
+                ? getRedisClusterClient(redisTTL, redisSinkConfig, statsDReporter)
+                : getRedisStandaloneClient(redisTTL, redisSinkConfig, statsDReporter);
     }
 
-    private RedisStandaloneClient getRedisStandaloneClient(RedisTtl redisTTL) {
+    private static RedisStandaloneClient getRedisStandaloneClient(RedisTtl redisTTL, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
         HostAndPort hostAndPort;
         try {
             hostAndPort = HostAndPort.parseString(StringUtils.trim(redisSinkConfig.getSinkRedisUrls()));
@@ -49,7 +42,7 @@ public class RedisClientFactory {
 
     }
 
-    private RedisClusterClient getRedisClusterClient(RedisTtl redisTTL) {
+    private static RedisClusterClient getRedisClusterClient(RedisTtl redisTTL, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {
         String[] redisUrls = redisSinkConfig.getSinkRedisUrls().split(DELIMITER);
         HashSet<HostAndPort> nodes = new HashSet<>();
         try {

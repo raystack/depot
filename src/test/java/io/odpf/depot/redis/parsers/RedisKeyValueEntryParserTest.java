@@ -54,7 +54,7 @@ public class RedisKeyValueEntryParserTest {
                 .toByteArray();
         OdpfMessage message = new OdpfMessage(null, logMessage);
         parsedOdpfMessage = odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass);
-        redisKeyValueEntryParser = new RedisKeyValueEntryParser(redisSinkConfig, statsDReporter);
+        redisKeyValueEntryParser = new RedisKeyValueEntryParser(redisSinkConfig, statsDReporter, keyTemplateVariables);
     }
 
     @Test

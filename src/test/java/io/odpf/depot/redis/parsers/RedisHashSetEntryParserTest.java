@@ -54,7 +54,7 @@ public class RedisHashSetEntryParserTest {
         parsedOdpfKey = odpfMessageParser.parse(bookingMessage, SinkConnectorSchemaMessageMode.LOG_KEY, schemaKeyClass);
         schemaBooking = odpfMessageParser.getSchema(schemaBookingClass, descriptorsMap);
         schemaKey = odpfMessageParser.getSchema(schemaKeyClass, descriptorsMap);
-        redisHashSetEntryParser = new RedisHashSetEntryParser(redisSinkConfig, statsDReporter);
+        redisHashSetEntryParser = new RedisHashSetEntryParser(redisSinkConfig, statsDReporter, keyTemplateVariables, fieldsToTemplateMapping);
     }
 
     @Test

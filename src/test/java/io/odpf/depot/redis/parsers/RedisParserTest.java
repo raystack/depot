@@ -77,7 +77,7 @@ public class RedisParserTest {
             ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(protoParser.parse((byte[]) message.getLogMessage()));
             when(odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass)).thenReturn(parsedOdpfMessage);
         }
-        RedisEntryParser redisEntryParser = new RedisKeyValueEntryParser(redisSinkConfig, statsDReporter);
+        RedisEntryParser redisEntryParser = new RedisKeyValueEntryParser(redisSinkConfig, statsDReporter, keyTemplateVariables);
         redisParser = new RedisParser(redisSinkConfig, odpfMessageParser, redisEntryParser);
     }
 
