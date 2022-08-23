@@ -5,6 +5,7 @@ import io.odpf.depot.*;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.message.*;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
@@ -16,7 +17,6 @@ import io.odpf.depot.redis.record.RedisRecord;
 import io.odpf.depot.utils.MessageConfigUtils;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
-import io.odpf.stencil.client.StencilClient;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
@@ -40,8 +40,6 @@ public class RedisParserTest {
     private ProtoOdpfMessageParser odpfMessageParser;
     @Mock
     private StatsDReporter statsDReporter;
-    @Mock
-    private StencilClient stencilClient;
     private RedisParser redisParser;
     private final List<OdpfMessage> messages = new ArrayList<>();
 
@@ -117,8 +115,8 @@ public class RedisParserTest {
         List<RedisRecord> validRecords = splitterRecords.get(Boolean.TRUE);
         assertEquals(2, validRecords.size());
         assertEquals(3, invalidRecords.size());
-        assertEquals(IOException.class, parsedRecords.get(2).getErrorInfo().getException().getClass());
-        assertEquals(ConfigurationException.class, parsedRecords.get(3).getErrorInfo().getException().getClass());
-        assertEquals(IllegalArgumentException.class, parsedRecords.get(4).getErrorInfo().getException().getClass());
+        assertEquals(ErrorType.DESERIALIZATION_ERROR, parsedRecords.get(2).getErrorInfo().getErrorType());
+        assertEquals(ErrorType.UNKNOWN_FIELDS_ERROR, parsedRecords.get(3).getErrorInfo().getErrorType());
+        assertEquals(ErrorType.DEFAULT_ERROR, parsedRecords.get(4).getErrorInfo().getErrorType());
     }
 }

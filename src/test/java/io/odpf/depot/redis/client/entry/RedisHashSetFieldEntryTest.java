@@ -2,6 +2,7 @@ package io.odpf.depot.redis.client.entry;
 
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.redis.client.response.RedisClusterResponse;
+import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
 import io.odpf.depot.redis.ttl.DurationTtl;
 import io.odpf.depot.redis.ttl.ExactTimeTtl;
 import io.odpf.depot.redis.ttl.NoRedisTtl;
@@ -15,6 +16,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.JedisException;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -32,6 +34,9 @@ public class RedisHashSetFieldEntryTest {
     private InOrder inOrderPipeline;
     private InOrder inOrderJedis;
 
+    @Mock
+    private Response<Long> response;
+
     @Before
     public void setup() {
         redisHashSetFieldEntry = new RedisHashSetFieldEntry("test-key", "test-field", "test-value", instrumentation);
@@ -40,12 +45,26 @@ public class RedisHashSetFieldEntryTest {
     }
 
     @Test
-    public void shouldIOnlyPushDataWithoutTTLByDefaultForPipeline() {
-        redisHashSetFieldEntry.send(pipeline, new NoRedisTtl());
-        verify(pipeline, times(1)).hset("test-key", "test-field", "test-value");
-        verify(pipeline, times(0)).expireAt(any(String.class), any(Long.class));
-        verify(pipeline, times(0)).expireAt(any(String.class), any(Long.class));
-        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
+    public void shouldSentToRedisForCluster() {
+        when(jedisCluster.hset("test-key", "test-field", "test-value")).thenReturn(9L);
+        RedisClusterResponse response = redisHashSetFieldEntry.send(jedisCluster, new NoRedisTtl());
+        Assert.assertFalse(response.isFailed());
+        Assert.assertEquals("9", response.getMessage());
+    }
+
+    @Test
+    public void shouldReportFailedForJedisExceptionForCluster() {
+        when(jedisCluster.hset("test-key", "test-field", "test-value")).thenThrow(new JedisException("jedis error occurred"));
+        RedisClusterResponse response = redisHashSetFieldEntry.send(jedisCluster, new NoRedisTtl());
+        Assert.assertTrue(response.isFailed());
+        Assert.assertEquals("jedis error occurred", response.getMessage());
+    }
+
+    @Test
+    public void shouldSetDefaultFailedForPipelineBeforeSync() {
+        when(pipeline.hset("test-key", "test-field", "test-value")).thenReturn(response);
+        RedisStandaloneResponse sendResponse = redisHashSetFieldEntry.send(pipeline, new NoRedisTtl());
+        Assert.assertTrue(sendResponse.isFailed());
     }
 
     @Test
@@ -93,13 +112,5 @@ public class RedisHashSetFieldEntryTest {
     public void shouldGetSetEntryToString() {
         String expected = "RedisHashSetFieldEntry Key test-key, Field test-field, Value test-value";
         Assert.assertEquals(expected, redisHashSetFieldEntry.toString());
-    }
-
-    @Test
-    public void shouldReportFailedForJedisExceptionForCluster() {
-        when(jedisCluster.hset("test-key", "test-field", "test-value")).thenThrow(new JedisException("jedis error occurred"));
-        RedisClusterResponse response = redisHashSetFieldEntry.send(jedisCluster, new NoRedisTtl());
-        Assert.assertTrue(response.isFailed());
-        Assert.assertEquals("jedis error occurred", response.getMessage());
     }
 }

@@ -27,7 +27,7 @@ public class RedisRecordTest {
     @Mock
     private RedisTtl redisTtl;
     @Mock
-    private Response response;
+    private Response<String> response;
 
     @Test
     public void shouldSendUsingCLusterClient() {

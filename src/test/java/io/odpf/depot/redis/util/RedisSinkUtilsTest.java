@@ -1,6 +1,7 @@
 package io.odpf.depot.redis.util;
 
 import io.odpf.depot.error.ErrorInfo;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 
@@ -41,6 +42,9 @@ public class RedisSinkUtilsTest {
         Assert.assertEquals("FAILED AT 4", errors.get(4L).getException().getMessage());
         Assert.assertEquals("FAILED AT 7", errors.get(7L).getException().getMessage());
         Assert.assertEquals("FAILED AT 10", errors.get(10L).getException().getMessage());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, errors.get(4L).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, errors.get(7L).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, errors.get(10L).getErrorType());
     }
 
     @Test
