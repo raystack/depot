@@ -1,28 +1,28 @@
 package io.odpf.depot.redis.client;
 
+import io.odpf.depot.error.ErrorInfo;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.client.entry.RedisHashSetFieldEntry;
 import io.odpf.depot.redis.client.entry.RedisKeyValueEntry;
 import io.odpf.depot.redis.client.entry.RedisListEntry;
+import io.odpf.depot.redis.client.response.RedisResponse;
 import io.odpf.depot.redis.record.RedisRecord;
 import io.odpf.depot.redis.ttl.RedisTtl;
+import io.odpf.depot.redis.util.RedisSinkUtils;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import redis.clients.jedis.Builder;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.exceptions.JedisException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
@@ -47,8 +47,6 @@ public class RedisStandaloneClientTest {
     private final RedisRecord secondSetRecord = new RedisRecord(new RedisHashSetFieldEntry(key2, field2, value2, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class)), 2L, null, null, true);
     private final RedisRecord firstListRecord = new RedisRecord(new RedisListEntry(key1, value1, new Instrumentation(statsDReporter, RedisListEntry.class)), 1L, null, null, true);
     private final RedisRecord secondListRecord = new RedisRecord(new RedisListEntry(key2, value2, new Instrumentation(statsDReporter, RedisListEntry.class)), 2L, null, null, true);
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
     private RedisStandaloneClient redisClient;
     private List<RedisRecord> records;
     @Mock
@@ -63,19 +61,17 @@ public class RedisStandaloneClientTest {
     @Mock
     private Response<List<Object>> responses;
 
-    private final Response<Long> longResponse = new Response<>(new Builder<Long>() {
-        @Override
-        public Long build(Object data) {
-            return 0L;
-        }
-    });
+    @Mock
+    private Response<String> stringResponseSuccess;
 
-    private final Response<String> stringResponse = new Response<>(new Builder<String>() {
-        @Override
-        public String build(Object data) {
-            return "OK";
-        }
-    });
+    @Mock
+    private Response<String> stringResponseFail;
+
+    @Mock
+    private Response<Long> longResponseSuccess;
+
+    @Mock
+    private Response<Long> longResponseFail;
 
     @Before
     public void setUp() {
@@ -83,6 +79,10 @@ public class RedisStandaloneClientTest {
         when(jedis.pipelined()).thenReturn(jedisPipeline);
         when(jedisPipeline.exec()).thenReturn(responses);
         when(responses.get()).thenReturn(Collections.singletonList("MOCKED RESPONSE"));
+        when(stringResponseSuccess.get()).thenReturn("OK");
+        when(stringResponseFail.get()).thenThrow(new JedisException("error while sending"));
+        when(longResponseSuccess.get()).thenReturn(0L);
+        when(longResponseFail.get()).thenThrow(new JedisException("error while sending"));
     }
 
     private void populateRedisDataEntry(RedisRecord... redisData) {
@@ -92,22 +92,35 @@ public class RedisStandaloneClientTest {
     @Test
     public void pushesDataEntryForKeyValueInATransaction() {
         populateRedisDataEntry(firstKeyValueRecord, secondKeyValueRecord);
-        when(jedisPipeline.set(key1, value1)).thenReturn(stringResponse);
-        when(jedisPipeline.set(key2, value2)).thenReturn(stringResponse);
+        when(jedisPipeline.set(key1, value1)).thenReturn(stringResponseSuccess);
+        when(jedisPipeline.set(key2, value2)).thenReturn(stringResponseSuccess);
 
         redisClient = new RedisStandaloneClient(instrumentation, redisTTL, jedis);
-        redisClient.send(records);
+        List<RedisResponse> sendResponse = redisClient.send(records);
 
-        verify(jedisPipeline, times(1)).multi();
-        verify(jedisPipeline).set(key1, value1);
-        verify(jedisPipeline).set(key2, value2);
+        Map<Long, ErrorInfo> errorInfoMap = RedisSinkUtils.getErrorsFromResponse(records, sendResponse, instrumentation);
+        Assert.assertTrue(errorInfoMap.isEmpty());
+    }
+
+    @Test
+    public void reportFailedForKeyValueInATransaction() {
+        populateRedisDataEntry(firstKeyValueRecord, secondKeyValueRecord);
+        when(jedisPipeline.set(key1, value1)).thenReturn(stringResponseFail);
+        when(jedisPipeline.set(key2, value2)).thenReturn(stringResponseSuccess);
+
+        redisClient = new RedisStandaloneClient(instrumentation, redisTTL, jedis);
+        List<RedisResponse> sendResponse = redisClient.send(records);
+
+        Map<Long, ErrorInfo> errorInfoMap = RedisSinkUtils.getErrorsFromResponse(records, sendResponse, instrumentation);
+        Assert.assertFalse(errorInfoMap.isEmpty());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, errorInfoMap.get(1L).getErrorType());
     }
 
     @Test
     public void setsTTLForKeyValueItemsInATransaction() {
         populateRedisDataEntry(firstKeyValueRecord, secondKeyValueRecord);
-        when(jedisPipeline.set(key1, value1)).thenReturn(stringResponse);
-        when(jedisPipeline.set(key2, value2)).thenReturn(stringResponse);
+        when(jedisPipeline.set(key1, value1)).thenReturn(stringResponseSuccess);
+        when(jedisPipeline.set(key2, value2)).thenReturn(stringResponseSuccess);
 
         redisClient = new RedisStandaloneClient(instrumentation, redisTTL, jedis);
         redisClient.send(records);
@@ -119,22 +132,35 @@ public class RedisStandaloneClientTest {
     @Test
     public void pushesDataEntryForListInATransaction() {
         populateRedisDataEntry(firstListRecord, secondListRecord);
-        when(jedisPipeline.lpush(key1, value1)).thenReturn(longResponse);
-        when(jedisPipeline.lpush(key2, value2)).thenReturn(longResponse);
+        when(jedisPipeline.lpush(key1, value1)).thenReturn(longResponseSuccess);
+        when(jedisPipeline.lpush(key2, value2)).thenReturn(longResponseSuccess);
 
         redisClient = new RedisStandaloneClient(instrumentation, redisTTL, jedis);
-        redisClient.send(records);
+        List<RedisResponse> sendResponse = redisClient.send(records);
 
-        verify(jedisPipeline, times(1)).multi();
-        verify(jedisPipeline).lpush(key1, value1);
-        verify(jedisPipeline).lpush(key2, value2);
+        Map<Long, ErrorInfo> errorInfoMap = RedisSinkUtils.getErrorsFromResponse(records, sendResponse, instrumentation);
+        Assert.assertTrue(errorInfoMap.isEmpty());
+    }
+
+    @Test
+    public void reportFailedDataEntryForListInATransaction() {
+        populateRedisDataEntry(firstListRecord, secondListRecord);
+        when(jedisPipeline.lpush(key1, value1)).thenReturn(longResponseSuccess);
+        when(jedisPipeline.lpush(key2, value2)).thenReturn(longResponseFail);
+
+        redisClient = new RedisStandaloneClient(instrumentation, redisTTL, jedis);
+        List<RedisResponse> sendResponse = redisClient.send(records);
+
+        Map<Long, ErrorInfo> errorInfoMap = RedisSinkUtils.getErrorsFromResponse(records, sendResponse, instrumentation);
+        Assert.assertFalse(errorInfoMap.isEmpty());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, errorInfoMap.get(2L).getErrorType());
     }
 
     @Test
     public void setsTTLForListItemsInATransaction() {
         populateRedisDataEntry(firstListRecord, secondListRecord);
-        when(jedisPipeline.lpush(key1, value1)).thenReturn(longResponse);
-        when(jedisPipeline.lpush(key2, value2)).thenReturn(longResponse);
+        when(jedisPipeline.lpush(key1, value1)).thenReturn(longResponseSuccess);
+        when(jedisPipeline.lpush(key2, value2)).thenReturn(longResponseSuccess);
 
         redisClient = new RedisStandaloneClient(instrumentation, redisTTL, jedis);
         redisClient.send(records);
@@ -146,22 +172,35 @@ public class RedisStandaloneClientTest {
     @Test
     public void pushesDataEntryForSetInATransaction() {
         populateRedisDataEntry(firstSetRecord, secondSetRecord);
-        when(jedisPipeline.hset(key1, field1, value1)).thenReturn(longResponse);
-        when(jedisPipeline.hset(key2, field2, value2)).thenReturn(longResponse);
+        when(jedisPipeline.hset(key1, field1, value1)).thenReturn(longResponseSuccess);
+        when(jedisPipeline.hset(key2, field2, value2)).thenReturn(longResponseSuccess);
 
         redisClient = new RedisStandaloneClient(instrumentation, redisTTL, jedis);
-        redisClient.send(records);
+        List<RedisResponse> sendResponse = redisClient.send(records);
 
-        verify(jedisPipeline, times(1)).multi();
-        verify(jedisPipeline).hset(key1, field1, value1);
-        verify(jedisPipeline).hset(key2, field2, value2);
+        Map<Long, ErrorInfo> errorInfoMap = RedisSinkUtils.getErrorsFromResponse(records, sendResponse, instrumentation);
+        Assert.assertTrue(errorInfoMap.isEmpty());
+    }
+
+    @Test
+    public void reportsFailedDataEntryForSetInATransaction() {
+        populateRedisDataEntry(firstSetRecord, secondSetRecord);
+        when(jedisPipeline.hset(key1, field1, value1)).thenReturn(longResponseFail);
+        when(jedisPipeline.hset(key2, field2, value2)).thenReturn(longResponseSuccess);
+
+        redisClient = new RedisStandaloneClient(instrumentation, redisTTL, jedis);
+        List<RedisResponse> sendResponse = redisClient.send(records);
+
+        Map<Long, ErrorInfo> errorInfoMap = RedisSinkUtils.getErrorsFromResponse(records, sendResponse, instrumentation);
+        Assert.assertFalse(errorInfoMap.isEmpty());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, errorInfoMap.get(1L).getErrorType());
     }
 
     @Test
     public void setsTTLForSetItemsInATransaction() {
         populateRedisDataEntry(firstSetRecord, secondSetRecord);
-        when(jedisPipeline.hset(key1, field1, value1)).thenReturn(longResponse);
-        when(jedisPipeline.hset(key2, field2, value2)).thenReturn(longResponse);
+        when(jedisPipeline.hset(key1, field1, value1)).thenReturn(longResponseSuccess);
+        when(jedisPipeline.hset(key2, field2, value2)).thenReturn(longResponseSuccess);
 
         redisClient = new RedisStandaloneClient(instrumentation, redisTTL, jedis);
         redisClient.send(records);
@@ -169,37 +208,6 @@ public class RedisStandaloneClientTest {
         verify(redisTTL).setTtl(jedisPipeline, key1);
         verify(redisTTL).setTtl(jedisPipeline, key2);
     }
-
-    @Test
-    public void shouldCompleteTransactionInSend() {
-        populateRedisDataEntry(firstListRecord, secondListRecord);
-        when(jedisPipeline.lpush(key1, value1)).thenReturn(longResponse);
-        when(jedisPipeline.lpush(key2, value2)).thenReturn(longResponse);
-
-        redisClient = new RedisStandaloneClient(instrumentation, redisTTL, jedis);
-        redisClient.send(records);
-
-        verify(redisTTL).setTtl(jedisPipeline, key1);
-        verify(redisTTL).setTtl(jedisPipeline, key2);
-
-        verify(jedisPipeline, times(1)).exec();
-    }
-
-    @Test
-    public void shouldWaitForResponseInExec() {
-        populateRedisDataEntry(firstListRecord, secondListRecord);
-        when(jedisPipeline.lpush(key1, value1)).thenReturn(longResponse);
-        when(jedisPipeline.lpush(key2, value2)).thenReturn(longResponse);
-
-        redisClient = new RedisStandaloneClient(instrumentation, redisTTL, jedis);
-        redisClient.send(records);
-
-        verify(redisTTL).setTtl(jedisPipeline, key1);
-        verify(redisTTL).setTtl(jedisPipeline, key2);
-
-        verify(jedisPipeline).sync();
-    }
-
 
     @Test
     public void shouldCloseTheClient() {
