@@ -74,7 +74,7 @@ public class RedisHashSetFieldEntryTest {
         when(pipeline.hset("test-key", "test-field", "test-value")).thenReturn(response);
         Response ttlResponse = Mockito.mock(Response.class);
         RedisStandaloneResponse sendResponse = redisHashSetFieldEntry.send(pipeline, new NoRedisTtl());
-        Assert.assertEquals(new RedisStandaloneResponse("HSET",response, ttlResponse).getMessage(), sendResponse.getMessage());
+        Assert.assertEquals(new RedisStandaloneResponse("HSET", response, ttlResponse).getMessage(), sendResponse.getMessage());
     }
 
     @Test
