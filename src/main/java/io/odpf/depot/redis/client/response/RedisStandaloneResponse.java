@@ -22,7 +22,7 @@ public class RedisStandaloneResponse implements RedisResponse {
     public RedisStandaloneResponse process() {
         try {
             Object cmd = response.get();
-            Object ttl = ttlResponse != null ? (ttlResponse.get().equals(0) ? "NOT UPDATED" : "UPDATED") : "NoOP";
+            Object ttl = ttlResponse != null ? (((long) ttlResponse.get()) == 0L ? "NOT UPDATED" : "UPDATED") :"NoOp";
             message = String.format("%s: %s, TTL: %s", command, cmd, ttl);
             failed = false;
         } catch (JedisException e) {
