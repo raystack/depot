@@ -25,6 +25,7 @@ public class BigqueryFields {
     public static List<Field> getMetadataFieldsStrict(List<TupleString> metadataColumnsTypes) {
         return metadataColumnsTypes.stream().map(
                 tuple -> Field.newBuilder(tuple.getFirst(), LegacySQLTypeName.valueOfStrict(tuple.getSecond().toUpperCase()))
+                        .setMode(Field.Mode.NULLABLE)
                         .build()).collect(Collectors.toList());
     }
 

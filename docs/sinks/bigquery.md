@@ -11,12 +11,16 @@ Bigquery Sink has several responsibilities, first creation of bigquery table and
 Currently we support dynamic schema by inferring from incoming json data; so the bigquery schema is updated by taking a diff of fields in json data and actual table fields.
 Currently we only support string data type for fields, so all incoming json data values are converted to string type, Except for metadata columns and partion key.
 
-
 ## Bigquery Table Schema Update
 
 ### Protobuf 
 Bigquery Sink update the bigquery table schema on separate table update operation. Bigquery utilise [Stencil](https://github.com/odpf/stencil) to parse protobuf messages generate schema and update bigquery tables with the latest schema. 
 The stencil client periodically reload the descriptor cache. Table schema update happened after the descriptor caches uploaded. 
+
+### JSON
+Bigquery Sink creates the table with initial columns mentioned in the config. When new fields arrive in json data they are added to bigquery table.
+### Flow chart for data type json sink and schema update
+![](../images/bigquery-json-flow-diagram.svg)
 
 ## Protobuf - Bigquery Table Type Mapping
 
@@ -46,6 +50,13 @@ Here are type conversion between protobuf type and bigquery type :
 Bigquery Sink supports creation of table with partition configuration. Currently, Bigquery Sink only supports time based partitioning.
 To have time based partitioning protobuf `Timestamp` as field is needed on the protobuf message. The protobuf field will be used as partitioning column on table creation. 
 The time partitioning type that is currently supported is `DAY` partitioning.
+
+## Clustering 
+
+Bigquery Sink support for creating and modifying clustering on the table. Clustering can improve the performance of certain types of queries such as queries that use filter clauses and queries that aggregate data. 
+When data is written to a clustered table by a query job or a load job, BigQuery sorts the data using the values in the clustering columns. These values are used to organize the data into multiple blocks in BigQuery storage. 
+When you submit a query that contains a clause that filters data based on the clustering columns, BigQuery uses the sorted blocks to eliminate scans of unnecessary data. You might not see a significant difference in query performance between a clustered and unclustered table if the table or partition is under 1 GB.
+Follow [this](https://cloud.google.com/bigquery/docs/clustered-tables) for more details on Bigquery table clustering.
 
 ## Metadata
 

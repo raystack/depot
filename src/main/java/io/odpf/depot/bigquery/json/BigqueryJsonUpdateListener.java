@@ -93,29 +93,22 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
     private Field getField(TupleString tupleString) {
         String fieldName = tupleString.getFirst();
         LegacySQLTypeName fieldDataType = LegacySQLTypeName.valueOfStrict(tupleString.getSecond().toUpperCase());
-
-        if (isValidPartitionField(fieldName, fieldDataType)) {
-            return Field.of(fieldName, fieldDataType);
-        }
-
-        return Field.of(fieldName, fieldDataType);
+        return checkAndCreateField(fieldName, fieldDataType);
     }
 
     /**
-     * Range Bigquery partitioning is not supported, supported paritition fields have to be of DATE or TIMESTAMP type..
+     * Range BigQuery partitioning is not supported, supported partition fields have to be of DATE or TIMESTAMP type..
      */
-    private boolean isValidPartitionField(String fieldName, LegacySQLTypeName fieldDataType) {
+    private Field checkAndCreateField(String fieldName, LegacySQLTypeName fieldDataType) {
         Boolean isPartitioningEnabled = config.isTablePartitioningEnabled();
         if (!isPartitioningEnabled) {
-            return false;
+            return Field.newBuilder(fieldName, fieldDataType).setMode(Field.Mode.NULLABLE).build();
         }
         String partitionKey = config.getTablePartitionKey();
-
         boolean isValidPartitionDataType = (fieldDataType == LegacySQLTypeName.TIMESTAMP || fieldDataType == LegacySQLTypeName.DATE);
         if (partitionKey.equals(fieldName) && !isValidPartitionDataType) {
-            throw new UnsupportedOperationException(" supported paritition fields have to be of DATE or TIMESTAMP type..");
+            throw new UnsupportedOperationException("supported partition fields have to be of DATE or TIMESTAMP type..");
         }
-
-        return true;
+        return Field.newBuilder(fieldName, fieldDataType).setMode(Field.Mode.NULLABLE).build();
     }
 }

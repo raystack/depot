@@ -62,8 +62,8 @@ public class BigqueryJsonUpdateListenerTest {
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
         List<Field> bqSchemaFields = ImmutableList.of(
-                Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
-                Field.of("first_name", LegacySQLTypeName.STRING));
+                Field.newBuilder("event_timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build(),
+                Field.newBuilder("first_name", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
         verify(mockBqClient, times(1)).upsertTable(bqSchemaFields);
     }
 
@@ -78,11 +78,12 @@ public class BigqueryJsonUpdateListenerTest {
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
         List<Field> bqSchemaFields = ImmutableList.of(
-                Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
-                Field.of("first_name", LegacySQLTypeName.STRING),
-                Field.of("message_offset", LegacySQLTypeName.INTEGER),
-                Field.of("message_topic", LegacySQLTypeName.STRING),
-                Field.of("message_timestamp", LegacySQLTypeName.TIMESTAMP));
+                Field.newBuilder("event_timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build(),
+                Field.newBuilder("first_name", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build(),
+                Field.newBuilder("message_offset", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build(),
+                Field.newBuilder("message_topic", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build(),
+                Field.newBuilder("message_timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build()
+        );
         ArgumentCaptor<List<Field>> listArgumentCaptor = ArgumentCaptor.forClass(List.class);
         verify(mockBqClient, times(1)).upsertTable(listArgumentCaptor.capture());
         assertThat(listArgumentCaptor.getValue(), containsInAnyOrder(bqSchemaFields.toArray()));
@@ -100,11 +101,11 @@ public class BigqueryJsonUpdateListenerTest {
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
         List<Field> bqSchemaFields = ImmutableList.of(
-                Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
-                Field.of("first_name", LegacySQLTypeName.INTEGER),
-                Field.of("message_offset", LegacySQLTypeName.INTEGER),
-                Field.of("message_topic", LegacySQLTypeName.STRING),
-                Field.of("message_timestamp", LegacySQLTypeName.TIMESTAMP));
+                Field.newBuilder("event_timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build(),
+                Field.newBuilder("first_name", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build(),
+                Field.newBuilder("message_offset", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build(),
+                Field.newBuilder("message_topic", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build(),
+                Field.newBuilder("message_timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
         ArgumentCaptor<List<Field>> listArgumentCaptor = ArgumentCaptor.forClass(List.class);
         verify(mockBqClient, times(1)).upsertTable(listArgumentCaptor.capture());
         assertThat(listArgumentCaptor.getValue(), containsInAnyOrder(bqSchemaFields.toArray()));
@@ -121,8 +122,8 @@ public class BigqueryJsonUpdateListenerTest {
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
         List<Field> bqSchemaFields = ImmutableList.of(
-                Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
-                Field.of("first_name", LegacySQLTypeName.STRING));
+                Field.newBuilder("event_timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build(),
+                Field.newBuilder("first_name", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
         ArgumentCaptor<List<Field>> listArgumentCaptor = ArgumentCaptor.forClass(List.class);
         verify(mockBqClient, times(1)).upsertTable(listArgumentCaptor.capture());
         assertThat(listArgumentCaptor.getValue(), containsInAnyOrder(bqSchemaFields.toArray()));
@@ -166,8 +167,8 @@ public class BigqueryJsonUpdateListenerTest {
         ArgumentCaptor<List<Field>> listArgumentCaptor = ArgumentCaptor.forClass(List.class);
         verify(mockBqClient, times(1)).upsertTable(listArgumentCaptor.capture());
         List<Field> actualFields = listArgumentCaptor.getValue();
-        Field eventTimestampField = Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP);
-        Field firstNameField = Field.of("first_name", LegacySQLTypeName.STRING);
+        Field eventTimestampField = Field.newBuilder("event_timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build();
+        Field firstNameField = Field.newBuilder("first_name", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build();
         assertThat(actualFields, containsInAnyOrder(eventTimestampField, firstNameField, existingField1, existingField2));
     }
 
@@ -182,8 +183,8 @@ public class BigqueryJsonUpdateListenerTest {
         BigqueryJsonUpdateListener bigqueryJsonUpdateListener = new BigqueryJsonUpdateListener(config, converterCache, mockBqClient, instrumentation);
         bigqueryJsonUpdateListener.updateSchema();
         List<Field> bqSchemaFields = ImmutableList.of(
-                Field.of("event_timestamp", LegacySQLTypeName.TIMESTAMP),
-                Field.of("first_name", LegacySQLTypeName.STRING));
+                Field.newBuilder("event_timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build(),
+                Field.newBuilder("first_name", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
         verify(mockBqClient, times(1)).upsertTable(bqSchemaFields);
     }
 

@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,8 +27,6 @@ the job of the class is to handle unknown field errors and then update the bq ta
 public class JsonErrorHandler implements ErrorHandler {
 
     private final BigQueryClient bigQueryClient;
-    private final String tablePartitionKey;
-    private final Optional<LegacySQLTypeName> partitionKeyDataType;
     private final boolean castAllColumnsToStringDataType;
     private final Map<String, String> metadataColumnsTypesMap;
     private final String bqMetadataNamespace;
@@ -40,15 +37,9 @@ public class JsonErrorHandler implements ErrorHandler {
 
         this.instrumentation = instrumentation;
         this.bigQueryClient = bigQueryClient;
-        tablePartitionKey = bigQuerySinkConfig.isTablePartitioningEnabled() ? bigQuerySinkConfig.getTablePartitionKey() : "";
         defaultColumnsMap = bigQuerySinkConfig.getSinkBigqueryDefaultColumns()
                 .stream()
                 .collect(Collectors.toMap(TupleString::getFirst, TupleString::getSecond));
-        if (bigQuerySinkConfig.isTablePartitioningEnabled()) {
-            partitionKeyDataType = Optional.of(LegacySQLTypeName.valueOfStrict(defaultColumnsMap.get(tablePartitionKey).toUpperCase()));
-        } else {
-            partitionKeyDataType = Optional.empty();
-        }
         castAllColumnsToStringDataType = bigQuerySinkConfig.getSinkBigqueryDefaultDatatypeStringEnable();
         bqMetadataNamespace = bigQuerySinkConfig.getBqMetadataNamespace();
         if (!bigQuerySinkConfig.shouldAddMetadata()) {
@@ -103,24 +94,30 @@ public class JsonErrorHandler implements ErrorHandler {
                 ).collect(Collectors.toList());
     }
 
+    /**
+     * This method only used for unknown fields.
+     */
 
     private Field getField(String key) {
-        if (!tablePartitionKey.isEmpty() && tablePartitionKey.equals(key) && partitionKeyDataType.isPresent()) {
-            return Field.of(key, partitionKeyDataType.get());
-        }
         if (!bqMetadataNamespace.isEmpty()) {
             throw new UnsupportedOperationException("metadata namespace is not supported, because nested json structure is not supported");
         }
         if (metadataColumnsTypesMap.containsKey(key)) {
-            return Field.of(key, LegacySQLTypeName.valueOfStrict(metadataColumnsTypesMap.get(key).toUpperCase()));
+            return Field.newBuilder(key, LegacySQLTypeName.valueOfStrict(metadataColumnsTypesMap.get(key).toUpperCase()))
+                    .setMode(Field.Mode.NULLABLE)
+                    .build();
         }
         if (defaultColumnsMap.containsKey(key)) {
-            return Field.of(key, LegacySQLTypeName.valueOfStrict(defaultColumnsMap.get(key).toUpperCase()));
+            return Field.newBuilder(key, LegacySQLTypeName.valueOfStrict(defaultColumnsMap.get(key).toUpperCase()))
+                    .setMode(Field.Mode.NULLABLE)
+                    .build();
         }
         if (!castAllColumnsToStringDataType) {
             throw new UnsupportedOperationException("only string data type is supported for fields other than partition key");
         }
-        return Field.of(key, LegacySQLTypeName.STRING);
+        return Field.newBuilder(key, LegacySQLTypeName.STRING)
+                .setMode(Field.Mode.NULLABLE)
+                .build();
     }
 
     private boolean filterExistingFields(FieldList existingFieldList, String key) {
