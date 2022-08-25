@@ -2,18 +2,19 @@ package io.odpf.depot.redis.record;
 
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.redis.client.entry.RedisEntry;
 import io.odpf.depot.redis.client.response.RedisClusterResponse;
 import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
-import io.odpf.depot.redis.client.entry.RedisEntry;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.Response;
+
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -26,27 +27,23 @@ public class RedisRecordTest {
     private Pipeline jedisPipeline;
     @Mock
     private RedisTtl redisTtl;
-    @Mock
-    private Response<String> response;
 
     @Test
     public void shouldSendUsingCLusterClient() {
-        when(redisEntry.send(jedisCluster, redisTtl)).thenReturn(new RedisClusterResponse("OK", false));
+        RedisClusterResponse response = Mockito.mock(RedisClusterResponse.class);
+        when(redisEntry.send(jedisCluster, redisTtl)).thenReturn(response);
         RedisRecord redisRecord = new RedisRecord(redisEntry, 0L, null, "METADATA", true);
         RedisClusterResponse redisClusterResponse = redisRecord.send(jedisCluster, redisTtl);
-        Assert.assertFalse(redisClusterResponse.isFailed());
-        Assert.assertEquals("OK", redisClusterResponse.getMessage());
+        Assert.assertEquals(response, redisClusterResponse);
     }
 
     @Test
     public void shouldSendUsingStandaloneClient() {
-        when(response.get()).thenReturn("Success response");
-        RedisStandaloneResponse standaloneResponse = new RedisStandaloneResponse(response).process();
+        RedisStandaloneResponse standaloneResponse = Mockito.mock(RedisStandaloneResponse.class);
         when(redisEntry.send(jedisPipeline, redisTtl)).thenReturn(standaloneResponse);
         RedisRecord redisRecord = new RedisRecord(redisEntry, 0L, null, "METADATA", true);
         RedisStandaloneResponse redisResponse = redisRecord.send(jedisPipeline, redisTtl);
-        Assert.assertFalse(redisResponse.isFailed());
-        Assert.assertEquals("Success response", redisResponse.getMessage());
+        Assert.assertEquals(standaloneResponse, redisResponse);
     }
 
     @Test

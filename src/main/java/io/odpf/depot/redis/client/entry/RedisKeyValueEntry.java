@@ -23,19 +23,19 @@ public class RedisKeyValueEntry implements RedisEntry {
     public RedisStandaloneResponse send(Pipeline jedisPipelined, RedisTtl redisTTL) {
         instrumentation.logDebug("key: {}, value: {}", key, value);
         Response<String> response = jedisPipelined.set(key, value);
-        redisTTL.setTtl(jedisPipelined, key);
-        return new RedisStandaloneResponse(response);
+        Response<Long> ttlResponse = redisTTL.setTtl(jedisPipelined, key);
+        return new RedisStandaloneResponse("SET", response, ttlResponse);
     }
 
     @Override
     public RedisClusterResponse send(JedisCluster jedisCluster, RedisTtl redisTTL) {
         instrumentation.logDebug("key: {}, value: {}", key, value);
         try {
-            String set = jedisCluster.set(key, value);
-            redisTTL.setTtl(jedisCluster, key);
-            return new RedisClusterResponse(set, false);
+            String response = jedisCluster.set(key, value);
+            Long ttlResponse = redisTTL.setTtl(jedisCluster, key);
+            return new RedisClusterResponse("SET", response, ttlResponse);
         } catch (JedisException e) {
-            return new RedisClusterResponse(e.getMessage(), true);
+            return new RedisClusterResponse(e.getMessage());
         }
     }
 

@@ -47,17 +47,26 @@ public class RedisHashSetFieldEntryTest {
     @Test
     public void shouldSentToRedisForCluster() {
         when(jedisCluster.hset("test-key", "test-field", "test-value")).thenReturn(9L);
-        RedisClusterResponse response = redisHashSetFieldEntry.send(jedisCluster, new NoRedisTtl());
-        Assert.assertFalse(response.isFailed());
-        Assert.assertEquals("9", response.getMessage());
+        RedisClusterResponse clusterResponse = redisHashSetFieldEntry.send(jedisCluster, new NoRedisTtl());
+        Assert.assertFalse(clusterResponse.isFailed());
+        Assert.assertEquals("HSET: 9, TTL: NoOp", clusterResponse.getMessage());
+    }
+
+    @Test
+    public void shouldSentToRedisForClusterWithTTL() {
+        when(jedisCluster.hset("test-key", "test-field", "test-value")).thenReturn(9L);
+        when(jedisCluster.expire("test-key", 1000)).thenReturn(1L);
+        RedisClusterResponse clusterResponse = redisHashSetFieldEntry.send(jedisCluster, new DurationTtl(1000));
+        Assert.assertFalse(clusterResponse.isFailed());
+        Assert.assertEquals("HSET: 9, TTL: UPDATED", clusterResponse.getMessage());
     }
 
     @Test
     public void shouldReportFailedForJedisExceptionForCluster() {
         when(jedisCluster.hset("test-key", "test-field", "test-value")).thenThrow(new JedisException("jedis error occurred"));
-        RedisClusterResponse response = redisHashSetFieldEntry.send(jedisCluster, new NoRedisTtl());
-        Assert.assertTrue(response.isFailed());
-        Assert.assertEquals("jedis error occurred", response.getMessage());
+        RedisClusterResponse clusterResponse = redisHashSetFieldEntry.send(jedisCluster, new NoRedisTtl());
+        Assert.assertTrue(clusterResponse.isFailed());
+        Assert.assertEquals("jedis error occurred", clusterResponse.getMessage());
     }
 
     @Test

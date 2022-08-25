@@ -2,12 +2,13 @@ package io.odpf.depot.redis.ttl;
 
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
 
 /**
  * Interface for RedisTTL.
  */
 public interface RedisTtl {
-    void setTtl(Pipeline jedisPipelined, String key);
+    Response<Long> setTtl(Pipeline jedisPipelined, String key);
 
-    void setTtl(JedisCluster jedisCluster, String key);
+    Long setTtl(JedisCluster jedisCluster, String key);
 }

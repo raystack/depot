@@ -48,17 +48,17 @@ public class RedisKeyValueEntryTest {
     @Test
     public void shouldSentToRedisForCluster() {
         when(jedisCluster.set("test-key", "test-value")).thenReturn("OK");
-        RedisClusterResponse response = redisKeyValueEntry.send(jedisCluster, new NoRedisTtl());
-        Assert.assertFalse(response.isFailed());
-        Assert.assertEquals("OK", response.getMessage());
+        RedisClusterResponse clusterResponse = redisKeyValueEntry.send(jedisCluster, new NoRedisTtl());
+        Assert.assertFalse(clusterResponse.isFailed());
+        Assert.assertEquals("SET: OK, TTL: NoOp", clusterResponse.getMessage());
     }
 
     @Test
     public void shouldReportFailedForJedisExceptionForCluster() {
         when(jedisCluster.set("test-key", "test-value")).thenThrow(new JedisException("jedis error occurred"));
-        RedisClusterResponse response = redisKeyValueEntry.send(jedisCluster, new NoRedisTtl());
-        Assert.assertTrue(response.isFailed());
-        Assert.assertEquals("jedis error occurred", response.getMessage());
+        RedisClusterResponse redisClusterResponse = redisKeyValueEntry.send(jedisCluster, new NoRedisTtl());
+        Assert.assertTrue(redisClusterResponse.isFailed());
+        Assert.assertEquals("jedis error occurred", redisClusterResponse.getMessage());
     }
 
     @Test

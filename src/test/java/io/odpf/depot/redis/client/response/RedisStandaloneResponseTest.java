@@ -14,20 +14,23 @@ import static org.mockito.Mockito.when;
 public class RedisStandaloneResponseTest {
     @Mock
     private Response response;
+    @Mock
+    private Response ttlResponse;
     private RedisStandaloneResponse redisResponse;
 
     @Test
     public void shouldReportNotFailedWhenJedisExceptionNotThrown() {
         when(response.get()).thenReturn("Success response");
-        redisResponse = new RedisStandaloneResponse(response);
+        when(ttlResponse.get()).thenReturn(1L);
+        redisResponse = new RedisStandaloneResponse("SET", response, ttlResponse);
         Assert.assertFalse(redisResponse.process().isFailed());
-        Assert.assertEquals("Success response", redisResponse.process().getMessage());
+        Assert.assertEquals("SET: Success response, TTL: UPDATED", redisResponse.process().getMessage());
     }
 
     @Test
     public void shouldReportFailedWhenJedisExceptionThrown() {
         when(response.get()).thenThrow(new JedisException("Failed response"));
-        redisResponse = new RedisStandaloneResponse(response);
+        redisResponse = new RedisStandaloneResponse("SET", response, ttlResponse);
         Assert.assertTrue(redisResponse.process().isFailed());
         Assert.assertEquals("Failed response", redisResponse.process().getMessage());
     }

@@ -28,8 +28,8 @@ public class RedisHashSetFieldEntry implements RedisEntry {
     public RedisStandaloneResponse send(Pipeline jedisPipelined, RedisTtl redisTTL) {
         instrumentation.logDebug("key: {}, field: {}, value: {}", key, field, value);
         Response<Long> response = jedisPipelined.hset(key, field, value);
-        redisTTL.setTtl(jedisPipelined, key);
-        return new RedisStandaloneResponse(response);
+        Response<Long> ttlResponse = redisTTL.setTtl(jedisPipelined, key);
+        return new RedisStandaloneResponse("HSET", response, ttlResponse);
     }
 
     @Override
@@ -37,10 +37,10 @@ public class RedisHashSetFieldEntry implements RedisEntry {
         instrumentation.logDebug("key: {}, field: {}, value: {}", key, field, value);
         try {
             Long response = jedisCluster.hset(key, field, value);
-            redisTTL.setTtl(jedisCluster, key);
-            return new RedisClusterResponse(response.toString(), false);
+            Long ttlResponse = redisTTL.setTtl(jedisCluster, key);
+            return new RedisClusterResponse("HSET", response, ttlResponse);
         } catch (JedisException e) {
-            return new RedisClusterResponse(e.getMessage(), true);
+            return new RedisClusterResponse(e.getMessage());
         }
     }
 

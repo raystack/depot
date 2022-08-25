@@ -5,16 +5,19 @@ import org.junit.Test;
 
 public class RedisClusterResponseTest {
     private RedisClusterResponse redisClusterResponse;
+
     @Test
     public void shouldReportWhenSuccess() {
-        redisClusterResponse = new RedisClusterResponse("Success", false);
+        String response = "Success";
+        Long ttlResponse = 1L;
+        redisClusterResponse = new RedisClusterResponse("SET", response, ttlResponse);
         Assert.assertFalse(redisClusterResponse.isFailed());
-        Assert.assertEquals("Success", redisClusterResponse.getMessage());
+        Assert.assertEquals("SET: Success, TTL: UPDATED", redisClusterResponse.getMessage());
     }
 
     @Test
     public void shouldReportWhenFailed() {
-        redisClusterResponse = new RedisClusterResponse("Failed", true);
+        redisClusterResponse = new RedisClusterResponse("Failed");
         Assert.assertTrue(redisClusterResponse.isFailed());
         Assert.assertEquals("Failed", redisClusterResponse.getMessage());
     }

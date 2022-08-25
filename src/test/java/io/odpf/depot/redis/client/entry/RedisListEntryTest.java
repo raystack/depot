@@ -6,7 +6,6 @@ import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
 import io.odpf.depot.redis.ttl.DurationTtl;
 import io.odpf.depot.redis.ttl.ExactTimeTtl;
 import io.odpf.depot.redis.ttl.NoRedisTtl;
-import jnr.ffi.annotations.In;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,17 +47,17 @@ public class RedisListEntryTest {
     @Test
     public void shouldSentToRedisForCluster() {
         when(jedisCluster.lpush("test-key", "test-value")).thenReturn(1L);
-        RedisClusterResponse response = redisListEntry.send(jedisCluster, new NoRedisTtl());
-        Assert.assertFalse(response.isFailed());
-        Assert.assertEquals("1", response.getMessage());
+        RedisClusterResponse redisClusterResponse = redisListEntry.send(jedisCluster, new NoRedisTtl());
+        Assert.assertFalse(redisClusterResponse.isFailed());
+        Assert.assertEquals("LPUSH: 1, TTL: NoOp", redisClusterResponse.getMessage());
     }
 
     @Test
     public void shouldReportFailedForJedisExceptionForCluster() {
         when(jedisCluster.lpush("test-key", "test-value")).thenThrow(new JedisException("jedis error occurred"));
-        RedisClusterResponse response = redisListEntry.send(jedisCluster, new NoRedisTtl());
-        Assert.assertTrue(response.isFailed());
-        Assert.assertEquals("jedis error occurred", response.getMessage());
+        RedisClusterResponse redisClusterResponse = redisListEntry.send(jedisCluster, new NoRedisTtl());
+        Assert.assertTrue(redisClusterResponse.isFailed());
+        Assert.assertEquals("jedis error occurred", redisClusterResponse.getMessage());
     }
 
     @Test
