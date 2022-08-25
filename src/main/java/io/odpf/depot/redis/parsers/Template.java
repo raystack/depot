@@ -3,6 +3,7 @@ package io.odpf.depot.redis.parsers;
 import com.google.common.base.Splitter;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +20,19 @@ public class Template {
         Splitter.on(",").omitEmptyStrings().split(template).forEach(s -> templateStrings.add(s.trim()));
         this.templatePattern = templateStrings.get(0);
         this.patternVariableFieldNames = templateStrings.subList(1, templateStrings.size());
+        validate();
+    }
+
+    private void validate() {
+        int validArgs = StringUtils.countVariables(templatePattern);
+        int values = patternVariableFieldNames.size();
+        int variables = StringUtils.count(templatePattern, '%');
+        if (validArgs != values || variables != values) {
+            throw new IllegalArgumentException(String.format("Template is not valid, variables=%d, validArgs=%d, values=%d", variables, validArgs, values));
+        }
     }
 
     public String parse(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
-        if (patternVariableFieldNames.isEmpty()) {
-            return templatePattern;
-        }
         Object[] patternVariableData = patternVariableFieldNames
                 .stream()
                 .map(fieldName -> parsedOdpfMessage.getFieldByName(fieldName, schema))

@@ -72,8 +72,9 @@ public class RedisHashSetFieldEntryTest {
     @Test
     public void shouldSetDefaultFailedForPipelineBeforeSync() {
         when(pipeline.hset("test-key", "test-field", "test-value")).thenReturn(response);
+        Response ttlResponse = Mockito.mock(Response.class);
         RedisStandaloneResponse sendResponse = redisHashSetFieldEntry.send(pipeline, new NoRedisTtl());
-        Assert.assertTrue(sendResponse.isFailed());
+        Assert.assertEquals(new RedisStandaloneResponse("HSET",response, ttlResponse).getMessage(), sendResponse.getMessage());
     }
 
     @Test

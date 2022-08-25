@@ -92,19 +92,9 @@ public class RedisHashSetEntryParserTest {
     }
 
     @Test
-    public void shouldHandleStaticStringWithPatternForKey() throws IOException {
-        redisSinkSetup("{\"order_number\":\"ORDER_NUMBER%s\"}");
-        List<RedisEntry> redisEntries = redisHashSetEntryParser.getRedisEntry(parsedBookingMessage, schemaBooking);
-        RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER%s", "booking-order-1", null);
-        assertEquals(Collections.singletonList(expectedEntry), redisEntries);
-    }
-
-    @Test
     public void shouldThrowErrorForInvalidFormatForKey() throws IOException {
-        redisSinkSetup("{\"order_details\":\"ORDER_NUMBER%, order_number\"}");
-        UnknownFormatConversionException e = Assert.assertThrows(UnknownFormatConversionException.class,
-                () -> redisHashSetEntryParser.getRedisEntry(parsedBookingMessage, schemaBooking));
-        assertEquals("Conversion = '%'", e.getMessage());
+        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class, () -> redisSinkSetup("{\"order_details\":\"ORDER_NUMBER%, order_number\"}"));
+        assertEquals("Template is not valid, variables=1, validArgs=0, values=1", e.getMessage());
     }
 
     @Test

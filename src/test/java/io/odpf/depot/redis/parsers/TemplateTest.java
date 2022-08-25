@@ -7,12 +7,16 @@ import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestMessage;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
-import io.odpf.depot.message.*;
+import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.message.OdpfMessageParserFactory;
+import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.message.proto.ProtoOdpfParsedMessage;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,9 +107,12 @@ public class TemplateTest {
     }
 
     @Test
-    public void shouldAcceptStringWithPatternForCollectionKeyWithEmptyVariables() {
-        Template template = new Template("Test-%s");
-        assertEquals("Test-%s", template.parse(parsedBookingMessage, schemaBooking));
+    public void shouldNotAcceptStringWithPatternForCollectionKeyWithEmptyVariables() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new Template("Test-%s%d%b,t1,t2"));
+        Assert.assertEquals("Template is not valid, variables=3, validArgs=3, values=2", e.getMessage());
+
+        e = assertThrows(IllegalArgumentException.class, () -> new Template("Test-%s%s%y,order_number,order_details"));
+        Assert.assertEquals("Template is not valid, variables=3, validArgs=2, values=2", e.getMessage());
     }
 
     @Test
