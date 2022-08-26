@@ -10,7 +10,6 @@ import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +45,7 @@ public class BigTableRecordParser {
                     .create(rowKey)
                     .setCell("family-test", "odpf-message", parsedOdpfMessage.toString());
             return new BigTableRecord(rowMutationEntry, index, null, true);
-        } catch (IOException e) {
+        } catch (Exception e) {
             ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR);
             return new BigTableRecord(null, index, errorInfo, false);
         }
