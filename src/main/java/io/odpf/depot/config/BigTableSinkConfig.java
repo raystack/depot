@@ -12,4 +12,7 @@ public interface BigTableSinkConfig extends OdpfSinkConfig {
 
     @Key("SINK_BIGTABLE_CREDENTIAL_PATH")
     String getBigTableCredentialPath();
+
+    @Key("ROW_KEY_TEMPLATE")
+    String getRowKeyTemplate();
 }
