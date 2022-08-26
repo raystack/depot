@@ -41,10 +41,10 @@ public class RedisSinkFactory {
         instrumentation.logDebug(redisConfig);
         instrumentation.logInfo("Redis server type = {}", sinkConfig.getSinkRedisDeploymentType());
         OdpfMessageParser messageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
-        RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(sinkConfig, statsDReporter);
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
         OdpfMessageSchema schema = messageParser.getSchema(modeAndSchema.getSecond());
-        this.redisParser = new RedisParser(messageParser, redisEntryParser, schema, modeAndSchema);
+        RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(sinkConfig, statsDReporter, schema);
+        this.redisParser = new RedisParser(messageParser, redisEntryParser, modeAndSchema);
         instrumentation.logInfo("Connection to redis established successfully");
     }
 

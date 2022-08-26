@@ -56,13 +56,13 @@ public class RedisKeyValueEntryParserTest {
                 .toByteArray();
         OdpfMessage message = new OdpfMessage(null, logMessage);
         parsedOdpfMessage = odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass);
-        redisKeyValueEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
+        redisKeyValueEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema);
     }
 
     @Test
     public void shouldConvertParsedOdpfMessageToRedisKeyValueEntry() throws IOException {
         redisSinkSetup("test-key", "order_details");
-        List<RedisEntry> redisDataEntries = redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage, schema);
+        List<RedisEntry> redisDataEntries = redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage);
         RedisKeyValueEntry expectedEntry = new RedisKeyValueEntry("test-key", "new-eureka-order", null);
         assertEquals(Collections.singletonList(expectedEntry), redisDataEntries);
     }
@@ -71,7 +71,7 @@ public class RedisKeyValueEntryParserTest {
     public void shouldThrowExceptionForInvalidKeyValueDataFieldName() throws IOException {
         redisSinkSetup("test-key", "random-field");
         ConfigurationException configurationException =
-                assertThrows(ConfigurationException.class, () -> redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage, schema));
+                assertThrows(ConfigurationException.class, () -> redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage));
         assertEquals("Invalid field config : random-field", configurationException.getMessage());
     }
 }

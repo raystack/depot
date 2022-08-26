@@ -1,7 +1,10 @@
 package io.odpf.depot.redis.parsers;
 
 import com.google.protobuf.Descriptors;
-import io.odpf.depot.*;
+import io.odpf.depot.TestKey;
+import io.odpf.depot.TestMessage;
+import io.odpf.depot.TestNestedMessage;
+import io.odpf.depot.TestNestedRepeatedMessage;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
@@ -17,10 +20,6 @@ import io.odpf.depot.redis.record.RedisRecord;
 import io.odpf.depot.utils.MessageConfigUtils;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,12 +27,27 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
 @RunWith(MockitoJUnitRunner.class)
 public class RedisParserTest {
+    private final List<OdpfMessage> messages = new ArrayList<>();
+    private final String schemaClass = "io.odpf.depot.TestMessage";
+    private final Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
+        put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
+        put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
+        put(String.format("%s", TestNestedMessage.class.getName()), TestNestedMessage.getDescriptor());
+        put(String.format("%s", TestNestedRepeatedMessage.class.getName()), TestNestedRepeatedMessage.getDescriptor());
+    }};
     @Mock
     private RedisSinkConfig redisSinkConfig;
     @Mock
@@ -41,16 +55,6 @@ public class RedisParserTest {
     @Mock
     private StatsDReporter statsDReporter;
     private RedisParser redisParser;
-    private final List<OdpfMessage> messages = new ArrayList<>();
-
-    private final String schemaClass = "io.odpf.depot.TestMessage";
-
-    private final Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
-        put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
-        put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
-        put(String.format("%s", TestNestedMessage.class.getName()), TestNestedMessage.getDescriptor());
-        put(String.format("%s", TestNestedRepeatedMessage.class.getName()), TestNestedRepeatedMessage.getDescriptor());
-    }};
 
     @Before
     public void setup() throws IOException {
@@ -74,15 +78,15 @@ public class RedisParserTest {
 
     public void setupParserResponse() throws IOException {
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessage.class.getName());
-        for (OdpfMessage message: messages) {
+        for (OdpfMessage message : messages) {
             ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(protoParser.parse((byte[]) message.getLogMessage()));
             when(odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass)).thenReturn(parsedOdpfMessage);
         }
         ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(redisSinkConfig, statsDReporter);
-        RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(redisSinkConfig);
         OdpfMessageSchema schema = messageParser.getSchema(modeAndSchema.getSecond(), descriptorsMap);
-        redisParser = new RedisParser(odpfMessageParser, redisEntryParser, schema, modeAndSchema);
+        RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema);
+        redisParser = new RedisParser(odpfMessageParser, redisEntryParser, modeAndSchema);
     }
 
     @Test

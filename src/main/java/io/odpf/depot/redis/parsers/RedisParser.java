@@ -7,12 +7,11 @@ import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.redis.client.entry.RedisEntry;
 import io.odpf.depot.redis.record.RedisRecord;
 import lombok.AllArgsConstructor;
-import io.odpf.depot.message.ParsedOdpfMessage;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +27,6 @@ import java.util.stream.IntStream;
 public class RedisParser {
     private final OdpfMessageParser odpfMessageParser;
     private final RedisEntryParser redisEntryParser;
-    private final OdpfMessageSchema schema;
     private final Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema;
 
     public List<RedisRecord> convert(List<OdpfMessage> messages) {
@@ -36,7 +34,7 @@ public class RedisParser {
         IntStream.range(0, messages.size()).forEach(index -> {
             try {
                 ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(messages.get(index), modeAndSchema.getFirst(), modeAndSchema.getSecond());
-                List<RedisEntry> redisDataEntries = redisEntryParser.getRedisEntry(parsedOdpfMessage, schema);
+                List<RedisEntry> redisDataEntries = redisEntryParser.getRedisEntry(parsedOdpfMessage);
                 for (RedisEntry redisEntry : redisDataEntries) {
                     records.add(new RedisRecord(redisEntry, (long) index, null, messages.get(index).getMetadataString(), true));
                 }
