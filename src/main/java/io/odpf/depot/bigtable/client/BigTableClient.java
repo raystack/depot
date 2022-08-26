@@ -23,11 +23,11 @@ public class BigTableClient {
 
     public BigTableClient(BigTableSinkConfig sinkConfig) throws IOException {
         this.sinkConfig = sinkConfig;
-        this.bigtableTableAdminClient = getBigTableAdminClient(sinkConfig);
-        this.bigtableDataClient = getBigTableDataClient(sinkConfig);
+        this.bigtableTableAdminClient = getBigTableAdminClient();
+        this.bigtableDataClient = getBigTableDataClient();
     }
 
-    private BigtableDataClient getBigTableDataClient(BigTableSinkConfig sinkConfig) throws IOException {
+    private BigtableDataClient getBigTableDataClient() throws IOException {
         BigtableDataSettings settings = BigtableDataSettings.newBuilder()
                 .setProjectId(sinkConfig.getGCloudProjectID())
                 .setInstanceId(sinkConfig.getBigtableInstanceId())
@@ -36,7 +36,7 @@ public class BigTableClient {
         return BigtableDataClient.create(settings);
     }
 
-    private BigtableTableAdminClient getBigTableAdminClient(BigTableSinkConfig sinkConfig) throws IOException {
+    private BigtableTableAdminClient getBigTableAdminClient() throws IOException {
         BigtableTableAdminSettings settings = BigtableTableAdminSettings.newBuilder()
                 .setProjectId(sinkConfig.getGCloudProjectID())
                 .setInstanceId(sinkConfig.getBigtableInstanceId())
