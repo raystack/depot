@@ -25,17 +25,18 @@ public class BigTableSinkTest {
 
     @Mock
     private BigTableRecordParser bigTableRecordParser;
+    @Mock
+    private BigTableClient bigTableClient;
+
     private BigTableSink bigTableSink;
     private List<OdpfMessage> messages;
     private List<BigTableRecord> validRecords;
     private List<BigTableRecord> invalidRecords;
-    @Mock
-    private BigTableClient bigTableClient;
     private ErrorInfo errorInfo;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         TestBookingLogKey bookingLogKey1 = TestBookingLogKey.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1").build();
         TestBookingLogMessage bookingLogMessage1 = TestBookingLogMessage.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1").setServiceType(TestServiceType.Enum.GO_SEND).build();
         TestBookingLogKey bookingLogKey2 = TestBookingLogKey.newBuilder().setOrderNumber("order#2").setOrderUrl("order-url#2").build();

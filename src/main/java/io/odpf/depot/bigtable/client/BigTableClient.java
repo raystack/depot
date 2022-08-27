@@ -22,9 +22,15 @@ public class BigTableClient {
     private final BigTableSinkConfig sinkConfig;
 
     public BigTableClient(BigTableSinkConfig sinkConfig) throws IOException {
-        this.sinkConfig = sinkConfig;
-        this.bigtableTableAdminClient = getBigTableAdminClient();
         this.bigtableDataClient = getBigTableDataClient();
+        this.bigtableTableAdminClient = getBigTableAdminClient();
+        this.sinkConfig = sinkConfig;
+    }
+
+    public BigTableClient(BigtableDataClient bigtableDataClient, BigtableTableAdminClient bigtableTableAdminClient, BigTableSinkConfig sinkConfig) {
+        this.bigtableDataClient = bigtableDataClient;
+        this.bigtableTableAdminClient = bigtableTableAdminClient;
+        this.sinkConfig = sinkConfig;
     }
 
     private BigtableDataClient getBigTableDataClient() throws IOException {
