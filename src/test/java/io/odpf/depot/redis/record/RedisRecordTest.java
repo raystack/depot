@@ -50,7 +50,7 @@ public class RedisRecordTest {
     public void shouldGetToString() {
         when(redisEntry.toString()).thenReturn("RedisEntry REDIS ENTRY TO STRING");
         RedisRecord redisRecord = new RedisRecord(redisEntry, 0L, null, "METADATA", true);
-        Assert.assertEquals("Metadata METADATA\nRedisEntry REDIS ENTRY TO STRING", redisRecord.toString());
+        Assert.assertEquals("Metadata METADATA RedisEntry REDIS ENTRY TO STRING", redisRecord.toString());
     }
 
     @Test

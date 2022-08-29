@@ -12,6 +12,7 @@ import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.redis.client.entry.RedisEntry;
 import io.odpf.depot.redis.record.RedisRecord;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.stream.IntStream;
  */
 
 @AllArgsConstructor
+@Slf4j
 public class RedisParser {
     private final OdpfMessageParser odpfMessageParser;
     private final RedisEntryParser redisEntryParser;
@@ -39,16 +41,20 @@ public class RedisParser {
                     records.add(new RedisRecord(redisEntry, (long) index, null, messages.get(index).getMetadataString(), true));
                 }
             } catch (ConfigurationException e) {
-                ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.UNKNOWN_FIELDS_ERROR);
-                records.add(new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadataString(), false));
+                records.add(createAndLogErrorRecord(e, ErrorType.UNKNOWN_FIELDS_ERROR, index, messages));
             } catch (IllegalArgumentException e) {
-                ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DEFAULT_ERROR);
-                records.add(new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadataString(), false));
+                records.add(createAndLogErrorRecord(e, ErrorType.DEFAULT_ERROR, index, messages));
             } catch (DeserializerException | IOException e) {
-                ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR);
-                records.add(new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadataString(), false));
+                records.add(createAndLogErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, index, messages));
             }
         });
         return records;
+    }
+
+    private RedisRecord createAndLogErrorRecord(Exception e, ErrorType type, int index, List<OdpfMessage> messages) {
+        ErrorInfo errorInfo = new ErrorInfo(e, type);
+        RedisRecord record = new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadataString(), false);
+        log.error("Error while parsing record for message. Record: {}, Error: {}", record, errorInfo);
+        return record;
     }
 }

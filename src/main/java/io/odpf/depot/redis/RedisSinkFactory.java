@@ -1,6 +1,7 @@
 package io.odpf.depot.redis;
 
 
+import com.timgroup.statsd.NoOpStatsDClient;
 import io.odpf.depot.OdpfSink;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.RedisSinkConfig;
@@ -28,6 +29,11 @@ public class RedisSinkFactory {
         this.statsDReporter = statsDReporter;
     }
 
+    public RedisSinkFactory(RedisSinkConfig sinkConfig) {
+        this.sinkConfig = sinkConfig;
+        this.statsDReporter = new StatsDReporter(new NoOpStatsDClient());
+    }
+
     public void init() throws IOException {
         Instrumentation instrumentation = new Instrumentation(statsDReporter, RedisSinkFactory.class);
         String redisConfig = String.format("\n\tredis.urls = %s\n\tredis.key.template = %s\n\tredis.sink.type = %s"
@@ -38,7 +44,7 @@ public class RedisSinkFactory {
                 sinkConfig.getSinkRedisListDataProtoIndex(),
                 sinkConfig.getSinkRedisTtlType().toString(),
                 sinkConfig.getSinkRedisTtlValue());
-        instrumentation.logDebug(redisConfig);
+        instrumentation.logInfo(redisConfig);
         instrumentation.logInfo("Redis server type = {}", sinkConfig.getSinkRedisDeploymentType());
         OdpfMessageParser messageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
@@ -50,6 +56,7 @@ public class RedisSinkFactory {
 
     /**
      * We create redis client for each create call, because it's not thread safe.
+     *
      * @return RedisSink
      */
     public OdpfSink create() {

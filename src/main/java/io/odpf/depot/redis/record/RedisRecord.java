@@ -1,9 +1,9 @@
 package io.odpf.depot.redis.record;
 
 import io.odpf.depot.error.ErrorInfo;
+import io.odpf.depot.redis.client.entry.RedisEntry;
 import io.odpf.depot.redis.client.response.RedisClusterResponse;
 import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
-import io.odpf.depot.redis.client.entry.RedisEntry;
 import io.odpf.depot.redis.ttl.RedisTtl;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +18,7 @@ public class RedisRecord {
     private final Long index;
     @Getter
     private final ErrorInfo errorInfo;
+    @Getter
     private final String metadata;
     @Getter
     private final boolean valid;
@@ -32,6 +33,6 @@ public class RedisRecord {
 
     @Override
     public String toString() {
-        return String.format("Metadata %s\n%s", metadata, redisEntry.toString());
+        return String.format("Metadata %s %s", metadata, redisEntry != null ? redisEntry.toString() : "NULL");
     }
 }

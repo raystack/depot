@@ -39,7 +39,6 @@ public class RedisClientFactory {
         }
         Jedis jedis = new Jedis(hostAndPort);
         return new RedisStandaloneClient(new Instrumentation(statsDReporter, RedisStandaloneClient.class), redisTTL, jedis);
-
     }
 
     private static RedisClusterClient getRedisClusterClient(RedisTtl redisTTL, RedisSinkConfig redisSinkConfig, StatsDReporter statsDReporter) {

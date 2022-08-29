@@ -54,6 +54,7 @@ public class RedisTtlFactoryTest {
         expectedException.expect(ConfigurationException.class);
         expectedException.expectMessage("Provide a positive TTL value");
         when(redisSinkConfig.getSinkRedisTtlValue()).thenReturn(-1L);
+        when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
         RedisTTLFactory.getTTl(redisSinkConfig);
     }
 }
