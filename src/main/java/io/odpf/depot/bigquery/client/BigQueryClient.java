@@ -5,6 +5,7 @@ import com.google.cloud.TransportOptions;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.InsertAllRequest;
@@ -29,14 +30,14 @@ import java.util.List;
 import java.util.Random;
 
 public class BigQueryClient {
+    private static final int TABLE_INFO_UPDATE_RETRIES = 10;
+    private static final int DEFAULT_SLEEP_RETRY = 10000;
     private final BigQuery bigquery;
     @Getter
     private final TableId tableID;
     private final BigQuerySinkConfig bqConfig;
-    private final BQTableDefinition bqTableDefinition;
+    private final BigQueryTableDefinition bigQueryTableDefinition;
     private final Instrumentation instrumentation;
-    private static final int TABLE_INFO_UPDATE_RETRIES = 10;
-    private static final int DEFAULT_SLEEP_RETRY = 10000;
     private final Random random = new Random(System.currentTimeMillis());
     private final BigQueryMetrics bigqueryMetrics;
 
@@ -48,10 +49,9 @@ public class BigQueryClient {
         this.bigquery = bq;
         this.bqConfig = bqConfig;
         this.tableID = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
-        this.bqTableDefinition = new BQTableDefinition(bqConfig);
+        this.bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
         this.instrumentation = instrumentation;
         this.bigqueryMetrics = bigQueryMetrics;
-
     }
 
     private static BigQuery getBigQueryInstance(BigQuerySinkConfig sinkConfig) throws IOException {
@@ -173,7 +173,8 @@ public class BigQueryClient {
     private boolean shouldUpdateTable(TableInfo tableInfo, Table table, Schema existingSchema, Schema updatedSchema) {
         return !table.getLabels().equals(tableInfo.getLabels())
                 || !existingSchema.equals(updatedSchema)
-                || shouldChangePartitionExpiryForStandardTable(table);
+                || shouldChangePartitionExpiryForStandardTable(table)
+                || shouldUpdateClusteringKeys(table);
     }
 
     private boolean shouldUpdateDataset(Dataset dataSet) {
@@ -186,7 +187,7 @@ public class BigQueryClient {
     }
 
     private boolean shouldChangePartitionExpiryForStandardTable(Table table) {
-        if (!table.getDefinition().getType().equals(TableDefinition.Type.TABLE)) {
+        if (!isTable(table)) {
             return false;
         }
         TimePartitioning timePartitioning = ((StandardTableDefinition) (table.getDefinition())).getTimePartitioning();
@@ -200,7 +201,29 @@ public class BigQueryClient {
         return !currentExpirationMs.equals(newExpirationMs);
     }
 
+    private boolean shouldUpdateClusteringKeys(Table table) {
+        if (!isTable(table)) {
+            return false;
+        }
+        Clustering clustering = ((StandardTableDefinition) (table.getDefinition())).getClustering();
+        if (clustering != null) {
+            List<String> existingClusteringKeys = clustering.getFields();
+            if (bqConfig.isTableClusteringEnabled()) {
+                List<String> updatedClusteringKeys = bqConfig.getTableClusteringKeys();
+                return !existingClusteringKeys.equals(updatedClusteringKeys);
+            } else {
+                return false;
+            }
+        } else {
+            return bqConfig.isTableClusteringEnabled();
+        }
+    }
+
+    private boolean isTable(Table table) {
+        return table.getDefinition().getType().equals(StandardTableDefinition.Type.TABLE);
+    }
+
     private TableDefinition getTableDefinition(Schema schema) {
-        return bqTableDefinition.getTableDefinition(schema);
+        return bigQueryTableDefinition.getTableDefinition(schema);
     }
 }
