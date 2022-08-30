@@ -10,6 +10,7 @@ import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.JsonParserMetrics;
+import io.odpf.depot.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,21 +55,9 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
                 throw new EmptyMessageException();
             }
             Instant instant = Instant.now();
-            JSONObject jsonObject = new JSONObject(new String(payload));
-            JSONObject jsonWithStringValues = new JSONObject();
-            jsonObject.keySet()
-                    .forEach(k -> {
-                        Object value = jsonObject.get(k);
-                        if (value instanceof JSONObject) {
-                            throw new UnsupportedOperationException("nested json structure not supported yet");
-                        }
-                        if (JSONObject.NULL.equals(value)) {
-                            return;
-                        }
-                        jsonWithStringValues.put(k, value.toString());
-                    });
+            JSONObject jsonObject = JsonUtils.getJsonObject(config, payload);
             instrumentation.captureDurationSince(jsonParserMetrics.getJsonParseTimeTakenMetric(), instant);
-            return new JsonOdpfParsedMessage(jsonWithStringValues);
+            return new JsonOdpfParsedMessage(jsonObject);
         } catch (JSONException ex) {
             throw new IOException("invalid json error", ex);
         }
