@@ -1,6 +1,9 @@
 package io.odpf.depot.message.json;
 
+import com.jayway.jsonpath.JsonPathException;
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -35,5 +38,49 @@ public class JsonOdpfParsedMessageTest {
         expectedMap.put("first_name", "john doe");
         expectedMap.put("address", "planet earth");
         assertEquals(expectedMap, parsedMessageMapping);
+    }
+
+    @Test
+    public void shouldReturnValueFromFlatJson() {
+        JSONObject personDetails = new JSONObject("{\"first_name\": \"john doe\", \"address\": \"planet earth\"}");
+        JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails);
+        Assert.assertEquals("john doe", parsedMessage.getFieldByName("first_name", null));
+    }
+
+    @Test
+    public void shouldReturnValueFromNestedJson() {
+        JSONObject personDetails = new JSONObject(""
+                + "{\"first_name\": \"john doe\","
+                + " \"address\": \"planet earth\", "
+                + "\"family\" : {\"brother\" : \"david doe\"}"
+                + "}");
+        JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails);
+        Assert.assertEquals("david doe", parsedMessage.getFieldByName("family.brother", null));
+    }
+
+    @Test
+    public void shouldThrowExceptionIfNotFound() {
+        JSONObject personDetails = new JSONObject(""
+                + "{\"first_name\": \"john doe\","
+                + " \"address\": \"planet earth\", "
+                + "\"family\" : {\"brother\" : \"david doe\"}"
+                + "}");
+        JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails);
+        JsonPathException jsonPathException = Assert.assertThrows(JsonPathException.class, () -> parsedMessage.getFieldByName("family.sister", null));
+        Assert.assertEquals("No results for path: $['family']['sister']", jsonPathException.getMessage());
+    }
+
+    @Test
+    public void shouldReturnListFromNestedJson() {
+        JSONObject personDetails = new JSONObject(""
+                + "{\"first_name\": \"john doe\","
+                + " \"address\": \"planet earth\", "
+                + "\"family\" : [{\"brother\" : \"david doe\"}, {\"brother\" : \"cain doe\"}]"
+                + "}");
+        JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails);
+        JSONArray family = (JSONArray) parsedMessage.getFieldByName("family", null);
+        Assert.assertEquals(2, family.length());
+        Assert.assertEquals("david doe", ((JSONObject) family.get(0)).get("brother"));
+        Assert.assertEquals("cain doe", ((JSONObject) family.get(1)).get("brother"));
     }
 }

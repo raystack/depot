@@ -1,11 +1,13 @@
 package io.odpf.depot.message.proto;
 
 import com.google.protobuf.DescriptorProtos;
+import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@EqualsAndHashCode
 public class ProtoField {
     private String name;
     private String typeName;

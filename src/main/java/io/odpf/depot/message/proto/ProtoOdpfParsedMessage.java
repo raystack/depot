@@ -14,7 +14,6 @@ import io.odpf.depot.message.proto.converter.fields.ProtoFieldFactory;
 import io.odpf.depot.utils.ProtoUtils;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +23,8 @@ import java.util.Properties;
 @Slf4j
 public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     private final DynamicMessage dynamicMessage;
+
+    private final Map<OdpfMessageSchema, Map<String, Object>> cachedMapping = new HashMap<>();
 
     public ProtoOdpfParsedMessage(DynamicMessage dynamicMessage) {
         this.dynamicMessage = dynamicMessage;
@@ -47,11 +48,11 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     }
 
     @Override
-    public Map<String, Object> getMapping(OdpfMessageSchema schema) throws IOException {
+    public Map<String, Object> getMapping(OdpfMessageSchema schema) {
         if (schema.getSchema() == null) {
-            throw new ConfigurationException("BQ_PROTO_COLUMN_MAPPING is not configured");
+            throw new ConfigurationException("Schema is not configured");
         }
-        return getMappings(dynamicMessage, (Properties) schema.getSchema());
+        return cachedMapping.computeIfAbsent(schema, x -> getMappings(dynamicMessage, (Properties) schema.getSchema()));
     }
 
     @SuppressWarnings("unchecked")
@@ -124,5 +125,23 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
             }
         }
         row.put(columnName, repeatedNestedFields);
+    }
+
+
+    public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
+        String[] keys = name.split("\\.");
+        Map<String, Object> fields = getMapping(odpfMessageSchema);
+        for (String key: keys) {
+            Object localValue = fields.get(key);
+            if (localValue == null) {
+                throw new ConfigurationException("Invalid field config : " + name);
+            }
+            if (localValue instanceof Map) {
+                fields = (Map<String, Object>) localValue;
+            } else {
+                return localValue;
+            }
+        }
+        return fields;
     }
 }

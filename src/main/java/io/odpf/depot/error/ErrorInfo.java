@@ -8,10 +8,11 @@ import lombok.EqualsAndHashCode;
 @Data
 public class ErrorInfo {
 
-    @EqualsAndHashCode.Exclude private Exception exception;
+    @EqualsAndHashCode.Exclude
+    private Exception exception;
     private ErrorType errorType;
 
     public String toString() {
-        return errorType.name();
+        return String.format("Exception %s, ErrorType: %s", exception != null ? exception.getMessage() : "NULL", errorType.name());
     }
 }
