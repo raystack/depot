@@ -4,17 +4,22 @@ import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigtable.admin.v2.BigtableTableAdminClient;
 import com.google.cloud.bigtable.admin.v2.BigtableTableAdminSettings;
+import com.google.cloud.bigtable.admin.v2.models.ColumnFamily;
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
 import com.google.cloud.bigtable.data.v2.BigtableDataSettings;
 import com.google.cloud.bigtable.data.v2.models.BulkMutation;
 import com.google.cloud.bigtable.data.v2.models.MutateRowsException;
+import io.odpf.depot.bigtable.exception.BigTableInvalidSchemaException;
 import io.odpf.depot.bigtable.model.BigTableRecord;
 import io.odpf.depot.bigtable.response.BigTableResponse;
 import io.odpf.depot.config.BigTableSinkConfig;
+import org.json.JSONObject;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BigTableClient {
     private final BigtableTableAdminClient bigtableTableAdminClient;
@@ -50,8 +55,8 @@ public class BigTableClient {
     }
 
     public BigTableResponse send(List<BigTableRecord> records) throws MutateRowsException {
-        BulkMutation batch = BulkMutation.create(sinkConfig.getTableId());
         BigTableResponse bigTableResponse = null;
+        BulkMutation batch = BulkMutation.create(sinkConfig.getTableId());
         for (BigTableRecord record : records) {
             batch.add(record.getRowMutationEntry());
         }
@@ -65,8 +70,27 @@ public class BigTableClient {
         return bigTableResponse;
     }
 
-    public boolean tableExists(String tableId) {
-        return bigtableTableAdminClient.exists(tableId);
+    private void tableExists(String tableId) throws BigTableInvalidSchemaException {
+        if (!bigtableTableAdminClient.exists(tableId))
+            throw new BigTableInvalidSchemaException("Table: " + tableId + " does not exist");
     }
 
+    public void validateBigTableSchema() throws BigTableInvalidSchemaException {
+        this.tableExists(sinkConfig.getTableId());
+        this.columnFamiliesExist(sinkConfig.getSinkConnectorInputOutputFieldMapping(), sinkConfig.getTableId());
+    }
+
+    private void columnFamiliesExist(String inputOutputFieldMapping, String tableId) throws BigTableInvalidSchemaException {
+        List<String> existingColumnFamilies = bigtableTableAdminClient.getTable(tableId)
+                .getColumnFamilies()
+                .stream()
+                .map(ColumnFamily::getId)
+                .collect(Collectors.toList());
+
+        Set<String> columnFamilies = new JSONObject(inputOutputFieldMapping).keySet();
+        for (String columnFamily : columnFamilies) {
+            if (!existingColumnFamilies.contains(columnFamily))
+                throw new BigTableInvalidSchemaException("Column family: " + columnFamily + " does not exist!");
+        }
+    }
 }

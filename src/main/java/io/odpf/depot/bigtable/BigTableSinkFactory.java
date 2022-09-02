@@ -3,6 +3,7 @@ package io.odpf.depot.bigtable;
 import com.timgroup.statsd.NoOpStatsDClient;
 import io.odpf.depot.OdpfSink;
 import io.odpf.depot.bigtable.client.BigTableClient;
+import io.odpf.depot.bigtable.exception.BigTableInvalidSchemaException;
 import io.odpf.depot.bigtable.parser.BigTableRecordParser;
 import io.odpf.depot.bigtable.parser.BigTableRowKeyParser;
 import io.odpf.depot.config.BigTableSinkConfig;
@@ -18,9 +19,9 @@ public class BigTableSinkFactory {
     private BigTableClient bigTableClient;
     private BigTableRecordParser bigTableRecordParser;
 
-    public BigTableSinkFactory(BigTableSinkConfig sinkConfig, StatsDReporter statsDReporter) {
+    public BigTableSinkFactory(BigTableSinkConfig sinkConfig) {
         this.sinkConfig = sinkConfig;
-        this.statsDReporter = statsDReporter;
+        this.statsDReporter = new StatsDReporter(new NoOpStatsDClient());
     }
 
     public BigTableSinkFactory(BigTableSinkConfig sinkConfig) {
@@ -33,8 +34,9 @@ public class BigTableSinkFactory {
             OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
             BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser();
             this.bigTableClient = new BigTableClient(sinkConfig);
+            bigTableClient.validateBigTableSchema();
             this.bigTableRecordParser = new BigTableRecordParser(sinkConfig, odpfMessageParser, bigTableRowKeyParser);
-        } catch (IOException e) {
+        } catch (BigTableInvalidSchemaException | IOException e) {
             throw new IllegalArgumentException("Exception occurred while creating sink", e);
         }
     }

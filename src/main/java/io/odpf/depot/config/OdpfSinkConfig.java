@@ -1,10 +1,10 @@
 package io.odpf.depot.config;
 
-import io.odpf.depot.config.converter.SinkConnectorSchemaDataTypeConverter;
-import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
-import io.odpf.depot.config.converter.SinkConnectorSchemaMessageModeConverter;
 import io.odpf.depot.config.converter.SchemaRegistryHeadersConverter;
 import io.odpf.depot.config.converter.SchemaRegistryRefreshConverter;
+import io.odpf.depot.config.converter.SinkConnectorSchemaDataTypeConverter;
+import io.odpf.depot.config.converter.SinkConnectorSchemaMessageModeConverter;
+import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.stencil.cache.SchemaRefreshStrategy;
 import org.aeonbits.owner.Config;
@@ -81,4 +81,8 @@ public interface OdpfSinkConfig extends Config {
     @Key("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE")
     @DefaultValue("false")
     boolean getSinkConnectorSchemaProtoAllowUnknownFieldsEnable();
+
+    @Key("SINK_CONNECTOR_INPUT_OUTPUT_FIELD_MAPPING")
+    @DefaultValue("{}")
+    String getSinkConnectorInputOutputFieldMapping();
 }
