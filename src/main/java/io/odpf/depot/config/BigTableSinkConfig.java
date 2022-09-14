@@ -5,14 +5,14 @@ public interface BigTableSinkConfig extends OdpfSinkConfig {
     String getGCloudProjectID();
 
     @Key("SINK_BIGTABLE_INSTANCE_ID")
-    String getBigtableInstanceId();
+    String getInstanceId();
 
     @Key("SINK_BIGTABLE_TABLE_ID")
     String getTableId();
 
     @Key("SINK_BIGTABLE_CREDENTIAL_PATH")
-    String getBigTableCredentialPath();
+    String getCredentialPath();
 
-    @Key("ROW_KEY_TEMPLATE")
+    @Key("SINK_BIGTABLE_ROW_KEY_TEMPLATE")
     String getRowKeyTemplate();
 }

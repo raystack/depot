@@ -54,7 +54,7 @@ public class BigTableClientTest {
         validRecords = Collections.list(bigTableRecord1, bigTableRecord2);
 
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
-        bigTableClient = new BigTableClient(bigTableDataClient, bigtableTableAdminClient, sinkConfig);
+        bigTableClient = new BigTableClient(sinkConfig, bigTableDataClient, bigtableTableAdminClient);
     }
 
     @Test

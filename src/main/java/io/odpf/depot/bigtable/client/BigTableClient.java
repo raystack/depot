@@ -22,31 +22,29 @@ public class BigTableClient {
     private final BigTableSinkConfig sinkConfig;
 
     public BigTableClient(BigTableSinkConfig sinkConfig) throws IOException {
-        this.bigtableDataClient = getBigTableDataClient();
-        this.bigtableTableAdminClient = getBigTableAdminClient();
-        this.sinkConfig = sinkConfig;
+        this(sinkConfig, getBigTableDataClient(sinkConfig), getBigTableAdminClient(sinkConfig));
     }
 
-    public BigTableClient(BigtableDataClient bigtableDataClient, BigtableTableAdminClient bigtableTableAdminClient, BigTableSinkConfig sinkConfig) {
+    public BigTableClient(BigTableSinkConfig sinkConfig, BigtableDataClient bigtableDataClient, BigtableTableAdminClient bigtableTableAdminClient) {
+        this.sinkConfig = sinkConfig;
         this.bigtableDataClient = bigtableDataClient;
         this.bigtableTableAdminClient = bigtableTableAdminClient;
-        this.sinkConfig = sinkConfig;
     }
 
-    private BigtableDataClient getBigTableDataClient() throws IOException {
+    private static BigtableDataClient getBigTableDataClient(BigTableSinkConfig sinkConfig) throws IOException {
         BigtableDataSettings settings = BigtableDataSettings.newBuilder()
                 .setProjectId(sinkConfig.getGCloudProjectID())
-                .setInstanceId(sinkConfig.getBigtableInstanceId())
-                .setCredentialsProvider(FixedCredentialsProvider.create(GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getBigTableCredentialPath()))))
+                .setInstanceId(sinkConfig.getInstanceId())
+                .setCredentialsProvider(FixedCredentialsProvider.create(GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getCredentialPath()))))
                 .build();
         return BigtableDataClient.create(settings);
     }
 
-    private BigtableTableAdminClient getBigTableAdminClient() throws IOException {
+    private static BigtableTableAdminClient getBigTableAdminClient(BigTableSinkConfig sinkConfig) throws IOException {
         BigtableTableAdminSettings settings = BigtableTableAdminSettings.newBuilder()
                 .setProjectId(sinkConfig.getGCloudProjectID())
-                .setInstanceId(sinkConfig.getBigtableInstanceId())
-                .setCredentialsProvider(FixedCredentialsProvider.create(GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getBigTableCredentialPath()))))
+                .setInstanceId(sinkConfig.getInstanceId())
+                .setCredentialsProvider(FixedCredentialsProvider.create(GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getCredentialPath()))))
                 .build();
 
         return BigtableTableAdminClient.create(settings);
