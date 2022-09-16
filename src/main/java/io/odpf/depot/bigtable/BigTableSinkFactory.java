@@ -19,9 +19,9 @@ public class BigTableSinkFactory {
     private BigTableClient bigTableClient;
     private BigTableRecordParser bigTableRecordParser;
 
-    public BigTableSinkFactory(BigTableSinkConfig sinkConfig) {
+    public BigTableSinkFactory(BigTableSinkConfig sinkConfig, StatsDReporter statsDReporter) {
         this.sinkConfig = sinkConfig;
-        this.statsDReporter = new StatsDReporter(new NoOpStatsDClient());
+        this.statsDReporter = statsDReporter;
     }
 
     public BigTableSinkFactory(BigTableSinkConfig sinkConfig) {

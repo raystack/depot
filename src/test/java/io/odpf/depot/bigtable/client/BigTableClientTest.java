@@ -1,11 +1,14 @@
 package io.odpf.depot.bigtable.client;
 
 import com.google.api.gax.rpc.ApiException;
+import com.google.bigtable.admin.v2.ColumnFamily;
 import com.google.cloud.bigtable.admin.v2.BigtableTableAdminClient;
+import com.google.cloud.bigtable.admin.v2.models.Table;
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
 import com.google.cloud.bigtable.data.v2.models.BulkMutation;
 import com.google.cloud.bigtable.data.v2.models.MutateRowsException;
 import com.google.cloud.bigtable.data.v2.models.RowMutationEntry;
+import io.odpf.depot.bigtable.exception.BigTableInvalidSchemaException;
 import io.odpf.depot.bigtable.model.BigTableRecord;
 import io.odpf.depot.bigtable.response.BigTableResponse;
 import io.odpf.depot.config.BigTableSinkConfig;
@@ -23,8 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 
 public class BigTableClientTest {
 
@@ -37,6 +39,7 @@ public class BigTableClientTest {
 
     private BigTableClient bigTableClient;
     private List<BigTableRecord> validRecords;
+    private BigTableSinkConfig sinkConfig;
 
     @Before
     public void setUp() throws IOException {
@@ -47,13 +50,14 @@ public class BigTableClientTest {
         System.setProperty("SINK_BIGTABLE_INSTANCE_ID", "test-instance");
         System.setProperty("SINK_BIGTABLE_TABLE_ID", "test-table");
         System.setProperty("SINK_BIGTABLE_CREDENTIAL_PATH", "Users/github/bigtable/test-credential");
+        System.setProperty("SINK_CONNECTOR_INPUT_OUTPUT_FIELD_MAPPING", "{ \"family-test\" : { \"qualifier_name1\" : \"input_field1\", \"qualifier_name2\" : \"input_field2\"} }");
 
         RowMutationEntry rowMutationEntry = RowMutationEntry.create("rowKey").setCell("family", "qualifier", "value");
         BigTableRecord bigTableRecord1 = new BigTableRecord(rowMutationEntry, 1, null, true);
         BigTableRecord bigTableRecord2 = new BigTableRecord(rowMutationEntry, 2, null, true);
         validRecords = Collections.list(bigTableRecord1, bigTableRecord2);
 
-        BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
+        sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
         bigTableClient = new BigTableClient(sinkConfig, bigTableDataClient, bigtableTableAdminClient);
     }
 
@@ -79,5 +83,31 @@ public class BigTableClientTest {
 
         Assert.assertTrue(bigTableResponse.hasErrors());
         Assert.assertEquals(2, bigTableResponse.getFailedMutations().size());
+    }
+
+    @Test
+    public void shouldThrowInvalidSchemaExceptionIfTableDoesNotExist() {
+        when(bigtableTableAdminClient.exists(sinkConfig.getTableId())).thenReturn(false);
+        try {
+            bigTableClient.validateBigTableSchema();
+        } catch (BigTableInvalidSchemaException e) {
+            Assert.assertEquals("Table: " + sinkConfig.getTableId() + " does not exist", e.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldThrowInvalidSchemaExceptionIfColumnFamilyDoesNotExist() {
+        Table testTable = Table.fromProto(com.google.bigtable.admin.v2.Table.newBuilder()
+                .setName("projects/" + sinkConfig.getGCloudProjectID() + "/instances/" + sinkConfig.getInstanceId() + "/tables/" + sinkConfig.getTableId())
+                .putColumnFamilies("existing-family-test", ColumnFamily.newBuilder().build())
+                .build());
+
+        when(bigtableTableAdminClient.exists(sinkConfig.getTableId())).thenReturn(true);
+        when(bigtableTableAdminClient.getTable(sinkConfig.getTableId())).thenReturn(testTable);
+        try {
+            bigTableClient.validateBigTableSchema();
+        } catch (BigTableInvalidSchemaException e) {
+            Assert.assertEquals("Column family: family-test does not exist!", e.getMessage());
+        }
     }
 }

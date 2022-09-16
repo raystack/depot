@@ -1,7 +1,6 @@
 package io.odpf.depot.bigtable.parser;
 
 import com.google.cloud.bigtable.data.v2.models.RowMutationEntry;
-import io.odpf.depot.bigtable.client.BigTableClient;
 import io.odpf.depot.bigtable.model.BigTableRecord;
 import io.odpf.depot.bigtable.model.BigTableRowCell;
 import io.odpf.depot.config.BigTableSinkConfig;

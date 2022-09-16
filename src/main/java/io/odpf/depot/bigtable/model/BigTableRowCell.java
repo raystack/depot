@@ -9,5 +9,4 @@ public class BigTableRowCell {
     private final String columnFamily;
     private final String qualifier;
     private final String value;
-
 }
