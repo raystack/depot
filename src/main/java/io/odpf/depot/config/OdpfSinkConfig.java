@@ -81,8 +81,4 @@ public interface OdpfSinkConfig extends Config {
     @Key("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE")
     @DefaultValue("false")
     boolean getSinkConnectorSchemaProtoAllowUnknownFieldsEnable();
-
-    @Key("SINK_CONNECTOR_INPUT_OUTPUT_FIELD_MAPPING")
-    @DefaultValue("{}")
-    String getSinkConnectorInputOutputFieldMapping();
 }

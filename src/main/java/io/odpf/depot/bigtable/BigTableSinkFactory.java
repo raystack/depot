@@ -6,10 +6,14 @@ import io.odpf.depot.bigtable.client.BigTableClient;
 import io.odpf.depot.bigtable.exception.BigTableInvalidSchemaException;
 import io.odpf.depot.bigtable.parser.BigTableRecordParser;
 import io.odpf.depot.bigtable.parser.BigTableRowKeyParser;
+import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageParserFactory;
+import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.metrics.StatsDReporter;
+import io.odpf.depot.utils.MessageConfigUtils;
 
 import java.io.IOException;
 
@@ -31,11 +35,18 @@ public class BigTableSinkFactory {
 
     public void init() {
         try {
-            OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
             BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser();
             this.bigTableClient = new BigTableClient(sinkConfig);
             bigTableClient.validateBigTableSchema();
-            this.bigTableRecordParser = new BigTableRecordParser(sinkConfig, odpfMessageParser, bigTableRowKeyParser);
+            Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
+            OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
+            OdpfMessageSchema schema = odpfMessageParser.getSchema(modeAndSchema.getSecond());
+            this.bigTableRecordParser = new BigTableRecordParser(
+                    sinkConfig,
+                    odpfMessageParser,
+                    bigTableRowKeyParser,
+                    modeAndSchema,
+                    schema);
         } catch (BigTableInvalidSchemaException | IOException e) {
             throw new IllegalArgumentException("Exception occurred while creating sink", e);
         }

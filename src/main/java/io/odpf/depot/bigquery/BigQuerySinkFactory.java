@@ -3,6 +3,7 @@ package io.odpf.depot.bigquery;
 import com.timgroup.statsd.NoOpStatsDClient;
 import io.odpf.depot.bigquery.handler.ErrorHandler;
 import io.odpf.depot.bigquery.handler.ErrorHandlerFactory;
+import io.odpf.depot.config.MetricsConfig;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.metrics.BigQueryMetrics;
