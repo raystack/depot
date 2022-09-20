@@ -12,7 +12,7 @@ If you have feedback about the roadmap section itself,
 such as how the issues are presented, 
 let us know through [discussions](https://github.com/odpf/depot/discussions).
 
-## depot 0.1.4
+## Depot 0.1.4
 
 ### Feature enhancements
 
