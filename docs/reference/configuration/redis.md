@@ -1,6 +1,6 @@
 # Redis
 
-A Redis sink Firehose (`SINK_TYPE`=`redis`) requires the following variables to be set along with Generic ones
+A Redis sink in Depot requires the following environment variables to be set along with Generic ones
 
 ### `SINK_REDIS_URLS`
 
@@ -23,15 +23,14 @@ The string that will act as the key for each Redis entry. This key can be config
 
 - Example value: `Service\_%%s,1`
 
-  This will take the value with index 1 from proto and create the Redis keys as per the template\
+  This will take the value with index 1 from proto and create the Redis keys as per the template.
 
 - Type: `required`
 
 ### `SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING`
 
 This is the field that decides what all data will be stored in the HashSet for each message.
-
-- Example value: `{"6":"customer_id", "2":"order_num"}`
+- Example value: `{"order_number":"ORDER_NUMBER","event_timestamp":"TIMESTAMP"}`
 - Type: `required (For Hashset)`
 
 ### `SINK_REDIS_LIST_DATA_PROTO_INDEX`
@@ -69,8 +68,8 @@ This field decides what all data will be stored in the List for each message.
 - Example value: `DURATION`
 - Type: `optional`
 - Default value: `DISABLE`
-- Choice of Redis TTL type.It can be:\
-    - `DURATION`: After which the Key will be expired and removed from Redis \(UNIT- seconds\)\
+- Choice of Redis TTL type.It can be:
+    - `DURATION`: After which the Key will be expired and removed from Redis \(UNIT- seconds\)
     - `EXACT_TIME`: Precise UNIX timestamp after which the Key will be expired
 
 ### `SINK_REDIS_TTL_VALUE`
