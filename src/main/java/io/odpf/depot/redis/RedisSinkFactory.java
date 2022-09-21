@@ -54,6 +54,7 @@ public class RedisSinkFactory {
             case HASHSET:
                 redisConfig += "redis.hashset.field.to.column.mapping=" + sinkConfig.getSinkRedisHashsetFieldToColumnMapping().toString();
                 break;
+            default:
         }
         instrumentation.logInfo(redisConfig);
         instrumentation.logInfo("Redis server type = {}", sinkConfig.getSinkRedisDeploymentType());
