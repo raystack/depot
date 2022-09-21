@@ -11,7 +11,7 @@ REDIS instance hostname/IP address followed by its port.
 
 ### `SINK_REDIS_DATA_TYPE`
 
-To select whether you want to push your data as a HashSet or as a List.
+To select whether you want to push your data as a `KEYVALUE`, `HASHSET` or as a `LIST`.
 
 - Example value: `Hashset`
 - Type: `required`
