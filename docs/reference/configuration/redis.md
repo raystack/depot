@@ -4,14 +4,14 @@ A Redis sink in Depot requires the following environment variables to be set alo
 
 ### `SINK_REDIS_URLS`
 
-REDIS instance hostname/IP address followed by its port.
+REDIS server instance hostname/IP address followed by its port.
 
-- Example value: `localhos:6379,localhost:6380`
+- Example value: `localhost:6379,localhost:6380`
 - Type: `required`
 
 ### `SINK_REDIS_DATA_TYPE`
 
-To select whether you want to push your data as a `KEYVALUE`, `HASHSET` or as a `LIST`.
+To select whether you want to push your data as a `KEYVALUE`, `HASHSET` or as a `LIST` data type.
 
 - Example value: `Hashset`
 - Type: `required`
