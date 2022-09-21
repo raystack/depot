@@ -5,6 +5,7 @@
 
 ## Sink
 * [Bigquery](sinks/bigquery.md)
+* [Redis](sinks/redis.md)
 
 ## Reference
 
