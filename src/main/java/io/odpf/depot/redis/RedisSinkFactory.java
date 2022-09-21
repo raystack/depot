@@ -36,14 +36,25 @@ public class RedisSinkFactory {
 
     public void init() throws IOException {
         Instrumentation instrumentation = new Instrumentation(statsDReporter, RedisSinkFactory.class);
-        String redisConfig = String.format("\n\tredis.urls = %s\n\tredis.key.template = %s\n\tredis.sink.type = %s"
-                        + "\n\tredis.list.data.proto.index = %s\n\tredis.ttl.type = %s\n\tredis.ttl.value = %d",
+        String redisConfig = String.format("\n\tredis.urls = %s\n\tredis.key.template = %s\n\tredis.sink.data.type = %s"
+                        + "\n\tredis.deployment.type = %s\n\tredis.ttl.type = %s\n\tredis.ttl.value = %d\n\t",
                 sinkConfig.getSinkRedisUrls(),
                 sinkConfig.getSinkRedisKeyTemplate(),
                 sinkConfig.getSinkRedisDataType().toString(),
-                sinkConfig.getSinkRedisListDataProtoIndex(),
+                sinkConfig.getSinkRedisDeploymentType().toString(),
                 sinkConfig.getSinkRedisTtlType().toString(),
                 sinkConfig.getSinkRedisTtlValue());
+        switch (sinkConfig.getSinkRedisDataType()) {
+            case LIST:
+                redisConfig += "redis.list.data.field.name=" + sinkConfig.getSinkRedisListDataFieldName();
+                break;
+            case KEYVALUE:
+                redisConfig += "redis.keyvalue.data.field.name=" + sinkConfig.getSinkRedisKeyValueDataFieldName();
+                break;
+            case HASHSET:
+                redisConfig += "redis.hashset.field.to.column.mapping=" + sinkConfig.getSinkRedisHashsetFieldToColumnMapping().toString();
+                break;
+        }
         instrumentation.logInfo(redisConfig);
         instrumentation.logInfo("Redis server type = {}", sinkConfig.getSinkRedisDeploymentType());
         OdpfMessageParser messageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);

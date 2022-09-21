@@ -33,16 +33,6 @@ This is the field that decides what all data will be stored in the HashSet for e
 - Example value: `{"order_number":"ORDER_NUMBER","event_timestamp":"TIMESTAMP"}`
 - Type: `required (For Hashset)`
 
-### `SINK_REDIS_LIST_DATA_PROTO_INDEX`
-
-This field decides what all data will be stored in the List for each message.
-
-- Example value: `6`
-
-  This will get the value of the field with index 6 in your proto and push that to the Redis list with the corresponding keyTemplate 
-
-- Type: `required (For List)`
-
 ### `SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME`
 
 This field decides what data will be stored in the value part of key-value pair
