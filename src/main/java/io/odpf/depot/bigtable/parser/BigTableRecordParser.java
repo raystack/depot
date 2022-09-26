@@ -33,7 +33,7 @@ public class BigTableRecordParser {
         this.odpfMessageParser = odpfMessageParser;
         this.bigTableRowKeyParser = bigTableRowKeyParser;
         this.modeAndSchema = modeAndSchema;
-        this.bigTableSchema = new BigtableSchema(sinkConfig);
+        this.bigTableSchema = new BigtableSchema(sinkConfig.getColumnFamilyMapping());
         this.schema = schema;
     }
 

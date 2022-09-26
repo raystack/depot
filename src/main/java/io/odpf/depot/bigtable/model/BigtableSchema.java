@@ -1,21 +1,20 @@
 package io.odpf.depot.bigtable.model;
 
-import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
 import org.json.JSONObject;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class BigtableSchema {
 
     private final JSONObject columnFamilyMapping;
 
-    public BigtableSchema(BigTableSinkConfig sinkConfig) {
-        String columnMapping = sinkConfig.getColumnFamilyMapping();
+    public BigtableSchema(String columnMapping) {
         if (columnMapping == null || columnMapping.isEmpty()) {
             throw new ConfigurationException("Column Mapping should not be empty or null");
         }
-        this.columnFamilyMapping = new JSONObject(sinkConfig.getColumnFamilyMapping());
+        this.columnFamilyMapping = new JSONObject(columnMapping);
     }
 
     public String getField(String columnFamily, String columnName) {
@@ -31,4 +30,15 @@ public class BigtableSchema {
         return columnFamilyMapping.getJSONObject(family).keySet();
     }
 
+    /**
+     * Returns missing column families.
+     *
+     * @param existingColumnFamilies existing column families in a table.
+     * @return set of missing column families
+     */
+    public Set<String> getMissingColumnFamilies(Set<String> existingColumnFamilies) {
+        Set<String> tempSet = new HashSet<>(getColumnFamilies());
+        tempSet.removeAll(existingColumnFamilies);
+        return tempSet;
+    }
 }

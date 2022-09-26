@@ -10,6 +10,7 @@ import com.google.cloud.bigtable.data.v2.models.MutateRowsException;
 import com.google.cloud.bigtable.data.v2.models.RowMutationEntry;
 import io.odpf.depot.bigtable.exception.BigTableInvalidSchemaException;
 import io.odpf.depot.bigtable.model.BigTableRecord;
+import io.odpf.depot.bigtable.model.BigtableSchema;
 import io.odpf.depot.bigtable.response.BigTableResponse;
 import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
@@ -56,9 +57,9 @@ public class BigTableClientTest {
         BigTableRecord bigTableRecord1 = new BigTableRecord(rowMutationEntry, 1, null, true);
         BigTableRecord bigTableRecord2 = new BigTableRecord(rowMutationEntry, 2, null, true);
         validRecords = Collections.list(bigTableRecord1, bigTableRecord2);
-
         sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
-        bigTableClient = new BigTableClient(sinkConfig, bigTableDataClient, bigtableTableAdminClient);
+        BigtableSchema schema = new BigtableSchema(sinkConfig.getColumnFamilyMapping());
+        bigTableClient = new BigTableClient(sinkConfig, bigTableDataClient, bigtableTableAdminClient, schema);
     }
 
     @Test
@@ -107,7 +108,7 @@ public class BigTableClientTest {
         try {
             bigTableClient.validateBigTableSchema();
         } catch (BigTableInvalidSchemaException e) {
-            Assert.assertEquals("Column family: family-test does not exist!", e.getMessage());
+            Assert.assertEquals("Column families [family-test] do not exist in table test-table!", e.getMessage());
         }
     }
 }
