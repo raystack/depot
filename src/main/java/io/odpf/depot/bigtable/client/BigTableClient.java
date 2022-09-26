@@ -72,7 +72,7 @@ public class BigTableClient {
 
     public void validateBigTableSchema() throws BigTableInvalidSchemaException {
         this.tableExists(sinkConfig.getTableId());
-        this.columnFamiliesExist(sinkConfig.getSinkConnectorInputOutputFieldMapping(), sinkConfig.getTableId());
+        this.columnFamiliesExist(sinkConfig.getColumnFamilyMapping(), sinkConfig.getTableId());
     }
 
     private void tableExists(String tableId) throws BigTableInvalidSchemaException {

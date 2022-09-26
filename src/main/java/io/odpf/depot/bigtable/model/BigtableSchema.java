@@ -16,7 +16,6 @@ public class BigtableSchema {
     public String getField(String columnFamily, String columnName) {
         JSONObject columns = columnFamilyMapping.getJSONObject(columnFamily);
         return columns.getString(columnName);
-
     }
 
     public Set<String> getColumnFamilies() {
