@@ -4,10 +4,13 @@ import io.odpf.depot.TestBookingLogKey;
 import io.odpf.depot.TestBookingLogMessage;
 import io.odpf.depot.TestServiceType;
 import io.odpf.depot.bigtable.model.BigTableRecord;
+import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
+import io.odpf.depot.utils.MessageConfigUtils;
 import io.odpf.stencil.client.ClassLoadStencilClient;
 import org.aeonbits.owner.ConfigFactory;
 import org.aeonbits.owner.util.Collections;
@@ -16,22 +19,29 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 
 public class BigTableRecordParserTest {
 
     @Mock
     private ClassLoadStencilClient stencilClient;
+    @Mock
+    private OdpfMessageSchema schema;
     private BigTableRecordParser bigTableRecordParser;
     private List<OdpfMessage> messages;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "io.odpf.depot.TestBookingLogMessage");
         System.setProperty("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", String.valueOf(SinkConnectorSchemaMessageMode.LOG_MESSAGE));
+        System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{}");
 
         TestBookingLogKey bookingLogKey1 = TestBookingLogKey.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1").build();
         TestBookingLogMessage bookingLogMessage1 = TestBookingLogMessage.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1").setServiceType(TestServiceType.Enum.GO_SEND).build();
@@ -45,8 +55,9 @@ public class BigTableRecordParserTest {
         stencilClient = Mockito.mock(ClassLoadStencilClient.class, CALLS_REAL_METHODS);
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
+        Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
 
-        bigTableRecordParser = new BigTableRecordParser(sinkConfig, protoOdpfMessageParser, new BigTableRowKeyParser());
+        bigTableRecordParser = new BigTableRecordParser(sinkConfig, protoOdpfMessageParser, new BigTableRowKeyParser(), modeAndSchema, schema);
     }
 
     @Test
