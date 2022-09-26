@@ -50,7 +50,7 @@ public class BigTableClientTest {
         System.setProperty("SINK_BIGTABLE_INSTANCE_ID", "test-instance");
         System.setProperty("SINK_BIGTABLE_TABLE_ID", "test-table");
         System.setProperty("SINK_BIGTABLE_CREDENTIAL_PATH", "Users/github/bigtable/test-credential");
-        System.setProperty("SINK_CONNECTOR_INPUT_OUTPUT_FIELD_MAPPING", "{ \"family-test\" : { \"qualifier_name1\" : \"input_field1\", \"qualifier_name2\" : \"input_field2\"} }");
+        System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{ \"family-test\" : { \"qualifier_name1\" : \"input_field1\", \"qualifier_name2\" : \"input_field2\"} }");
 
         RowMutationEntry rowMutationEntry = RowMutationEntry.create("rowKey").setCell("family", "qualifier", "value");
         BigTableRecord bigTableRecord1 = new BigTableRecord(rowMutationEntry, 1, null, true);

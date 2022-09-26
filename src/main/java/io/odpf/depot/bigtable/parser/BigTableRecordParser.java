@@ -7,7 +7,11 @@ import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.message.*;
+import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import io.odpf.depot.message.ParsedOdpfMessage;
 
 import java.util.ArrayList;
 import java.util.List;

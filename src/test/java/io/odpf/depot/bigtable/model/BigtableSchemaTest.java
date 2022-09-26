@@ -14,16 +14,16 @@ public class BigtableSchemaTest {
 
     @Before
     public void setUp() {
-        System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{\n" +
-                "\"family_name1\" : {\n" +
-                "\"qualifier_name1\" : \"data.is_complete\",\n" +
-                "\"qualifier_name2\" : \"data.content\"\n" +
-                "},\n" +
-                "\"family_name2\" : {\n" +
-                "\"qualifier_name3\" : \"base_content3\",\n" +
-                "\"qualifier_name4\" : \"base_content4\"\n" +
-                "}\n" +
-                "}");
+        System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{\n"
+                + "\"family_name1\" : {\n"
+                + "\"qualifier_name1\" : \"data.is_complete\",\n"
+                + "\"qualifier_name2\" : \"data.content\"\n"
+                + "},\n"
+                + "\"family_name2\" : {\n"
+                + "\"qualifier_name3\" : \"base_content3\",\n"
+                + "\"qualifier_name4\" : \"base_content4\"\n"
+                + "}\n"
+                + "}");
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
         bigtableSchema = new BigtableSchema(sinkConfig);
     }
