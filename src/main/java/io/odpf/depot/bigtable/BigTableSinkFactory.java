@@ -3,6 +3,7 @@ package io.odpf.depot.bigtable;
 import com.timgroup.statsd.NoOpStatsDClient;
 import io.odpf.depot.OdpfSink;
 import io.odpf.depot.bigtable.client.BigTableClient;
+import io.odpf.depot.bigtable.model.BigtableSchema;
 import io.odpf.depot.bigtable.parser.BigTableRecordParser;
 import io.odpf.depot.bigtable.parser.BigTableRowKeyParser;
 import io.odpf.depot.common.Tuple;
@@ -36,12 +37,13 @@ public class BigTableSinkFactory {
     public void init() {
         try {
             BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser();
-            this.bigTableClient = new BigTableClient(sinkConfig);
+            BigtableSchema bigtableSchema = new BigtableSchema(sinkConfig.getColumnFamilyMapping());
+            bigTableClient = new BigTableClient(sinkConfig, bigtableSchema);
             bigTableClient.validateBigTableSchema();
             Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
             OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
             OdpfMessageSchema schema = odpfMessageParser.getSchema(modeAndSchema.getSecond());
-            this.bigTableRecordParser = new BigTableRecordParser(
+            bigTableRecordParser = new BigTableRecordParser(
                     sinkConfig,
                     odpfMessageParser,
                     bigTableRowKeyParser,
