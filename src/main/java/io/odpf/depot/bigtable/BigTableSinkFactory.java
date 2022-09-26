@@ -3,11 +3,11 @@ package io.odpf.depot.bigtable;
 import com.timgroup.statsd.NoOpStatsDClient;
 import io.odpf.depot.OdpfSink;
 import io.odpf.depot.bigtable.client.BigTableClient;
-import io.odpf.depot.bigtable.exception.BigTableInvalidSchemaException;
 import io.odpf.depot.bigtable.parser.BigTableRecordParser;
 import io.odpf.depot.bigtable.parser.BigTableRowKeyParser;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.BigTableSinkConfig;
+import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.message.OdpfMessageSchema;
@@ -47,8 +47,8 @@ public class BigTableSinkFactory {
                     bigTableRowKeyParser,
                     modeAndSchema,
                     schema);
-        } catch (BigTableInvalidSchemaException | IOException e) {
-            throw new IllegalArgumentException("Exception occurred while creating sink", e);
+        } catch (IOException e) {
+            throw new ConfigurationException("Exception occurred while creating sink", e);
         }
     }
 

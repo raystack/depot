@@ -10,8 +10,8 @@ import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 
 import java.util.ArrayList;
 import java.util.List;

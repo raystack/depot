@@ -77,7 +77,7 @@ public class BigTableClient {
 
     private void tableExists(String tableId) throws BigTableInvalidSchemaException {
         if (!bigtableTableAdminClient.exists(tableId)) {
-            throw new BigTableInvalidSchemaException("Table: " + tableId + " does not exist");
+            throw new BigTableInvalidSchemaException(String.format("Table: %s does not exist", tableId));
         }
     }
 
@@ -91,7 +91,7 @@ public class BigTableClient {
         Set<String> columnFamilies = new JSONObject(inputOutputFieldMapping).keySet();
         for (String columnFamily : columnFamilies) {
             if (!existingColumnFamilies.contains(columnFamily)) {
-                throw new BigTableInvalidSchemaException("Column family: " + columnFamily + " does not exist!");
+                throw new BigTableInvalidSchemaException(String.format("Column family: %s does not exist!", columnFamily));
             }
         }
     }

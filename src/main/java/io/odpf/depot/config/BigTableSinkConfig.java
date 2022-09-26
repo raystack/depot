@@ -16,8 +16,6 @@ public interface BigTableSinkConfig extends OdpfSinkConfig {
     @Key("SINK_BIGTABLE_ROW_KEY_TEMPLATE")
     String getRowKeyTemplate();
 
-
     @Key("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING")
-    @DefaultValue("{}")
     String getColumnFamilyMapping();
 }
