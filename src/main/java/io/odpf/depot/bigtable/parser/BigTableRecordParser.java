@@ -4,7 +4,6 @@ import com.google.cloud.bigtable.data.v2.models.RowMutationEntry;
 import io.odpf.depot.bigtable.model.BigTableRecord;
 import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.common.Tuple;
-import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.message.OdpfMessage;
@@ -17,20 +16,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BigTableRecordParser {
-    private final BigTableSinkConfig sinkConfig;
     private final OdpfMessageParser odpfMessageParser;
     private final BigTableRowKeyParser bigTableRowKeyParser;
     private final BigTableSchema bigTableSchema;
     private final OdpfMessageSchema schema;
     private final Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema;
 
-    public BigTableRecordParser(BigTableSinkConfig sinkConfig,
-                                OdpfMessageParser odpfMessageParser,
+    public BigTableRecordParser(OdpfMessageParser odpfMessageParser,
                                 BigTableRowKeyParser bigTableRowKeyParser,
                                 Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema,
                                 OdpfMessageSchema schema,
                                 BigTableSchema bigTableSchema) {
-        this.sinkConfig = sinkConfig;
         this.odpfMessageParser = odpfMessageParser;
         this.bigTableRowKeyParser = bigTableRowKeyParser;
         this.modeAndSchema = modeAndSchema;
@@ -50,9 +46,9 @@ public class BigTableRecordParser {
 
     private BigTableRecord createRecord(OdpfMessage message, long index) {
         try {
-            String rowKey = bigTableRowKeyParser.parse(sinkConfig.getRowKeyTemplate(), message);
-            RowMutationEntry rowMutationEntry = RowMutationEntry.create(rowKey);
             ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, modeAndSchema.getFirst(), modeAndSchema.getSecond());
+            String rowKey = bigTableRowKeyParser.parse(parsedOdpfMessage);
+            RowMutationEntry rowMutationEntry = RowMutationEntry.create(rowKey);
             bigTableSchema.getColumnFamilies().forEach(
                     columnFamily -> bigTableSchema
                             .getColumns(columnFamily)

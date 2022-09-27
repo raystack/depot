@@ -6,6 +6,7 @@ import io.odpf.depot.bigtable.client.BigTableClient;
 import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.bigtable.parser.BigTableRecordParser;
 import io.odpf.depot.bigtable.parser.BigTableRowKeyParser;
+import io.odpf.depot.common.Template;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
@@ -36,15 +37,17 @@ public class BigTableSinkFactory {
 
     public void init() {
         try {
-            BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser();
             BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
             bigTableClient = new BigTableClient(sinkConfig, bigtableSchema);
             bigTableClient.validateBigTableSchema();
+
             Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
             OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
             OdpfMessageSchema schema = odpfMessageParser.getSchema(modeAndSchema.getSecond());
+
+            Template keyTemplate = new Template(sinkConfig.getRowKeyTemplate());
+            BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(keyTemplate, schema);
             bigTableRecordParser = new BigTableRecordParser(
-                    sinkConfig,
                     odpfMessageParser,
                     bigTableRowKeyParser,
                     modeAndSchema,
