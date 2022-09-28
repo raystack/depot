@@ -4,8 +4,8 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.exception.UnknownFieldsException;
 import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.UnknownFieldsException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.proto.converter.fields.NestedProtoField;
@@ -130,18 +130,19 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
 
     public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
         String[] keys = name.split("\\.");
-        Map<String, Object> fields = getMapping(odpfMessageSchema);
-        for (String key: keys) {
-            Object localValue = fields.get(key);
-            if (localValue == null) {
+        DynamicMessage message = dynamicMessage;
+        for (String key : keys) {
+            Descriptors.FieldDescriptor descriptor = message.getDescriptorForType().findFieldByName(key);
+            if (descriptor == null) {
                 throw new ConfigurationException("Invalid field config : " + name);
             }
-            if (localValue instanceof Map) {
-                fields = (Map<String, Object>) localValue;
+            Object localValue = message.getField(descriptor);
+            if (localValue instanceof DynamicMessage) {
+                message = (DynamicMessage) localValue;
             } else {
                 return localValue;
             }
         }
-        return fields;
+        return message;
     }
 }
