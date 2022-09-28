@@ -129,20 +129,22 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
 
 
     public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
+        if (name == null || name.isEmpty()) {
+            throw new ConfigurationException("Invalid field config : name can not be empty");
+        }
         String[] keys = name.split("\\.");
-        DynamicMessage message = dynamicMessage;
+        Object currentValue = dynamicMessage;
         for (String key : keys) {
+            if (!(currentValue instanceof DynamicMessage)) {
+                throw new ConfigurationException("Invalid field config : " + name);
+            }
+            DynamicMessage message = (DynamicMessage) currentValue;
             Descriptors.FieldDescriptor descriptor = message.getDescriptorForType().findFieldByName(key);
             if (descriptor == null) {
                 throw new ConfigurationException("Invalid field config : " + name);
             }
-            Object localValue = message.getField(descriptor);
-            if (localValue instanceof DynamicMessage) {
-                message = (DynamicMessage) localValue;
-            } else {
-                return localValue;
-            }
+            currentValue = message.getField(descriptor);
         }
-        return message;
+        return currentValue;
     }
 }
