@@ -4,6 +4,7 @@ import io.odpf.depot.TestBookingLogKey;
 import io.odpf.depot.TestBookingLogMessage;
 import io.odpf.depot.TestServiceType;
 import io.odpf.depot.bigtable.model.BigTableRecord;
+import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.message.OdpfMessage;
@@ -22,10 +23,10 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 
 public class BigTableRecordParserTest {
@@ -56,8 +57,8 @@ public class BigTableRecordParserTest {
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
-
-        bigTableRecordParser = new BigTableRecordParser(sinkConfig, protoOdpfMessageParser, new BigTableRowKeyParser(), modeAndSchema, schema);
+        BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
+        bigTableRecordParser = new BigTableRecordParser(sinkConfig, protoOdpfMessageParser, new BigTableRowKeyParser(), modeAndSchema, schema, bigtableSchema);
     }
 
     @Test

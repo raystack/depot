@@ -6,11 +6,11 @@ import org.json.JSONObject;
 import java.util.HashSet;
 import java.util.Set;
 
-public class BigtableSchema {
+public class BigTableSchema {
 
     private final JSONObject columnFamilyMapping;
 
-    public BigtableSchema(String columnMapping) {
+    public BigTableSchema(String columnMapping) {
         if (columnMapping == null || columnMapping.isEmpty()) {
             throw new ConfigurationException("Column Mapping should not be empty or null");
         }

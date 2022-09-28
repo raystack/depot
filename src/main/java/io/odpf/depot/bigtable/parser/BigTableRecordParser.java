@@ -2,7 +2,7 @@ package io.odpf.depot.bigtable.parser;
 
 import com.google.cloud.bigtable.data.v2.models.RowMutationEntry;
 import io.odpf.depot.bigtable.model.BigTableRecord;
-import io.odpf.depot.bigtable.model.BigtableSchema;
+import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.error.ErrorInfo;
@@ -20,7 +20,7 @@ public class BigTableRecordParser {
     private final BigTableSinkConfig sinkConfig;
     private final OdpfMessageParser odpfMessageParser;
     private final BigTableRowKeyParser bigTableRowKeyParser;
-    private final BigtableSchema bigTableSchema;
+    private final BigTableSchema bigTableSchema;
     private final OdpfMessageSchema schema;
     private final Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema;
 
@@ -28,13 +28,14 @@ public class BigTableRecordParser {
                                 OdpfMessageParser odpfMessageParser,
                                 BigTableRowKeyParser bigTableRowKeyParser,
                                 Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema,
-                                OdpfMessageSchema schema) {
+                                OdpfMessageSchema schema,
+                                BigTableSchema bigTableSchema) {
         this.sinkConfig = sinkConfig;
         this.odpfMessageParser = odpfMessageParser;
         this.bigTableRowKeyParser = bigTableRowKeyParser;
         this.modeAndSchema = modeAndSchema;
-        this.bigTableSchema = new BigtableSchema(sinkConfig.getColumnFamilyMapping());
         this.schema = schema;
+        this.bigTableSchema = bigTableSchema;
     }
 
     public List<BigTableRecord> convert(List<OdpfMessage> messages) {

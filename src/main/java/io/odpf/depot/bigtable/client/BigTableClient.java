@@ -11,7 +11,7 @@ import com.google.cloud.bigtable.data.v2.models.BulkMutation;
 import com.google.cloud.bigtable.data.v2.models.MutateRowsException;
 import io.odpf.depot.bigtable.exception.BigTableInvalidSchemaException;
 import io.odpf.depot.bigtable.model.BigTableRecord;
-import io.odpf.depot.bigtable.model.BigtableSchema;
+import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.bigtable.response.BigTableResponse;
 import io.odpf.depot.config.BigTableSinkConfig;
 
@@ -25,13 +25,13 @@ public class BigTableClient {
     private final BigtableTableAdminClient bigtableTableAdminClient;
     private final BigtableDataClient bigtableDataClient;
     private final BigTableSinkConfig sinkConfig;
-    private final BigtableSchema bigtableSchema;
+    private final BigTableSchema bigtableSchema;
 
-    public BigTableClient(BigTableSinkConfig sinkConfig, BigtableSchema bigtableSchema) throws IOException {
+    public BigTableClient(BigTableSinkConfig sinkConfig, BigTableSchema bigtableSchema) throws IOException {
         this(sinkConfig, getBigTableDataClient(sinkConfig), getBigTableAdminClient(sinkConfig), bigtableSchema);
     }
 
-    public BigTableClient(BigTableSinkConfig sinkConfig, BigtableDataClient bigtableDataClient, BigtableTableAdminClient bigtableTableAdminClient, BigtableSchema bigtableSchema) {
+    public BigTableClient(BigTableSinkConfig sinkConfig, BigtableDataClient bigtableDataClient, BigtableTableAdminClient bigtableTableAdminClient, BigTableSchema bigtableSchema) {
         this.sinkConfig = sinkConfig;
         this.bigtableDataClient = bigtableDataClient;
         this.bigtableTableAdminClient = bigtableTableAdminClient;

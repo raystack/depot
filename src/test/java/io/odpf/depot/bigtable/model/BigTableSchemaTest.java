@@ -13,8 +13,8 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BigtableSchemaTest {
-    private BigtableSchema bigtableSchema;
+public class BigTableSchemaTest {
+    private BigTableSchema bigtableSchema;
 
     @Before
     public void setUp() {
@@ -29,7 +29,7 @@ public class BigtableSchemaTest {
                 + "}\n"
                 + "}");
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
-        bigtableSchema = new BigtableSchema(sinkConfig.getColumnFamilyMapping());
+        bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
     }
 
     @Test
@@ -64,7 +64,7 @@ public class BigtableSchemaTest {
     public void shouldThrowConfigurationExceptionWhenColumnMappingIsEmpty() {
         System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "");
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
-        ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> new BigtableSchema(sinkConfig.getColumnFamilyMapping()));
+        ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> new BigTableSchema(sinkConfig.getColumnFamilyMapping()));
         Assert.assertEquals("Column Mapping should not be empty or null", configurationException.getMessage());
     }
 
@@ -72,7 +72,7 @@ public class BigtableSchemaTest {
     public void shouldReturnEmptySetIfNoColumnFamilies() {
         System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{}");
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
-        bigtableSchema = new BigtableSchema(sinkConfig.getColumnFamilyMapping());
+        bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
         Set<String> columnFamilies = bigtableSchema.getColumnFamilies();
         Assert.assertEquals(0, columnFamilies.size());
     }
@@ -87,7 +87,7 @@ public class BigtableSchemaTest {
                 + "\"family_name2\" : {}\n"
                 + "}");
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
-        bigtableSchema = new BigtableSchema(sinkConfig.getColumnFamilyMapping());
+        bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
         Set<String> columnFamilies = bigtableSchema.getColumnFamilies();
         Assert.assertEquals(2, columnFamilies.size());
         Set<String> columns = bigtableSchema.getColumns("family_name2");
@@ -104,7 +104,7 @@ public class BigtableSchemaTest {
                 + "\"family_name2\" : {}\n"
                 + "}");
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
-        bigtableSchema = new BigtableSchema(sinkConfig.getColumnFamilyMapping());
+        bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
         Set<String> columnFamilies = bigtableSchema.getColumnFamilies();
         Assert.assertEquals(2, columnFamilies.size());
         JSONException jsonException = assertThrows(JSONException.class, () -> bigtableSchema.getColumns("family_name3"));
