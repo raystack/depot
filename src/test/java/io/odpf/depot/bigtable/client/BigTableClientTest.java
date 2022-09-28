@@ -10,7 +10,7 @@ import com.google.cloud.bigtable.data.v2.models.MutateRowsException;
 import com.google.cloud.bigtable.data.v2.models.RowMutationEntry;
 import io.odpf.depot.bigtable.exception.BigTableInvalidSchemaException;
 import io.odpf.depot.bigtable.model.BigTableRecord;
-import io.odpf.depot.bigtable.model.BigtableSchema;
+import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.bigtable.response.BigTableResponse;
 import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
@@ -58,7 +58,7 @@ public class BigTableClientTest {
         BigTableRecord bigTableRecord2 = new BigTableRecord(rowMutationEntry, 2, null, true);
         validRecords = Collections.list(bigTableRecord1, bigTableRecord2);
         sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
-        BigtableSchema schema = new BigtableSchema(sinkConfig.getColumnFamilyMapping());
+        BigTableSchema schema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
         bigTableClient = new BigTableClient(sinkConfig, bigTableDataClient, bigtableTableAdminClient, schema);
     }
 
