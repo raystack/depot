@@ -5,6 +5,7 @@ import io.odpf.depot.TestBookingLogMessage;
 import io.odpf.depot.TestServiceType;
 import io.odpf.depot.bigtable.model.BigTableRecord;
 import io.odpf.depot.bigtable.model.BigTableSchema;
+import io.odpf.depot.common.Template;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.message.OdpfMessage;
@@ -43,6 +44,8 @@ public class BigTableRecordParserTest {
         System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "io.odpf.depot.TestBookingLogMessage");
         System.setProperty("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", String.valueOf(SinkConnectorSchemaMessageMode.LOG_MESSAGE));
         System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{}");
+        System.setProperty("SINK_BIGTABLE_ROW_KEY_TEMPLATE", "row-key-constant-string");
+
 
         TestBookingLogKey bookingLogKey1 = TestBookingLogKey.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1").build();
         TestBookingLogMessage bookingLogMessage1 = TestBookingLogMessage.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1").setServiceType(TestServiceType.Enum.GO_SEND).build();
@@ -58,7 +61,8 @@ public class BigTableRecordParserTest {
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
         BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
-        bigTableRecordParser = new BigTableRecordParser(sinkConfig, protoOdpfMessageParser, new BigTableRowKeyParser(), modeAndSchema, schema, bigtableSchema);
+
+        bigTableRecordParser = new BigTableRecordParser(protoOdpfMessageParser, new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema), modeAndSchema, schema, bigtableSchema);
     }
 
     @Test

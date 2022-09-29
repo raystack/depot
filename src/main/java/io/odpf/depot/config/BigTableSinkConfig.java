@@ -1,5 +1,8 @@
 package io.odpf.depot.config;
 
+import org.aeonbits.owner.Config;
+
+@Config.DisableFeature(Config.DisableableFeature.PARAMETER_FORMATTING)
 public interface BigTableSinkConfig extends OdpfSinkConfig {
     @Key("SINK_BIGTABLE_GOOGLE_CLOUD_PROJECT_ID")
     String getGCloudProjectID();

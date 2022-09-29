@@ -1,4 +1,4 @@
-package io.odpf.depot.redis.parsers;
+package io.odpf.depot.common;
 
 import com.google.common.base.Splitter;
 import io.odpf.depot.message.OdpfMessageSchema;

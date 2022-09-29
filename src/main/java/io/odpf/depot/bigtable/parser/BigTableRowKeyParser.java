@@ -1,14 +1,16 @@
 package io.odpf.depot.bigtable.parser;
 
-import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.common.Template;
+import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.ParsedOdpfMessage;
+import lombok.AllArgsConstructor;
 
-import java.util.Random;
-
+@AllArgsConstructor
 public class BigTableRowKeyParser {
-    public String parse(String rowKeyTemplate, OdpfMessage message) {
-        Random rand = new Random();
-        int n = rand.nextInt();
-        System.out.println("Rowkey created: key-test-" + n);
-        return "key-test-" + n;
+    private final Template keyTemplate;
+    private final OdpfMessageSchema schema;
+
+    public String parse(ParsedOdpfMessage parsedOdpfMessage) {
+        return keyTemplate.parse(parsedOdpfMessage, schema);
     }
 }
