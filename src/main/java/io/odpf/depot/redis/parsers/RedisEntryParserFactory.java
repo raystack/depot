@@ -1,5 +1,6 @@
 package io.odpf.depot.redis.parsers;
 
+import io.odpf.depot.common.Template;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.metrics.StatsDReporter;

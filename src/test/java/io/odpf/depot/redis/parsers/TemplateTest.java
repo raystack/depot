@@ -5,6 +5,7 @@ import io.odpf.depot.TestBookingLogMessage;
 import io.odpf.depot.TestKey;
 import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestMessage;
+import io.odpf.depot.common.Template;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
 import io.odpf.depot.message.OdpfMessage;
