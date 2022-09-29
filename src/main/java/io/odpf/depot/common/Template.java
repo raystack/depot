@@ -15,7 +15,7 @@ public class Template {
 
     public Template(String template) throws InvalidTemplateException {
         if (template == null || template.isEmpty()) {
-            throw new InvalidTemplateException("Template '" + template + "' is invalid");
+            throw new InvalidTemplateException("Template cannot be empty");
         }
         List<String> templateStrings = new ArrayList<>();
         Splitter.on(",").omitEmptyStrings().split(template).forEach(s -> templateStrings.add(s.trim()));

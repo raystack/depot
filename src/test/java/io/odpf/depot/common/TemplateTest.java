@@ -92,13 +92,13 @@ public class TemplateTest {
     @Test
     public void shouldThrowExceptionForNullCollectionKeyTemplate() {
         InvalidTemplateException e = assertThrows(InvalidTemplateException.class, () -> new Template(null));
-        assertEquals("Template 'null' is invalid", e.getMessage());
+        assertEquals("Template cannot be empty", e.getMessage());
     }
 
     @Test
     public void shouldThrowExceptionForEmptyCollectionKeyTemplate() {
         InvalidTemplateException e = assertThrows(InvalidTemplateException.class, () -> new Template(""));
-        assertEquals("Template '' is invalid", e.getMessage());
+        assertEquals("Template cannot be empty", e.getMessage());
     }
 
     @Test
