@@ -8,6 +8,7 @@ import io.odpf.depot.TestNestedMessage;
 import io.odpf.depot.TestNestedRepeatedMessage;
 import io.odpf.depot.common.Template;
 import io.odpf.depot.config.BigTableSinkConfig;
+import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
@@ -34,7 +35,7 @@ public class BigTableRowKeyParserTest {
     }};
 
     @Test
-    public void shouldReturnParsedRowKeyForValidParameterisedTemplate() throws IOException {
+    public void shouldReturnParsedRowKeyForValidParameterisedTemplate() throws IOException, InvalidTemplateException {
         System.setProperty("SINK_BIGTABLE_ROW_KEY_TEMPLATE", "row-%s$key#%s*test,order_number,order_details");
         System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "io.odpf.depot.TestMessage");
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
@@ -56,7 +57,7 @@ public class BigTableRowKeyParserTest {
     }
 
     @Test
-    public void shouldReturnTheRowKeySameAsTemplateWhenTemplateIsValidAndContainsOnlyConstantStrings() throws IOException {
+    public void shouldReturnTheRowKeySameAsTemplateWhenTemplateIsValidAndContainsOnlyConstantStrings() throws IOException, InvalidTemplateException {
         System.setProperty("SINK_BIGTABLE_ROW_KEY_TEMPLATE", "row-key#constant$String");
         System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "io.odpf.depot.TestMessage");
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
@@ -86,7 +87,7 @@ public class BigTableRowKeyParserTest {
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(sinkConfig, new StatsDReporter(new NoOpStatsDClient()), null);
         OdpfMessageSchema schema = odpfMessageParser.getSchema(sinkConfig.getSinkConnectorSchemaProtoMessageClass(), descriptorsMap);
 
-        IllegalArgumentException illegalArgumentException = Assertions.assertThrows(IllegalArgumentException.class, () -> new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema));
+        InvalidTemplateException illegalArgumentException = Assertions.assertThrows(InvalidTemplateException.class, () -> new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema));
         assertEquals("Template is not valid, variables=1, validArgs=1, values=0", illegalArgumentException.getMessage());
     }
 

@@ -10,6 +10,7 @@ import io.odpf.depot.common.Template;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.message.OdpfMessageSchema;
@@ -53,7 +54,7 @@ public class BigTableSinkFactory {
                     modeAndSchema,
                     schema,
                     bigtableSchema);
-        } catch (IOException e) {
+        } catch (IOException | InvalidTemplateException e) {
             throw new ConfigurationException("Exception occurred while creating sink", e);
         }
     }

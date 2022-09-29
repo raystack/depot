@@ -44,16 +44,15 @@ public class RedisListEntryParserTest {
     @Mock
     private StatsDReporter statsDReporter;
     private RedisEntryParser redisListEntryParser;
-    private OdpfMessageSchema schema;
     private ParsedOdpfMessage parsedOdpfMessage;
 
-    private void redisSinkSetup(String template, String field) throws IOException {
+    private void redisSinkSetup(String field) throws IOException {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
         when(redisSinkConfig.getSinkRedisListDataFieldName()).thenReturn(field);
-        when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn(template);
+        when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn("test-key");
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
         String schemaClass = "io.odpf.depot.TestMessage";
-        schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
+        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         byte[] logMessage = TestMessage.newBuilder()
                 .setOrderNumber("xyz-order")
                 .setOrderDetails("new-eureka-order")
@@ -66,7 +65,7 @@ public class RedisListEntryParserTest {
 
     @Test
     public void shouldConvertParsedOdpfMessageToRedisListEntry() throws IOException {
-        redisSinkSetup("test-key", "order_details");
+        redisSinkSetup("order_details");
         List<RedisEntry> redisDataEntries = redisListEntryParser.getRedisEntry(parsedOdpfMessage);
         RedisListEntry expectedEntry = new RedisListEntry("test-key", "new-eureka-order", null);
         assertEquals(Collections.singletonList(expectedEntry), redisDataEntries);
@@ -74,7 +73,7 @@ public class RedisListEntryParserTest {
 
     @Test
     public void shouldThrowExceptionForInvalidKeyValueDataFieldName() throws IOException {
-        redisSinkSetup("test-key", "random-field");
+        redisSinkSetup("random-field");
         ConfigurationException configurationException =
                 assertThrows(ConfigurationException.class, () -> redisListEntryParser.getRedisEntry(parsedOdpfMessage));
         assertEquals("Invalid field config : random-field", configurationException.getMessage());
