@@ -8,6 +8,7 @@ import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.common.Template;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.BigTableSinkConfig;
+import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
@@ -40,7 +41,7 @@ public class BigTableRecordParserTest {
     private List<OdpfMessage> messages;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, InvalidTemplateException {
         System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "io.odpf.depot.TestBookingLogMessage");
         System.setProperty("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", String.valueOf(SinkConnectorSchemaMessageMode.LOG_MESSAGE));
         System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{}");

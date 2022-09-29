@@ -1,6 +1,7 @@
 package io.odpf.depot.common;
 
 import com.google.common.base.Splitter;
+import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.utils.StringUtils;
@@ -12,9 +13,9 @@ public class Template {
     private final String templatePattern;
     private final List<String> patternVariableFieldNames;
 
-    public Template(String template) {
+    public Template(String template) throws InvalidTemplateException {
         if (template == null || template.isEmpty()) {
-            throw new IllegalArgumentException("Template '" + template + "' is invalid");
+            throw new InvalidTemplateException("Template '" + template + "' is invalid");
         }
         List<String> templateStrings = new ArrayList<>();
         Splitter.on(",").omitEmptyStrings().split(template).forEach(s -> templateStrings.add(s.trim()));
@@ -23,12 +24,12 @@ public class Template {
         validate();
     }
 
-    private void validate() {
+    private void validate() throws InvalidTemplateException {
         int validArgs = StringUtils.countVariables(templatePattern);
         int values = patternVariableFieldNames.size();
         int variables = StringUtils.count(templatePattern, '%');
         if (validArgs != values || variables != values) {
-            throw new IllegalArgumentException(String.format("Template is not valid, variables=%d, validArgs=%d, values=%d", variables, validArgs, values));
+            throw new InvalidTemplateException(String.format("Template is not valid, variables=%d, validArgs=%d, values=%d", variables, validArgs, values));
         }
     }
 
