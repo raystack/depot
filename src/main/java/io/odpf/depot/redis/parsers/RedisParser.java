@@ -40,6 +40,8 @@ public class RedisParser {
                 for (RedisEntry redisEntry : redisDataEntries) {
                     records.add(new RedisRecord(redisEntry, (long) index, null, messages.get(index).getMetadataString(), true));
                 }
+            } catch (UnsupportedOperationException e) {
+                records.add(createAndLogErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, index, messages));
             } catch (ConfigurationException e) {
                 records.add(createAndLogErrorRecord(e, ErrorType.UNKNOWN_FIELDS_ERROR, index, messages));
             } catch (IllegalArgumentException e) {
