@@ -1,10 +1,15 @@
 package io.odpf.depot.redis.parsers;
 
 import com.google.protobuf.Descriptors;
-import io.odpf.depot.*;
+import io.odpf.depot.TestKey;
+import io.odpf.depot.TestMessage;
+import io.odpf.depot.TestNestedMessage;
+import io.odpf.depot.TestNestedRepeatedMessage;
 import io.odpf.depot.config.RedisSinkConfig;
-import io.odpf.depot.exception.ConfigurationException;
-import io.odpf.depot.message.*;
+import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.client.entry.RedisEntry;
@@ -27,20 +32,19 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisKeyValueEntryParserTest {
-    @Mock
-    private RedisSinkConfig redisSinkConfig;
-    @Mock
-    private StatsDReporter statsDReporter;
-    private RedisEntryParser redisKeyValueEntryParser;
-
-    private OdpfMessageSchema schema;
-    private ParsedOdpfMessage parsedOdpfMessage;
     private final Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
         put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
         put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
         put(String.format("%s", TestNestedMessage.class.getName()), TestNestedMessage.getDescriptor());
         put(String.format("%s", TestNestedRepeatedMessage.class.getName()), TestNestedRepeatedMessage.getDescriptor());
     }};
+    @Mock
+    private RedisSinkConfig redisSinkConfig;
+    @Mock
+    private StatsDReporter statsDReporter;
+    private RedisEntryParser redisKeyValueEntryParser;
+    private OdpfMessageSchema schema;
+    private ParsedOdpfMessage parsedOdpfMessage;
 
     private void redisSinkSetup(String template, String field) throws IOException {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.KEYVALUE);
@@ -70,8 +74,8 @@ public class RedisKeyValueEntryParserTest {
     @Test
     public void shouldThrowExceptionForInvalidKeyValueDataFieldName() throws IOException {
         redisSinkSetup("test-key", "random-field");
-        ConfigurationException configurationException =
-                assertThrows(ConfigurationException.class, () -> redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage));
-        assertEquals("Invalid field config : random-field", configurationException.getMessage());
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage));
+        assertEquals("Invalid field config : random-field", exception.getMessage());
     }
 }
