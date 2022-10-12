@@ -11,10 +11,12 @@ import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class BigTableRecordParser {
     private final OdpfMessageParser odpfMessageParser;
     private final BigTableRowKeyParser bigTableRowKeyParser;
@@ -57,7 +59,11 @@ public class BigTableRecordParser {
                                 String value = String.valueOf(parsedOdpfMessage.getFieldByName(fieldName, schema));
                                 rowMutationEntry.setCell(columnFamily, column, value);
                             }));
-            return new BigTableRecord(rowMutationEntry, index, null, true);
+            BigTableRecord bigTableRecord = new BigTableRecord(rowMutationEntry, index, null, true);
+            if (log.isDebugEnabled()) {
+                log.debug(bigTableRecord.toString());
+            }
+            return bigTableRecord;
         } catch (Exception e) {
             ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR);
             return new BigTableRecord(null, index, errorInfo, false);
