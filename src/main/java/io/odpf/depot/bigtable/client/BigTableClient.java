@@ -14,9 +14,12 @@ import io.odpf.depot.bigtable.model.BigTableRecord;
 import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.bigtable.response.BigTableResponse;
 import io.odpf.depot.config.BigTableSinkConfig;
+import io.odpf.depot.metrics.BigTableMetrics;
+import io.odpf.depot.metrics.Instrumentation;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,16 +29,20 @@ public class BigTableClient {
     private final BigtableDataClient bigtableDataClient;
     private final BigTableSinkConfig sinkConfig;
     private final BigTableSchema bigtableSchema;
+    private final BigTableMetrics bigtableMetrics;
+    private final Instrumentation instrumentation;
 
-    public BigTableClient(BigTableSinkConfig sinkConfig, BigTableSchema bigtableSchema) throws IOException {
-        this(sinkConfig, getBigTableDataClient(sinkConfig), getBigTableAdminClient(sinkConfig), bigtableSchema);
+    public BigTableClient(BigTableSinkConfig sinkConfig, BigTableSchema bigtableSchema, BigTableMetrics bigtableMetrics, Instrumentation instrumentation) throws IOException {
+        this(sinkConfig, getBigTableDataClient(sinkConfig), getBigTableAdminClient(sinkConfig), bigtableSchema, bigtableMetrics, instrumentation);
     }
 
-    public BigTableClient(BigTableSinkConfig sinkConfig, BigtableDataClient bigtableDataClient, BigtableTableAdminClient bigtableTableAdminClient, BigTableSchema bigtableSchema) {
+    public BigTableClient(BigTableSinkConfig sinkConfig, BigtableDataClient bigtableDataClient, BigtableTableAdminClient bigtableTableAdminClient, BigTableSchema bigtableSchema, BigTableMetrics bigtableMetrics, Instrumentation instrumentation) {
         this.sinkConfig = sinkConfig;
         this.bigtableDataClient = bigtableDataClient;
         this.bigtableTableAdminClient = bigtableTableAdminClient;
         this.bigtableSchema = bigtableSchema;
+        this.bigtableMetrics = bigtableMetrics;
+        this.instrumentation = instrumentation;
     }
 
     private static BigtableDataClient getBigTableDataClient(BigTableSinkConfig sinkConfig) throws IOException {
@@ -63,7 +70,18 @@ public class BigTableClient {
             batch.add(record.getRowMutationEntry());
         }
         try {
+            Instant startTime = Instant.now();
             bigtableDataClient.bulkMutateRows(batch);
+            instrumentation.captureDurationSince(
+                    bigtableMetrics.getBigtableOperationLatencyMetric(),
+                    startTime,
+                    String.format(BigTableMetrics.BIGTABLE_INSTANCE_TAG, sinkConfig.getInstanceId()),
+                    String.format(BigTableMetrics.BIGTABLE_TABLE_TAG, sinkConfig.getTableId()));
+            instrumentation.captureCount(
+                    bigtableMetrics.getBigtableOperationTotalMetric(),
+                    (long) batch.getEntryCount(),
+                    String.format(BigTableMetrics.BIGTABLE_INSTANCE_TAG, sinkConfig.getInstanceId()),
+                    String.format(BigTableMetrics.BIGTABLE_TABLE_TAG, sinkConfig.getTableId()));
         } catch (MutateRowsException e) {
             List<MutateRowsException.FailedMutation> failedMutations = e.getFailedMutations();
             bigTableResponse = new BigTableResponse(failedMutations);
@@ -74,13 +92,15 @@ public class BigTableClient {
 
     public void validateBigTableSchema() throws BigTableInvalidSchemaException {
         String tableId = sinkConfig.getTableId();
+        instrumentation.logDebug(String.format("Validating schema for table: %s...", tableId));
         checkIfTableExists(tableId);
         checkIfColumnFamiliesExist(tableId);
+        instrumentation.logDebug("Validation complete, Schema is valid.");
     }
 
     private void checkIfTableExists(String tableId) throws BigTableInvalidSchemaException {
         if (!bigtableTableAdminClient.exists(tableId)) {
-            throw new BigTableInvalidSchemaException(String.format("Table: %s does not exist", tableId));
+            throw new BigTableInvalidSchemaException(String.format("Table: %s does not exist!", tableId));
         }
     }
 
