@@ -9,6 +9,7 @@ import io.odpf.depot.bigtable.parser.BigTableResponseParser;
 import io.odpf.depot.bigtable.response.BigTableResponse;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.metrics.Instrumentation;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,10 +19,12 @@ import java.util.stream.Collectors;
 public class BigTableSink implements OdpfSink {
     private final BigTableClient bigTableClient;
     private final BigTableRecordParser bigTableRecordParser;
+    private final Instrumentation instrumentation;
 
-    public BigTableSink(BigTableClient bigTableClient, BigTableRecordParser bigTableRecordParser) {
+    public BigTableSink(BigTableClient bigTableClient, BigTableRecordParser bigTableRecordParser, Instrumentation instrumentation) {
         this.bigTableClient = bigTableClient;
         this.bigTableRecordParser = bigTableRecordParser;
+        this.instrumentation = instrumentation;
     }
 
     @Override
@@ -40,6 +43,7 @@ public class BigTableSink implements OdpfSink {
                 Map<Long, ErrorInfo> errorInfoMap = BigTableResponseParser.parseAndFillOdpfSinkResponse(validRecords, bigTableResponse);
                 errorInfoMap.forEach(odpfSinkResponse::addErrors);
             }
+            instrumentation.logInfo("Pushed a batch of {} records to BigTable.", validRecords.size());
         }
 
         return odpfSinkResponse;

@@ -15,6 +15,8 @@ import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import io.odpf.depot.metrics.BigTableMetrics;
+import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.utils.MessageConfigUtils;
 
@@ -38,8 +40,20 @@ public class BigTableSinkFactory {
 
     public void init() {
         try {
+            Instrumentation instrumentation = new Instrumentation(statsDReporter, BigTableSinkFactory.class);
+            String bigtableConfig = String.format("\n\tbigtable.gcloud.project = %s\n\tbigtable.instance = %s\n\tbigtable.table = %s"
+                            + "\n\tbigtable.credential.path = %s\n\tbigtable.row.key.template = %s\n\tbigtable.column.family.mapping = %s\n\t",
+                    sinkConfig.getGCloudProjectID(),
+                    sinkConfig.getInstanceId(),
+                    sinkConfig.getTableId(),
+                    sinkConfig.getCredentialPath(),
+                    sinkConfig.getRowKeyTemplate(),
+                    sinkConfig.getColumnFamilyMapping());
+
+            instrumentation.logInfo(bigtableConfig);
             BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
-            bigTableClient = new BigTableClient(sinkConfig, bigtableSchema);
+            BigTableMetrics bigtableMetrics = new BigTableMetrics(sinkConfig);
+            bigTableClient = new BigTableClient(sinkConfig, bigtableSchema, bigtableMetrics, new Instrumentation(statsDReporter, BigTableClient.class));
             bigTableClient.validateBigTableSchema();
 
             Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
@@ -54,6 +68,7 @@ public class BigTableSinkFactory {
                     modeAndSchema,
                     schema,
                     bigtableSchema);
+            instrumentation.logInfo("Connection to bigtable established successfully");
         } catch (IOException | InvalidTemplateException e) {
             throw new ConfigurationException("Exception occurred while creating sink", e);
         }
@@ -62,6 +77,7 @@ public class BigTableSinkFactory {
     public OdpfSink create() {
         return new BigTableSink(
                 bigTableClient,
-                bigTableRecordParser);
+                bigTableRecordParser,
+                new Instrumentation(statsDReporter, BigTableSink.class));
     }
 }

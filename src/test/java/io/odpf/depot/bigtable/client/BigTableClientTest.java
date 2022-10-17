@@ -14,12 +14,15 @@ import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.bigtable.response.BigTableResponse;
 import io.odpf.depot.config.BigTableSinkConfig;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import io.odpf.depot.metrics.BigTableMetrics;
+import io.odpf.depot.metrics.Instrumentation;
 import org.aeonbits.owner.ConfigFactory;
 import org.aeonbits.owner.util.Collections;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
@@ -27,7 +30,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 
 public class BigTableClientTest {
 
@@ -37,6 +44,10 @@ public class BigTableClientTest {
     private BigtableTableAdminClient bigtableTableAdminClient;
     @Mock
     private ApiException apiException;
+    @Mock
+    private BigTableMetrics bigtableMetrics;
+    @Mock
+    private Instrumentation instrumentation;
 
     private BigTableClient bigTableClient;
     private List<BigTableRecord> validRecords;
@@ -60,7 +71,7 @@ public class BigTableClientTest {
         validRecords = Collections.list(bigTableRecord1, bigTableRecord2);
         sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
         BigTableSchema schema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
-        bigTableClient = new BigTableClient(sinkConfig, bigTableDataClient, bigtableTableAdminClient, schema);
+        bigTableClient = new BigTableClient(sinkConfig, bigTableDataClient, bigtableTableAdminClient, schema, bigtableMetrics, instrumentation);
     }
 
     @Test
@@ -93,7 +104,7 @@ public class BigTableClientTest {
         try {
             bigTableClient.validateBigTableSchema();
         } catch (BigTableInvalidSchemaException e) {
-            Assert.assertEquals("Table: " + sinkConfig.getTableId() + " does not exist", e.getMessage());
+            Assert.assertEquals("Table: " + sinkConfig.getTableId() + " does not exist!", e.getMessage());
         }
     }
 
@@ -111,5 +122,21 @@ public class BigTableClientTest {
         } catch (BigTableInvalidSchemaException e) {
             Assert.assertEquals("Column families [family-test] do not exist in table test-table!", e.getMessage());
         }
+    }
+
+    @Test
+    public void shouldCaptureBigtableMetricsWhenBulkMutateRowsDoesNotThrowAnException() {
+        doNothing().when(bigTableDataClient).bulkMutateRows(isA(BulkMutation.class));
+
+        bigTableClient.send(validRecords);
+
+        Mockito.verify(instrumentation, Mockito.times(1)).captureDurationSince(eq(bigtableMetrics.getBigtableOperationLatencyMetric()),
+                any(),
+                eq(String.format(BigTableMetrics.BIGTABLE_INSTANCE_TAG, sinkConfig.getInstanceId())),
+                eq(String.format(BigTableMetrics.BIGTABLE_TABLE_TAG, sinkConfig.getTableId())));
+        Mockito.verify(instrumentation, Mockito.times(1)).captureCount(eq(bigtableMetrics.getBigtableOperationTotalMetric()),
+                any(),
+                eq(String.format(BigTableMetrics.BIGTABLE_INSTANCE_TAG, sinkConfig.getInstanceId())),
+                eq(String.format(BigTableMetrics.BIGTABLE_TABLE_TAG, sinkConfig.getTableId())));
     }
 }

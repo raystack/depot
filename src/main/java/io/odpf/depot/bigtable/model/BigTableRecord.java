@@ -12,4 +12,9 @@ public class BigTableRecord {
     private final long index;
     private final ErrorInfo errorInfo;
     private final boolean valid;
+
+    @Override
+    public String toString() {
+        return String.format("RowMutationEntry: %s ValidRecord=%s", rowMutationEntry != null ? rowMutationEntry.toString() : "NULL", valid);
+    }
 }
