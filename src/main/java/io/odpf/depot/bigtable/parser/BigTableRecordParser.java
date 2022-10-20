@@ -6,13 +6,17 @@ import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.DeserializerException;
+import io.odpf.depot.exception.EmptyMessageException;
 import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,9 +68,17 @@ public class BigTableRecordParser {
                 log.debug(bigTableRecord.toString());
             }
             return bigTableRecord;
-        } catch (Exception e) {
-            ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR);
-            return new BigTableRecord(null, index, errorInfo, false);
+        } catch (EmptyMessageException e) {
+            return createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, index);
+        } catch (ConfigurationException e) {
+            return createErrorRecord(e, ErrorType.UNKNOWN_FIELDS_ERROR, index);
+        } catch (DeserializerException | IOException e) {
+            return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, index);
         }
+    }
+
+    private BigTableRecord createErrorRecord(Exception e, ErrorType type, long index) {
+        ErrorInfo errorInfo = new ErrorInfo(e, type);
+        return new BigTableRecord(null, index, errorInfo, false);
     }
 }

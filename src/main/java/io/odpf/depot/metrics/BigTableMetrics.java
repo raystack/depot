@@ -7,6 +7,8 @@ public class BigTableMetrics extends SinkMetrics {
     public static final String BIGTABLE_SINK_PREFIX = "bigtable_";
     public static final String BIGTABLE_INSTANCE_TAG = "instance=%s";
     public static final String BIGTABLE_TABLE_TAG = "table=%s";
+    public static final String BIGTABLE_ERROR_TAG = "error=%s";
+
     public BigTableMetrics(OdpfSinkConfig config) {
         super(config);
     }
@@ -17,5 +19,9 @@ public class BigTableMetrics extends SinkMetrics {
 
     public String getBigtableOperationTotalMetric() {
         return getApplicationPrefix() + SINK_PREFIX + BIGTABLE_SINK_PREFIX + "operation_total";
+    }
+
+    public String getBigtableTotalErrorsMetrics() {
+        return getApplicationPrefix() + SINK_PREFIX + BIGTABLE_SINK_PREFIX + "errors_total";
     }
 }

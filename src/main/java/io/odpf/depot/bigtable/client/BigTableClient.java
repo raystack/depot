@@ -63,7 +63,7 @@ public class BigTableClient {
         return BigtableTableAdminClient.create(settings);
     }
 
-    public BigTableResponse send(List<BigTableRecord> records) throws MutateRowsException {
+    public BigTableResponse send(List<BigTableRecord> records) {
         BigTableResponse bigTableResponse = null;
         BulkMutation batch = BulkMutation.create(sinkConfig.getTableId());
         for (BigTableRecord record : records) {
@@ -72,6 +72,7 @@ public class BigTableClient {
         try {
             Instant startTime = Instant.now();
             bigtableDataClient.bulkMutateRows(batch);
+
             instrumentation.captureDurationSince(
                     bigtableMetrics.getBigtableOperationLatencyMetric(),
                     startTime,
@@ -83,8 +84,8 @@ public class BigTableClient {
                     String.format(BigTableMetrics.BIGTABLE_INSTANCE_TAG, sinkConfig.getInstanceId()),
                     String.format(BigTableMetrics.BIGTABLE_TABLE_TAG, sinkConfig.getTableId()));
         } catch (MutateRowsException e) {
-            List<MutateRowsException.FailedMutation> failedMutations = e.getFailedMutations();
-            bigTableResponse = new BigTableResponse(failedMutations);
+            bigTableResponse = new BigTableResponse(e);
+            instrumentation.logError("Some entries failed to be applied.", e.getErrorDetails());
         }
 
         return bigTableResponse;

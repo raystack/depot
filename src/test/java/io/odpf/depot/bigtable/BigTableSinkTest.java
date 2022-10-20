@@ -11,6 +11,7 @@ import io.odpf.depot.bigtable.parser.BigTableRecordParser;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.metrics.BigTableMetrics;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import org.aeonbits.owner.util.Collections;
@@ -31,6 +32,8 @@ public class BigTableSinkTest {
     private BigTableClient bigTableClient;
     @Mock
     private StatsDReporter statsDReporter;
+    @Mock
+    private BigTableMetrics bigtableMetrics;
 
     private BigTableSink bigTableSink;
     private List<OdpfMessage> messages;
@@ -60,7 +63,7 @@ public class BigTableSinkTest {
         BigTableRecord bigTableRecord4 = new BigTableRecord(null, 4, errorInfo, false);
         invalidRecords = Collections.list(bigTableRecord3, bigTableRecord4);
 
-        bigTableSink = new BigTableSink(bigTableClient, bigTableRecordParser, new Instrumentation(statsDReporter, BigTableSink.class));
+        bigTableSink = new BigTableSink(bigTableClient, bigTableRecordParser, bigtableMetrics, new Instrumentation(statsDReporter, BigTableSink.class));
     }
 
     @Test
