@@ -3,7 +3,6 @@ package io.odpf.depot.message.proto;
 import com.google.api.client.util.DateTime;
 import com.google.protobuf.*;
 import io.odpf.depot.*;
-import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.stencil.Parser;
@@ -347,7 +346,29 @@ public class ProtoOdpfParsedMessageTest {
         TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test").setSingleMessage(message1).build();
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(nestedMessage.toByteArray()));
         Assert.assertEquals("test", protoOdpfParsedMessage.getFieldByName("nested_id", odpfMessageSchema));
-        ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> protoOdpfParsedMessage.getFieldByName("single_message.order_id", odpfMessageSchema));
-        Assert.assertEquals("Invalid field config : single_message.order_id", configurationException.getMessage());
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> protoOdpfParsedMessage.getFieldByName("single_message.order_id", odpfMessageSchema));
+        Assert.assertEquals("Invalid field config : single_message.order_id", exception.getMessage());
     }
+
+    @Test
+    public void shouldThrowExceptionIfColumnIsNotNested() throws IOException {
+        TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestNestedMessageBQ", descriptorsMap);
+        TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test").setSingleMessage(message1).build();
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(nestedMessage.toByteArray()));
+        Assert.assertEquals("test", protoOdpfParsedMessage.getFieldByName("nested_id", odpfMessageSchema));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> protoOdpfParsedMessage.getFieldByName("nested_id.order_id", odpfMessageSchema));
+        Assert.assertEquals("Invalid field config : nested_id.order_id", exception.getMessage());
+    }
+
+
+    @Test
+    public void shouldThrowExceptionIfFieldIsEmpty() throws IOException {
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(dynamicMessage);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> protoOdpfParsedMessage.getFieldByName("", odpfMessageSchema));
+        Assert.assertEquals("Invalid field config : name can not be empty", exception.getMessage());
+    }
+
 }

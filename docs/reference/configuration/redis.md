@@ -21,9 +21,9 @@ To select whether you want to push your data as a `KEYVALUE`, `HASHSET` or as a 
 
 The string that will act as the key for each Redis entry. This key can be configured as per the requirement, a constant or can extract value from each message and use that as the Redis key.
 
-- Example value: `Service\_%%s,1`
+- Example value: `Service_%s,order_number`
 
-  This will take the value with index 1 from proto and create the Redis keys as per the template.
+  This will take the value of the proto field `order_number` from the proto and create the Redis keys as per the template.
 
 - Type: `required`
 

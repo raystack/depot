@@ -6,7 +6,6 @@ import io.odpf.depot.TestMessage;
 import io.odpf.depot.TestNestedMessage;
 import io.odpf.depot.TestNestedRepeatedMessage;
 import io.odpf.depot.config.RedisSinkConfig;
-import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
@@ -44,6 +43,7 @@ public class RedisKeyValueEntryParserTest {
     @Mock
     private StatsDReporter statsDReporter;
     private RedisEntryParser redisKeyValueEntryParser;
+    private OdpfMessageSchema schema;
     private ParsedOdpfMessage parsedOdpfMessage;
 
     private void redisSinkSetup(String field) throws IOException {
@@ -73,9 +73,9 @@ public class RedisKeyValueEntryParserTest {
 
     @Test
     public void shouldThrowExceptionForInvalidKeyValueDataFieldName() throws IOException {
-        redisSinkSetup("random-field");
-        ConfigurationException configurationException =
-                assertThrows(ConfigurationException.class, () -> redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage));
-        assertEquals("Invalid field config : random-field", configurationException.getMessage());
+        redisSinkSetup("test-key", "random-field");
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage));
+        assertEquals("Invalid field config : random-field", exception.getMessage());
     }
 }
