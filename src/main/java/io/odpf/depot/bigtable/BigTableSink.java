@@ -45,7 +45,7 @@ public class BigTableSink implements OdpfSink {
             instrumentation.logInfo("Pushed a batch of {} records to BigTable.", validRecords.size());
 
             if (bigTableResponse != null && bigTableResponse.hasErrors()) {
-                Map<Long, ErrorInfo> errorInfoMap = BigTableResponseParser.parseAndFillOdpfSinkResponse(validRecords, bigTableResponse, bigtableMetrics, instrumentation);
+                Map<Long, ErrorInfo> errorInfoMap = BigTableResponseParser.getErrorsFromSinkResponse(validRecords, bigTableResponse, bigtableMetrics, instrumentation);
                 errorInfoMap.forEach(odpfSinkResponse::addErrors);
             }
         }

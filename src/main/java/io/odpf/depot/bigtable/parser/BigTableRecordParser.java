@@ -74,7 +74,7 @@ public class BigTableRecordParser {
             return createErrorRecord(e, ErrorType.UNKNOWN_FIELDS_ERROR, index);
         } catch (DeserializerException | IOException e) {
             return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, index);
-        }
+        } //catch illegalArgumentException from getFieldByName
     }
 
     private BigTableRecord createErrorRecord(Exception e, ErrorType type, long index) {

@@ -13,6 +13,14 @@ public class BigTableMetrics extends SinkMetrics {
         super(config);
     }
 
+
+    public enum BigTableErrorType {
+        QUOTA_FAILURE, // A quota check failed.
+        PRECONDITION_FAILURE, // Some preconditions have failed.
+        BAD_REQUEST, // Violations in a client request
+        UNKNOWN_ERROR,
+    }
+
     public String getBigtableOperationLatencyMetric() {
         return getApplicationPrefix() + SINK_PREFIX + BIGTABLE_SINK_PREFIX + "operation_latency_milliseconds";
     }

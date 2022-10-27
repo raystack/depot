@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public class BigTableResponseParser {
-    public static Map<Long, ErrorInfo> parseAndFillOdpfSinkResponse(List<BigTableRecord> validRecords, BigTableResponse bigTableResponse, BigTableMetrics bigtableMetrics, Instrumentation instrumentation) {
+    public static Map<Long, ErrorInfo> getErrorsFromSinkResponse(List<BigTableRecord> validRecords, BigTableResponse bigTableResponse, BigTableMetrics bigtableMetrics, Instrumentation instrumentation) {
         HashMap<Long, ErrorInfo> errorInfoMap = new HashMap<>();
         for (MutateRowsException.FailedMutation fm : bigTableResponse.getFailedMutations()) {
             BigTableRecord record = validRecords.get(fm.getIndex());
@@ -27,10 +27,25 @@ public class BigTableResponseParser {
             } else if (httpStatusCode.startsWith("5")) {
                 errorInfoMap.put(messageIndex, new ErrorInfo(fm.getError(), ErrorType.SINK_5XX_ERROR));
             } else {
-                errorInfoMap.put(messageIndex, new ErrorInfo(fm.getError(), ErrorType.DEFAULT_ERROR));
+                errorInfoMap.put(messageIndex, new ErrorInfo(fm.getError(), ErrorType.SINK_UNKNOWN_ERROR));
             }
-            instrumentation.logError("Error while inserting to Bigtable. Record: {}, Error: {}, Reason: {}", record.toString(), fm.getError(), fm.getError().getReason());
-            instrumentation.incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, fm.getError().getReason()));
+
+            instrumentation.logError("Error while inserting to Bigtable. Record: {}, Error: {}, Reason: {}, StatusCode: {}, TransportCode: {}",
+                    record.toString(),
+                    fm.getError(),
+                    fm.getError().getReason(),
+                    fm.getError().getStatusCode().getCode(),
+                    fm.getError().getStatusCode().getTransportCode());
+
+            if (fm.getError().getErrorDetails().getBadRequest() != null) {
+                instrumentation.incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.BAD_REQUEST));
+            } else if (fm.getError().getErrorDetails().getQuotaFailure() != null) {
+                instrumentation.incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.QUOTA_FAILURE));
+            } else if (fm.getError().getErrorDetails().getPreconditionFailure() != null) {
+                instrumentation.incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.PRECONDITION_FAILURE));
+            } else {
+                instrumentation.incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.UNKNOWN_ERROR));
+            }
         }
         return errorInfoMap;
     }
