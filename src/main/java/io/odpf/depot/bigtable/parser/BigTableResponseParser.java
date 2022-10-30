@@ -30,12 +30,12 @@ public class BigTableResponseParser {
                 errorInfoMap.put(messageIndex, new ErrorInfo(fm.getError(), ErrorType.SINK_UNKNOWN_ERROR));
             }
 
-            instrumentation.logError("Error while inserting to Bigtable. Record: {}, Error: {}, Reason: {}, StatusCode: {}, TransportCode: {}",
+            instrumentation.logError("Error while inserting to Bigtable. Record: {}, Error: {}, Reason: {}, StatusCode: {}, HttpCode: {}",
                     record.toString(),
                     fm.getError(),
                     fm.getError().getReason(),
                     fm.getError().getStatusCode().getCode(),
-                    fm.getError().getStatusCode().getTransportCode());
+                    fm.getError().getStatusCode().getCode().getHttpStatusCode());
 
             if (fm.getError().getErrorDetails().getBadRequest() != null) {
                 instrumentation.incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.BAD_REQUEST));

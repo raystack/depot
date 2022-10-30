@@ -70,11 +70,11 @@ public class BigTableRecordParser {
             return bigTableRecord;
         } catch (EmptyMessageException e) {
             return createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, index);
-        } catch (ConfigurationException e) {
+        } catch (ConfigurationException | IllegalArgumentException e) {
             return createErrorRecord(e, ErrorType.UNKNOWN_FIELDS_ERROR, index);
         } catch (DeserializerException | IOException e) {
             return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, index);
-        } //catch illegalArgumentException from getFieldByName
+        }
     }
 
     private BigTableRecord createErrorRecord(Exception e, ErrorType type, long index) {
