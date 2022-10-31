@@ -49,6 +49,7 @@ public class BigTableResponseParserTest {
         Mockito.when(apiException.getErrorDetails()).thenReturn(errorDetails);
         Mockito.when(apiException.getReason()).thenReturn("REASON_STRING");
         Mockito.when(apiException.isRetryable()).thenReturn(Boolean.FALSE);
+        Mockito.when(apiException.getCause()).thenReturn(apiException);
         Mockito.when(errorDetails.getBadRequest()).thenReturn(null);
         Mockito.when(errorDetails.getQuotaFailure()).thenReturn(null);
         Mockito.when(errorDetails.getPreconditionFailure()).thenReturn(null);
@@ -180,7 +181,7 @@ public class BigTableResponseParserTest {
 
         Mockito.verify(instrumentation, Mockito.times(1)).logError("Error while inserting to Bigtable. Record: {}, Error: {}, Reason: {}, StatusCode: {}, HttpCode: {}",
                 validRecords.get(1).toString(),
-                failedMutations.get(0).getError(),
+                failedMutations.get(0).getError().getCause(),
                 failedMutations.get(0).getError().getReason(),
                 failedMutations.get(0).getError().getStatusCode().getCode(),
                 failedMutations.get(0).getError().getStatusCode().getCode().getHttpStatusCode());

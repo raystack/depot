@@ -32,7 +32,7 @@ public class BigTableResponseParser {
 
             instrumentation.logError("Error while inserting to Bigtable. Record: {}, Error: {}, Reason: {}, StatusCode: {}, HttpCode: {}",
                     record.toString(),
-                    fm.getError(),
+                    fm.getError().getCause(),
                     fm.getError().getReason(),
                     fm.getError().getStatusCode().getCode(),
                     fm.getError().getStatusCode().getCode().getHttpStatusCode());
