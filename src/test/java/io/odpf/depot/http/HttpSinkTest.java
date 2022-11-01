@@ -12,6 +12,7 @@ import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,6 +45,9 @@ public class HttpSinkTest {
 
     @Mock
     private HttpEntity httpEntity;
+
+    @Mock
+    private StatusLine statusLine;
 
     @Mock
     private Instrumentation instrumentation;
@@ -104,7 +108,9 @@ public class HttpSinkTest {
         records.add(new HttpRequestRecord(request, 3L, null, true));
         records.add(new HttpRequestRecord(request, 4L, null, true));
 
-        Mockito.when(response.getEntity()).thenReturn(httpEntity);
+        Mockito.when(request.getEntity()).thenReturn(httpEntity);
+        Mockito.when(response.getStatusLine()).thenReturn(statusLine);
+        Mockito.when(statusLine.getStatusCode()).thenReturn(500);
         List<HttpSinkResponse> responses = new ArrayList<>();
         responses.add(new HttpSinkResponse(response, false));
         responses.add(new HttpSinkResponse(response, true));

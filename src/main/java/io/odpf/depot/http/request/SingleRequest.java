@@ -1,12 +1,12 @@
 package io.odpf.depot.http.request;
 
-import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.http.enums.HttpRequestMethodType;
+import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.http.request.body.RequestBody;
 import io.odpf.depot.http.request.builder.HeaderBuilder;
 import io.odpf.depot.http.request.builder.UriBuilder;
-import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.message.OdpfMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -14,7 +14,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +38,7 @@ public class SingleRequest implements Request {
     }
 
     @Override
-    public List<HttpRequestRecord> createRecords(List<OdpfMessage> messages)  {
+    public List<HttpRequestRecord> createRecords(List<OdpfMessage> messages) {
         List<HttpRequestRecord> records = new ArrayList<>();
         for (int index = 0; index < messages.size(); index++) {
             try {
@@ -63,7 +62,7 @@ public class SingleRequest implements Request {
                 request.setEntity(buildEntity(requestBody.build(messages.get(index))));
 
                 records.add(new HttpRequestRecord(request, (long) index, null, true));
-            } catch (URISyntaxException e) {
+            } catch (Exception e) {
                 records.add(createAndLogErrorRecord(e, ErrorType.DEFAULT_ERROR, index));
             }
         }
@@ -77,7 +76,7 @@ public class SingleRequest implements Request {
     private HttpRequestRecord createAndLogErrorRecord(Exception e, ErrorType type, int index) {
         ErrorInfo errorInfo = new ErrorInfo(e, type);
         HttpRequestRecord record = new HttpRequestRecord(null, (long) index, errorInfo, false);
-        log.error("Error while parsing record for message. Record: {}, Error: {}", record, errorInfo);
+        log.error("Error while parsing record for message. Record: {}, Error: {}", record.getRequestBody(), errorInfo);
         return record;
     }
 }

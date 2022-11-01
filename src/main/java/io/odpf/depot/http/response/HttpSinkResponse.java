@@ -31,4 +31,8 @@ public class HttpSinkResponse {
         HttpEntity entity = response.getEntity();
         return EntityUtils.toString(entity);
     }
+
+    public String getStatusLine() {
+        return String.valueOf(response.getStatusLine());
+    }
 }

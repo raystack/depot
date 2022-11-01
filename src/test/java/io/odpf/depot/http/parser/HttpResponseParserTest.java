@@ -5,7 +5,6 @@ import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.http.response.HttpSinkResponse;
 import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.metrics.StatsDReporter;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -27,7 +26,7 @@ import static org.mockito.Mockito.when;
 public class HttpResponseParserTest {
 
     @Mock
-    private StatsDReporter statsDReporter;
+    private Instrumentation instrumentation;
 
     @Mock
     private HttpEntityEnclosingRequestBase request;
@@ -47,7 +46,7 @@ public class HttpResponseParserTest {
         records.add(new HttpRequestRecord(request, 7L, null, true));
         records.add(new HttpRequestRecord(request, 12L, null, true));
 
-        Mockito.when(response.getEntity()).thenReturn(httpEntity);
+        Mockito.when(request.getEntity()).thenReturn(httpEntity);
         List<HttpSinkResponse> responses = new ArrayList<>();
         responses.add(new HttpSinkResponse(response, false));
         responses.add(new HttpSinkResponse(response, true));
@@ -55,7 +54,7 @@ public class HttpResponseParserTest {
         responses.add(new HttpSinkResponse(response, true));
         responses.add(new HttpSinkResponse(response, true));
 
-        Map<Long, ErrorInfo> errors = HttpResponseParser.parseAndFillError(records, responses, new Instrumentation(statsDReporter, HttpResponseParser.class));
+        Map<Long, ErrorInfo> errors = HttpResponseParser.parseAndFillError(records, responses, instrumentation);
         Assert.assertEquals(3, errors.size());
         Assert.assertEquals(ErrorType.DEFAULT_ERROR, errors.get(1L).getErrorType());
         Assert.assertEquals(ErrorType.DEFAULT_ERROR, errors.get(7L).getErrorType());
@@ -83,7 +82,7 @@ public class HttpResponseParserTest {
                     when(responses.get(index).isFailed()).thenReturn(false);
                 }
         );
-        Map<Long, ErrorInfo> errors = HttpResponseParser.parseAndFillError(records, responses, new Instrumentation(statsDReporter, HttpResponseParser.class));
+        Map<Long, ErrorInfo> errors = HttpResponseParser.parseAndFillError(records, responses, instrumentation);
         Assert.assertTrue(errors.isEmpty());
     }
 }

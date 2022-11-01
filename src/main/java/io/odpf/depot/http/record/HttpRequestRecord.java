@@ -7,6 +7,7 @@ import lombok.Getter;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -25,6 +26,14 @@ public class HttpRequestRecord {
     public HttpSinkResponse send(HttpClient httpClient) throws IOException {
         HttpResponse response = httpClient.execute(this.httpRequest);
         return addSinkResponse(response);
+    }
+
+    public String getRequestBody() {
+        try {
+            return EntityUtils.toString(httpRequest.getEntity());
+        } catch (Exception e) {
+            return "null";
+        }
     }
 
     private HttpSinkResponse addSinkResponse(HttpResponse response) {

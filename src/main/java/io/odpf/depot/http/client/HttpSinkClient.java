@@ -5,12 +5,11 @@ import io.odpf.depot.http.response.HttpSinkResponse;
 import io.odpf.depot.metrics.Instrumentation;
 import org.apache.http.client.HttpClient;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HttpSinkClient implements Closeable {
+public class HttpSinkClient {
 
     private final HttpClient httpClient;
     private final Instrumentation instrumentation;
@@ -27,9 +26,5 @@ public class HttpSinkClient implements Closeable {
             responseList.add(sinkResponse);
         }
         return responseList;
-    }
-
-    @Override
-    public void close() throws IOException {
     }
 }

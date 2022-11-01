@@ -53,12 +53,12 @@ public class HttpSinkResponseTest {
     @Test
     public void shouldGetResponseCodeIfNotSuccess() {
         Mockito.when(response.getStatusLine()).thenReturn(statusLine);
-        Mockito.when(statusLine.getStatusCode()).thenReturn(400);
+        Mockito.when(statusLine.getStatusCode()).thenReturn(500);
         HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response, true);
         String responseCode = httpSinkResponse.getResponseCode();
         Assert.assertTrue(httpSinkResponse.isFailed());
         Assert.assertEquals(response, httpSinkResponse.getResponse());
-        Assert.assertEquals("400", responseCode);
+        Assert.assertEquals("500", responseCode);
     }
 
     @Test

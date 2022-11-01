@@ -20,13 +20,9 @@ public class HttpResponseParser {
                     HttpSinkResponse response = responses.get(index);
                     if (response.isFailed()) {
                         HttpRequestRecord record = records.get(index);
-                        try {
-                            instrumentation.logError("Error while pushing message request to http services. Record: {}, Error: {}",
-                                    record.toString(), response.getResponseBody());
-                            errors.put(record.getIndex(), new ErrorInfo(new Exception(response.getResponseBody()), ErrorType.DEFAULT_ERROR));
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
+                        instrumentation.logError("Error while pushing message request to http services. Record: {}, Error: {}",
+                                record.getRequestBody(), response.getResponseCode());
+                        errors.put(record.getIndex(), new ErrorInfo(new Exception("Error:" + response.getResponseCode()), ErrorType.DEFAULT_ERROR));
                     }
                 }
         );
