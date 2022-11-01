@@ -7,7 +7,6 @@ import lombok.Getter;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -29,18 +28,11 @@ public class HttpRequestRecord {
     }
 
     private HttpSinkResponse addSinkResponse(HttpResponse response) {
-        consumeResponse(response);
         boolean isSuccess = Pattern.compile(SUCCESS_CODE_PATTERN).matcher(String.valueOf(response.getStatusLine().getStatusCode())).matches();
         if (isSuccess) {
             return new HttpSinkResponse(response, false);
         } else {
             return new HttpSinkResponse(response, true);
-        }
-    }
-
-    private void consumeResponse(HttpResponse response) {
-        if (response != null) {
-            EntityUtils.consumeQuietly(response.getEntity());
         }
     }
 }

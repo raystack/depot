@@ -54,6 +54,10 @@ public interface HttpSinkConfig extends OdpfSinkConfig {
     @ConverterClass(HttpRequestBodyTypeConverter.class)
     HttpRequestBodyType getRequestBodyType();
 
+    @DefaultValue("false")
+    @Key("SINK_HTTP_ADD_METADATA_ENABLED")
+    boolean shouldAddMetadata();
+
     @Key("SINK_HTTP_METADATA_COLUMNS_TYPES")
     @ConverterClass(ConfToListConverter.class)
     @Separator(ConfToListConverter.ELEMENT_SEPARATOR)
