@@ -66,29 +66,29 @@ public class BigTableClient {
     public BigTableResponse send(List<BigTableRecord> records) {
         BigTableResponse bigTableResponse = null;
         BulkMutation batch = BulkMutation.create(sinkConfig.getTableId());
-        for (BigTableRecord record : records) {
-            batch.add(record.getRowMutationEntry());
-        }
+        records.forEach(record -> batch.add(record.getRowMutationEntry()));
         try {
             Instant startTime = Instant.now();
             bigtableDataClient.bulkMutateRows(batch);
-
-            instrumentation.captureDurationSince(
-                    bigtableMetrics.getBigtableOperationLatencyMetric(),
-                    startTime,
-                    String.format(BigTableMetrics.BIGTABLE_INSTANCE_TAG, sinkConfig.getInstanceId()),
-                    String.format(BigTableMetrics.BIGTABLE_TABLE_TAG, sinkConfig.getTableId()));
-            instrumentation.captureCount(
-                    bigtableMetrics.getBigtableOperationTotalMetric(),
-                    (long) batch.getEntryCount(),
-                    String.format(BigTableMetrics.BIGTABLE_INSTANCE_TAG, sinkConfig.getInstanceId()),
-                    String.format(BigTableMetrics.BIGTABLE_TABLE_TAG, sinkConfig.getTableId()));
+            instrument(startTime, batch.getEntryCount());
         } catch (MutateRowsException e) {
             bigTableResponse = new BigTableResponse(e);
-            instrumentation.logError("Some entries failed to be applied.", e.getErrorDetails());
+            instrumentation.logError("Some entries failed to be applied {}", e.getErrorDetails());
         }
-
         return bigTableResponse;
+    }
+
+    private void instrument(Instant startTime, long entryCount) {
+        instrumentation.captureDurationSince(
+                bigtableMetrics.getBigtableOperationLatencyMetric(),
+                startTime,
+                String.format(BigTableMetrics.BIGTABLE_INSTANCE_TAG, sinkConfig.getInstanceId()),
+                String.format(BigTableMetrics.BIGTABLE_TABLE_TAG, sinkConfig.getTableId()));
+        instrumentation.captureCount(
+                bigtableMetrics.getBigtableOperationTotalMetric(),
+                entryCount,
+                String.format(BigTableMetrics.BIGTABLE_INSTANCE_TAG, sinkConfig.getInstanceId()),
+                String.format(BigTableMetrics.BIGTABLE_TABLE_TAG, sinkConfig.getTableId()));
     }
 
     public void validateBigTableSchema() throws BigTableInvalidSchemaException {

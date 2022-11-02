@@ -96,7 +96,7 @@ public class BigTableClientTest {
 
         Assert.assertTrue(bigTableResponse.hasErrors());
         Assert.assertEquals(2, bigTableResponse.getFailedMutations().size());
-        Mockito.verify(instrumentation, Mockito.times(1)).logError("Some entries failed to be applied.", mutateRowsException.getErrorDetails());
+        Mockito.verify(instrumentation, Mockito.times(1)).logError("Some entries failed to be applied {}", mutateRowsException.getErrorDetails());
     }
 
     @Test
