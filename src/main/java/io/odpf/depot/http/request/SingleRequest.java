@@ -25,16 +25,12 @@ public class SingleRequest implements Request {
     private final HeaderBuilder headerBuilder;
     private final UriBuilder uriBuilder;
     private final RequestBody requestBody;
-//    private final OdpfMessageSchema keySchema;
-//    private final OdpfMessageSchema valueSchema;
 
     public SingleRequest(HttpRequestMethodType httpMethod, HeaderBuilder headerBuilder, UriBuilder uriBuilder, RequestBody requestBody) {
         this.httpMethod = httpMethod;
         this.headerBuilder = headerBuilder;
         this.uriBuilder = uriBuilder;
         this.requestBody = requestBody;
-//        this.keySchema = keySchema;
-//        this.valueSchema = valueSchema;
     }
 
     @Override
@@ -45,18 +41,6 @@ public class SingleRequest implements Request {
                 Map<String, String> requestHeaders = headerBuilder.build();
                 URI requestUrl = uriBuilder.build();
 
-//            MessageContainer messageContainer = new MessageContainer(message);
-//            Map<String, String> requestHeaders = config.getHeaderSourceMode() == KEY ?
-//                    headerBuilder.build(messageContainer.getKeyParsedMessage(), keySchema)
-//                    : headerBuilder.build(messageContainer.getValueParsedMessage(), valueSchema);
-
-//            Map<String, String> queryParam = config.getQueryParamSourceMode() == KEY ?
-//                    queryParamBuilder.build(messageContainer.getKeyParsedMessage(), keySchema)
-//                    : queryParamBuilder.build(messageContainer.getValueParsedMessage(), valueSchema);
-
-//            URI requestUrl = config.getURLSourceMode() == KEY ? uriBuilder.build(messageContainer.getKeyParsedMessage(), keySchema, queryParam)
-//                    : uriBuilder.build(messageContainer.getValueParsedMessage(), valueSchema, queryParam);
-//
                 HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
                 requestHeaders.forEach(request::addHeader);
                 request.setEntity(buildEntity(requestBody.build(messages.get(index))));

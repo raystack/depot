@@ -5,9 +5,9 @@ import io.odpf.depot.OdpfSinkResponse;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.exception.OdpfSinkException;
 import io.odpf.depot.http.client.HttpSinkClient;
-import io.odpf.depot.http.parser.HttpRequestParser;
-import io.odpf.depot.http.parser.HttpResponseParser;
+import io.odpf.depot.http.response.HttpResponseParser;
 import io.odpf.depot.http.record.HttpRequestRecord;
+import io.odpf.depot.http.request.Request;
 import io.odpf.depot.http.response.HttpSinkResponse;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
@@ -20,18 +20,18 @@ import java.util.stream.Collectors;
 public class HttpSink implements OdpfSink {
 
     private final HttpSinkClient httpSinkClient;
-    private final HttpRequestParser requestParser;
+    private final Request request;
     private final Instrumentation instrumentation;
 
-    public HttpSink(HttpSinkClient httpSinkClient, HttpRequestParser requestParser, Instrumentation instrumentation) {
+    public HttpSink(HttpSinkClient httpSinkClient, Request request, Instrumentation instrumentation) {
         this.httpSinkClient = httpSinkClient;
-        this.requestParser = requestParser;
+        this.request = request;
         this.instrumentation = instrumentation;
     }
 
     @Override
     public OdpfSinkResponse pushToSink(List<OdpfMessage> messages) throws OdpfSinkException {
-        List<HttpRequestRecord> requests = requestParser.convert(messages);
+        List<HttpRequestRecord> requests = request.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = requests.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
         List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
         List<HttpRequestRecord> validRecords = splitterRecords.get(Boolean.TRUE);

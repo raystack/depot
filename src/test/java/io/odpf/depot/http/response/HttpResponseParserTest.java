@@ -1,9 +1,8 @@
-package io.odpf.depot.http.parser;
+package io.odpf.depot.http.response;
 
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.http.record.HttpRequestRecord;
-import io.odpf.depot.http.response.HttpSinkResponse;
 import io.odpf.depot.metrics.Instrumentation;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
