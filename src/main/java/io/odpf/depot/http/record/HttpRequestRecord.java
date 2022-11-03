@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 public class HttpRequestRecord {
 
     protected static final String SUCCESS_CODE_PATTERN = "^2.*";
-
     private HttpEntityEnclosingRequestBase httpRequest;
     private final Long index;
     private final ErrorInfo errorInfo;
