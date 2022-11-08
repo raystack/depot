@@ -5,16 +5,17 @@ import io.odpf.depot.error.ErrorInfo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Map;
+
 @AllArgsConstructor
 @Getter
 public class BigTableRecord {
     private final RowMutationEntry rowMutationEntry;
     private final long index;
     private final ErrorInfo errorInfo;
-    private final boolean valid;
+    private final Map<String, Object> metadata;
 
-    @Override
-    public String toString() {
-        return String.format("RowMutationEntry: %s ValidRecord=%s", rowMutationEntry != null ? rowMutationEntry.toString() : "NULL", valid);
+    public boolean isValid() {
+        return errorInfo == null;
     }
 }

@@ -85,7 +85,7 @@ public class BigTableClient {
                     String.format(BigTableMetrics.BIGTABLE_TABLE_TAG, sinkConfig.getTableId()));
         } catch (MutateRowsException e) {
             bigTableResponse = new BigTableResponse(e);
-            instrumentation.logError("Some entries failed to be applied.", e.getErrorDetails());
+            instrumentation.logError("Some entries failed to be applied. {}", e.getCause());
         }
 
         return bigTableResponse;

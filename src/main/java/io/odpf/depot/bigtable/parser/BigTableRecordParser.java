@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class BigTableRecordParser {
@@ -63,22 +64,22 @@ public class BigTableRecordParser {
                                 String value = String.valueOf(parsedOdpfMessage.getFieldByName(fieldName, schema));
                                 rowMutationEntry.setCell(columnFamily, column, value);
                             }));
-            BigTableRecord bigTableRecord = new BigTableRecord(rowMutationEntry, index, null, true);
+            BigTableRecord bigTableRecord = new BigTableRecord(rowMutationEntry, index, null, message.getMetadata());
             if (log.isDebugEnabled()) {
                 log.debug(bigTableRecord.toString());
             }
             return bigTableRecord;
         } catch (EmptyMessageException e) {
-            return createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, index);
+            return createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, index, message.getMetadata());
         } catch (ConfigurationException | IllegalArgumentException e) {
-            return createErrorRecord(e, ErrorType.UNKNOWN_FIELDS_ERROR, index);
+            return createErrorRecord(e, ErrorType.UNKNOWN_FIELDS_ERROR, index, message.getMetadata());
         } catch (DeserializerException | IOException e) {
-            return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, index);
+            return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, index, message.getMetadata());
         }
     }
 
-    private BigTableRecord createErrorRecord(Exception e, ErrorType type, long index) {
+    private BigTableRecord createErrorRecord(Exception e, ErrorType type, long index, Map<String, Object> metadata) {
         ErrorInfo errorInfo = new ErrorInfo(e, type);
-        return new BigTableRecord(null, index, errorInfo, false);
+        return new BigTableRecord(null, index, errorInfo, metadata);
     }
 }

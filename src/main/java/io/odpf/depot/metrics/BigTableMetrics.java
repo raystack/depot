@@ -18,7 +18,7 @@ public class BigTableMetrics extends SinkMetrics {
         QUOTA_FAILURE, // A quota check failed.
         PRECONDITION_FAILURE, // Some preconditions have failed.
         BAD_REQUEST, // Violations in a client request
-        UNKNOWN_ERROR,
+        RPC_FAILURE,
     }
 
     public String getBigtableOperationLatencyMetric() {

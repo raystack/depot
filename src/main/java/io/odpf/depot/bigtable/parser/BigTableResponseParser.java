@@ -30,21 +30,23 @@ public class BigTableResponseParser {
                 errorInfoMap.put(messageIndex, new ErrorInfo(fm.getError(), ErrorType.SINK_UNKNOWN_ERROR));
             }
 
-            instrumentation.logError("Error while inserting to Bigtable. Record: {}, Error: {}, Reason: {}, StatusCode: {}, HttpCode: {}",
-                    record.toString(),
+            instrumentation.logError("Error while inserting to Bigtable. Record Metadata: {}, Cause: {}, Reason: {}, StatusCode: {}, HttpCode: {}",
+                    record.getMetadata(),
                     fm.getError().getCause(),
                     fm.getError().getReason(),
                     fm.getError().getStatusCode().getCode(),
                     fm.getError().getStatusCode().getCode().getHttpStatusCode());
 
-            if (fm.getError().getErrorDetails().getBadRequest() != null) {
+            if (fm.getError().getErrorDetails() == null) {
+                instrumentation.incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.RPC_FAILURE));
+            } else if (fm.getError().getErrorDetails().getBadRequest() != null) {
                 instrumentation.incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.BAD_REQUEST));
             } else if (fm.getError().getErrorDetails().getQuotaFailure() != null) {
                 instrumentation.incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.QUOTA_FAILURE));
             } else if (fm.getError().getErrorDetails().getPreconditionFailure() != null) {
                 instrumentation.incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.PRECONDITION_FAILURE));
             } else {
-                instrumentation.incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.UNKNOWN_ERROR));
+                instrumentation.incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.RPC_FAILURE));
             }
         }
         return errorInfoMap;

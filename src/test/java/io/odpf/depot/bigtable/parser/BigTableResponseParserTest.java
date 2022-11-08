@@ -8,10 +8,14 @@ import com.google.cloud.bigtable.data.v2.models.RowMutationEntry;
 import com.google.rpc.BadRequest;
 import com.google.rpc.PreconditionFailure;
 import com.google.rpc.QuotaFailure;
+import io.odpf.depot.TestBookingLogKey;
+import io.odpf.depot.TestBookingLogMessage;
+import io.odpf.depot.TestServiceType;
 import io.odpf.depot.bigtable.model.BigTableRecord;
 import io.odpf.depot.bigtable.response.BigTableResponse;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.metrics.BigTableMetrics;
 import io.odpf.depot.metrics.Instrumentation;
 import org.aeonbits.owner.util.Collections;
@@ -54,10 +58,18 @@ public class BigTableResponseParserTest {
         Mockito.when(errorDetails.getQuotaFailure()).thenReturn(null);
         Mockito.when(errorDetails.getPreconditionFailure()).thenReturn(null);
 
+        TestBookingLogKey bookingLogKey1 = TestBookingLogKey.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1").build();
+        TestBookingLogMessage bookingLogMessage1 = TestBookingLogMessage.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1").setServiceType(TestServiceType.Enum.GO_SEND).build();
+        TestBookingLogKey bookingLogKey2 = TestBookingLogKey.newBuilder().setOrderNumber("order#2").setOrderUrl("order-url#2").build();
+        TestBookingLogMessage bookingLogMessage2 = TestBookingLogMessage.newBuilder().setOrderNumber("order#2").setOrderUrl("order-url#2").setServiceType(TestServiceType.Enum.GO_SHOP).build();
+
+        OdpfMessage message1 = new OdpfMessage(bookingLogKey1.toByteArray(), bookingLogMessage1.toByteArray());
+        OdpfMessage message2 = new OdpfMessage(bookingLogKey2.toByteArray(), bookingLogMessage2.toByteArray());
+
         RowMutationEntry rowMutationEntry1 = RowMutationEntry.create("rowKey1").setCell("family1", "qualifier1", "value1");
         RowMutationEntry rowMutationEntry2 = RowMutationEntry.create("rowKey2").setCell("family2", "qualifier2", "value2");
-        BigTableRecord bigTableRecord1 = new BigTableRecord(rowMutationEntry1, 0, null, true);
-        BigTableRecord bigTableRecord2 = new BigTableRecord(rowMutationEntry2, 1, null, true);
+        BigTableRecord bigTableRecord1 = new BigTableRecord(rowMutationEntry1, 0, null, message1.getMetadata());
+        BigTableRecord bigTableRecord2 = new BigTableRecord(rowMutationEntry2, 1, null, message2.getMetadata());
         validRecords = Collections.list(bigTableRecord1, bigTableRecord2);
     }
 
@@ -168,6 +180,35 @@ public class BigTableResponseParserTest {
     }
 
     @Test
+    public void shouldCaptureMetricBigtableErrorTypeRpcFailureByDefault() {
+        List<MutateRowsException.FailedMutation> failedMutations = new ArrayList<>();
+        failedMutations.add(MutateRowsException.FailedMutation.create(1, apiException));
+        MutateRowsException mutateRowsException = new MutateRowsException(null, failedMutations, false);
+        BigTableResponse bigtableResponse = new BigTableResponse(mutateRowsException);
+
+        Mockito.when(code.getHttpStatusCode()).thenReturn(0);
+
+        BigTableResponseParser.getErrorsFromSinkResponse(validRecords, bigtableResponse, bigtableMetrics, instrumentation);
+
+        Mockito.verify(instrumentation, Mockito.times(1)).incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.RPC_FAILURE));
+    }
+
+    @Test
+    public void shouldCaptureMetricBigtableErrorTypeRpcFailureIfErrorDetailsIsNull() {
+        List<MutateRowsException.FailedMutation> failedMutations = new ArrayList<>();
+        failedMutations.add(MutateRowsException.FailedMutation.create(1, apiException));
+        MutateRowsException mutateRowsException = new MutateRowsException(null, failedMutations, false);
+        BigTableResponse bigtableResponse = new BigTableResponse(mutateRowsException);
+
+        Mockito.when(apiException.getErrorDetails()).thenReturn(null);
+        Mockito.when(code.getHttpStatusCode()).thenReturn(0);
+
+        BigTableResponseParser.getErrorsFromSinkResponse(validRecords, bigtableResponse, bigtableMetrics, instrumentation);
+
+        Mockito.verify(instrumentation, Mockito.times(1)).incrementCounter(bigtableMetrics.getBigtableTotalErrorsMetrics(), String.format(BigTableMetrics.BIGTABLE_ERROR_TAG, BigTableMetrics.BigTableErrorType.RPC_FAILURE));
+    }
+
+    @Test
     public void shouldLogErrorRecordWithReasonAndStatusCode() {
         List<MutateRowsException.FailedMutation> failedMutations = new ArrayList<>();
         failedMutations.add(MutateRowsException.FailedMutation.create(1, apiException));
@@ -179,8 +220,8 @@ public class BigTableResponseParserTest {
 
         BigTableResponseParser.getErrorsFromSinkResponse(validRecords, bigtableResponse, bigtableMetrics, instrumentation);
 
-        Mockito.verify(instrumentation, Mockito.times(1)).logError("Error while inserting to Bigtable. Record: {}, Error: {}, Reason: {}, StatusCode: {}, HttpCode: {}",
-                validRecords.get(1).toString(),
+        Mockito.verify(instrumentation, Mockito.times(1)).logError("Error while inserting to Bigtable. Record Metadata: {}, Cause: {}, Reason: {}, StatusCode: {}, HttpCode: {}",
+                validRecords.get(1).getMetadata(),
                 failedMutations.get(0).getError().getCause(),
                 failedMutations.get(0).getError().getReason(),
                 failedMutations.get(0).getError().getStatusCode().getCode(),
