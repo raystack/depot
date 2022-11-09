@@ -68,7 +68,7 @@ public class BigQueryResponseParserTest {
         Mockito.when(response.hasErrors()).thenReturn(true);
         Mockito.when(response.getInsertErrors()).thenReturn(insertErrorsMap);
         Mockito.when(metrics.getBigqueryTotalErrorsMetrics()).thenReturn("test");
-        Map<Long, ErrorInfo> errorInfoMap = BigQueryResponseParser.parseAndFillOdpfSinkResponse(records, response, metrics, instrumentation);
+        Map<Long, ErrorInfo> errorInfoMap = BigQueryResponseParser.getErrorsFromBQResponse(records, response, metrics, instrumentation);
 
         Assert.assertEquals(new ErrorInfo(new BigQuerySinkException(), ErrorType.SINK_UNKNOWN_ERROR), errorInfoMap.get(0L));
         Assert.assertEquals(new ErrorInfo(new BigQuerySinkException(), ErrorType.SINK_4XX_ERROR), errorInfoMap.get(1L));
