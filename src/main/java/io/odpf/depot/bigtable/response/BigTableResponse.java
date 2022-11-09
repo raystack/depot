@@ -16,4 +16,8 @@ public class BigTableResponse {
     public boolean hasErrors() {
         return !failedMutations.isEmpty();
     }
+
+    public int getErrorCount() {
+        return failedMutations.size();
+    }
 }
