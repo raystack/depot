@@ -12,6 +12,7 @@ import org.apache.http.Header;
 
 import java.util.List;
 
+@Config.DisableFeature(Config.DisableableFeature.PARAMETER_FORMATTING)
 public interface OdpfSinkConfig extends Config {
 
     @Key("SCHEMA_REGISTRY_STENCIL_ENABLE")

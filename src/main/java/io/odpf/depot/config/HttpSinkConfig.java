@@ -11,10 +11,13 @@ import io.odpf.depot.http.enums.HttpParameterSourceType;
 import io.odpf.depot.http.enums.HttpRequestBodyType;
 import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.enums.HttpRequestType;
+import org.aeonbits.owner.Config;
 
 import java.util.List;
 import java.util.Properties;
 
+
+@Config.DisableFeature(Config.DisableableFeature.PARAMETER_FORMATTING)
 public interface HttpSinkConfig extends OdpfSinkConfig {
 
     @Key("SINK_HTTP_SERVICE_URL")
