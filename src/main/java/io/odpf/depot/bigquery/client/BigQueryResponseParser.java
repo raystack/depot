@@ -2,18 +2,18 @@ package io.odpf.depot.bigquery.client;
 
 import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.InsertAllResponse;
-import io.odpf.depot.bigquery.error.OOBError;
-import io.odpf.depot.bigquery.exception.BigQuerySinkException;
-import io.odpf.depot.bigquery.models.Record;
-import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.metrics.BigQueryMetrics;
-import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.bigquery.error.ErrorDescriptor;
 import io.odpf.depot.bigquery.error.ErrorParser;
 import io.odpf.depot.bigquery.error.InvalidSchemaError;
+import io.odpf.depot.bigquery.error.OOBError;
 import io.odpf.depot.bigquery.error.StoppedError;
 import io.odpf.depot.bigquery.error.UnknownError;
+import io.odpf.depot.bigquery.exception.BigQuerySinkException;
+import io.odpf.depot.bigquery.models.Record;
 import io.odpf.depot.error.ErrorInfo;
+import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.metrics.BigQueryMetrics;
+import io.odpf.depot.metrics.Instrumentation;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +28,7 @@ public class BigQueryResponseParser {
      * @param bqResponse - the status of insertion for all records as returned by BQ
      * @return list of messages with error.
      */
-    public static Map<Long, ErrorInfo> parseAndFillOdpfSinkResponse(
+    public static Map<Long, ErrorInfo> getErrorsFromBQResponse(
             final List<Record> records,
             final InsertAllResponse bqResponse,
             BigQueryMetrics bigQueryMetrics,
@@ -42,8 +42,8 @@ public class BigQueryResponseParser {
             Record record = records.get(errorEntry.getKey().intValue());
             long messageIndex = record.getIndex();
             List<ErrorDescriptor> errors = ErrorParser.parseError(errorEntry.getValue());
-            instrumentation.logError("Error while bigquery insert for message. Record: {}, Error: {}, MetaData: {}",
-                    record.getColumns(), errors, record.getMetadata());
+            instrumentation.logError("Error while bigquery insert for message. Record: {}, Error: {}, MetaData: {}, BQ errors {}",
+                    record.getColumns(), errors, record.getMetadata(), errorEntry.getValue());
 
             if (errorMatch(errors, UnknownError.class)) {
                 errorInfoResponse.put(messageIndex, new ErrorInfo(new BigQuerySinkException(), ErrorType.SINK_UNKNOWN_ERROR));
