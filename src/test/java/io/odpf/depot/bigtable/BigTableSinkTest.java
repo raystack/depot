@@ -11,6 +11,7 @@ import io.odpf.depot.bigtable.parser.BigTableRecordParser;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.metrics.BigTableMetrics;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import org.aeonbits.owner.util.Collections;
@@ -31,6 +32,8 @@ public class BigTableSinkTest {
     private BigTableClient bigTableClient;
     @Mock
     private StatsDReporter statsDReporter;
+    @Mock
+    private BigTableMetrics bigtableMetrics;
 
     private BigTableSink bigTableSink;
     private List<OdpfMessage> messages;
@@ -51,16 +54,16 @@ public class BigTableSinkTest {
         messages = Collections.list(message1, message2);
 
         RowMutationEntry rowMutationEntry = RowMutationEntry.create("rowKey").setCell("family", "qualifier", "value");
-        BigTableRecord bigTableRecord1 = new BigTableRecord(rowMutationEntry, 1, null, true);
-        BigTableRecord bigTableRecord2 = new BigTableRecord(rowMutationEntry, 2, null, true);
+        BigTableRecord bigTableRecord1 = new BigTableRecord(rowMutationEntry, 1, null, message1.getMetadata());
+        BigTableRecord bigTableRecord2 = new BigTableRecord(rowMutationEntry, 2, null, message2.getMetadata());
         validRecords = Collections.list(bigTableRecord1, bigTableRecord2);
 
         errorInfo = new ErrorInfo(new Exception("test-exception-message"), ErrorType.DEFAULT_ERROR);
-        BigTableRecord bigTableRecord3 = new BigTableRecord(null, 3, errorInfo, false);
-        BigTableRecord bigTableRecord4 = new BigTableRecord(null, 4, errorInfo, false);
+        BigTableRecord bigTableRecord3 = new BigTableRecord(null, 3, errorInfo, message1.getMetadata());
+        BigTableRecord bigTableRecord4 = new BigTableRecord(null, 4, errorInfo, message2.getMetadata());
         invalidRecords = Collections.list(bigTableRecord3, bigTableRecord4);
 
-        bigTableSink = new BigTableSink(bigTableClient, bigTableRecordParser, new Instrumentation(statsDReporter, BigTableSink.class));
+        bigTableSink = new BigTableSink(bigTableClient, bigTableRecordParser, bigtableMetrics, new Instrumentation(statsDReporter, BigTableSink.class));
     }
 
     @Test

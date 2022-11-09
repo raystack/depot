@@ -27,6 +27,7 @@ public class BigTableSinkFactory {
     private final StatsDReporter statsDReporter;
     private BigTableClient bigTableClient;
     private BigTableRecordParser bigTableRecordParser;
+    private BigTableMetrics bigtableMetrics;
 
     public BigTableSinkFactory(BigTableSinkConfig sinkConfig, StatsDReporter statsDReporter) {
         this.sinkConfig = sinkConfig;
@@ -52,7 +53,7 @@ public class BigTableSinkFactory {
 
             instrumentation.logInfo(bigtableConfig);
             BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
-            BigTableMetrics bigtableMetrics = new BigTableMetrics(sinkConfig);
+            bigtableMetrics = new BigTableMetrics(sinkConfig);
             bigTableClient = new BigTableClient(sinkConfig, bigtableSchema, bigtableMetrics, new Instrumentation(statsDReporter, BigTableClient.class));
             bigTableClient.validateBigTableSchema();
 
@@ -78,6 +79,7 @@ public class BigTableSinkFactory {
         return new BigTableSink(
                 bigTableClient,
                 bigTableRecordParser,
+                bigtableMetrics,
                 new Instrumentation(statsDReporter, BigTableSink.class));
     }
 }

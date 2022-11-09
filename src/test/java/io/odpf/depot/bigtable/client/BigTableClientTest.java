@@ -8,11 +8,15 @@ import com.google.cloud.bigtable.data.v2.BigtableDataClient;
 import com.google.cloud.bigtable.data.v2.models.BulkMutation;
 import com.google.cloud.bigtable.data.v2.models.MutateRowsException;
 import com.google.cloud.bigtable.data.v2.models.RowMutationEntry;
+import io.odpf.depot.TestBookingLogKey;
+import io.odpf.depot.TestBookingLogMessage;
+import io.odpf.depot.TestServiceType;
 import io.odpf.depot.bigtable.exception.BigTableInvalidSchemaException;
 import io.odpf.depot.bigtable.model.BigTableRecord;
 import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.bigtable.response.BigTableResponse;
 import io.odpf.depot.config.BigTableSinkConfig;
+import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.metrics.BigTableMetrics;
 import io.odpf.depot.metrics.Instrumentation;
@@ -65,9 +69,17 @@ public class BigTableClientTest {
         System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{ \"family-test\" : { \"qualifier_name1\" : \"input_field1\", \"qualifier_name2\" : \"input_field2\"} }");
         System.setProperty("SINK_BIGTABLE_ROW_KEY_TEMPLATE", "row-key-constant-string");
 
+        TestBookingLogKey bookingLogKey1 = TestBookingLogKey.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1").build();
+        TestBookingLogMessage bookingLogMessage1 = TestBookingLogMessage.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1").setServiceType(TestServiceType.Enum.GO_SEND).build();
+        TestBookingLogKey bookingLogKey2 = TestBookingLogKey.newBuilder().setOrderNumber("order#2").setOrderUrl("order-url#2").build();
+        TestBookingLogMessage bookingLogMessage2 = TestBookingLogMessage.newBuilder().setOrderNumber("order#2").setOrderUrl("order-url#2").setServiceType(TestServiceType.Enum.GO_SHOP).build();
+
+        OdpfMessage message1 = new OdpfMessage(bookingLogKey1.toByteArray(), bookingLogMessage1.toByteArray());
+        OdpfMessage message2 = new OdpfMessage(bookingLogKey2.toByteArray(), bookingLogMessage2.toByteArray());
+
         RowMutationEntry rowMutationEntry = RowMutationEntry.create("rowKey").setCell("family", "qualifier", "value");
-        BigTableRecord bigTableRecord1 = new BigTableRecord(rowMutationEntry, 1, null, true);
-        BigTableRecord bigTableRecord2 = new BigTableRecord(rowMutationEntry, 2, null, true);
+        BigTableRecord bigTableRecord1 = new BigTableRecord(rowMutationEntry, 1, null, message1.getMetadata());
+        BigTableRecord bigTableRecord2 = new BigTableRecord(rowMutationEntry, 2, null, message2.getMetadata());
         validRecords = Collections.list(bigTableRecord1, bigTableRecord2);
         sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
         BigTableSchema schema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
@@ -96,6 +108,7 @@ public class BigTableClientTest {
 
         Assert.assertTrue(bigTableResponse.hasErrors());
         Assert.assertEquals(2, bigTableResponse.getFailedMutations().size());
+        Mockito.verify(instrumentation, Mockito.times(1)).logError("Some entries failed to be applied. {}", mutateRowsException.getCause());
     }
 
     @Test
