@@ -6,17 +6,23 @@ import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 public class HttpSinkResponse {
 
+    protected static final String SUCCESS_CODE_PATTERN = "^2.*";
     @Getter
     private final HttpResponse response;
     @Getter
     private final boolean failed;
 
-    public HttpSinkResponse(HttpResponse response, boolean failed) {
+    protected HttpSinkResponse(HttpResponse response, boolean failed) {
         this.response = response;
         this.failed = failed;
+    }
+
+    public HttpSinkResponse(HttpResponse response) {
+        this(response, !Pattern.compile(SUCCESS_CODE_PATTERN).matcher(String.valueOf(response.getStatusLine().getStatusCode())).matches());
     }
 
     public String getResponseCode() {

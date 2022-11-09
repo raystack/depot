@@ -39,11 +39,11 @@ public class HttpResponseParserTest {
     @Test
     public void shouldGetErrorsFromResponse() {
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(new HttpRequestRecord(request, 0L, null, true));
-        records.add(new HttpRequestRecord(request, 1L, null, true));
-        records.add(new HttpRequestRecord(request, 4L, null, true));
-        records.add(new HttpRequestRecord(request, 7L, null, true));
-        records.add(new HttpRequestRecord(request, 12L, null, true));
+        records.add(new HttpRequestRecord(0L, null, true, request));
+        records.add(new HttpRequestRecord(1L, null, true, request));
+        records.add(new HttpRequestRecord(4L, null, true, request));
+        records.add(new HttpRequestRecord(7L, null, true, request));
+        records.add(new HttpRequestRecord(12L, null, true, request));
 
         Mockito.when(request.getEntity()).thenReturn(httpEntity);
         List<HttpSinkResponse> responses = new ArrayList<>();
@@ -63,11 +63,11 @@ public class HttpResponseParserTest {
     @Test
     public void shouldGetEmptyMapWhenNoErrors() {
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(new HttpRequestRecord(request, 0L, null, true));
-        records.add(new HttpRequestRecord(request, 1L, null, true));
-        records.add(new HttpRequestRecord(request, 4L, null, true));
-        records.add(new HttpRequestRecord(request, 7L, null, true));
-        records.add(new HttpRequestRecord(request, 12L, null, true));
+        records.add(new HttpRequestRecord(0L, null, true, request));
+        records.add(new HttpRequestRecord(1L, null, true, request));
+        records.add(new HttpRequestRecord(4L, null, true, request));
+        records.add(new HttpRequestRecord(7L, null, true, request));
+        records.add(new HttpRequestRecord(12L, null, true, request));
 
         List<HttpSinkResponse> responses = new ArrayList<>();
         responses.add(Mockito.mock(HttpSinkResponse.class));

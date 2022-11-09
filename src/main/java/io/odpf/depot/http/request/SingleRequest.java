@@ -45,7 +45,7 @@ public class SingleRequest implements Request {
                 requestHeaders.forEach(request::addHeader);
                 request.setEntity(buildEntity(requestBody.build(messages.get(index))));
 
-                records.add(new HttpRequestRecord(request, (long) index, null, true));
+                records.add(new HttpRequestRecord((long) index, null, true, request));
             } catch (Exception e) {
                 records.add(createAndLogErrorRecord(e, ErrorType.DEFAULT_ERROR, index));
             }
@@ -59,7 +59,7 @@ public class SingleRequest implements Request {
 
     private HttpRequestRecord createAndLogErrorRecord(Exception e, ErrorType type, int index) {
         ErrorInfo errorInfo = new ErrorInfo(e, type);
-        HttpRequestRecord record = new HttpRequestRecord(null, (long) index, errorInfo, false);
+        HttpRequestRecord record = new HttpRequestRecord((long) index, errorInfo, false, null);
         log.error("Error while parsing record for message. Record: {}, Error: {}", record.getRequestBody(), errorInfo);
         return record;
     }

@@ -16,9 +16,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -41,26 +39,26 @@ public class HttpRequestRecordTest {
 
     @Test
     public void shouldGetRecordIndex() {
-        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(httpRequest, 0L, null, true);
+        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(0L, null, true, httpRequest);
         assertEquals(new Long(0), httpRequestRecord.getIndex());
     }
 
     @Test
     public void shouldGetRecordErrorInfo() {
         ErrorInfo errorInfo = new ErrorInfo(new Exception(""), ErrorType.DEFAULT_ERROR);
-        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(httpRequest, 0L, errorInfo, true);
+        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(0L, errorInfo, true, httpRequest);
         assertEquals(errorInfo, httpRequestRecord.getErrorInfo());
     }
 
     @Test
     public void shouldGetValidRecord() {
-        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(httpRequest, 0L, null, true);
+        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(0L, null, true, httpRequest);
         assertTrue(httpRequestRecord.isValid());
     }
 
     @Test
     public void shouldGetInvalidRecord() {
-        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(httpRequest, 0L, new ErrorInfo(new Exception("error here"), ErrorType.DEFAULT_ERROR), false);
+        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(0L, new ErrorInfo(new Exception("error here"), ErrorType.DEFAULT_ERROR), false, httpRequest);
         assertFalse(httpRequestRecord.isValid());
     }
 
@@ -69,7 +67,7 @@ public class HttpRequestRecordTest {
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
         when(httpResponse.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(200);
-        HttpRequestRecord requestRecord = new HttpRequestRecord(httpRequest, 0L, null, true);
+        HttpRequestRecord requestRecord = new HttpRequestRecord(0L, null, true, httpRequest);
         HttpSinkResponse sinkResponse = requestRecord.send(httpClient);
         assertFalse(sinkResponse.isFailed());
     }
@@ -79,7 +77,7 @@ public class HttpRequestRecordTest {
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
         when(httpResponse.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(500);
-        HttpRequestRecord requestRecord = new HttpRequestRecord(httpRequest, 0L, null, true);
+        HttpRequestRecord requestRecord = new HttpRequestRecord(0L, null, true, httpRequest);
         HttpSinkResponse sinkResponse = requestRecord.send(httpClient);
         assertTrue(sinkResponse.isFailed());
     }
@@ -89,13 +87,13 @@ public class HttpRequestRecordTest {
         String body = "[{\"key\":\"value1\"}, {\"key\":\"value2\"}]";
         when(httpRequest.getEntity()).thenReturn(httpEntity);
         when(httpEntity.getContent()).thenReturn(new StringInputStream(body));
-        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(httpRequest, 0L, null, true);
+        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(0L, null, true, httpRequest);
         assertEquals(body, httpRequestRecord.getRequestBody());
     }
 
     @Test
     public void shouldGetNullStringIfRequestIsNull() {
-        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(httpRequest, 0L, null, true);
+        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(0L, null, true, httpRequest);
         assertEquals("null", httpRequestRecord.getRequestBody());
     }
 }
