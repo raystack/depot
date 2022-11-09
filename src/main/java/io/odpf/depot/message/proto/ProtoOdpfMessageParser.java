@@ -2,16 +2,17 @@ package io.odpf.depot.message.proto;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.stencil.OdpfStencilUpdateListener;
+import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.EmptyMessageException;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import io.odpf.depot.message.MessageUtils;
 import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.config.OdpfSinkConfig;
+import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.metrics.StatsDReporter;
+import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 import io.odpf.depot.utils.StencilUtils;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
@@ -49,6 +50,7 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
         if (type == null) {
             throw new IOException("parser mode not defined");
         }
+        MessageUtils.validate(message, byte[].class);
         byte[] payload;
         switch (type) {
             case LOG_MESSAGE:
