@@ -1,8 +1,8 @@
 package io.odpf.depot.http.request.body;
 
-import com.google.gson.JsonObject;
 import io.odpf.depot.config.HttpSinkConfig;
 import io.odpf.depot.message.OdpfMessage;
+import org.json.JSONObject;
 
 import java.util.Base64;
 import java.util.Map;
@@ -16,16 +16,13 @@ public class RawBody implements RequestBody {
 
     @Override
     public String build(OdpfMessage message) {
-        JsonObject payload = new JsonObject();
+        JSONObject payload = new JSONObject();
         if (config.shouldAddMetadata()) {
             Map<String, Object> metadata = message.getMetadata(config.getMetadataColumnsTypes());
-            metadata.forEach(
-                    (k, v) -> payload.addProperty(k, v.toString())
-            );
+            metadata.forEach(payload::put);
         }
-
-        payload.addProperty("log_key", encodedSerializedStringFrom((byte[]) message.getLogKey()));
-        payload.addProperty("log_message", encodedSerializedStringFrom((byte[]) message.getLogMessage()));
+        payload.put("log_key", encodedSerializedStringFrom((byte[]) message.getLogKey()));
+        payload.put("log_message", encodedSerializedStringFrom((byte[]) message.getLogMessage()));
         return payload.toString();
     }
 

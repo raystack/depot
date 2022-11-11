@@ -5,6 +5,7 @@ import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.HttpSinkConfig;
 import io.odpf.depot.message.OdpfMessage;
 import org.aeonbits.owner.ConfigFactory;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -13,7 +14,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RawBodyTest {
@@ -29,7 +30,7 @@ public class RawBodyTest {
         message = new OdpfMessage(testMessage.toByteArray(), testMessage.toByteArray());
         RequestBody body = new RawBody(config);
         String rawBody = body.build(message);
-        assertEquals("{\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}", rawBody);
+        assertTrue(new JSONObject("{\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}").similar(new JSONObject(rawBody)));
     }
 
     @Test
@@ -38,7 +39,7 @@ public class RawBodyTest {
         message = new OdpfMessage(null, testMessage.toByteArray());
         RequestBody body = new RawBody(config);
         String rawBody = body.build(message);
-        assertEquals("{\"log_key\":\"\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}", rawBody);
+        assertTrue(new JSONObject("{\"log_key\":\"\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}").similar(new JSONObject(rawBody)));
     }
 
     @Test
@@ -56,6 +57,6 @@ public class RawBodyTest {
 
         RequestBody body = new RawBody(config);
         String rawBody = body.build(message);
-        assertEquals("{\"message_partition\":\"1\",\"message_topic\":\"sample-topic\",\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}", rawBody);
+        assertTrue(new JSONObject("{\"message_partition\":1,\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"message_topic\":\"sample-topic\"}").similar(new JSONObject(rawBody)));
     }
 }
