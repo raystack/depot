@@ -9,11 +9,15 @@ import java.util.List;
 public class BigTableResponse {
     private final List<MutateRowsException.FailedMutation> failedMutations;
 
-    public BigTableResponse(List<MutateRowsException.FailedMutation> failedMutations) {
-        this.failedMutations = failedMutations;
+    public BigTableResponse(MutateRowsException e) {
+        failedMutations = e.getFailedMutations();
     }
 
     public boolean hasErrors() {
         return !failedMutations.isEmpty();
+    }
+
+    public int getErrorCount() {
+        return failedMutations.size();
     }
 }

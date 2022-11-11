@@ -9,6 +9,7 @@ import io.odpf.depot.bigtable.parser.BigTableResponseParser;
 import io.odpf.depot.bigtable.response.BigTableResponse;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.metrics.BigTableMetrics;
 import io.odpf.depot.metrics.Instrumentation;
 
 import java.io.IOException;
@@ -19,11 +20,13 @@ import java.util.stream.Collectors;
 public class BigTableSink implements OdpfSink {
     private final BigTableClient bigTableClient;
     private final BigTableRecordParser bigTableRecordParser;
+    private final BigTableMetrics bigtableMetrics;
     private final Instrumentation instrumentation;
 
-    public BigTableSink(BigTableClient bigTableClient, BigTableRecordParser bigTableRecordParser, Instrumentation instrumentation) {
+    public BigTableSink(BigTableClient bigTableClient, BigTableRecordParser bigTableRecordParser, BigTableMetrics bigtableMetrics, Instrumentation instrumentation) {
         this.bigTableClient = bigTableClient;
         this.bigTableRecordParser = bigTableRecordParser;
+        this.bigtableMetrics = bigtableMetrics;
         this.instrumentation = instrumentation;
     }
 
@@ -39,11 +42,12 @@ public class BigTableSink implements OdpfSink {
 
         if (validRecords.size() > 0) {
             BigTableResponse bigTableResponse = bigTableClient.send(validRecords);
+            instrumentation.logInfo("Processed a batch of {} records to BigTable", validRecords.size());
             if (bigTableResponse != null && bigTableResponse.hasErrors()) {
-                Map<Long, ErrorInfo> errorInfoMap = BigTableResponseParser.parseAndFillOdpfSinkResponse(validRecords, bigTableResponse);
+                instrumentation.logInfo("Found {} Error records in response", bigTableResponse.getErrorCount());
+                Map<Long, ErrorInfo> errorInfoMap = BigTableResponseParser.getErrorsFromSinkResponse(validRecords, bigTableResponse, bigtableMetrics, instrumentation);
                 errorInfoMap.forEach(odpfSinkResponse::addErrors);
             }
-            instrumentation.logInfo("Pushed a batch of {} records to BigTable.", validRecords.size());
         }
 
         return odpfSinkResponse;

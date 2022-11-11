@@ -8,9 +8,14 @@ import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.common.Template;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.BigTableSinkConfig;
+import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.EmptyMessageException;
 import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.utils.MessageConfigUtils;
@@ -21,15 +26,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-
+import org.mockito.MockitoAnnotations;
 import java.io.IOException;
 import java.util.List;
 
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.junit.Assert.assertEquals;
 
 public class BigTableRecordParserTest {
 
@@ -37,11 +45,19 @@ public class BigTableRecordParserTest {
     private ClassLoadStencilClient stencilClient;
     @Mock
     private OdpfMessageSchema schema;
+    @Mock
+    private OdpfMessageParser mockOdpfMessageParser;
+    @Mock
+    private BigTableRowKeyParser mockBigTableRowKeyParser;
+    @Mock
+    private ParsedOdpfMessage mockParsedOdpfMessage;
     private BigTableRecordParser bigTableRecordParser;
     private List<OdpfMessage> messages;
+    private BigTableSinkConfig sinkConfig;
 
     @Before
     public void setUp() throws IOException, InvalidTemplateException {
+        MockitoAnnotations.openMocks(this);
         System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "io.odpf.depot.TestBookingLogMessage");
         System.setProperty("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", String.valueOf(SinkConnectorSchemaMessageMode.LOG_MESSAGE));
         System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{}");
@@ -59,11 +75,12 @@ public class BigTableRecordParserTest {
 
         stencilClient = Mockito.mock(ClassLoadStencilClient.class, CALLS_REAL_METHODS);
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
-        BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
+        sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
         BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
+        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema);
 
-        bigTableRecordParser = new BigTableRecordParser(protoOdpfMessageParser, new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema), modeAndSchema, schema, bigtableSchema);
+        bigTableRecordParser = new BigTableRecordParser(protoOdpfMessageParser, bigTableRowKeyParser, modeAndSchema, schema, bigtableSchema);
     }
 
     @Test
@@ -80,5 +97,78 @@ public class BigTableRecordParserTest {
         List<BigTableRecord> records = bigTableRecordParser.convert(Collections.list(new OdpfMessage(null, null)));
         assertFalse(records.get(0).isValid());
         assertNotNull(records.get(0).getErrorInfo());
+    }
+
+    @Test
+    public void shouldCatchEmptyMessageExceptionAndReturnAnInvalidBigtableRecordWithErrorTypeAsInvalidMessageError() throws IOException {
+        bigTableRecordParser = new BigTableRecordParser(mockOdpfMessageParser,
+                mockBigTableRowKeyParser,
+                MessageConfigUtils.getModeAndSchema(sinkConfig),
+                schema,
+                new BigTableSchema(sinkConfig.getColumnFamilyMapping())
+        );
+        when(mockOdpfMessageParser.parse(any(), any(), any())).thenThrow(EmptyMessageException.class);
+
+        List<BigTableRecord> bigTableRecords = bigTableRecordParser.convert(messages);
+
+        for (BigTableRecord record : bigTableRecords) {
+            assertFalse(record.isValid());
+            assertEquals(ErrorType.INVALID_MESSAGE_ERROR, record.getErrorInfo().getErrorType());
+        }
+    }
+
+    @Test
+    public void shouldCatchConfigurationExceptionAndReturnAnInvalidBigtableRecordWithErrorTypeAsUnknownFieldsError() throws IOException {
+        bigTableRecordParser = new BigTableRecordParser(mockOdpfMessageParser,
+                mockBigTableRowKeyParser,
+                MessageConfigUtils.getModeAndSchema(sinkConfig),
+                schema,
+                new BigTableSchema(sinkConfig.getColumnFamilyMapping())
+        );
+        when(mockOdpfMessageParser.parse(any(), any(), any())).thenThrow(ConfigurationException.class);
+
+        List<BigTableRecord> bigTableRecords = bigTableRecordParser.convert(messages);
+
+        for (BigTableRecord record : bigTableRecords) {
+            assertFalse(record.isValid());
+            assertEquals(ErrorType.UNKNOWN_FIELDS_ERROR, record.getErrorInfo().getErrorType());
+        }
+    }
+
+    @Test
+    public void shouldCatchIOExceptionAndReturnAnInvalidBigtableRecordWithErrorTypeAsDeserializationError() throws IOException {
+        bigTableRecordParser = new BigTableRecordParser(mockOdpfMessageParser,
+                mockBigTableRowKeyParser,
+                MessageConfigUtils.getModeAndSchema(sinkConfig),
+                schema,
+                new BigTableSchema(sinkConfig.getColumnFamilyMapping())
+        );
+        when(mockOdpfMessageParser.parse(any(), any(), any())).thenThrow(IOException.class);
+
+        List<BigTableRecord> bigTableRecords = bigTableRecordParser.convert(messages);
+
+        for (BigTableRecord record : bigTableRecords) {
+            assertFalse(record.isValid());
+            assertEquals(ErrorType.DESERIALIZATION_ERROR, record.getErrorInfo().getErrorType());
+        }
+    }
+
+    @Test
+    public void shouldCatchIllegalArgumentExceptionAndReturnAnInvalidBigtableRecordWithErrorTypeAsUnknownFieldsError() throws IOException {
+        bigTableRecordParser = new BigTableRecordParser(mockOdpfMessageParser,
+                mockBigTableRowKeyParser,
+                MessageConfigUtils.getModeAndSchema(sinkConfig),
+                schema,
+                new BigTableSchema(sinkConfig.getColumnFamilyMapping())
+        );
+        when(mockOdpfMessageParser.parse(any(), any(), any())).thenReturn(mockParsedOdpfMessage);
+        when(mockBigTableRowKeyParser.parse(mockParsedOdpfMessage)).thenThrow(IllegalArgumentException.class);
+
+        List<BigTableRecord> bigTableRecords = bigTableRecordParser.convert(messages);
+
+        for (BigTableRecord record : bigTableRecords) {
+            assertFalse(record.isValid());
+            assertEquals(ErrorType.UNKNOWN_FIELDS_ERROR, record.getErrorInfo().getErrorType());
+        }
     }
 }

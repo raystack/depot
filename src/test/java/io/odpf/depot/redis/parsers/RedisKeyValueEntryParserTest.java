@@ -46,13 +46,13 @@ public class RedisKeyValueEntryParserTest {
     private OdpfMessageSchema schema;
     private ParsedOdpfMessage parsedOdpfMessage;
 
-    private void redisSinkSetup(String field) throws IOException {
+    private void redisSinkSetup(String template, String field) throws IOException {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.KEYVALUE);
         when(redisSinkConfig.getSinkRedisKeyValueDataFieldName()).thenReturn(field);
-        when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn("test-key");
+        when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn(template);
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
         String schemaClass = "io.odpf.depot.TestMessage";
-        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
+        schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
         byte[] logMessage = TestMessage.newBuilder()
                 .setOrderNumber("xyz-order")
                 .setOrderDetails("new-eureka-order")
@@ -65,7 +65,7 @@ public class RedisKeyValueEntryParserTest {
 
     @Test
     public void shouldConvertParsedOdpfMessageToRedisKeyValueEntry() throws IOException {
-        redisSinkSetup("order_details");
+        redisSinkSetup("test-key", "order_details");
         List<RedisEntry> redisDataEntries = redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage);
         RedisKeyValueEntry expectedEntry = new RedisKeyValueEntry("test-key", "new-eureka-order", null);
         assertEquals(Collections.singletonList(expectedEntry), redisDataEntries);

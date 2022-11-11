@@ -6,15 +6,20 @@ import io.odpf.depot.bigtable.model.BigTableSchema;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.DeserializerException;
+import io.odpf.depot.exception.EmptyMessageException;
 import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class BigTableRecordParser {
@@ -59,14 +64,22 @@ public class BigTableRecordParser {
                                 String value = String.valueOf(parsedOdpfMessage.getFieldByName(fieldName, schema));
                                 rowMutationEntry.setCell(columnFamily, column, value);
                             }));
-            BigTableRecord bigTableRecord = new BigTableRecord(rowMutationEntry, index, null, true);
+            BigTableRecord bigTableRecord = new BigTableRecord(rowMutationEntry, index, null, message.getMetadata());
             if (log.isDebugEnabled()) {
                 log.debug(bigTableRecord.toString());
             }
             return bigTableRecord;
-        } catch (Exception e) {
-            ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR);
-            return new BigTableRecord(null, index, errorInfo, false);
+        } catch (EmptyMessageException e) {
+            return createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, index, message.getMetadata());
+        } catch (ConfigurationException | IllegalArgumentException e) {
+            return createErrorRecord(e, ErrorType.UNKNOWN_FIELDS_ERROR, index, message.getMetadata());
+        } catch (DeserializerException | IOException e) {
+            return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, index, message.getMetadata());
         }
+    }
+
+    private BigTableRecord createErrorRecord(Exception e, ErrorType type, long index, Map<String, Object> metadata) {
+        ErrorInfo errorInfo = new ErrorInfo(e, type);
+        return new BigTableRecord(null, index, errorInfo, metadata);
     }
 }

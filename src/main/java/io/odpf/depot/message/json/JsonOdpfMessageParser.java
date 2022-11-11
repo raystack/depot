@@ -3,11 +3,12 @@ package io.odpf.depot.message.json;
 import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.EmptyMessageException;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import io.odpf.depot.message.MessageUtils;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.JsonParserMetrics;
 import io.odpf.depot.utils.JsonUtils;
@@ -38,6 +39,7 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
         if (type == null) {
             throw new IOException("message mode not defined");
         }
+        MessageUtils.validate(message, byte[].class);
         byte[] payload;
         switch (type) {
             case LOG_KEY:

@@ -62,7 +62,7 @@ public class BigQuerySink implements OdpfSink {
             InsertAllResponse response = insertIntoBQ(records.getValidRecords());
             instrumentation.logInfo("Pushed a batch of {} records to BQ. Insert success?: {}", records.getValidRecords().size(), !response.hasErrors());
             if (response.hasErrors()) {
-                Map<Long, ErrorInfo> errorInfoMap = BigQueryResponseParser.parseAndFillOdpfSinkResponse(records.getValidRecords(), response, bigQueryMetrics, instrumentation);
+                Map<Long, ErrorInfo> errorInfoMap = BigQueryResponseParser.getErrorsFromBQResponse(records.getValidRecords(), response, bigQueryMetrics, instrumentation);
                 errorInfoMap.forEach(odpfSinkResponse::addErrors);
                 errorHandler.handle(response.getInsertErrors(), records.getValidRecords());
             }
