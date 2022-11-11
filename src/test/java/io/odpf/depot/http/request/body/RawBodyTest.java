@@ -51,8 +51,8 @@ public class RawBodyTest {
                 new Tuple<>("message_topic", "sample-topic"),
                 new Tuple<>("message_partition", 1));
         Map<String, String> configuration = new HashMap<>();
-        configuration.put("SINK_HTTP_ADD_METADATA_ENABLED", "true");
-        configuration.put("SINK_HTTP_METADATA_COLUMNS_TYPES", "message_partition=integer,message_topic=string");
+        configuration.put("SINK_ADD_METADATA_ENABLED", "true");
+        configuration.put("SINK_METADATA_COLUMNS_TYPES", "message_partition=integer,message_topic=string");
         config = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         RequestBody body = new RawBody(config);

@@ -1,10 +1,12 @@
 package io.odpf.depot.config;
 
-import io.odpf.depot.config.converter.SinkConnectorSchemaDataTypeConverter;
-import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
-import io.odpf.depot.config.converter.SinkConnectorSchemaMessageModeConverter;
+import io.odpf.depot.common.TupleString;
+import io.odpf.depot.config.converter.ConfToListConverter;
 import io.odpf.depot.config.converter.SchemaRegistryHeadersConverter;
 import io.odpf.depot.config.converter.SchemaRegistryRefreshConverter;
+import io.odpf.depot.config.converter.SinkConnectorSchemaDataTypeConverter;
+import io.odpf.depot.config.converter.SinkConnectorSchemaMessageModeConverter;
+import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.stencil.cache.SchemaRefreshStrategy;
 import org.aeonbits.owner.Config;
@@ -82,4 +84,14 @@ public interface OdpfSinkConfig extends Config {
     @Key("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE")
     @DefaultValue("false")
     boolean getSinkConnectorSchemaProtoAllowUnknownFieldsEnable();
+
+    @DefaultValue("false")
+    @Key("SINK_ADD_METADATA_ENABLED")
+    boolean shouldAddMetadata();
+
+    @DefaultValue("")
+    @Key("SINK_METADATA_COLUMNS_TYPES")
+    @ConverterClass(ConfToListConverter.class)
+    @Separator(ConfToListConverter.ELEMENT_SEPARATOR)
+    List<TupleString> getMetadataColumnsTypes();
 }

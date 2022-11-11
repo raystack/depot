@@ -1,7 +1,5 @@
 package io.odpf.depot.config;
 
-import io.odpf.depot.common.TupleString;
-import io.odpf.depot.config.converter.ConfToListConverter;
 import io.odpf.depot.config.converter.HttpParameterSourceTypeConverter;
 import io.odpf.depot.config.converter.HttpRequestBodyTypeConverter;
 import io.odpf.depot.config.converter.HttpRequestMethodConverter;
@@ -13,7 +11,6 @@ import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.enums.HttpRequestType;
 import org.aeonbits.owner.Config;
 
-import java.util.List;
 import java.util.Properties;
 
 
@@ -57,12 +54,4 @@ public interface HttpSinkConfig extends OdpfSinkConfig {
     @ConverterClass(HttpRequestBodyTypeConverter.class)
     HttpRequestBodyType getRequestBodyType();
 
-    @DefaultValue("false")
-    @Key("SINK_HTTP_ADD_METADATA_ENABLED")
-    boolean shouldAddMetadata();
-
-    @Key("SINK_HTTP_METADATA_COLUMNS_TYPES")
-    @ConverterClass(ConfToListConverter.class)
-    @Separator(ConfToListConverter.ELEMENT_SEPARATOR)
-    List<TupleString> getMetadataColumnsTypes();
 }
