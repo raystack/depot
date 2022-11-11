@@ -6,6 +6,7 @@ import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.metrics.Instrumentation;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,12 +31,6 @@ public class HttpResponseParserTest {
     @Mock
     private HttpEntityEnclosingRequestBase request;
 
-    @Mock
-    private HttpResponse response;
-
-    @Mock
-    private HttpEntity httpEntity;
-
     @Test
     public void shouldGetErrorsFromResponse() {
         List<HttpRequestRecord> records = new ArrayList<>();
@@ -45,13 +40,25 @@ public class HttpResponseParserTest {
         records.add(new HttpRequestRecord(7L, null, true, request));
         records.add(new HttpRequestRecord(12L, null, true, request));
 
+        HttpEntity httpEntity = Mockito.mock(HttpEntity.class);
         Mockito.when(request.getEntity()).thenReturn(httpEntity);
-        List<HttpSinkResponse> responses = new ArrayList<>();
-        responses.add(new HttpSinkResponse(response, false));
-        responses.add(new HttpSinkResponse(response, true));
-        responses.add(new HttpSinkResponse(response, false));
-        responses.add(new HttpSinkResponse(response, true));
-        responses.add(new HttpSinkResponse(response, true));
+
+        HttpResponse successHttpResponse = Mockito.mock(HttpResponse.class);
+        StatusLine successStatusLine = Mockito.mock(StatusLine.class);
+        Mockito.when(successHttpResponse.getStatusLine()).thenReturn(successStatusLine);
+        Mockito.when(successStatusLine.getStatusCode()).thenReturn(200);
+
+        HttpResponse failedHttpResponse = Mockito.mock(HttpResponse.class);
+        StatusLine failedStatusLine = Mockito.mock(StatusLine.class);
+        Mockito.when(failedHttpResponse.getStatusLine()).thenReturn(failedStatusLine);
+        Mockito.when(failedStatusLine.getStatusCode()).thenReturn(500);
+        List<HttpSinkResponse> responses = new ArrayList<HttpSinkResponse>() {{
+            add(new HttpSinkResponse(successHttpResponse));
+            add(new HttpSinkResponse(failedHttpResponse));
+            add(new HttpSinkResponse(successHttpResponse));
+            add(new HttpSinkResponse(failedHttpResponse));
+            add(new HttpSinkResponse(failedHttpResponse));
+        }};
 
         Map<Long, ErrorInfo> errors = HttpResponseParser.parseAndFillError(records, responses, instrumentation);
         Assert.assertEquals(3, errors.size());

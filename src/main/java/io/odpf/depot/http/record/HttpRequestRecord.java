@@ -21,7 +21,7 @@ public class HttpRequestRecord {
     private HttpEntityEnclosingRequestBase httpRequest;
 
     public HttpSinkResponse send(HttpClient httpClient) throws IOException {
-        HttpResponse response = httpClient.execute(this.httpRequest);
+        HttpResponse response = httpClient.execute(httpRequest);
         return new HttpSinkResponse(response);
     }
 

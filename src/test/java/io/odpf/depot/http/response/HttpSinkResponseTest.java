@@ -27,26 +27,27 @@ public class HttpSinkResponseTest {
 
     @Test
     public void shouldReportWhenFailed() {
-        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response, false);
-        Assert.assertFalse(httpSinkResponse.isFailed());
-        Assert.assertEquals(response, httpSinkResponse.getResponse());
+        Mockito.when(response.getStatusLine()).thenReturn(statusLine);
+        Mockito.when(statusLine.getStatusCode()).thenReturn(500);
+        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response);
+        Assert.assertTrue(httpSinkResponse.isFailed());
     }
 
     @Test
     public void shouldReportWhenSuccess() {
-        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response, true);
-        Assert.assertTrue(httpSinkResponse.isFailed());
-        Assert.assertEquals(response, httpSinkResponse.getResponse());
+        Mockito.when(response.getStatusLine()).thenReturn(statusLine);
+        Mockito.when(statusLine.getStatusCode()).thenReturn(200);
+        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response);
+        Assert.assertFalse(httpSinkResponse.isFailed());
     }
 
     @Test
     public void shouldGetResponseCodeIfSuccess() {
         Mockito.when(response.getStatusLine()).thenReturn(statusLine);
         Mockito.when(statusLine.getStatusCode()).thenReturn(200);
-        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response, false);
+        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response);
         String responseCode = httpSinkResponse.getResponseCode();
         Assert.assertFalse(httpSinkResponse.isFailed());
-        Assert.assertEquals(response, httpSinkResponse.getResponse());
         Assert.assertEquals("200", responseCode);
     }
 
@@ -54,39 +55,38 @@ public class HttpSinkResponseTest {
     public void shouldGetResponseCodeIfNotSuccess() {
         Mockito.when(response.getStatusLine()).thenReturn(statusLine);
         Mockito.when(statusLine.getStatusCode()).thenReturn(500);
-        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response, true);
+        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response);
         String responseCode = httpSinkResponse.getResponseCode();
         Assert.assertTrue(httpSinkResponse.isFailed());
-        Assert.assertEquals(response, httpSinkResponse.getResponse());
         Assert.assertEquals("500", responseCode);
     }
 
     @Test
     public void shouldReturnNullResponseCodeIfResponseIsNull() {
-        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response, true);
+        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response);
         String responseCode = httpSinkResponse.getResponseCode();
         Assert.assertTrue(httpSinkResponse.isFailed());
-        Assert.assertEquals(response, httpSinkResponse.getResponse());
         Assert.assertEquals("null", responseCode);
     }
 
     @Test
     public void shouldReturnNullResponseCodeIfStatusLineIsNull() {
         Mockito.when(response.getStatusLine()).thenReturn(null);
-        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response, true);
+        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response);
         String responseCode = httpSinkResponse.getResponseCode();
         Assert.assertTrue(httpSinkResponse.isFailed());
-        Assert.assertEquals(response, httpSinkResponse.getResponse());
         Assert.assertEquals("null", responseCode);
     }
 
     @Test
     public void shouldGetResponseBody() throws IOException {
         String body = "[{\"key\":\"value1\"}, {\"key\":\"value2\"}]";
+        Mockito.when(response.getStatusLine()).thenReturn(statusLine);
+        Mockito.when(statusLine.getStatusCode()).thenReturn(500);
         Mockito.when(response.getEntity()).thenReturn(httpEntity);
         Mockito.when(httpEntity.getContent()).thenReturn(new StringInputStream(body));
 
-        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response, true);
+        HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response);
 
         Assert.assertTrue(httpSinkResponse.isFailed());
         Assert.assertEquals(body, httpSinkResponse.getResponseBody());
