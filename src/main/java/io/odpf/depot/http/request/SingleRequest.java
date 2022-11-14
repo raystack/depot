@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 @Slf4j
 public class SingleRequest implements Request {
@@ -36,30 +37,36 @@ public class SingleRequest implements Request {
 
     @Override
     public List<HttpRequestRecord> createRecords(List<OdpfMessage> messages) {
-        List<HttpRequestRecord> records = new ArrayList<>();
-        for (int index = 0; index < messages.size(); index++) {
-            try {
-                Map<String, String> requestHeaders = headerBuilder.build();
-                URI requestUrl = uriBuilder.build(Collections.emptyMap());
-                HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
-                requestHeaders.forEach(request::addHeader);
-                request.setEntity(buildEntity(requestBody.build(messages.get(index))));
-                records.add(new HttpRequestRecord((long) index, null, true, request));
-            } catch (Exception e) {
-                records.add(createAndLogErrorRecord(e, ErrorType.DEFAULT_ERROR, index));
-            }
-        }
+        ArrayList<HttpRequestRecord> records = new ArrayList<>();
+        IntStream.range(0, messages.size()).forEach(index -> {
+            OdpfMessage message = messages.get(index);
+            HttpRequestRecord record = createRecord(message, index);
+            records.add(record);
+        });
         return records;
+    }
+
+    private HttpRequestRecord createRecord(OdpfMessage message, int index) {
+        try {
+            Map<String, String> requestHeaders = headerBuilder.build();
+            URI requestUrl = uriBuilder.build(Collections.emptyMap());
+            HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
+            requestHeaders.forEach(request::addHeader);
+            request.setEntity(buildEntity(requestBody.build(message)));
+            return new HttpRequestRecord((long) index, null, true, request);
+        } catch (Exception e) {
+            return createAndLogErrorRecord(e, ErrorType.DEFAULT_ERROR, index, message.getMetadata());
+        }
     }
 
     private StringEntity buildEntity(String stringBody) {
         return new StringEntity(stringBody, ContentType.APPLICATION_JSON);
     }
 
-    private HttpRequestRecord createAndLogErrorRecord(Exception e, ErrorType type, int index) {
+    private HttpRequestRecord createAndLogErrorRecord(Exception e, ErrorType type, int index, Map<String, Object> metadata) {
         ErrorInfo errorInfo = new ErrorInfo(e, type);
         HttpRequestRecord record = new HttpRequestRecord((long) index, errorInfo, false, null);
-        log.error("Error while parsing record for message. Record: {}, Error: {}", record.getRequestBody(), errorInfo);
+        log.error("Error while parsing record for message. Metadata : {}, Error: {}", metadata, errorInfo);
         return record;
     }
 }
