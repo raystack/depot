@@ -1,5 +1,6 @@
 package io.odpf.depot.config;
 
+import io.odpf.depot.config.converter.HttpHeaderConverter;
 import io.odpf.depot.config.converter.HttpParameterSourceTypeConverter;
 import io.odpf.depot.config.converter.HttpRequestBodyTypeConverter;
 import io.odpf.depot.config.converter.HttpRequestMethodConverter;
@@ -11,6 +12,7 @@ import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.enums.HttpRequestType;
 import org.aeonbits.owner.Config;
 
+import java.util.Map;
 import java.util.Properties;
 
 
@@ -27,7 +29,8 @@ public interface HttpSinkConfig extends HttpClientConfig {
 
     @Key("SINK_HTTP_HEADERS")
     @DefaultValue("")
-    String getSinkHttpHeaders();
+    @ConverterClass(HttpHeaderConverter.class)
+    Map<String, String> getSinkHttpHeaders();
 
     @Key("SINK_HTTP_HEADERS_TEMPLATE")
     @DefaultValue("")
