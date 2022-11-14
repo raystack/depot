@@ -3,7 +3,6 @@ package io.odpf.depot.http;
 import com.timgroup.statsd.NoOpStatsDClient;
 import io.odpf.depot.OdpfSink;
 import io.odpf.depot.common.client.HttpClientUtils;
-import io.odpf.depot.config.HttpClientConfig;
 import io.odpf.depot.config.HttpSinkConfig;
 import io.odpf.depot.http.client.HttpSinkClient;
 import io.odpf.depot.http.request.Request;
@@ -15,27 +14,24 @@ import org.apache.http.impl.client.CloseableHttpClient;
 public class HttpSinkFactory {
 
     private final HttpSinkConfig sinkConfig;
-    private final HttpClientConfig clientConfig;
     private final StatsDReporter statsDReporter;
 
     private HttpSinkClient httpSinkClient;
     private Request request;
 
-    public HttpSinkFactory(HttpSinkConfig sinkConfig, HttpClientConfig clientConfig, StatsDReporter statsDReporter) {
+    public HttpSinkFactory(HttpSinkConfig sinkConfig, StatsDReporter statsDReporter) {
         this.sinkConfig = sinkConfig;
-        this.clientConfig = clientConfig;
         this.statsDReporter = statsDReporter;
     }
 
-    public HttpSinkFactory(HttpSinkConfig sinkConfig, HttpClientConfig clientConfig) {
+    public HttpSinkFactory(HttpSinkConfig sinkConfig) {
         this.sinkConfig = sinkConfig;
-        this.clientConfig = clientConfig;
         this.statsDReporter = new StatsDReporter(new NoOpStatsDClient());
     }
 
     public void init() {
         try {
-            CloseableHttpClient closeableHttpClient = HttpClientUtils.newHttpClient(clientConfig, statsDReporter);
+            CloseableHttpClient closeableHttpClient = HttpClientUtils.newHttpClient(sinkConfig, statsDReporter);
             httpSinkClient = new HttpSinkClient(closeableHttpClient, new Instrumentation(statsDReporter, HttpSinkClient.class));
             request = RequestFactory.create(sinkConfig);
 

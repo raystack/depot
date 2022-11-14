@@ -15,7 +15,7 @@ import java.util.Properties;
 
 
 @Config.DisableFeature(Config.DisableableFeature.PARAMETER_FORMATTING)
-public interface HttpSinkConfig extends OdpfSinkConfig {
+public interface HttpSinkConfig extends HttpClientConfig, OdpfSinkConfig {
 
     @Key("SINK_HTTP_SERVICE_URL")
     String getSinkHttpServiceUrl();
