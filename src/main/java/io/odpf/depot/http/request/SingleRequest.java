@@ -41,11 +41,9 @@ public class SingleRequest implements Request {
             try {
                 Map<String, String> requestHeaders = headerBuilder.build();
                 URI requestUrl = uriBuilder.build(Collections.emptyMap());
-
                 HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
                 requestHeaders.forEach(request::addHeader);
                 request.setEntity(buildEntity(requestBody.build(messages.get(index))));
-
                 records.add(new HttpRequestRecord((long) index, null, true, request));
             } catch (Exception e) {
                 records.add(createAndLogErrorRecord(e, ErrorType.DEFAULT_ERROR, index));
