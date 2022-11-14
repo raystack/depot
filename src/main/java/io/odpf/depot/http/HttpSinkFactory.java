@@ -34,7 +34,6 @@ public class HttpSinkFactory {
             CloseableHttpClient closeableHttpClient = HttpClientUtils.newHttpClient(sinkConfig, statsDReporter);
             httpSinkClient = new HttpSinkClient(closeableHttpClient, new Instrumentation(statsDReporter, HttpSinkClient.class));
             request = RequestFactory.create(sinkConfig);
-
         } catch (Exception e) {
             throw new IllegalArgumentException("Exception occurred while creating Http sink", e);
         }

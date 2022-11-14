@@ -16,9 +16,7 @@ public class UriBuilder {
 
     public URI build(Map<String, String> queryParam) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(urlConfig);
-        if (queryParam != null) {
-            queryParam.forEach(uriBuilder::addParameter);
-        }
+        queryParam.forEach(uriBuilder::addParameter);
         return uriBuilder.build();
     }
 }
