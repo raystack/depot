@@ -15,6 +15,7 @@ import org.apache.http.entity.StringEntity;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public class SingleRequest implements Request {
         for (int index = 0; index < messages.size(); index++) {
             try {
                 Map<String, String> requestHeaders = headerBuilder.build();
-                URI requestUrl = uriBuilder.build();
+                URI requestUrl = uriBuilder.build(Collections.emptyMap());
 
                 HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
                 requestHeaders.forEach(request::addHeader);
