@@ -10,8 +10,6 @@ import io.odpf.depot.http.request.builder.UriBuilder;
 import io.odpf.depot.message.OdpfMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -55,18 +53,10 @@ public class SingleRequest implements Request {
             request.setEntity(buildEntity(requestBody.build(message)));
             return new HttpRequestRecord((long) index, null, true, request);
         } catch (Exception e) {
-            return createAndLogErrorRecord(e, ErrorType.DEFAULT_ERROR, index, message.getMetadata());
+            Map<String, Object> metadata = message.getMetadata();
+            ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DEFAULT_ERROR);
+            log.error("Error while parsing record for message. Metadata : {}, Error: {}", metadata, errorInfo);
+            return createAndLogErrorRecord(errorInfo, index);
         }
-    }
-
-    private StringEntity buildEntity(String stringBody) {
-        return new StringEntity(stringBody, ContentType.APPLICATION_JSON);
-    }
-
-    private HttpRequestRecord createAndLogErrorRecord(Exception e, ErrorType type, int index, Map<String, Object> metadata) {
-        ErrorInfo errorInfo = new ErrorInfo(e, type);
-        HttpRequestRecord record = new HttpRequestRecord((long) index, errorInfo, false, null);
-        log.error("Error while parsing record for message. Metadata : {}, Error: {}", metadata, errorInfo);
-        return record;
     }
 }
