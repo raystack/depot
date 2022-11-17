@@ -16,7 +16,7 @@ public interface Request {
         return new StringEntity(stringBody, ContentType.APPLICATION_JSON);
     }
 
-    default HttpRequestRecord createAndLogErrorRecord(ErrorInfo errorInfo, int index) {
+    default HttpRequestRecord createErrorRecord(ErrorInfo errorInfo, int index) {
         return new HttpRequestRecord((long) index, errorInfo, false, null);
     }
 }

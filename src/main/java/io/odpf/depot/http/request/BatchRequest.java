@@ -55,7 +55,7 @@ public class BatchRequest implements Request {
             Map<String, Object> metadata = messages.get(0).getMetadata();
             ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DEFAULT_ERROR);
             log.error("Error while parsing record for message. Metadata : {}, Error: {}", metadata, errorInfo);
-            record = createAndLogErrorRecord(errorInfo, 0);
+            record = createErrorRecord(errorInfo, 0);
             return Collections.singletonList(record);
         }
     }

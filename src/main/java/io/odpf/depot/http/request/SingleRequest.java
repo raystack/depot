@@ -56,7 +56,7 @@ public class SingleRequest implements Request {
             Map<String, Object> metadata = message.getMetadata();
             ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DEFAULT_ERROR);
             log.error("Error while parsing record for message. Metadata : {}, Error: {}", metadata, errorInfo);
-            return createAndLogErrorRecord(errorInfo, index);
+            return createErrorRecord(errorInfo, index);
         }
     }
 }
