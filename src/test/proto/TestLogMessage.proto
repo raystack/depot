@@ -89,6 +89,11 @@ message TestBookingLogMessage {
 
     int64 driver_total_fare_without_surge = 56;
     bool driver_dynamic_surge_enabled = 59;
+    message TopicMetadata {
+        string topic = 1;
+        int32 qos = 2;
+    }
+    repeated TopicMetadata topics = 60;
 }
 
 message TestFeedbackLogKey {

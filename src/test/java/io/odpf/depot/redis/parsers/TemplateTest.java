@@ -52,6 +52,7 @@ public class TemplateTest {
             put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
             put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
             put(String.format("%s", TestBookingLogMessage.class.getName()), TestBookingLogMessage.getDescriptor());
+            put(String.format("%s", TestBookingLogMessage.TopicMetadata.class.getName()), TestBookingLogMessage.TopicMetadata.getDescriptor());
             put(String.format("%s", TestLocation.class.getName()), TestLocation.getDescriptor());
         }};
         Parser protoParserTest = StencilClientFactory.getClient().getParser(TestMessage.class.getName());
@@ -78,13 +79,13 @@ public class TemplateTest {
 
     @Test
     public void shouldParseFloatMessageForCollectionKeyTemplate() {
-        Template template = new Template("Test-%.2f,amount_paid_by_cash");
-        assertEquals("Test-12.30", template.parse(parsedBookingMessage, schemaBooking));
+        Template template = new Template("Test-%s,amount_paid_by_cash");
+        assertEquals("Test-12.3", template.parse(parsedBookingMessage, schemaBooking));
     }
 
     @Test
     public void shouldParseLongMessageForCollectionKeyTemplate() {
-        Template template = new Template("Test-%d,customer_total_fare_without_surge");
+        Template template = new Template("Test-%s,customer_total_fare_without_surge");
         assertEquals("Test-2000", template.parse(parsedBookingMessage, schemaBooking));
     }
 

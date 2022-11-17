@@ -1,9 +1,8 @@
 package io.odpf.depot.redis.parsers;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Descriptors;
-import io.odpf.depot.TestBookingLogMessage;
-import io.odpf.depot.TestKey;
-import io.odpf.depot.TestLocation;
+import io.odpf.depot.*;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.config.converter.JsonToPropertiesConverter;
 import io.odpf.depot.message.OdpfMessage;
@@ -15,6 +14,7 @@ import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.client.entry.RedisEntry;
 import io.odpf.depot.redis.client.entry.RedisHashSetFieldEntry;
 import io.odpf.depot.redis.enums.RedisSinkDataType;
+import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +33,7 @@ public class RedisHashSetEntryParserTest {
         put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
         put(String.format("%s", TestBookingLogMessage.class.getName()), TestBookingLogMessage.getDescriptor());
         put(String.format("%s", TestLocation.class.getName()), TestLocation.getDescriptor());
+        put(String.format("%s", TestBookingLogMessage.TopicMetadata.class.getName()), TestBookingLogMessage.TopicMetadata.getDescriptor());
     }};
     @Mock
     private RedisSinkConfig redisSinkConfig;
@@ -60,8 +61,37 @@ public class RedisHashSetEntryParserTest {
     }
 
     @Test
+    public void complextProtoTypeTest() throws IOException {
+        RedisSinkConfig redisSinkConfig1 = ConfigFactory.create(RedisSinkConfig.class, ImmutableMap.of(
+                "SINK_REDIS_DATA_TYPE", "HASHSET",
+                "SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING", "{\"topics\":\"topics\"}",
+                "SINK_REDIS_KEY_TEMPLATE", "subscription:driver:%s,customer_name"
+        ));
+        ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig1, statsDReporter, null);
+        TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder()
+                .setCustomerName("johndoe")
+                .addTopics(TestBookingLogMessage.TopicMetadata.newBuilder()
+                        .setQos(1)
+                        .setTopic("hellowo/rl/dcom.gojek.partner").build())
+                .build();
+        OdpfMessage bookingMessage = new OdpfMessage(null, testBookingLogMessage.toByteArray());
+        String schemaMessageClass = "io.odpf.depot.TestBookingLogMessage";
+        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaMessageClass, descriptorsMap);
+
+        parsedBookingMessage = odpfMessageParser.parse(bookingMessage, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaMessageClass);
+
+        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig1, statsDReporter, schema);
+        List<RedisEntry> redisEntry = redisHashSetEntryParser.getRedisEntry(parsedBookingMessage);
+        assertEquals(1, redisEntry.size());
+        RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisEntry.get(0);
+        assertEquals("subscription:driver:johndoe", redisHashSetFieldEntry.getKey());
+        assertEquals("[{\"qos\":1,\"topic\":\"hellowo/rl/dcom.gojek.partner\"}]", redisHashSetFieldEntry.getValue());
+        assertEquals("topics", redisHashSetFieldEntry.getField());
+    }
+
+    @Test
     public void shouldParseLongMessageForKey() throws IOException {
-        redisSinkSetup("{\"order_number\":\"ORDER_NUMBER_%d,customer_total_fare_without_surge\"}");
+        redisSinkSetup("{\"order_number\":\"ORDER_NUMBER_%s,customer_total_fare_without_surge\"}");
         RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schemaBooking);
         List<RedisEntry> redisEntries = redisHashSetEntryParser.getRedisEntry(parsedBookingMessage);
         RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_2000", "booking-order-1", null);
@@ -70,13 +100,12 @@ public class RedisHashSetEntryParserTest {
 
     @Test
     public void shouldParseLongMessageWithSpaceForKey() throws IOException {
-        redisSinkSetup("{\"order_number\":\"ORDER_NUMBER_%d, customer_total_fare_without_surge\"}");
+        redisSinkSetup("{\"order_number\":\"ORDER_NUMBER_%s, customer_total_fare_without_surge\"}");
         RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schemaBooking);
         List<RedisEntry> redisEntries = redisHashSetEntryParser.getRedisEntry(parsedBookingMessage);
         RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_2000", "booking-order-1", null);
         assertEquals(Collections.singletonList(expectedEntry), redisEntries);
     }
-
     @Test
     public void shouldParseStringMessageForKey() throws IOException {
         redisSinkSetup("{\"order_number\":\"ORDER_NUMBER_%s,order_number\"}");

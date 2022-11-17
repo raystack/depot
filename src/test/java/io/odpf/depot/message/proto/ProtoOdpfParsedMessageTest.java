@@ -56,6 +56,9 @@ public class ProtoOdpfParsedMessageTest {
             put(String.format("%s", TestMessageBQ.class.getName()), TestMessageBQ.getDescriptor());
             put(String.format("%s", TestNestedMessageBQ.class.getName()), TestNestedMessageBQ.getDescriptor());
             put(String.format("%s", TestNestedRepeatedMessageBQ.class.getName()), TestNestedRepeatedMessageBQ.getDescriptor());
+            put(String.format("%s", TestBookingLogMessage.class.getName()), TestBookingLogMessage.getDescriptor());
+            put(String.format("%s", TestLocation.class.getName()), TestLocation.getDescriptor());
+            put(String.format("%s", TestBookingLogMessage.TopicMetadata.class.getName()), TestBookingLogMessage.TopicMetadata.getDescriptor());
             put("io.odpf.depot.TestMessageBQ.CurrentStateEntry", TestMessageBQ.getDescriptor().getNestedTypes().get(0));
             put("com.google.protobuf.Struct.FieldsEntry", Struct.getDescriptor().getNestedTypes().get(0));
             put("com.google.protobuf.Duration", com.google.protobuf.Duration.getDescriptor());
@@ -88,7 +91,7 @@ public class ProtoOdpfParsedMessageTest {
         Map durationFields = (Map) fields.get("trip_duration");
         assertEquals("order-1", fields.get("order_number"));
         assertEquals((long) 1, durationFields.get("seconds"));
-        assertEquals(1000000000, durationFields.get("nanos"));
+        assertEquals(TestProtoUtil.TRIP_DURATION_NANOS, durationFields.get("nanos"));
     }
 
     @Test
@@ -325,6 +328,20 @@ public class ProtoOdpfParsedMessageTest {
         Assert.assertEquals("order-1", protoOdpfParsedMessage.getFieldByName("order_number", odpfMessageSchema));
     }
 
+    @Test
+    public void shouldGetComplexFieldByName() throws IOException {
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestBookingLogMessage", descriptorsMap);
+        TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder()
+                .setCustomerName("johndoe")
+                .addTopics(TestBookingLogMessage.TopicMetadata.newBuilder()
+                        .setQos(1)
+                        .setTopic("hellowo/rl/dcom.gojek.partner").build())
+                .build();
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
+        DynamicMessage bookingLogDynamicMessage = protoParser.parse(testBookingLogMessage.toByteArray());
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(bookingLogDynamicMessage);
+        Assert.assertEquals("[{\"qos\":1,\"topic\":\"hellowo/rl/dcom.gojek.partner\"}]", protoOdpfParsedMessage.getFieldByName("topics", odpfMessageSchema).toString());
+    }
 
     @Test
     public void shouldGetFieldByNameFromNested() throws IOException {
