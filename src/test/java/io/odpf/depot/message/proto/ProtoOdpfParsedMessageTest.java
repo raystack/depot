@@ -335,12 +335,12 @@ public class ProtoOdpfParsedMessageTest {
                 .setCustomerName("johndoe")
                 .addTopics(TestBookingLogMessage.TopicMetadata.newBuilder()
                         .setQos(1)
-                        .setTopic("hellowo/rl/dcom.gojek.partner").build())
+                        .setTopic("hellowo/rl/dcom.world.partner").build())
                 .build();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
         DynamicMessage bookingLogDynamicMessage = protoParser.parse(testBookingLogMessage.toByteArray());
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(bookingLogDynamicMessage);
-        Assert.assertEquals("[{\"qos\":1,\"topic\":\"hellowo/rl/dcom.gojek.partner\"}]", protoOdpfParsedMessage.getFieldByName("topics", odpfMessageSchema).toString());
+        Assert.assertEquals("[{\"qos\":1,\"topic\":\"hellowo/rl/dcom.world.partner\"}]", protoOdpfParsedMessage.getFieldByName("topics", odpfMessageSchema).toString());
     }
 
     @Test

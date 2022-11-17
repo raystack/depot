@@ -72,7 +72,7 @@ public class RedisHashSetEntryParserTest {
                 .setCustomerName("johndoe")
                 .addTopics(TestBookingLogMessage.TopicMetadata.newBuilder()
                         .setQos(1)
-                        .setTopic("hellowo/rl/dcom.gojek.partner").build())
+                        .setTopic("hellowo/rl/dcom.world.partner").build())
                 .build();
         OdpfMessage bookingMessage = new OdpfMessage(null, testBookingLogMessage.toByteArray());
         String schemaMessageClass = "io.odpf.depot.TestBookingLogMessage";
@@ -85,7 +85,7 @@ public class RedisHashSetEntryParserTest {
         assertEquals(1, redisEntry.size());
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisEntry.get(0);
         assertEquals("subscription:driver:johndoe", redisHashSetFieldEntry.getKey());
-        assertEquals("[{\"qos\":1,\"topic\":\"hellowo/rl/dcom.gojek.partner\"}]", redisHashSetFieldEntry.getValue());
+        assertEquals("[{\"qos\":1,\"topic\":\"hellowo/rl/dcom.world.partner\"}]", redisHashSetFieldEntry.getValue());
         assertEquals("topics", redisHashSetFieldEntry.getField());
     }
 
