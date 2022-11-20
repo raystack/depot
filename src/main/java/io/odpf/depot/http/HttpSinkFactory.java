@@ -7,6 +7,8 @@ import io.odpf.depot.config.HttpSinkConfig;
 import io.odpf.depot.http.client.HttpSinkClient;
 import io.odpf.depot.http.request.Request;
 import io.odpf.depot.http.request.RequestFactory;
+import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.metrics.Instrumentation;
 import io.odpf.depot.metrics.StatsDReporter;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -33,7 +35,8 @@ public class HttpSinkFactory {
         try {
             CloseableHttpClient closeableHttpClient = HttpClientUtils.newHttpClient(sinkConfig, statsDReporter);
             httpSinkClient = new HttpSinkClient(closeableHttpClient, new Instrumentation(statsDReporter, HttpSinkClient.class));
-            request = RequestFactory.create(sinkConfig);
+            OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
+            request = RequestFactory.create(sinkConfig, odpfMessageParser);
         } catch (Exception e) {
             throw new IllegalArgumentException("Exception occurred while creating Http sink", e);
         }
