@@ -8,12 +8,13 @@ import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.redis.parsers.Template;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class HeaderBuilder {
 
     private final OdpfMessageParser odpfMessageParser;
-    private final Map<String, String> headerConfig;
+    private final Map<String, String> baseHeaders;
     private final Map<Template, Template> headersTemplate;
     private final SinkConnectorSchemaMessageMode headersParameterSource;
     private final String headersParameterSourceSchemaClass;
@@ -21,7 +22,7 @@ public class HeaderBuilder {
 
     public HeaderBuilder(OdpfMessageParser odpfMessageParser, Map<String, String> baseHeaders, Map<Template, Template> headersTemplate, SinkConnectorSchemaMessageMode headersParameterSource, String headersParameterSourceSchemaClass, OdpfMessageSchema headersParameterSourceSchema) {
         this.odpfMessageParser = odpfMessageParser;
-        this.headerConfig = baseHeaders;
+        this.baseHeaders = baseHeaders;
         this.headersTemplate = headersTemplate;
         this.headersParameterSource = headersParameterSource;
         this.headersParameterSourceSchemaClass = headersParameterSourceSchemaClass;
@@ -29,10 +30,11 @@ public class HeaderBuilder {
     }
 
     public Map<String, String> build() {
-        return headerConfig;
+        return baseHeaders;
     }
 
     public Map<String, String> build(OdpfMessage message) throws IOException {
+        Map<String, String> headerConfig = new HashMap<>(baseHeaders);
         if (headersTemplate == null || headersTemplate.size() == 0) {
             return headerConfig;
         }
