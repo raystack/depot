@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,12 +52,11 @@ public class SingleRequest implements Request {
             HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
             requestHeaders.forEach(request::addHeader);
             request.setEntity(buildEntity(requestBody.build(message)));
-            return new HttpRequestRecord((long) index, null, true, request);
-        } catch (Exception e) {
-            Map<String, Object> metadata = message.getMetadata();
-            ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DEFAULT_ERROR);
-            log.error("Error while parsing record for message. Metadata : {}, Error: {}", metadata, errorInfo);
-            return createErrorRecord(errorInfo, index);
+            return new HttpRequestRecord(Collections.singletonList(index), null, true, request);
+        } catch (URISyntaxException | ClassCastException e) {
+            ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.INVALID_MESSAGE_ERROR);
+            log.error("Error while parsing record for message. Metadata : {}, Error: {}", message.getMetadataString(), errorInfo);
+            return new HttpRequestRecord(Collections.singletonList(index), errorInfo, false, null);
         }
     }
 }

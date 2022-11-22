@@ -58,21 +58,6 @@ public class BatchRequestTest {
     }
 
     @Test
-    public void shouldExcludeNullMessageInRequestBody() {
-        when(requestBody.build(messages.get(0))).thenReturn(null);
-        when(requestBody.build(messages.get(1))).thenReturn("{\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}");
-        Request requestParser = new BatchRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody);
-        List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
-        Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
-        List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
-        List<HttpRequestRecord> validRecords = splitterRecords.get(Boolean.TRUE);
-        assertEquals(1, parsedRecords.size());
-        assertEquals(1, validRecords.size());
-        assertEquals(0, invalidRecords.size());
-        assertEquals("[{\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}]", parsedRecords.get(0).getRequestBody());
-    }
-
-    @Test
     public void shouldGetValidRequestRecords() {
         when(requestBody.build(messages.get(0))).thenReturn("{\"log_key\":\"\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}");
         when(requestBody.build(messages.get(1))).thenReturn("{\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}");
@@ -88,13 +73,28 @@ public class BatchRequestTest {
 
     @Test
     public void shouldGetInvalidRequestRecords() {
-        Request requestParser = new BatchRequest(HttpRequestMethodType.PUT, null, null, requestBody);
+        when(requestBody.build(messages.get(0))).thenThrow(ClassCastException.class);
+        when(requestBody.build(messages.get(1))).thenThrow(ClassCastException.class);
+        Request requestParser = new BatchRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
         List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
         List<HttpRequestRecord> validRecords = splitterRecords.get(Boolean.TRUE);
-        assertEquals(1, parsedRecords.size());
+        assertEquals(2, parsedRecords.size());
         assertEquals(0, validRecords.size());
+        assertEquals(2, invalidRecords.size());
+    }
+
+    @Test
+    public void shouldGetValidAndInvalidRequestRecords() {
+        when(requestBody.build(messages.get(0))).thenThrow(ClassCastException.class);
+        Request requestParser = new BatchRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody);
+        List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
+        Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
+        List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
+        List<HttpRequestRecord> validRecords = splitterRecords.get(Boolean.TRUE);
+        assertEquals(2, parsedRecords.size());
+        assertEquals(1, validRecords.size());
         assertEquals(1, invalidRecords.size());
     }
 }

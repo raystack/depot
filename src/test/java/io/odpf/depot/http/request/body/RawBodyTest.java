@@ -14,6 +14,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -58,5 +60,12 @@ public class RawBodyTest {
         RequestBody body = new RawBody(config);
         String rawBody = body.build(message);
         assertTrue(new JSONObject("{\"message_partition\":1,\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"message_topic\":\"sample-topic\"}").similar(new JSONObject(rawBody)));
+    }
+
+    @Test(expected = ClassCastException.class)
+    public void shouldThrowExceptionIfMessageIsNotBytes() {
+        message = new OdpfMessage("", "test-string");
+        RequestBody body = new RawBody(config);
+        body.build(message);
     }
 }

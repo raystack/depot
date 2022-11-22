@@ -10,12 +10,13 @@ import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.util.List;
 
 @AllArgsConstructor
 @Getter
 public class HttpRequestRecord {
 
-    private final Long index;
+    private final List<Integer> index;
     private final ErrorInfo errorInfo;
     private final boolean valid;
     private HttpEntityEnclosingRequestBase httpRequest;
@@ -28,8 +29,8 @@ public class HttpRequestRecord {
     public String getRequestBody() {
         try {
             return EntityUtils.toString(httpRequest.getEntity());
-        } catch (Exception e) {
-            return "null";
+        } catch (IOException e) {
+            return null;
         }
     }
 }

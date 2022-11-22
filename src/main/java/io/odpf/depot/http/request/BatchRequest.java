@@ -4,6 +4,7 @@ import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.record.HttpRequestRecord;
+import io.odpf.depot.http.record.HttpRequestRecordUtil;
 import io.odpf.depot.http.request.body.RequestBody;
 import io.odpf.depot.http.request.builder.HeaderBuilder;
 import io.odpf.depot.http.request.builder.UriBuilder;
@@ -12,11 +13,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class BatchRequest implements Request {
@@ -35,28 +38,41 @@ public class BatchRequest implements Request {
 
     @Override
     public List<HttpRequestRecord> createRecords(List<OdpfMessage> messages) {
-        List<String> payloads = new ArrayList<>();
-        HttpRequestRecord record;
-        try {
-            IntStream.range(0, messages.size()).forEach(index -> {
-                String body = requestBody.build(messages.get(index));
-                if (body != null) {
-                    payloads.add(body);
-                }
-            });
-            Map<String, String> requestHeaders = headerBuilder.build();
-            URI requestUrl = uriBuilder.build(Collections.emptyMap());
-            HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
-            requestHeaders.forEach(request::addHeader);
-            request.setEntity(buildEntity(payloads.toString()));
-            record = new HttpRequestRecord((long) 0, null, true, request);
-            return Collections.singletonList(record);
-        } catch (Exception e) {
-            Map<String, Object> metadata = messages.get(0).getMetadata();
-            ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.DEFAULT_ERROR);
-            log.error("Error while parsing record for message. Metadata : {}, Error: {}", metadata, errorInfo);
-            record = createErrorRecord(errorInfo, 0);
-            return Collections.singletonList(record);
+        HttpRequestRecordUtil recordsUtil = createBody(messages);
+        List<Integer> validRecordsIndex = new ArrayList<>(recordsUtil.getValidPayloads().keySet());
+        List<String> validRecordsBody = new ArrayList<>(recordsUtil.getValidPayloads().values());
+        List<HttpRequestRecord> records = recordsUtil.getRequestRecord();
+        if (validRecordsBody.size() != 0) {
+            try {
+                Map<String, String> requestHeaders = headerBuilder.build();
+                URI requestUrl = uriBuilder.build(Collections.emptyMap());
+                HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
+                requestHeaders.forEach(request::addHeader);
+                request.setEntity(buildEntity(validRecordsBody.toString()));
+                records.add(new HttpRequestRecord(validRecordsIndex, null, true, request));
+            } catch (URISyntaxException e) {
+                ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.INVALID_MESSAGE_ERROR);
+                List<String> metadata = validRecordsIndex.stream().map(index -> messages.get(index).getMetadataString()).collect(Collectors.toList());
+                log.error("Error while parsing record for messages. Metadata : {}, Error: {}", metadata, errorInfo);
+                records.add(new HttpRequestRecord(validRecordsIndex, errorInfo, false, null));
+            }
         }
+        return records;
+    }
+
+    private HttpRequestRecordUtil createBody(List<OdpfMessage> messages) {
+        Map<Integer, String> validBodies = new HashMap<>();
+        List<HttpRequestRecord> failedRecords = new ArrayList<>();
+        for (int index = 0; index < messages.size(); index++) {
+            try {
+                String body = requestBody.build(messages.get(index));
+                validBodies.put(index, body);
+            } catch (ClassCastException e) {
+                ErrorInfo errorInfo = new ErrorInfo(e, ErrorType.INVALID_MESSAGE_ERROR);
+                log.error("Error while creating request body. Metadata : {}, Error: {}", messages.get(index).getMetadataString(), errorInfo);
+                failedRecords.add(new HttpRequestRecord(Collections.singletonList(index), errorInfo, false, null));
+            }
+        }
+        return new HttpRequestRecordUtil(validBodies, failedRecords);
     }
 }
