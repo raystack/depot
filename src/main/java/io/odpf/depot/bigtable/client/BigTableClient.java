@@ -60,6 +60,7 @@ public class BigTableClient {
                 .setInstanceId(sinkConfig.getInstanceId())
                 .setCredentialsProvider(FixedCredentialsProvider.create(GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getCredentialPath()))))
                 .build();
+        System.out.println("**********************************CREDENTIALS**********************************************  " + settings.getCredentialsProvider().getCredentials().toString());
         return BigtableTableAdminClient.create(settings);
     }
 
