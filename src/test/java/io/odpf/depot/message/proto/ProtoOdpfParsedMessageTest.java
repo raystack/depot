@@ -3,6 +3,7 @@ package io.odpf.depot.message.proto;
 import com.google.api.client.util.DateTime;
 import com.google.protobuf.*;
 import io.odpf.depot.*;
+import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.stencil.Parser;
@@ -30,6 +31,7 @@ public class ProtoOdpfParsedMessageTest {
     private Instant now;
     private long nowMillis;
     private ProtoOdpfMessageParser odpfMessageParser;
+    private Parser parser;
     @Mock
     private StencilClient stencilClient;
     private Map<String, Descriptors.Descriptor> descriptorsMap;
@@ -37,7 +39,7 @@ public class ProtoOdpfParsedMessageTest {
     @Before
     public void setUp() throws IOException, Descriptors.DescriptorValidationException {
         stencilClient = Mockito.mock(StencilClient.class);
-        Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
+        parser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         now = Instant.now();
         createdAt = Timestamp.newBuilder().setSeconds(now.getEpochSecond()).setNanos(now.getNano()).build();
         TestMessageBQ testMessage = TestMessageBQ.newBuilder()
@@ -49,7 +51,7 @@ public class ProtoOdpfParsedMessageTest {
                 .setOrderDate(com.google.type.Date.newBuilder().setYear(1996).setMonth(11).setDay(21))
                 .build();
 
-        dynamicMessage = protoParser.parse(testMessage.toByteArray());
+        dynamicMessage = parser.parse(testMessage.toByteArray());
         nowMillis = Instant.ofEpochSecond(now.getEpochSecond(), now.getNano()).toEpochMilli();
         descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
             put(String.format("%s", TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
@@ -354,6 +356,38 @@ public class ProtoOdpfParsedMessageTest {
         Assert.assertEquals(message1.getOrderNumber(), protoOdpfParsedMessage.getFieldByName("single_message.order_number", odpfMessageSchema));
     }
 
+    @Test
+    public void shouldReturnTimestampFieldInRFC3339Format() throws IOException {
+        Instant time = Instant.ofEpochSecond(1669160207, 600000000);
+        TestMessageBQ message1 = TestProtoUtil.generateTestMessage(time);
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(parser.parse(message1.toByteArray()));
+        Assert.assertEquals("2022-11-22T23:36:47.600Z", protoOdpfParsedMessage.getFieldByName("created_at", odpfMessageSchema));
+    }
+
+    @Test
+    public void shouldReturnDurationFieldInStringFormat() throws IOException {
+        TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(parser.parse(message1.toByteArray()));
+        Assert.assertEquals("1.000001s", protoOdpfParsedMessage.getFieldByName("trip_duration", odpfMessageSchema));
+    }
+
+    @Test
+    public void shouldReturnMapFieldAsJSONObject() throws IOException {
+        TestMessageBQ message1 = TestMessageBQ.newBuilder().putCurrentState("key", "value").build();
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(parser.parse(message1.toByteArray()));
+        Assert.assertEquals("{\"key\":\"value\"}", protoOdpfParsedMessage.getFieldByName("current_state", odpfMessageSchema).toString());
+    }
+
+    @Test
+    public void shouldReturnDefaultValueForFieldIfValueIsNotSet() throws IOException {
+        TestMessageBQ emptyMessage = TestMessageBQ.newBuilder().build();
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(parser.parse(emptyMessage.toByteArray()));
+        Assert.assertEquals("", protoOdpfParsedMessage.getFieldByName("order_number", odpfMessageSchema));
+    }
 
     @Test
     public void shouldThrowExceptionIfColumnIsNotPresentInProto() throws IOException {
@@ -365,6 +399,16 @@ public class ProtoOdpfParsedMessageTest {
         Assert.assertEquals("test", protoOdpfParsedMessage.getFieldByName("nested_id", odpfMessageSchema));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> protoOdpfParsedMessage.getFieldByName("single_message.order_id", odpfMessageSchema));
         Assert.assertEquals("Invalid field config : single_message.order_id", exception.getMessage());
+    }
+
+    @Test
+    public void shouldThrowExceptionForEmptyNestedFieldsIfValueIsNotSet() throws IOException {
+        TestNestedMessageBQ emptyMessage = TestNestedMessageBQ.newBuilder().build();
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestNestedMessageBQ", descriptorsMap);
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(emptyMessage.toByteArray()));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> protoOdpfParsedMessage.getFieldByName("single_message.order_number", odpfMessageSchema));
+        Assert.assertEquals("Invalid field config : single_message.order_number", exception.getMessage());
     }
 
     @Test
@@ -386,6 +430,16 @@ public class ProtoOdpfParsedMessageTest {
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(dynamicMessage);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> protoOdpfParsedMessage.getFieldByName("", odpfMessageSchema));
         Assert.assertEquals("Invalid field config : name can not be empty", exception.getMessage());
+    }
+
+    @Test
+    public void shouldThrowDeSerializationExceptionIfJSONPrintFails() throws IOException {
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        Timestamp failingDate = Timestamp.newBuilder().setSeconds(2147483647).setNanos(1000000000).build();
+        TestMessageBQ message = TestMessageBQ.newBuilder().setCreatedAt(failingDate).build();
+        DynamicMessage message1 = parser.parse(message.toByteArray());
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(message1);
+        assertThrows(DeserializerException.class, () -> protoOdpfParsedMessage.getFieldByName("created_at", odpfMessageSchema));
     }
 
 }

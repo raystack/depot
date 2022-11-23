@@ -11,6 +11,7 @@ import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.exception.UnknownFieldsException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
@@ -30,6 +31,9 @@ import java.util.Properties;
 @Slf4j
 public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     private final DynamicMessage dynamicMessage;
+    private Configuration configuration = Configuration.builder()
+            .jsonProvider(new JsonOrgJsonProvider())
+            .build();
 
     private JsonFormat.Printer jsonPrinter = JsonFormat.printer()
             .omittingInsignificantWhitespace()
@@ -149,12 +153,11 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
         try {
             jsonString = this.jsonPrinter.print(dynamicMessage);
         } catch (InvalidProtocolBufferException e) {
-            throw new RuntimeException(e);
+            throw new DeserializerException("Unable to convert proto to JSON", e);
+        } catch (IllegalArgumentException e) {
+            throw new DeserializerException("Unable to convert proto to JSON", e);
         }
         String jsonPathName = "$." + name;
-        Configuration configuration = Configuration.builder()
-                .jsonProvider(new JsonOrgJsonProvider())
-                .build();
         JsonPath jsonPath = JsonPath.compile(jsonPathName);
         JSONObject jsonObject = new JSONObject(jsonString);
         try {
