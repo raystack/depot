@@ -3,6 +3,7 @@ package io.odpf.depot.http.request.body;
 import io.odpf.depot.TestMessage;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.HttpSinkConfig;
+import io.odpf.depot.exception.InvalidMessageException;
 import io.odpf.depot.message.OdpfMessage;
 import org.aeonbits.owner.ConfigFactory;
 import org.json.JSONObject;
@@ -58,5 +59,12 @@ public class RawBodyTest {
         RequestBody body = new RawBody(config);
         String rawBody = body.build(message);
         assertTrue(new JSONObject("{\"message_partition\":1,\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"message_topic\":\"sample-topic\"}").similar(new JSONObject(rawBody)));
+    }
+
+    @Test(expected = InvalidMessageException.class)
+    public void shouldThrowExceptionIfMessageIsNotBytes() {
+        message = new OdpfMessage("", "test-string");
+        RequestBody body = new RawBody(config);
+        body.build(message);
     }
 }

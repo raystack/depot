@@ -16,6 +16,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -31,14 +32,17 @@ public class HttpResponseParserTest {
     @Mock
     private HttpEntityEnclosingRequestBase request;
 
+    @Mock
+    private HttpEntity entity;
+
     @Test
     public void shouldGetErrorsFromResponse() {
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(new HttpRequestRecord(0L, null, true, request));
-        records.add(new HttpRequestRecord(1L, null, true, request));
-        records.add(new HttpRequestRecord(4L, null, true, request));
-        records.add(new HttpRequestRecord(7L, null, true, request));
-        records.add(new HttpRequestRecord(12L, null, true, request));
+        records.add(new HttpRequestRecord(Collections.singletonList(0), null, true, request));
+        records.add(new HttpRequestRecord(Collections.singletonList(1), null, true, request));
+        records.add(new HttpRequestRecord(Collections.singletonList(4), null, true, request));
+        records.add(new HttpRequestRecord(Collections.singletonList(7), null, true, request));
+        records.add(new HttpRequestRecord(Collections.singletonList(12), null, true, request));
 
         HttpEntity httpEntity = Mockito.mock(HttpEntity.class);
         Mockito.when(request.getEntity()).thenReturn(httpEntity);
@@ -60,21 +64,21 @@ public class HttpResponseParserTest {
             add(new HttpSinkResponse(failedHttpResponse));
         }};
 
-        Map<Long, ErrorInfo> errors = HttpResponseParser.parseAndFillError(records, responses, instrumentation);
+        Map<Long, ErrorInfo> errors = HttpResponseParser.getErrorsFromResponse(records, responses, instrumentation);
         Assert.assertEquals(3, errors.size());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, errors.get(1L).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, errors.get(7L).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, errors.get(12L).getErrorType());
+        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(1L).getErrorType());
+        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(7L).getErrorType());
+        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(12L).getErrorType());
     }
 
     @Test
     public void shouldGetEmptyMapWhenNoErrors() {
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(new HttpRequestRecord(0L, null, true, request));
-        records.add(new HttpRequestRecord(1L, null, true, request));
-        records.add(new HttpRequestRecord(4L, null, true, request));
-        records.add(new HttpRequestRecord(7L, null, true, request));
-        records.add(new HttpRequestRecord(12L, null, true, request));
+        records.add(new HttpRequestRecord(Collections.singletonList(0), null, true, request));
+        records.add(new HttpRequestRecord(Collections.singletonList(1), null, true, request));
+        records.add(new HttpRequestRecord(Collections.singletonList(4), null, true, request));
+        records.add(new HttpRequestRecord(Collections.singletonList(7), null, true, request));
+        records.add(new HttpRequestRecord(Collections.singletonList(12), null, true, request));
 
         List<HttpSinkResponse> responses = new ArrayList<>();
         responses.add(Mockito.mock(HttpSinkResponse.class));
@@ -88,7 +92,8 @@ public class HttpResponseParserTest {
                     when(responses.get(index).isFailed()).thenReturn(false);
                 }
         );
-        Map<Long, ErrorInfo> errors = HttpResponseParser.parseAndFillError(records, responses, instrumentation);
+        when(request.getEntity()).thenReturn(entity);
+        Map<Long, ErrorInfo> errors = HttpResponseParser.getErrorsFromResponse(records, responses, instrumentation);
         Assert.assertTrue(errors.isEmpty());
     }
 }

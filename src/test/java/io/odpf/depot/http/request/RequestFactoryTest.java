@@ -19,6 +19,7 @@ public class RequestFactoryTest {
 
     @Test
     public void shouldReturnSingleRequest() {
+        Mockito.when(sinkConfig.getSinkHttpServiceUrl()).thenReturn("http://dummy.com");
         Mockito.when(sinkConfig.getRequestType()).thenReturn(HttpRequestType.SINGLE);
         Mockito.when(sinkConfig.getRequestBodyType()).thenReturn(HttpRequestBodyType.RAW);
         Mockito.when(sinkConfig.getSinkHttpRequestMethod()).thenReturn(HttpRequestMethodType.PUT);
@@ -28,6 +29,7 @@ public class RequestFactoryTest {
 
     @Test
     public void shouldReturnBatchRequest() {
+        Mockito.when(sinkConfig.getSinkHttpServiceUrl()).thenReturn("http://dummy.com");
         Mockito.when(sinkConfig.getRequestType()).thenReturn(HttpRequestType.BATCH);
         Mockito.when(sinkConfig.getRequestBodyType()).thenReturn(HttpRequestBodyType.RAW);
         Mockito.when(sinkConfig.getSinkHttpRequestMethod()).thenReturn(HttpRequestMethodType.PUT);

@@ -11,8 +11,8 @@ import io.odpf.depot.http.enums.HttpRequestType;
 public class RequestFactory {
 
     public static Request create(HttpSinkConfig config) {
+        UriBuilder uriBuilder = new UriBuilder(config.getSinkHttpServiceUrl());
         HeaderBuilder headerBuilder = new HeaderBuilder(config.getSinkHttpHeaders());
-        UriBuilder uriBuilder =  new UriBuilder(config.getSinkHttpServiceUrl());
         HttpRequestMethodType httpMethod = config.getSinkHttpRequestMethod();
         RequestBody requestBody = RequestBodyFactory.create(config);
 

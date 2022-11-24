@@ -23,6 +23,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,11 +57,11 @@ public class HttpSinkTest {
     public void shouldPushToSink() throws IOException {
         List<OdpfMessage> messages = new ArrayList<>();
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(new HttpRequestRecord(0L, null, true, httpRequest));
-        records.add(new HttpRequestRecord(1L, null, true, httpRequest));
-        records.add(new HttpRequestRecord(2L, null, true, httpRequest));
-        records.add(new HttpRequestRecord(3L, null, true, httpRequest));
-        records.add(new HttpRequestRecord(4L, null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(0), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(1), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(2), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(3), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(4), null, true, httpRequest));
         List<HttpSinkResponse> responses = new ArrayList<>();
         responses.add(Mockito.mock(HttpSinkResponse.class));
         responses.add(Mockito.mock(HttpSinkResponse.class));
@@ -69,6 +70,7 @@ public class HttpSinkTest {
         responses.add(Mockito.mock(HttpSinkResponse.class));
         when(request.createRecords(messages)).thenReturn(records);
         when(httpSinkClient.send(records)).thenReturn(responses);
+        when(httpRequest.getEntity()).thenReturn(httpEntity);
         HttpSink httpSink = new HttpSink(httpSinkClient, request, instrumentation);
         OdpfSinkResponse odpfSinkResponse = httpSink.pushToSink(messages);
         Assert.assertFalse(odpfSinkResponse.hasErrors());
@@ -78,11 +80,11 @@ public class HttpSinkTest {
     public void shouldReportParsingErrors() throws IOException {
         List<OdpfMessage> messages = new ArrayList<>();
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(new HttpRequestRecord(0L, new ErrorInfo(new ConfigurationException(""), ErrorType.DEFAULT_ERROR), false, null));
-        records.add(new HttpRequestRecord(1L, null, true, httpRequest));
-        records.add(new HttpRequestRecord(2L, new ErrorInfo(new ConfigurationException(""), ErrorType.DEFAULT_ERROR), false, null));
-        records.add(new HttpRequestRecord(3L, null, true, httpRequest));
-        records.add(new HttpRequestRecord(4L, null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(0), new ErrorInfo(new ConfigurationException(""), ErrorType.DEFAULT_ERROR), false, null));
+        records.add(new HttpRequestRecord(Collections.singletonList(1), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(2), new ErrorInfo(new ConfigurationException(""), ErrorType.DEFAULT_ERROR), false, null));
+        records.add(new HttpRequestRecord(Collections.singletonList(3), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(4), null, true, httpRequest));
         List<HttpSinkResponse> responses = new ArrayList<>();
         responses.add(Mockito.mock(HttpSinkResponse.class));
         responses.add(Mockito.mock(HttpSinkResponse.class));
@@ -90,6 +92,7 @@ public class HttpSinkTest {
         when(request.createRecords(messages)).thenReturn(records);
         List<HttpRequestRecord> validRecords = records.stream().filter(HttpRequestRecord::isValid).collect(Collectors.toList());
         when(httpSinkClient.send(validRecords)).thenReturn(responses);
+        when(httpRequest.getEntity()).thenReturn(httpEntity);
         HttpSink httpSink = new HttpSink(httpSinkClient, request, instrumentation);
         OdpfSinkResponse odpfSinkResponse = httpSink.pushToSink(messages);
         Assert.assertTrue(odpfSinkResponse.hasErrors());
@@ -102,11 +105,11 @@ public class HttpSinkTest {
     public void shouldReportErrors() throws IOException {
         List<OdpfMessage> messages = new ArrayList<>();
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(new HttpRequestRecord(0L, null, true, httpRequest));
-        records.add(new HttpRequestRecord(1L, null, true, httpRequest));
-        records.add(new HttpRequestRecord(2L, null, true, httpRequest));
-        records.add(new HttpRequestRecord(3L, null, true, httpRequest));
-        records.add(new HttpRequestRecord(4L, null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(0), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(1), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(2), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(3), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(4), null, true, httpRequest));
 
         Mockito.when(httpRequest.getEntity()).thenReturn(httpEntity);
         Mockito.when(response.getStatusLine()).thenReturn(statusLine);
@@ -127,8 +130,8 @@ public class HttpSinkTest {
         OdpfSinkResponse odpfSinkResponse = httpSink.pushToSink(messages);
         Assert.assertTrue(odpfSinkResponse.hasErrors());
         Assert.assertEquals(5, odpfSinkResponse.getErrors().size());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, odpfSinkResponse.getErrorsFor(1).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, odpfSinkResponse.getErrorsFor(3).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, odpfSinkResponse.getErrorsFor(4).getErrorType());
+        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, odpfSinkResponse.getErrorsFor(1).getErrorType());
+        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, odpfSinkResponse.getErrorsFor(3).getErrorType());
+        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, odpfSinkResponse.getErrorsFor(4).getErrorType());
     }
 }

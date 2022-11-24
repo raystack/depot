@@ -2,6 +2,8 @@ package io.odpf.depot.http.request;
 
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.exception.DeserializerException;
+import io.odpf.depot.exception.InvalidMessageException;
 import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.http.request.body.RequestBody;
@@ -10,8 +12,6 @@ import io.odpf.depot.http.request.builder.UriBuilder;
 import io.odpf.depot.message.OdpfMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -53,20 +53,17 @@ public class SingleRequest implements Request {
             HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
             requestHeaders.forEach(request::addHeader);
             request.setEntity(buildEntity(requestBody.build(message)));
-            return new HttpRequestRecord((long) index, null, true, request);
-        } catch (Exception e) {
-            return createAndLogErrorRecord(e, ErrorType.DEFAULT_ERROR, index, message.getMetadata());
+            return new HttpRequestRecord(Collections.singletonList(index), null, true, request);
+        } catch (InvalidMessageException e) {
+            return createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, Collections.singletonList(index), message.getMetadata());
+        } catch (DeserializerException e) {
+            return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, Collections.singletonList(index), message.getMetadata());
         }
     }
 
-    private StringEntity buildEntity(String stringBody) {
-        return new StringEntity(stringBody, ContentType.APPLICATION_JSON);
-    }
-
-    private HttpRequestRecord createAndLogErrorRecord(Exception e, ErrorType type, int index, Map<String, Object> metadata) {
+    private HttpRequestRecord createErrorRecord(Exception e, ErrorType type, List<Integer> indexList, Map<String, Object> metadata) {
         ErrorInfo errorInfo = new ErrorInfo(e, type);
-        HttpRequestRecord record = new HttpRequestRecord((long) index, errorInfo, false, null);
         log.error("Error while parsing record for message. Metadata : {}, Error: {}", metadata, errorInfo);
-        return record;
+        return new HttpRequestRecord(indexList, errorInfo, false, null);
     }
 }
