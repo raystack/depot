@@ -4,18 +4,21 @@ import com.google.api.client.util.DateTime;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.UnknownFieldSet;
+import com.google.protobuf.util.JsonFormat;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.TestMessage;
+import io.odpf.depot.bigquery.TestMetadata;
+import io.odpf.depot.bigquery.TestOdpfMessageBuilder;
+import io.odpf.depot.bigquery.models.Record;
+import io.odpf.depot.bigquery.models.Records;
+import io.odpf.depot.common.Tuple;
 import io.odpf.depot.common.TupleString;
+import io.odpf.depot.config.BigQuerySinkConfig;
+import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.message.*;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.message.proto.ProtoOdpfParsedMessage;
-import io.odpf.depot.bigquery.models.Record;
-import io.odpf.depot.bigquery.models.Records;
-import io.odpf.depot.config.BigQuerySinkConfig;
-import io.odpf.depot.common.Tuple;
-import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.bigquery.TestOdpfMessageBuilder;
-import io.odpf.depot.bigquery.TestMetadata;
 import io.odpf.stencil.client.ClassLoadStencilClient;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
@@ -32,6 +35,13 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class MessageRecordConverterTest {
+    private final Configuration configuration = Configuration.builder()
+            .jsonProvider(new JsonOrgJsonProvider())
+            .build();
+    private final JsonFormat.Printer jsonPrinter = JsonFormat.printer()
+            .omittingInsignificantWhitespace()
+            .preservingProtoFieldNames()
+            .includingDefaultValueFields();
     private MessageRecordConverter recordConverter;
     @Mock
     private ClassLoadStencilClient stencilClient;
@@ -112,6 +122,7 @@ public class MessageRecordConverterTest {
         assertEquals(record1ExpectedColumns, record1Columns);
     }
 
+    @Test
     public void shouldReturnInvalidRecordsWhenGivenNullRecords() {
         TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
         TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(), now.toEpochMilli());
@@ -246,7 +257,7 @@ public class MessageRecordConverterTest {
                         .addField(1, UnknownFieldSet.Field.getDefaultInstance())
                         .build())
                 .build();
-        ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage);
+        ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage, configuration, jsonPrinter);
         when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage")).thenReturn(parsedOdpfMessage);
 
         recordConverter = new MessageRecordConverter(mockParser, ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
@@ -274,7 +285,7 @@ public class MessageRecordConverterTest {
                         .addField(1, UnknownFieldSet.Field.getDefaultInstance())
                         .build())
                 .build();
-        ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage);
+        ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage, configuration, jsonPrinter);
         when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage")).thenReturn(parsedOdpfMessage);
 
         recordConverter = new MessageRecordConverter(mockParser,
