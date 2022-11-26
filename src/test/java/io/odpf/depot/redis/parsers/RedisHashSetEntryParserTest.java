@@ -139,6 +139,25 @@ public class RedisHashSetEntryParserTest {
     }
 
     @Test
+    public void shouldThrowExceptionForWrongConfig() throws IOException {
+        RedisSinkConfig config = ConfigFactory.create(RedisSinkConfig.class, ImmutableMap.of(
+                "SINK_REDIS_DATA_TYPE", "HASHSET",
+                "SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING", "{\"does_not_exist\":\"test_order_%s,order_number\"}",
+                "SINK_REDIS_KEY_TEMPLATE", "subscription:order:%s,order_number"
+        ));
+
+        ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(config, statsDReporter, null);
+        TestMessageBQ message = TestMessageBQ.newBuilder().setOrderNumber("test").build();
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        OdpfMessage odpfMessage = new OdpfMessage(null, message.toByteArray());
+        ParsedOdpfMessage parsedMessage = odpfMessageParser.parse(odpfMessage, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessageBQ");
+
+        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(config, statsDReporter, odpfMessageSchema);
+        IllegalArgumentException exception = Assert.assertThrows(IllegalArgumentException.class, () -> redisHashSetEntryParser.getRedisEntry(parsedMessage));
+        Assert.assertEquals("Invalid field config : does_not_exist", exception.getMessage());
+    }
+
+    @Test
     public void shouldParseLongMessageForKey() throws IOException {
         redisSinkSetup("{\"order_number\":\"ORDER_NUMBER_%s,customer_total_fare_without_surge\"}");
         RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schemaBooking);
