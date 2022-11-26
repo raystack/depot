@@ -26,7 +26,7 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
     private final OdpfSinkConfig config;
     private final Instrumentation instrumentation;
     private final JsonParserMetrics jsonParserMetrics;
-    private final Configuration configuration = Configuration.builder()
+    private final Configuration jsonPathConfig = Configuration.builder()
             .jsonProvider(new JsonOrgJsonProvider())
             .build();
 
@@ -61,7 +61,7 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
             Instant instant = Instant.now();
             JSONObject jsonObject = JsonUtils.getJsonObject(config, payload);
             instrumentation.captureDurationSince(jsonParserMetrics.getJsonParseTimeTakenMetric(), instant);
-            return new JsonOdpfParsedMessage(jsonObject, configuration);
+            return new JsonOdpfParsedMessage(jsonObject, jsonPathConfig);
         } catch (JSONException ex) {
             throw new IOException("invalid json error", ex);
         }

@@ -34,7 +34,7 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
 
     private final StencilClient stencilClient;
     private final ProtoFieldParser protoMappingParser = new ProtoFieldParser();
-    private final Configuration configuration = Configuration.builder()
+    private final Configuration jsonPathConfig = Configuration.builder()
             .jsonProvider(new JsonOrgJsonProvider())
             .build();
 
@@ -76,7 +76,7 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
             throw new EmptyMessageException();
         }
         DynamicMessage dynamicMessage = stencilClient.parse(schemaClass, payload);
-        return new ProtoOdpfParsedMessage(dynamicMessage, configuration, jsonPrinter);
+        return new ProtoOdpfParsedMessage(dynamicMessage, jsonPathConfig, jsonPrinter);
     }
 
     public Map<String, Descriptors.Descriptor> getDescriptorMap() {

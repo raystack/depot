@@ -12,11 +12,11 @@ import java.util.Map;
 
 public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
     private final JSONObject jsonObject;
-    private final Configuration configuration;
+    private final Configuration jsonPathConfig;
 
-    public JsonOdpfParsedMessage(JSONObject jsonObject, Configuration configuration) {
+    public JsonOdpfParsedMessage(JSONObject jsonObject, Configuration jsonPathConfig) {
         this.jsonObject = jsonObject;
-        this.configuration = configuration;
+        this.jsonPathConfig = jsonPathConfig;
     }
 
     public String toString() {
@@ -45,6 +45,6 @@ public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }
-        return MessageUtils.getFieldFromJsonObject(name, jsonObject, configuration);
+        return MessageUtils.getFieldFromJsonObject(name, jsonObject, jsonPathConfig);
     }
 }

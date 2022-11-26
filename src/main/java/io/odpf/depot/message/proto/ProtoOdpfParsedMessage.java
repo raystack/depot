@@ -29,15 +29,15 @@ import java.util.Properties;
 @Slf4j
 public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     private final DynamicMessage dynamicMessage;
-    private final Configuration configuration;
+    private final Configuration jsonPathConfig;
     private final JsonFormat.Printer jsonPrinter;
 
     private final Map<OdpfMessageSchema, Map<String, Object>> cachedMapping = new HashMap<>();
     private JSONObject protoJsonMapping;
 
-    public ProtoOdpfParsedMessage(DynamicMessage dynamicMessage, Configuration configuration, JsonFormat.Printer jsonPrinter) {
+    public ProtoOdpfParsedMessage(DynamicMessage dynamicMessage, Configuration jsonPathConfig, JsonFormat.Printer jsonPrinter) {
         this.dynamicMessage = dynamicMessage;
-        this.configuration = configuration;
+        this.jsonPathConfig = jsonPathConfig;
         this.jsonPrinter = jsonPrinter;
     }
 
@@ -154,6 +154,6 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }
         checkAndSetJsonObject();
-        return MessageUtils.getFieldFromJsonObject(name, protoJsonMapping, configuration);
+        return MessageUtils.getFieldFromJsonObject(name, protoJsonMapping, jsonPathConfig);
     }
 }
