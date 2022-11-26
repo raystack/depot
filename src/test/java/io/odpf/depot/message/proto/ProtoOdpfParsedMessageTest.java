@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -388,6 +389,21 @@ public class ProtoOdpfParsedMessageTest {
         OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
         String attributes = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()), configuration, jsonPrinter).getFieldByName("attributes", odpfMessageSchema).toString();
         Assert.assertEquals("[{\"name\":\"John\",\"age\":50},{\"name\":\"John\",\"age\":60},{\"name\":\"John\",\"active\":true,\"height\":175}]", attributes);
+    }
+
+    @Test
+    public void shouldGetNumberFields() throws IOException {
+        TestMessageBQ message = TestMessageBQ.newBuilder()
+                .addAttributes(Struct.newBuilder().putFields("name", Value.newBuilder().setStringValue("John").build())
+                        .putFields("age", Value.newBuilder().setNumberValue(50L).build()).build())
+                .setDiscount(10000012010L)
+                .setPrice(10.2f)
+                .build();
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()), configuration, jsonPrinter);
+        Assert.assertEquals("10000012010", protoOdpfParsedMessage.getFieldByName("discount", odpfMessageSchema));
+        Assert.assertEquals(10.2d, ((BigDecimal) protoOdpfParsedMessage.getFieldByName("price", odpfMessageSchema)).doubleValue(), 0.00000000001);
     }
 
     @Test
