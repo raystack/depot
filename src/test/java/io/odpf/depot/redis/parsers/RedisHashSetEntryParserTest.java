@@ -2,7 +2,9 @@ package io.odpf.depot.redis.parsers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Descriptors;
-import io.odpf.depot.*;
+import io.odpf.depot.TestBookingLogMessage;
+import io.odpf.depot.TestKey;
+import io.odpf.depot.TestLocation;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.config.converter.JsonToPropertiesConverter;
 import io.odpf.depot.message.OdpfMessage;
@@ -61,10 +63,10 @@ public class RedisHashSetEntryParserTest {
     }
 
     @Test
-    public void complextProtoTypeTest() throws IOException {
+    public void shouldParseComplexProtoType() throws IOException {
         RedisSinkConfig redisSinkConfig1 = ConfigFactory.create(RedisSinkConfig.class, ImmutableMap.of(
                 "SINK_REDIS_DATA_TYPE", "HASHSET",
-                "SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING", "{\"topics\":\"topics\"}",
+                "SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING", "{\"topics\":\"topics_%s,customer_name\"}",
                 "SINK_REDIS_KEY_TEMPLATE", "subscription:driver:%s,customer_name"
         ));
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig1, statsDReporter, null);
@@ -73,6 +75,9 @@ public class RedisHashSetEntryParserTest {
                 .addTopics(TestBookingLogMessage.TopicMetadata.newBuilder()
                         .setQos(1)
                         .setTopic("hellowo/rl/dcom.world.partner").build())
+                .addTopics(TestBookingLogMessage.TopicMetadata.newBuilder()
+                        .setQos(123)
+                        .setTopic("topic2").build())
                 .build();
         OdpfMessage bookingMessage = new OdpfMessage(null, testBookingLogMessage.toByteArray());
         String schemaMessageClass = "io.odpf.depot.TestBookingLogMessage";
@@ -85,8 +90,9 @@ public class RedisHashSetEntryParserTest {
         assertEquals(1, redisEntry.size());
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisEntry.get(0);
         assertEquals("subscription:driver:johndoe", redisHashSetFieldEntry.getKey());
-        assertEquals("[{\"qos\":1,\"topic\":\"hellowo/rl/dcom.world.partner\"}]", redisHashSetFieldEntry.getValue());
-        assertEquals("topics", redisHashSetFieldEntry.getField());
+        assertEquals("[{\"qos\":1,\"topic\":\"hellowo/rl/dcom.world.partner\"},{\"qos\":123,\"topic\":\"topic2\"}]",
+                redisHashSetFieldEntry.getValue());
+        assertEquals("topics_johndoe", redisHashSetFieldEntry.getField());
     }
 
     @Test
@@ -106,6 +112,7 @@ public class RedisHashSetEntryParserTest {
         RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_2000", "booking-order-1", null);
         assertEquals(Collections.singletonList(expectedEntry), redisEntries);
     }
+
     @Test
     public void shouldParseStringMessageForKey() throws IOException {
         redisSinkSetup("{\"order_number\":\"ORDER_NUMBER_%s,order_number\"}");

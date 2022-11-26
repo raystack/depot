@@ -356,6 +356,41 @@ public class ProtoOdpfParsedMessageTest {
     }
 
     @Test
+    public void shouldGetStructFromProto() throws IOException {
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestBookingLogMessage", descriptorsMap);
+        TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder()
+                .setCustomerName("johndoe")
+                .addTopics(TestBookingLogMessage.TopicMetadata.newBuilder()
+                        .setQos(1)
+                        .setTopic("hellowo/rl/dcom.world.partner").build())
+                .setDriverPickupLocation(TestLocation.newBuilder().setLatitude(10.0).setLongitude(12.0).build())
+                .build();
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
+        DynamicMessage bookingLogDynamicMessage = protoParser.parse(testBookingLogMessage.toByteArray());
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(bookingLogDynamicMessage, configuration, jsonPrinter);
+        Assert.assertEquals("{\"note\":\"\",\"accuracy_meter\":0,\"address\":\"\",\"gate_id\":\"\",\"latitude\":10,\"name\":\"\",\"type\":\"\",\"place_id\":\"\",\"longitude\":12}",
+                protoOdpfParsedMessage.getFieldByName("driver_pickup_location", odpfMessageSchema).toString());
+    }
+
+    @Test
+    public void shouldGetRepeatableStructField() throws IOException {
+        TestMessageBQ message = TestMessageBQ.newBuilder()
+                .addAttributes(Struct.newBuilder().putFields("name", Value.newBuilder().setStringValue("John").build())
+                        .putFields("age", Value.newBuilder().setNumberValue(50).build()).build())
+                .addAttributes(Struct.newBuilder().putFields("name", Value.newBuilder().setStringValue("John").build())
+                        .putFields("age", Value.newBuilder().setNumberValue(60).build()).build())
+                .addAttributes(Struct.newBuilder().putFields("name", Value.newBuilder().setStringValue("John").build())
+                        .putFields("active", Value.newBuilder().setBoolValue(true).build())
+                        .putFields("height", Value.newBuilder().setNumberValue(175).build()).build())
+                .build();
+
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        String attributes = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()), configuration, jsonPrinter).getFieldByName("attributes", odpfMessageSchema).toString();
+        Assert.assertEquals("[{\"name\":\"John\",\"age\":50},{\"name\":\"John\",\"age\":60},{\"name\":\"John\",\"active\":true,\"height\":175}]", attributes);
+    }
+
+    @Test
     public void shouldGetFieldByNameFromNested() throws IOException {
         TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
         Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
