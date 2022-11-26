@@ -484,7 +484,7 @@ public class ProtoOdpfParsedMessageTest {
         TestMessageBQ message = TestMessageBQ.newBuilder().setCreatedAt(failingDate).build();
         DynamicMessage message1 = parser.parse(message.toByteArray());
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(message1, configuration, jsonPrinter);
-        assertThrows(DeserializerException.class, () -> protoOdpfParsedMessage.getFieldByName("created_at", odpfMessageSchema));
+        DeserializerException exception = assertThrows(DeserializerException.class, () -> protoOdpfParsedMessage.getFieldByName("created_at", odpfMessageSchema));
+        Assert.assertEquals("Unable to convert proto to JSON: Timestamp is not valid. See proto definition for valid values. Seconds (2147483647) must be in range [-62,135,596,800, +253,402,300,799]. Nanos (1000000000) must be in range [0, +999,999,999].", exception.getMessage());
     }
-
 }

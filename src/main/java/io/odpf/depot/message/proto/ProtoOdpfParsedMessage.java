@@ -144,7 +144,7 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
             try {
                 protoJsonMapping = new JSONObject(this.jsonPrinter.print(dynamicMessage));
             } catch (InvalidProtocolBufferException | IllegalArgumentException e) {
-                throw new DeserializerException("Unable to convert proto to JSON", e);
+                throw new DeserializerException("Unable to convert proto to JSON: " + e.getMessage(), e);
             }
         }
     }
