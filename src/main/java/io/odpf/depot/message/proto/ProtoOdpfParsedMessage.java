@@ -5,13 +5,12 @@ import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.exception.UnknownFieldsException;
+import io.odpf.depot.message.MessageUtils;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.proto.converter.fields.NestedProtoField;
@@ -155,12 +154,6 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }
         checkAndSetJsonObject();
-        String jsonPathName = "$." + name;
-        JsonPath jsonPath = JsonPath.compile(jsonPathName);
-        try {
-            return jsonPath.read(protoJsonMapping, configuration);
-        } catch (PathNotFoundException e) {
-            throw new IllegalArgumentException("Invalid field config : " + name, e);
-        }
+        return MessageUtils.getFieldFromJsonObject(name, protoJsonMapping, configuration);
     }
 }
