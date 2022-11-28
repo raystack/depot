@@ -2,10 +2,15 @@ package io.odpf.depot.message.proto;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
+import com.jayway.jsonpath.Configuration;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.exception.UnknownFieldsException;
+import io.odpf.depot.message.MessageUtils;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.proto.converter.fields.NestedProtoField;
@@ -13,6 +18,7 @@ import io.odpf.depot.message.proto.converter.fields.ProtoField;
 import io.odpf.depot.message.proto.converter.fields.ProtoFieldFactory;
 import io.odpf.depot.utils.ProtoUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,11 +29,16 @@ import java.util.Properties;
 @Slf4j
 public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     private final DynamicMessage dynamicMessage;
+    private final Configuration jsonPathConfig;
+    private final JsonFormat.Printer jsonPrinter;
 
     private final Map<OdpfMessageSchema, Map<String, Object>> cachedMapping = new HashMap<>();
+    private JSONObject protoJsonMapping;
 
-    public ProtoOdpfParsedMessage(DynamicMessage dynamicMessage) {
+    public ProtoOdpfParsedMessage(DynamicMessage dynamicMessage, Configuration jsonPathConfig, JsonFormat.Printer jsonPrinter) {
         this.dynamicMessage = dynamicMessage;
+        this.jsonPathConfig = jsonPathConfig;
+        this.jsonPrinter = jsonPrinter;
     }
 
     public String toString() {
@@ -128,23 +139,21 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
     }
 
 
+    private void checkAndSetJsonObject() {
+        if (protoJsonMapping == null) {
+            try {
+                protoJsonMapping = new JSONObject(this.jsonPrinter.print(dynamicMessage));
+            } catch (InvalidProtocolBufferException | IllegalArgumentException e) {
+                throw new DeserializerException("Unable to convert proto to JSON: " + e.getMessage(), e);
+            }
+        }
+    }
+
     public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }
-        String[] keys = name.split("\\.");
-        Object currentValue = dynamicMessage;
-        for (String key : keys) {
-            if (!(currentValue instanceof DynamicMessage)) {
-                throw new IllegalArgumentException("Invalid field config : " + name);
-            }
-            DynamicMessage message = (DynamicMessage) currentValue;
-            Descriptors.FieldDescriptor descriptor = message.getDescriptorForType().findFieldByName(key);
-            if (descriptor == null) {
-                throw new IllegalArgumentException("Invalid field config : " + name);
-            }
-            currentValue = message.getField(descriptor);
-        }
-        return currentValue;
+        checkAndSetJsonObject();
+        return MessageUtils.getFieldFromJsonObject(name, protoJsonMapping, jsonPathConfig);
     }
 }

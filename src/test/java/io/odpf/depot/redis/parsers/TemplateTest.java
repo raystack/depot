@@ -1,6 +1,9 @@
 package io.odpf.depot.redis.parsers;
 
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.util.JsonFormat;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.TestBookingLogMessage;
 import io.odpf.depot.TestKey;
 import io.odpf.depot.TestLocation;
@@ -32,6 +35,13 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TemplateTest {
+    private final Configuration configuration = Configuration.builder()
+            .jsonProvider(new JsonOrgJsonProvider())
+            .build();
+    private final JsonFormat.Printer jsonPrinter = JsonFormat.printer()
+            .omittingInsignificantWhitespace()
+            .preservingProtoFieldNames()
+            .includingDefaultValueFields();
     @Mock
     private RedisSinkConfig redisSinkConfig;
     @Mock
@@ -52,12 +62,13 @@ public class TemplateTest {
             put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
             put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
             put(String.format("%s", TestBookingLogMessage.class.getName()), TestBookingLogMessage.getDescriptor());
+            put(String.format("%s", TestBookingLogMessage.TopicMetadata.class.getName()), TestBookingLogMessage.TopicMetadata.getDescriptor());
             put(String.format("%s", TestLocation.class.getName()), TestLocation.getDescriptor());
         }};
         Parser protoParserTest = StencilClientFactory.getClient().getParser(TestMessage.class.getName());
-        parsedTestMessage = new ProtoOdpfParsedMessage(protoParserTest.parse((byte[]) message.getLogMessage()));
+        parsedTestMessage = new ProtoOdpfParsedMessage(protoParserTest.parse((byte[]) message.getLogMessage()), configuration, jsonPrinter);
         Parser protoParserBooking = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
-        parsedBookingMessage = new ProtoOdpfParsedMessage(protoParserBooking.parse((byte[]) bookingMessage.getLogMessage()));
+        parsedBookingMessage = new ProtoOdpfParsedMessage(protoParserBooking.parse((byte[]) bookingMessage.getLogMessage()), configuration, jsonPrinter);
         when(redisSinkConfig.getSinkConnectorSchemaDataType()).thenReturn(SinkConnectorSchemaDataType.PROTOBUF);
         ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(redisSinkConfig, statsDReporter);
         schemaTest = messageParser.getSchema("io.odpf.depot.TestMessage", descriptorsMap);
@@ -78,13 +89,13 @@ public class TemplateTest {
 
     @Test
     public void shouldParseFloatMessageForCollectionKeyTemplate() {
-        Template template = new Template("Test-%.2f,amount_paid_by_cash");
-        assertEquals("Test-12.30", template.parse(parsedBookingMessage, schemaBooking));
+        Template template = new Template("Test-%s,amount_paid_by_cash");
+        assertEquals("Test-12.3", template.parse(parsedBookingMessage, schemaBooking));
     }
 
     @Test
     public void shouldParseLongMessageForCollectionKeyTemplate() {
-        Template template = new Template("Test-%d,customer_total_fare_without_surge");
+        Template template = new Template("Test-%s,customer_total_fare_without_surge");
         assertEquals("Test-2000", template.parse(parsedBookingMessage, schemaBooking));
     }
 

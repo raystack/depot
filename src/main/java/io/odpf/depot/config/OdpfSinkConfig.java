@@ -1,10 +1,10 @@
 package io.odpf.depot.config;
 
-import io.odpf.depot.config.converter.SinkConnectorSchemaDataTypeConverter;
-import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
-import io.odpf.depot.config.converter.SinkConnectorSchemaMessageModeConverter;
 import io.odpf.depot.config.converter.SchemaRegistryHeadersConverter;
 import io.odpf.depot.config.converter.SchemaRegistryRefreshConverter;
+import io.odpf.depot.config.converter.SinkConnectorSchemaDataTypeConverter;
+import io.odpf.depot.config.converter.SinkConnectorSchemaMessageModeConverter;
+import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.stencil.cache.SchemaRefreshStrategy;
 import org.aeonbits.owner.Config;
