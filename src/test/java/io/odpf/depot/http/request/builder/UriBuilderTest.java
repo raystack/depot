@@ -1,5 +1,7 @@
 package io.odpf.depot.http.request.builder;
 
+import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.InvalidTemplateException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -23,17 +25,25 @@ public class UriBuilderTest {
 
     @Test
     public void shouldFailWhenUrlConfigIsEmpty() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Template '' is invalid");
+        expectedException.expect(InvalidTemplateException.class);
+        expectedException.expectMessage("Template cannot be empty");
         UriBuilder uriBuilder = new UriBuilder("");
         uriBuilder.build(Collections.emptyMap());
     }
 
     @Test
     public void shouldFailWhenUrlConfigIsNull() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Template 'null' is invalid");
+        expectedException.expect(InvalidTemplateException.class);
+        expectedException.expectMessage("Template cannot be empty");
         UriBuilder uriBuilder = new UriBuilder(null);
+        uriBuilder.build(Collections.emptyMap());
+    }
+
+    @Test
+    public void shouldFailWhenUrlConfigIs() {
+        expectedException.expect(ConfigurationException.class);
+        expectedException.expectMessage("Service URL 'http://dummy.com?s=^IXIC' is invalid");
+        UriBuilder uriBuilder = new UriBuilder("http://dummy.com?s=^IXIC");
         uriBuilder.build(Collections.emptyMap());
     }
 }

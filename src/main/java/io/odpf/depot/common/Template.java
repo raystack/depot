@@ -13,7 +13,7 @@ public class Template {
     private final String templatePattern;
     private final List<String> patternVariableFieldNames;
 
-    public Template(String template) throws InvalidTemplateException {
+    public Template(String template) {
         if (template == null || template.isEmpty()) {
             throw new InvalidTemplateException("Template cannot be empty");
         }
@@ -24,7 +24,7 @@ public class Template {
         validate();
     }
 
-    private void validate() throws InvalidTemplateException {
+    private void validate() {
         int validArgs = StringUtils.countVariables(templatePattern);
         int values = patternVariableFieldNames.size();
         int variables = StringUtils.count(templatePattern, '%');
@@ -39,5 +39,10 @@ public class Template {
                 .map(fieldName -> parsedOdpfMessage.getFieldByName(fieldName, schema))
                 .toArray();
         return String.format(templatePattern, patternVariableData);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(templatePattern);
     }
 }

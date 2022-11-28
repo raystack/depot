@@ -2,7 +2,9 @@ package io.odpf.depot.http.request;
 
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.DeserializerException;
+import io.odpf.depot.exception.EmptyMessageException;
 import io.odpf.depot.exception.InvalidMessageException;
 import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.record.HttpRequestRecord;
@@ -53,17 +55,23 @@ public class SingleRequest implements Request {
             HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
             requestHeaders.forEach(request::addHeader);
             request.setEntity(buildEntity(requestBody.build(message)));
-            return new HttpRequestRecord(Collections.singletonList(index), null, true, request);
-        } catch (InvalidMessageException e) {
-            return createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, Collections.singletonList(index), message.getMetadata());
+            HttpRequestRecord record = new HttpRequestRecord(null, true, request);
+            record.addIndex(index);
+            return record;
+        } catch (EmptyMessageException | InvalidMessageException e) {
+            return createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, index, message.getMetadata());
+        } catch (ConfigurationException | IllegalArgumentException e) {
+            return createErrorRecord(e, ErrorType.UNKNOWN_FIELDS_ERROR, index, message.getMetadata());
         } catch (DeserializerException e) {
-            return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, Collections.singletonList(index), message.getMetadata());
+            return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, index, message.getMetadata());
         }
     }
 
-    private HttpRequestRecord createErrorRecord(Exception e, ErrorType type, List<Integer> indexList, Map<String, Object> metadata) {
+    private HttpRequestRecord createErrorRecord(Exception e, ErrorType type, Integer index, Map<String, Object> metadata) {
         ErrorInfo errorInfo = new ErrorInfo(e, type);
         log.error("Error while parsing record for message. Metadata : {}, Error: {}", metadata, errorInfo);
-        return new HttpRequestRecord(indexList, errorInfo, false, null);
+        HttpRequestRecord record = new HttpRequestRecord(errorInfo, false, null);
+        record.addIndex(index);
+        return record;
     }
 }

@@ -6,6 +6,7 @@ import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.MessageUtils;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.Base64;
 import java.util.Date;
 
@@ -18,13 +19,14 @@ public class RawBody implements RequestBody {
 
     @Override
     public String build(OdpfMessage message) {
+        JSONObject payload = new JSONObject();
         try {
-            JSONObject payload = new JSONObject();
+            MessageUtils.validate(message, byte[].class);
             payload.put("log_key", encodedSerializedStringFrom((byte[]) message.getLogKey()));
             payload.put("log_message", encodedSerializedStringFrom((byte[]) message.getLogMessage()));
             MessageUtils.getMetaData(message, config, Date::new).forEach(payload::put);
             return payload.toString();
-        } catch (ClassCastException e) {
+        } catch (IOException e) {
             throw new InvalidMessageException("Could not encode the key or message. Key or message should be in bytes");
         }
     }

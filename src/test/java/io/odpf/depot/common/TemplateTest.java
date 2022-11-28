@@ -121,4 +121,10 @@ public class TemplateTest {
         Template template = new Template("Test-%s::%s, order_number, order_details");
         assertEquals("Test-test-order::ORDER-DETAILS", template.parse(parsedTestMessage, schemaTest));
     }
+
+    @Test
+    public void shouldGetTemplateString() {
+        Template template = new Template("http://dummy.com");
+        assertEquals("http://dummy.com", template.toString());
+    }
 }
