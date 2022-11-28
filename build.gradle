@@ -22,7 +22,7 @@ plugins {
 }
 
 group 'io.odpf'
-version '0.3.4'
+version '0.3.4-rc2'
 
 repositories {
     mavenCentral()
