@@ -3,8 +3,7 @@ package io.odpf.depot.http;
 import io.odpf.depot.OdpfSinkResponse;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.exception.DeserializerException;
-import io.odpf.depot.exception.InvalidMessageException;
+import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.http.client.HttpSinkClient;
 import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.http.request.Request;
@@ -24,6 +23,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,11 +57,11 @@ public class HttpSinkTest {
     public void shouldPushToSink() throws IOException {
         List<OdpfMessage> messages = new ArrayList<>();
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(createRecord(0, null, true));
-        records.add(createRecord(1, null, true));
-        records.add(createRecord(2, null, true));
-        records.add(createRecord(3, null, true));
-        records.add(createRecord(4, null, true));
+        records.add(new HttpRequestRecord(Collections.singletonList(0), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(1), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(2), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(3), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(4), null, true, httpRequest));
         List<HttpSinkResponse> responses = new ArrayList<>();
         responses.add(Mockito.mock(HttpSinkResponse.class));
         responses.add(Mockito.mock(HttpSinkResponse.class));
@@ -70,6 +70,7 @@ public class HttpSinkTest {
         responses.add(Mockito.mock(HttpSinkResponse.class));
         when(request.createRecords(messages)).thenReturn(records);
         when(httpSinkClient.send(records)).thenReturn(responses);
+        when(httpRequest.getEntity()).thenReturn(httpEntity);
         HttpSink httpSink = new HttpSink(httpSinkClient, request, instrumentation);
         OdpfSinkResponse odpfSinkResponse = httpSink.pushToSink(messages);
         Assert.assertFalse(odpfSinkResponse.hasErrors());
@@ -79,11 +80,11 @@ public class HttpSinkTest {
     public void shouldReportParsingErrors() throws IOException {
         List<OdpfMessage> messages = new ArrayList<>();
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(createRecord(0, new ErrorInfo(new InvalidMessageException("Invalid Message Error"), ErrorType.INVALID_MESSAGE_ERROR), false));
-        records.add(createRecord(1, null, true));
-        records.add(createRecord(2, new ErrorInfo(new DeserializerException("Deserialization Error"), ErrorType.DESERIALIZATION_ERROR), false));
-        records.add(createRecord(3, null, true));
-        records.add(createRecord(4, null, true));
+        records.add(new HttpRequestRecord(Collections.singletonList(0), new ErrorInfo(new ConfigurationException(""), ErrorType.DEFAULT_ERROR), false, null));
+        records.add(new HttpRequestRecord(Collections.singletonList(1), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(2), new ErrorInfo(new ConfigurationException(""), ErrorType.DEFAULT_ERROR), false, null));
+        records.add(new HttpRequestRecord(Collections.singletonList(3), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(4), null, true, httpRequest));
         List<HttpSinkResponse> responses = new ArrayList<>();
         responses.add(Mockito.mock(HttpSinkResponse.class));
         responses.add(Mockito.mock(HttpSinkResponse.class));
@@ -91,28 +92,28 @@ public class HttpSinkTest {
         when(request.createRecords(messages)).thenReturn(records);
         List<HttpRequestRecord> validRecords = records.stream().filter(HttpRequestRecord::isValid).collect(Collectors.toList());
         when(httpSinkClient.send(validRecords)).thenReturn(responses);
+        when(httpRequest.getEntity()).thenReturn(httpEntity);
         HttpSink httpSink = new HttpSink(httpSinkClient, request, instrumentation);
         OdpfSinkResponse odpfSinkResponse = httpSink.pushToSink(messages);
         Assert.assertTrue(odpfSinkResponse.hasErrors());
         Assert.assertEquals(2, odpfSinkResponse.getErrors().size());
-        Assert.assertEquals(ErrorType.INVALID_MESSAGE_ERROR, odpfSinkResponse.getErrorsFor(0).getErrorType());
-        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, odpfSinkResponse.getErrorsFor(2).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, odpfSinkResponse.getErrorsFor(0).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, odpfSinkResponse.getErrorsFor(2).getErrorType());
     }
 
     @Test
     public void shouldReportErrors() throws IOException {
         List<OdpfMessage> messages = new ArrayList<>();
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(createRecord(0, null, true));
-        records.add(createRecord(1, null, true));
-        records.add(createRecord(2, null, true));
-        records.add(createRecord(3, null, true));
-        records.add(createRecord(4, null, true));
+        records.add(new HttpRequestRecord(Collections.singletonList(0), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(1), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(2), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(3), null, true, httpRequest));
+        records.add(new HttpRequestRecord(Collections.singletonList(4), null, true, httpRequest));
 
         Mockito.when(httpRequest.getEntity()).thenReturn(httpEntity);
         Mockito.when(response.getStatusLine()).thenReturn(statusLine);
         Mockito.when(statusLine.getStatusCode()).thenReturn(500);
-        Mockito.when(response.getEntity()).thenReturn(httpEntity);
         List<HttpSinkResponse> responses = new ArrayList<>();
         responses.add(new HttpSinkResponse(response));
         responses.add(new HttpSinkResponse(response));
@@ -132,11 +133,5 @@ public class HttpSinkTest {
         Assert.assertEquals(ErrorType.SINK_5XX_ERROR, odpfSinkResponse.getErrorsFor(1).getErrorType());
         Assert.assertEquals(ErrorType.SINK_5XX_ERROR, odpfSinkResponse.getErrorsFor(3).getErrorType());
         Assert.assertEquals(ErrorType.SINK_5XX_ERROR, odpfSinkResponse.getErrorsFor(4).getErrorType());
-    }
-
-    private HttpRequestRecord createRecord(Integer index, ErrorInfo errorInfo, boolean isValid) {
-        HttpRequestRecord record = new HttpRequestRecord(errorInfo, isValid, httpRequest);
-        record.addIndex(index);
-        return record;
     }
 }

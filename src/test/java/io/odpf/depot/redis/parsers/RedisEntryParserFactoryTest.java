@@ -78,7 +78,7 @@ public class RedisEntryParserFactoryTest {
         when(redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping()).thenReturn(new JsonToPropertiesConverter().convert(null, "{\"order_details\":\"\"}"));
         IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class,
                 () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema));
-        assertEquals("Template cannot be empty", e.getMessage());
+        assertEquals("Template '' is invalid", e.getMessage());
     }
 
     @Test
@@ -104,6 +104,6 @@ public class RedisEntryParserFactoryTest {
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn("");
         IllegalArgumentException illegalArgumentException =
                 assertThrows(IllegalArgumentException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema));
-        assertEquals("Template cannot be empty", illegalArgumentException.getMessage());
+        assertEquals("Template '' is invalid", illegalArgumentException.getMessage());
     }
 }

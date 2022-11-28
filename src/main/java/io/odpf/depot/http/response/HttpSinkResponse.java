@@ -32,12 +32,8 @@ public class HttpSinkResponse {
         }
     }
 
-    public String getResponseBody() {
+    public String getResponseBody() throws IOException {
         HttpEntity entity = response.getEntity();
-        try {
-            return EntityUtils.toString(entity);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return EntityUtils.toString(entity);
     }
 }

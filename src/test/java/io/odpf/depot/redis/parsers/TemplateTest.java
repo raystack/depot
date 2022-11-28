@@ -1,4 +1,4 @@
-package io.odpf.depot.common;
+package io.odpf.depot.redis.parsers;
 
 import com.google.protobuf.Descriptors;
 import io.odpf.depot.TestBookingLogMessage;
@@ -7,7 +7,6 @@ import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestMessage;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
-import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.message.OdpfMessageSchema;
@@ -91,14 +90,14 @@ public class TemplateTest {
 
     @Test
     public void shouldThrowExceptionForNullCollectionKeyTemplate() {
-        InvalidTemplateException e = assertThrows(InvalidTemplateException.class, () -> new Template(null));
-        assertEquals("Template cannot be empty", e.getMessage());
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new Template(null));
+        assertEquals("Template 'null' is invalid", e.getMessage());
     }
 
     @Test
     public void shouldThrowExceptionForEmptyCollectionKeyTemplate() {
-        InvalidTemplateException e = assertThrows(InvalidTemplateException.class, () -> new Template(""));
-        assertEquals("Template cannot be empty", e.getMessage());
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new Template(""));
+        assertEquals("Template '' is invalid", e.getMessage());
     }
 
     @Test
@@ -109,10 +108,10 @@ public class TemplateTest {
 
     @Test
     public void shouldNotAcceptStringWithPatternForCollectionKeyWithEmptyVariables() {
-        InvalidTemplateException e = assertThrows(InvalidTemplateException.class, () -> new Template("Test-%s%d%b,t1,t2"));
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new Template("Test-%s%d%b,t1,t2"));
         Assert.assertEquals("Template is not valid, variables=3, validArgs=3, values=2", e.getMessage());
 
-        e = assertThrows(InvalidTemplateException.class, () -> new Template("Test-%s%s%y,order_number,order_details"));
+        e = assertThrows(IllegalArgumentException.class, () -> new Template("Test-%s%s%y,order_number,order_details"));
         Assert.assertEquals("Template is not valid, variables=3, validArgs=2, values=2", e.getMessage());
     }
 
@@ -120,11 +119,5 @@ public class TemplateTest {
     public void shouldAcceptStringWithPatternForCollectionKeyWithMultipleVariables() {
         Template template = new Template("Test-%s::%s, order_number, order_details");
         assertEquals("Test-test-order::ORDER-DETAILS", template.parse(parsedTestMessage, schemaTest));
-    }
-
-    @Test
-    public void shouldGetTemplateString() {
-        Template template = new Template("http://dummy.com");
-        assertEquals("http://dummy.com", template.toString());
     }
 }

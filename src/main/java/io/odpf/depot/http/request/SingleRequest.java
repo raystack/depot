@@ -53,21 +53,17 @@ public class SingleRequest implements Request {
             HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
             requestHeaders.forEach(request::addHeader);
             request.setEntity(buildEntity(requestBody.build(message)));
-            HttpRequestRecord record = new HttpRequestRecord(null, true, request);
-            record.addIndex(index);
-            return record;
+            return new HttpRequestRecord(Collections.singletonList(index), null, true, request);
         } catch (InvalidMessageException e) {
-            return createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, index, message.getMetadata());
+            return createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, Collections.singletonList(index), message.getMetadata());
         } catch (DeserializerException e) {
-            return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, index, message.getMetadata());
+            return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, Collections.singletonList(index), message.getMetadata());
         }
     }
 
-    private HttpRequestRecord createErrorRecord(Exception e, ErrorType type, Integer index, Map<String, Object> metadata) {
+    private HttpRequestRecord createErrorRecord(Exception e, ErrorType type, List<Integer> indexList, Map<String, Object> metadata) {
         ErrorInfo errorInfo = new ErrorInfo(e, type);
         log.error("Error while parsing record for message. Metadata : {}, Error: {}", metadata, errorInfo);
-        HttpRequestRecord record = new HttpRequestRecord(errorInfo, false, null);
-        record.addIndex(index);
-        return record;
+        return new HttpRequestRecord(indexList, errorInfo, false, null);
     }
 }

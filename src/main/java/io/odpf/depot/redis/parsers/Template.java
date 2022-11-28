@@ -1,7 +1,6 @@
-package io.odpf.depot.common;
+package io.odpf.depot.redis.parsers;
 
 import com.google.common.base.Splitter;
-import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.utils.StringUtils;
@@ -15,7 +14,7 @@ public class Template {
 
     public Template(String template) {
         if (template == null || template.isEmpty()) {
-            throw new InvalidTemplateException("Template cannot be empty");
+            throw new IllegalArgumentException("Template '" + template + "' is invalid");
         }
         List<String> templateStrings = new ArrayList<>();
         Splitter.on(",").omitEmptyStrings().split(template).forEach(s -> templateStrings.add(s.trim()));
@@ -29,7 +28,7 @@ public class Template {
         int values = patternVariableFieldNames.size();
         int variables = StringUtils.count(templatePattern, '%');
         if (validArgs != values || variables != values) {
-            throw new InvalidTemplateException(String.format("Template is not valid, variables=%d, validArgs=%d, values=%d", variables, validArgs, values));
+            throw new IllegalArgumentException(String.format("Template is not valid, variables=%d, validArgs=%d, values=%d", variables, validArgs, values));
         }
     }
 
@@ -39,10 +38,5 @@ public class Template {
                 .map(fieldName -> parsedOdpfMessage.getFieldByName(fieldName, schema))
                 .toArray();
         return String.format(templatePattern, patternVariableData);
-    }
-
-    @Override
-    public String toString() {
-        return String.format(templatePattern);
     }
 }

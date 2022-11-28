@@ -15,7 +15,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -41,7 +40,7 @@ public class RawBodyTest {
         message = new OdpfMessage(null, testMessage.toByteArray());
         RequestBody body = new RawBody(config);
         String rawBody = body.build(message);
-        assertEquals("{\"log_key\":\"\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}", rawBody);
+        assertTrue(new JSONObject("{\"log_key\":\"\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}").similar(new JSONObject(rawBody)));
     }
 
     @Test

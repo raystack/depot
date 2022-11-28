@@ -13,29 +13,21 @@ public class HttpResponseParser {
 
     public static Map<Long, ErrorInfo> getErrorsFromResponse(List<HttpRequestRecord> records, List<HttpSinkResponse> responses, Instrumentation instrumentation) {
         Map<Long, ErrorInfo> errors = new HashMap<>();
-        for (int i = 0; i < responses.size(); i++) {
-            HttpRequestRecord record = records.get(i);
-            HttpSinkResponse response = responses.get(i);
-            if (response.isFailed()) {
-                errors.putAll(getErrors(record, response));
-                instrumentation.logError("Error while pushing message request to http services. Record: {}, Response Code: {}, Response Body: {}",
-                        record.getRequestBody(), response.getResponseCode(), response.getResponseBody());
+        for (int index = 0; index < responses.size(); index++) {
+            HttpRequestRecord record = records.get(index);
+            HttpSinkResponse response = responses.get(index);
+            List<Integer> messageIndex = record.getIndex();
+            String httpStatusCode = response.getResponseCode();
+            if (responses.get(index).isFailed()) {
+                if (httpStatusCode.startsWith("4")) {
+                    messageIndex.forEach(recordIndex -> errors.put(Long.valueOf(recordIndex), new ErrorInfo(new Exception("Error:" + httpStatusCode), ErrorType.SINK_4XX_ERROR)));
+                } else if (httpStatusCode.startsWith("5")) {
+                    messageIndex.forEach(recordIndex -> errors.put(Long.valueOf(recordIndex), new ErrorInfo(new Exception("Error:" + httpStatusCode), ErrorType.SINK_5XX_ERROR)));
+                } else {
+                    messageIndex.forEach(recordIndex -> errors.put(Long.valueOf(recordIndex), new ErrorInfo(new Exception("Error:" + httpStatusCode), ErrorType.SINK_UNKNOWN_ERROR)));
+                }
             }
-        }
-        return errors;
-    }
-
-    private static Map<Long, ErrorInfo> getErrors(HttpRequestRecord record, HttpSinkResponse response) {
-        Map<Long, ErrorInfo> errors = new HashMap<>();
-        String httpStatusCode = response.getResponseCode();
-        for (long messageIndex: record) {
-            if (httpStatusCode.startsWith("4")) {
-                errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + httpStatusCode), ErrorType.SINK_4XX_ERROR));
-            } else if (httpStatusCode.startsWith("5")) {
-                errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + httpStatusCode), ErrorType.SINK_5XX_ERROR));
-            } else {
-                errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + httpStatusCode), ErrorType.SINK_UNKNOWN_ERROR));
-            }
+            instrumentation.logError("Error while pushing message request to http services. Record: {}, Error: {}", record.getRequestBody(), response.getResponseCode());
         }
         return errors;
     }
