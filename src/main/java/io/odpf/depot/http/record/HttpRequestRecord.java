@@ -35,7 +35,7 @@ public class HttpRequestRecord implements Iterable<Integer> {
         try {
             return EntityUtils.toString(httpRequest.getEntity());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
 

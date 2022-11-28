@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -68,6 +69,7 @@ public class HttpResponseParserTest {
         Assert.assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(1L).getErrorType());
         Assert.assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(7L).getErrorType());
         Assert.assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(12L).getErrorType());
+        Mockito.verify(instrumentation, times(3)).logError("Error while pushing message request to http services. Record: {}, Response Code: {}, Response Body: {}", null, "500", null);
     }
 
     @Test

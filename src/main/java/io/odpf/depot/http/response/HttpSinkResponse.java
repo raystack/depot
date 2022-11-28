@@ -37,7 +37,7 @@ public class HttpSinkResponse {
         try {
             return EntityUtils.toString(entity);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
 }
