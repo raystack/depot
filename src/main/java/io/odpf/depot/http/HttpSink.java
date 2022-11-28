@@ -37,7 +37,7 @@ public class HttpSink implements OdpfSink {
         List<HttpRequestRecord> validRecords = splitterRecords.get(Boolean.TRUE);
 
         OdpfSinkResponse odpfSinkResponse = new OdpfSinkResponse();
-        invalidRecords.forEach(invalidRecord -> invalidRecord.getIndex().forEach(recordIndex -> odpfSinkResponse.addErrors(recordIndex, invalidRecord.getErrorInfo())));
+        invalidRecords.forEach(invalidRecord -> invalidRecord.forEach(recordIndex -> odpfSinkResponse.addErrors(recordIndex, invalidRecord.getErrorInfo())));
         if (validRecords.size() > 0) {
             List<HttpSinkResponse> responses;
             instrumentation.logInfo("Processed {} records to Http Service", validRecords.size());

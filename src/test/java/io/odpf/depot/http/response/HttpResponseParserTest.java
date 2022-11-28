@@ -16,7 +16,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -38,14 +37,13 @@ public class HttpResponseParserTest {
     @Test
     public void shouldGetErrorsFromResponse() {
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(new HttpRequestRecord(Collections.singletonList(0), null, true, request));
-        records.add(new HttpRequestRecord(Collections.singletonList(1), null, true, request));
-        records.add(new HttpRequestRecord(Collections.singletonList(4), null, true, request));
-        records.add(new HttpRequestRecord(Collections.singletonList(7), null, true, request));
-        records.add(new HttpRequestRecord(Collections.singletonList(12), null, true, request));
+        records.add(createRecord(0));
+        records.add(createRecord(1));
+        records.add(createRecord(4));
+        records.add(createRecord(7));
+        records.add(createRecord(12));
 
-        HttpEntity httpEntity = Mockito.mock(HttpEntity.class);
-        Mockito.when(request.getEntity()).thenReturn(httpEntity);
+        Mockito.when(request.getEntity()).thenReturn(entity);
 
         HttpResponse successHttpResponse = Mockito.mock(HttpResponse.class);
         StatusLine successStatusLine = Mockito.mock(StatusLine.class);
@@ -56,6 +54,7 @@ public class HttpResponseParserTest {
         StatusLine failedStatusLine = Mockito.mock(StatusLine.class);
         Mockito.when(failedHttpResponse.getStatusLine()).thenReturn(failedStatusLine);
         Mockito.when(failedStatusLine.getStatusCode()).thenReturn(500);
+        Mockito.when(failedHttpResponse.getEntity()).thenReturn(entity);
         List<HttpSinkResponse> responses = new ArrayList<HttpSinkResponse>() {{
             add(new HttpSinkResponse(successHttpResponse));
             add(new HttpSinkResponse(failedHttpResponse));
@@ -74,11 +73,11 @@ public class HttpResponseParserTest {
     @Test
     public void shouldGetEmptyMapWhenNoErrors() {
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(new HttpRequestRecord(Collections.singletonList(0), null, true, request));
-        records.add(new HttpRequestRecord(Collections.singletonList(1), null, true, request));
-        records.add(new HttpRequestRecord(Collections.singletonList(4), null, true, request));
-        records.add(new HttpRequestRecord(Collections.singletonList(7), null, true, request));
-        records.add(new HttpRequestRecord(Collections.singletonList(12), null, true, request));
+        records.add(createRecord(0));
+        records.add(createRecord(1));
+        records.add(createRecord(4));
+        records.add(createRecord(7));
+        records.add(createRecord(12));
 
         List<HttpSinkResponse> responses = new ArrayList<>();
         responses.add(Mockito.mock(HttpSinkResponse.class));
@@ -92,8 +91,13 @@ public class HttpResponseParserTest {
                     when(responses.get(index).isFailed()).thenReturn(false);
                 }
         );
-        when(request.getEntity()).thenReturn(entity);
         Map<Long, ErrorInfo> errors = HttpResponseParser.getErrorsFromResponse(records, responses, instrumentation);
         Assert.assertTrue(errors.isEmpty());
+    }
+
+    private HttpRequestRecord createRecord(Integer index) {
+        HttpRequestRecord record = new HttpRequestRecord(null, true, request);
+        record.addIndex(index);
+        return record;
     }
 }

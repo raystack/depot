@@ -3,7 +3,7 @@ package io.odpf.depot.http.request.builder;
 import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.redis.parsers.Template;
+import io.odpf.depot.common.Template;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.net.URI;
@@ -19,11 +19,15 @@ public class UriBuilder {
     }
 
     public URI build(ParsedOdpfMessage message, OdpfMessageSchema schema, Map<String, String> queryParam) {
-        return build(urlTemplate.parse(message, schema), queryParam);
+        try {
+            return build(urlTemplate.parse(message, schema), queryParam);
+        } catch (IllegalArgumentException e) {
+            throw new DeserializerException(e.getMessage());
+        }
     }
 
     public URI build(Map<String, String> queryParam) {
-        return build(urlTemplate.parse(null, null), queryParam);
+        return build(urlTemplate.toString(), queryParam);
     }
 
     private URI build(String url, Map<String, String> queryParam) {
