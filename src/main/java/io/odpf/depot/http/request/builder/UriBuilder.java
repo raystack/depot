@@ -19,11 +19,7 @@ public class UriBuilder {
     }
 
     public URI build(ParsedOdpfMessage message, OdpfMessageSchema schema, Map<String, String> queryParam) {
-        try {
-            return build(urlTemplate.parse(message, schema), queryParam);
-        } catch (IllegalArgumentException e) {
-            throw new DeserializerException(e.getMessage());
-        }
+        return build(urlTemplate.parse(message, schema), queryParam);
     }
 
     public URI build(Map<String, String> queryParam) {

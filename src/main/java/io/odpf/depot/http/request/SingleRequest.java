@@ -2,7 +2,9 @@ package io.odpf.depot.http.request;
 
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.DeserializerException;
+import io.odpf.depot.exception.EmptyMessageException;
 import io.odpf.depot.exception.InvalidMessageException;
 import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.record.HttpRequestRecord;
@@ -56,8 +58,10 @@ public class SingleRequest implements Request {
             HttpRequestRecord record = new HttpRequestRecord(null, true, request);
             record.addIndex(index);
             return record;
-        } catch (InvalidMessageException e) {
+        } catch (EmptyMessageException | InvalidMessageException e) {
             return createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, index, message.getMetadata());
+        } catch (ConfigurationException | IllegalArgumentException e) {
+            return createErrorRecord(e, ErrorType.UNKNOWN_FIELDS_ERROR, index, message.getMetadata());
         } catch (DeserializerException e) {
             return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, index, message.getMetadata());
         }

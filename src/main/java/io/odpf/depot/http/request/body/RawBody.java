@@ -25,13 +25,6 @@ public class RawBody implements RequestBody {
         return payload.toString();
     }
 
-    private String a(byte[] bytes) {
-        if (bytes == null || bytes.length == 0) {
-            return "";
-        }
-        return new String(Base64.getEncoder().encode(bytes));
-    }
-
     private String encodedSerializedStringFrom(Object logMessage) {
         if (logMessage instanceof byte[]) {
             return new String(Base64.getEncoder().encode((byte[]) logMessage));
