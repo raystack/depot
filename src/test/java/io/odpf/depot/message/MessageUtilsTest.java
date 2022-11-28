@@ -10,6 +10,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.junit.jupiter.api.Assertions;
+
+import java.io.IOException;
 
 public class MessageUtilsTest {
 
@@ -56,5 +59,18 @@ public class MessageUtilsTest {
         Assert.assertEquals("value2", finalMetadata.get("col2"));
         Assert.assertEquals(50000, finalMetadata.get("col3"));
         Assert.assertEquals(new Date(1668158346000L), finalMetadata.get("col4"));
+    }
+
+    @Test
+    public void shouldNotThrowExceptionIfValid() throws IOException {
+        OdpfMessage message = new OdpfMessage("test", "test");
+        MessageUtils.validate(message, String.class);
+
+    }
+    @Test
+    public void shouldThrowExceptionIfNotValid() {
+        OdpfMessage message = new OdpfMessage("test", "test");
+        IOException ioException = Assertions.assertThrows(IOException.class, () -> MessageUtils.validate(message, Integer.class));
+        Assert.assertEquals("Expected class class java.lang.Integer, but found: LogKey class: class java.lang.String, LogMessage class: class java.lang.String", ioException.getMessage());
     }
 }

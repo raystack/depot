@@ -45,7 +45,7 @@ public interface OdpfSinkConfig extends Config {
     List<Header> getSchemaRegistryStencilFetchHeaders();
 
     @Key("SCHEMA_REGISTRY_STENCIL_CACHE_AUTO_REFRESH")
-    @DefaultValue("false")
+    @DefaultValue("true")
     Boolean getSchemaRegistryStencilCacheAutoRefresh();
 
     @Key("SCHEMA_REGISTRY_STENCIL_CACHE_TTL_MS")

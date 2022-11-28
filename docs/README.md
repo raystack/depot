@@ -11,6 +11,7 @@ GRPC)
 * Log Sink
 * Bigquery Sink
 * Redis Sink
+* Bigtable Sink
 
 Depot is a sink connector, which acts as a bridge between data processing systems and real sink. The APIs in this
 library can be used to push data to various sinks. Common sinks implementations will be added in this repo.
