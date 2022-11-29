@@ -96,7 +96,7 @@ public class TemplateTest {
 
     @Test
     public void shouldParseLongMessageForCollectionKeyTemplate() throws InvalidTemplateException {
-        Template template = new Template("Test-%d,customer_total_fare_without_surge");
+        Template template = new Template("Test-%s,customer_total_fare_without_surge");
         assertEquals("Test-2000", template.parse(parsedBookingMessage, schemaBooking));
     }
 
