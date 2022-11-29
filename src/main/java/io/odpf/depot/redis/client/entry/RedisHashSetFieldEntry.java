@@ -24,6 +24,18 @@ public class RedisHashSetFieldEntry implements RedisEntry {
     @EqualsAndHashCode.Exclude
     private final Instrumentation instrumentation;
 
+    public String getKey() {
+        return key;
+    }
+
+    public String getField() {
+        return field;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
     @Override
     public RedisStandaloneResponse send(Pipeline jedisPipelined, RedisTtl redisTTL) {
         instrumentation.logDebug("key: {}, field: {}, value: {}", key, field, value);

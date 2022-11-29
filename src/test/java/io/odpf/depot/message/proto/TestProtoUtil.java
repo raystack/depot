@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TestProtoUtil {
-    private static final int TRIP_DURATION_NANOS = 1000000000;
+    public static final int TRIP_DURATION_NANOS = 1000;
     private static int call = 0;
 
     public static TestMessageBQ generateTestMessage(Instant now) {

@@ -2,10 +2,12 @@ package io.odpf.depot.message.proto;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.util.JsonFormat;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.EmptyMessageException;
-import io.odpf.depot.message.MessageUtils;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageSchema;
@@ -32,6 +34,14 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
 
     private final StencilClient stencilClient;
     private final ProtoFieldParser protoMappingParser = new ProtoFieldParser();
+    private final Configuration jsonPathConfig = Configuration.builder()
+            .jsonProvider(new JsonOrgJsonProvider())
+            .build();
+
+    private final JsonFormat.Printer jsonPrinter = JsonFormat.printer()
+            .omittingInsignificantWhitespace()
+            .preservingProtoFieldNames()
+            .includingDefaultValueFields();
 
     public ProtoOdpfMessageParser(OdpfSinkConfig sinkConfig, StatsDReporter reporter, OdpfStencilUpdateListener protoUpdateListener) {
         StencilConfig stencilConfig = StencilUtils.getStencilConfig(sinkConfig, reporter.getClient(), protoUpdateListener);
@@ -50,7 +60,6 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
         if (type == null) {
             throw new IOException("parser mode not defined");
         }
-        MessageUtils.validate(message, byte[].class);
         byte[] payload;
         switch (type) {
             case LOG_MESSAGE:
@@ -67,7 +76,7 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
             throw new EmptyMessageException();
         }
         DynamicMessage dynamicMessage = stencilClient.parse(schemaClass, payload);
-        return new ProtoOdpfParsedMessage(dynamicMessage);
+        return new ProtoOdpfParsedMessage(dynamicMessage, jsonPathConfig, jsonPrinter);
     }
 
     public Map<String, Descriptors.Descriptor> getDescriptorMap() {
