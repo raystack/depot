@@ -42,7 +42,6 @@ public class BigTableSink implements OdpfSink {
 
         if (validRecords.size() > 0) {
             BigTableResponse bigTableResponse = bigTableClient.send(validRecords);
-            instrumentation.logInfo("Processed a batch of {} records to BigTable", validRecords.size());
             if (bigTableResponse != null && bigTableResponse.hasErrors()) {
                 instrumentation.logInfo("Found {} Error records in response", bigTableResponse.getErrorCount());
                 Map<Long, ErrorInfo> errorInfoMap = BigTableResponseParser.getErrorsFromSinkResponse(validRecords, bigTableResponse, bigtableMetrics, instrumentation);
