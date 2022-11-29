@@ -1,4 +1,4 @@
-package io.odpf.depot.redis.parsers;
+package io.odpf.depot.common;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.util.JsonFormat;
@@ -8,8 +8,9 @@ import io.odpf.depot.TestBookingLogMessage;
 import io.odpf.depot.TestKey;
 import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestMessage;
-import io.odpf.depot.config.RedisSinkConfig;
+import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
+import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.message.OdpfMessageSchema;
@@ -43,7 +44,7 @@ public class TemplateTest {
             .preservingProtoFieldNames()
             .includingDefaultValueFields();
     @Mock
-    private RedisSinkConfig redisSinkConfig;
+    private OdpfSinkConfig sinkConfig;
     @Mock
     private StatsDReporter statsDReporter;
     private ParsedOdpfMessage parsedTestMessage;
@@ -69,65 +70,65 @@ public class TemplateTest {
         parsedTestMessage = new ProtoOdpfParsedMessage(protoParserTest.parse((byte[]) message.getLogMessage()), configuration, jsonPrinter);
         Parser protoParserBooking = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
         parsedBookingMessage = new ProtoOdpfParsedMessage(protoParserBooking.parse((byte[]) bookingMessage.getLogMessage()), configuration, jsonPrinter);
-        when(redisSinkConfig.getSinkConnectorSchemaDataType()).thenReturn(SinkConnectorSchemaDataType.PROTOBUF);
-        ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(redisSinkConfig, statsDReporter);
+        when(sinkConfig.getSinkConnectorSchemaDataType()).thenReturn(SinkConnectorSchemaDataType.PROTOBUF);
+        ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
         schemaTest = messageParser.getSchema("io.odpf.depot.TestMessage", descriptorsMap);
         schemaBooking = messageParser.getSchema("io.odpf.depot.TestBookingLogMessage", descriptorsMap);
     }
 
     @Test
-    public void shouldParseStringMessageForCollectionKeyTemplate() {
+    public void shouldParseStringMessageForCollectionKeyTemplate() throws InvalidTemplateException {
         Template template = new Template("Test-%s,order_number");
         assertEquals("Test-test-order", template.parse(parsedTestMessage, schemaTest));
     }
 
     @Test
-    public void shouldParseStringMessageWithSpacesForCollectionKeyTemplate() {
+    public void shouldParseStringMessageWithSpacesForCollectionKeyTemplate() throws InvalidTemplateException {
         Template template = new Template("Test-%s, order_number");
         assertEquals("Test-test-order", template.parse(parsedTestMessage, schemaTest));
     }
 
     @Test
-    public void shouldParseFloatMessageForCollectionKeyTemplate() {
-        Template template = new Template("Test-%s,amount_paid_by_cash");
-        assertEquals("Test-12.3", template.parse(parsedBookingMessage, schemaBooking));
+    public void shouldParseFloatMessageForCollectionKeyTemplate() throws InvalidTemplateException {
+        Template template = new Template("Test-%.2f,amount_paid_by_cash");
+        assertEquals("Test-12.30", template.parse(parsedBookingMessage, schemaBooking));
     }
 
     @Test
-    public void shouldParseLongMessageForCollectionKeyTemplate() {
+    public void shouldParseLongMessageForCollectionKeyTemplate() throws InvalidTemplateException {
         Template template = new Template("Test-%s,customer_total_fare_without_surge");
         assertEquals("Test-2000", template.parse(parsedBookingMessage, schemaBooking));
     }
 
     @Test
     public void shouldThrowExceptionForNullCollectionKeyTemplate() {
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new Template(null));
-        assertEquals("Template 'null' is invalid", e.getMessage());
+        InvalidTemplateException e = assertThrows(InvalidTemplateException.class, () -> new Template(null));
+        assertEquals("Template cannot be empty", e.getMessage());
     }
 
     @Test
     public void shouldThrowExceptionForEmptyCollectionKeyTemplate() {
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new Template(""));
-        assertEquals("Template '' is invalid", e.getMessage());
+        InvalidTemplateException e = assertThrows(InvalidTemplateException.class, () -> new Template(""));
+        assertEquals("Template cannot be empty", e.getMessage());
     }
 
     @Test
-    public void shouldAcceptStringForCollectionKey() {
+    public void shouldAcceptStringForCollectionKey() throws InvalidTemplateException {
         Template template = new Template("Test");
         assertEquals("Test", template.parse(parsedBookingMessage, schemaBooking));
     }
 
     @Test
     public void shouldNotAcceptStringWithPatternForCollectionKeyWithEmptyVariables() {
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new Template("Test-%s%d%b,t1,t2"));
+        InvalidTemplateException e = assertThrows(InvalidTemplateException.class, () -> new Template("Test-%s%d%b,t1,t2"));
         Assert.assertEquals("Template is not valid, variables=3, validArgs=3, values=2", e.getMessage());
 
-        e = assertThrows(IllegalArgumentException.class, () -> new Template("Test-%s%s%y,order_number,order_details"));
+        e = assertThrows(InvalidTemplateException.class, () -> new Template("Test-%s%s%y,order_number,order_details"));
         Assert.assertEquals("Template is not valid, variables=3, validArgs=2, values=2", e.getMessage());
     }
 
     @Test
-    public void shouldAcceptStringWithPatternForCollectionKeyWithMultipleVariables() {
+    public void shouldAcceptStringWithPatternForCollectionKeyWithMultipleVariables() throws InvalidTemplateException {
         Template template = new Template("Test-%s::%s, order_number, order_details");
         assertEquals("Test-test-order::ORDER-DETAILS", template.parse(parsedTestMessage, schemaTest));
     }
