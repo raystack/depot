@@ -5,6 +5,7 @@ import com.timgroup.statsd.NoOpStatsDClient;
 import io.odpf.depot.OdpfSink;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.RedisSinkConfig;
+import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.message.OdpfMessageSchema;
@@ -65,7 +66,7 @@ public class RedisSinkFactory {
             RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(sinkConfig, statsDReporter, schema);
             this.redisParser = new RedisParser(messageParser, redisEntryParser, modeAndSchema);
             instrumentation.logInfo("Connection to redis established successfully");
-        } catch (IOException e) {
+        } catch (IOException | InvalidTemplateException e) {
             throw new IllegalArgumentException("Exception occurred while creating Redis sink", e);
         }
     }

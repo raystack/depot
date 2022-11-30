@@ -18,13 +18,13 @@ public class UriBuilderTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     @Test
-    public void shouldReturnURIInstanceBasedOnBaseUrl() throws URISyntaxException, InvalidTemplateException {
+    public void shouldReturnURIInstanceBasedOnBaseUrl() throws URISyntaxException {
         UriBuilder uriBuilder = new UriBuilder("http://dummy.com   ");
         assertEquals(new URI("http://dummy.com"), uriBuilder.build(Collections.emptyMap()));
     }
 
     @Test
-    public void shouldFailWhenUrlConfigIsEmpty() throws InvalidTemplateException {
+    public void shouldFailWhenUrlConfigIsEmpty() {
         expectedException.expect(InvalidTemplateException.class);
         expectedException.expectMessage("Template cannot be empty");
         UriBuilder uriBuilder = new UriBuilder("");
@@ -32,7 +32,7 @@ public class UriBuilderTest {
     }
 
     @Test
-    public void shouldFailWhenUrlConfigIsNull() throws InvalidTemplateException {
+    public void shouldFailWhenUrlConfigIsNull() {
         expectedException.expect(InvalidTemplateException.class);
         expectedException.expectMessage("Template cannot be empty");
         UriBuilder uriBuilder = new UriBuilder(null);
@@ -40,7 +40,7 @@ public class UriBuilderTest {
     }
 
     @Test
-    public void shouldFailWhenUrlConfigIs() throws InvalidTemplateException {
+    public void shouldFailWhenUrlConfigIs() {
         expectedException.expect(ConfigurationException.class);
         expectedException.expectMessage("Service URL 'http://dummy.com?s=^IXIC' is invalid");
         UriBuilder uriBuilder = new UriBuilder("http://dummy.com?s=^IXIC");

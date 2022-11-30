@@ -77,25 +77,25 @@ public class TemplateTest {
     }
 
     @Test
-    public void shouldParseStringMessageForCollectionKeyTemplate() throws InvalidTemplateException {
+    public void shouldParseStringMessageForCollectionKeyTemplate() {
         Template template = new Template("Test-%s,order_number");
         assertEquals("Test-test-order", template.parse(parsedTestMessage, schemaTest));
     }
 
     @Test
-    public void shouldParseStringMessageWithSpacesForCollectionKeyTemplate() throws InvalidTemplateException {
+    public void shouldParseStringMessageWithSpacesForCollectionKeyTemplate() {
         Template template = new Template("Test-%s, order_number");
         assertEquals("Test-test-order", template.parse(parsedTestMessage, schemaTest));
     }
 
     @Test
-    public void shouldParseFloatMessageForCollectionKeyTemplate() throws InvalidTemplateException {
+    public void shouldParseFloatMessageForCollectionKeyTemplate() {
         Template template = new Template("Test-%.2f,amount_paid_by_cash");
         assertEquals("Test-12.30", template.parse(parsedBookingMessage, schemaBooking));
     }
 
     @Test
-    public void shouldParseLongMessageForCollectionKeyTemplate() throws InvalidTemplateException {
+    public void shouldParseLongMessageForCollectionKeyTemplate() {
         Template template = new Template("Test-%s,customer_total_fare_without_surge");
         assertEquals("Test-2000", template.parse(parsedBookingMessage, schemaBooking));
     }
@@ -113,7 +113,7 @@ public class TemplateTest {
     }
 
     @Test
-    public void shouldAcceptStringForCollectionKey() throws InvalidTemplateException {
+    public void shouldAcceptStringForCollectionKey() {
         Template template = new Template("Test");
         assertEquals("Test", template.parse(parsedBookingMessage, schemaBooking));
     }
@@ -128,13 +128,13 @@ public class TemplateTest {
     }
 
     @Test
-    public void shouldAcceptStringWithPatternForCollectionKeyWithMultipleVariables() throws InvalidTemplateException {
+    public void shouldAcceptStringWithPatternForCollectionKeyWithMultipleVariables() {
         Template template = new Template("Test-%s::%s, order_number, order_details");
         assertEquals("Test-test-order::ORDER-DETAILS", template.parse(parsedTestMessage, schemaTest));
     }
 
     @Test
-    public void shouldGetTemplateString() throws InvalidTemplateException {
+    public void shouldGetTemplateString() {
         Template template = new Template("http://dummy.com");
         assertEquals("http://dummy.com", template.toString());
     }

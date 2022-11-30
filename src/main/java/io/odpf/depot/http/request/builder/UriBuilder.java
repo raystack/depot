@@ -1,7 +1,6 @@
 package io.odpf.depot.http.request.builder;
 
 import io.odpf.depot.exception.ConfigurationException;
-import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.common.Template;
@@ -15,7 +14,7 @@ public class UriBuilder {
 
     private final Template urlTemplate;
 
-    public UriBuilder(String urlConfig) throws InvalidTemplateException {
+    public UriBuilder(String urlConfig) {
         this.urlTemplate = new Template(urlConfig);
     }
 
