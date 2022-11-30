@@ -5,6 +5,7 @@ import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.EmptyMessageException;
+import io.odpf.depot.message.MessageUtils;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.message.OdpfMessageSchema;
@@ -42,6 +43,7 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
         if (type == null) {
             throw new IOException("message mode not defined");
         }
+        MessageUtils.validate(message, byte[].class);
         byte[] payload;
         switch (type) {
             case LOG_KEY:

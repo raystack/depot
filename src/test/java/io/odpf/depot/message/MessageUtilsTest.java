@@ -5,6 +5,9 @@ import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+
+import java.io.IOException;
 
 public class MessageUtilsTest {
     private final Configuration configuration = Configuration.builder()
@@ -69,5 +72,17 @@ public class MessageUtilsTest {
 
         exception = Assert.assertThrows(IllegalArgumentException.class, () -> MessageUtils.getFieldFromJsonObject("test[0].testing", object, configuration));
         Assert.assertEquals("Invalid field config : test[0].testing", exception.getMessage());
+    }
+    @Test
+    public void shouldNotThrowExceptionIfValid() throws IOException {
+        OdpfMessage message = new OdpfMessage("test", "test");
+        MessageUtils.validate(message, String.class);
+
+    }
+    @Test
+    public void shouldThrowExceptionIfNotValid() {
+        OdpfMessage message = new OdpfMessage("test", "test");
+        IOException ioException = Assertions.assertThrows(IOException.class, () -> MessageUtils.validate(message, Integer.class));
+        Assert.assertEquals("Expected class class java.lang.Integer, but found: LogKey class: class java.lang.String, LogMessage class: class java.lang.String", ioException.getMessage());
     }
 }
