@@ -1,5 +1,7 @@
 package io.odpf.depot.message.json;
 
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.EmptyMessageException;
@@ -25,6 +27,9 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
     private final OdpfSinkConfig config;
     private final Instrumentation instrumentation;
     private final JsonParserMetrics jsonParserMetrics;
+    private final Configuration jsonPathConfig = Configuration.builder()
+            .jsonProvider(new JsonOrgJsonProvider())
+            .build();
 
     public JsonOdpfMessageParser(OdpfSinkConfig config, Instrumentation instrumentation, JsonParserMetrics jsonParserMetrics) {
         this.instrumentation = instrumentation;
@@ -32,7 +37,6 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
         this.config = config;
 
     }
-
 
     @Override
     public ParsedOdpfMessage parse(OdpfMessage message, SinkConnectorSchemaMessageMode type, String schemaClass) throws IOException {
@@ -59,7 +63,7 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
             Instant instant = Instant.now();
             JSONObject jsonObject = JsonUtils.getJsonObject(config, payload);
             instrumentation.captureDurationSince(jsonParserMetrics.getJsonParseTimeTakenMetric(), instant);
-            return new JsonOdpfParsedMessage(jsonObject);
+            return new JsonOdpfParsedMessage(jsonObject, jsonPathConfig);
         } catch (JSONException ex) {
             throw new IOException("invalid json error", ex);
         }

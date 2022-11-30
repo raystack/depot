@@ -13,7 +13,7 @@ public class Template {
     private final String templatePattern;
     private final List<String> patternVariableFieldNames;
 
-    public Template(String template) {
+    public Template(String template) throws InvalidTemplateException {
         if (template == null || template.isEmpty()) {
             throw new InvalidTemplateException("Template cannot be empty");
         }
@@ -24,7 +24,7 @@ public class Template {
         validate();
     }
 
-    private void validate() {
+    private void validate() throws InvalidTemplateException {
         int validArgs = StringUtils.countVariables(templatePattern);
         int values = patternVariableFieldNames.size();
         int variables = StringUtils.count(templatePattern, '%');
