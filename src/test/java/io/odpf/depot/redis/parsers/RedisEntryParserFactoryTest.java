@@ -2,7 +2,6 @@ package io.odpf.depot.redis.parsers;
 
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.config.converter.JsonToPropertiesConverter;
-import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.depot.redis.enums.RedisSinkDataType;
@@ -77,7 +76,7 @@ public class RedisEntryParserFactoryTest {
     public void shouldThrowExceptionForEmptyMappingKeyHashSet() {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.HASHSET);
         when(redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping()).thenReturn(new JsonToPropertiesConverter().convert(null, "{\"order_details\":\"\"}"));
-        InvalidTemplateException e = Assert.assertThrows(InvalidTemplateException.class,
+        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class,
                 () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema));
         assertEquals("Template cannot be empty", e.getMessage());
     }
@@ -103,8 +102,8 @@ public class RedisEntryParserFactoryTest {
     @Test
     public void shouldThrowExceptionForEmptyRedisTemplate() {
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn("");
-        InvalidTemplateException invalidTemplateException =
-                assertThrows(InvalidTemplateException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema));
-        assertEquals("Template cannot be empty", invalidTemplateException.getMessage());
+        IllegalArgumentException illegalArgumentException =
+                assertThrows(IllegalArgumentException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema));
+        assertEquals("Template cannot be empty", illegalArgumentException.getMessage());
     }
 }

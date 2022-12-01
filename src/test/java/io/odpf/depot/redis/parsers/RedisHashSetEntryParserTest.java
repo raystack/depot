@@ -11,7 +11,6 @@ import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestMessageBQ;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.config.converter.JsonToPropertiesConverter;
-import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
@@ -197,7 +196,7 @@ public class RedisHashSetEntryParserTest {
     @Test
     public void shouldThrowErrorForInvalidFormatForKey() throws IOException {
         redisSinkSetup("{\"order_details\":\"ORDER_NUMBER%, order_number\"}");
-        InvalidTemplateException e = Assert.assertThrows(InvalidTemplateException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schemaBooking));
+        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schemaBooking));
         assertEquals("Template is not valid, variables=1, validArgs=0, values=1", e.getMessage());
     }
 

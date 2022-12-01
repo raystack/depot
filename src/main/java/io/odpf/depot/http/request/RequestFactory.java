@@ -1,6 +1,7 @@
 package io.odpf.depot.http.request;
 
 import io.odpf.depot.config.HttpSinkConfig;
+import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.request.body.RequestBody;
 import io.odpf.depot.http.request.body.RequestBodyFactory;
@@ -10,7 +11,7 @@ import io.odpf.depot.http.enums.HttpRequestType;
 
 public class RequestFactory {
 
-    public static Request create(HttpSinkConfig config) {
+    public static Request create(HttpSinkConfig config) throws InvalidTemplateException {
         UriBuilder uriBuilder = new UriBuilder(config.getSinkHttpServiceUrl());
         HeaderBuilder headerBuilder = new HeaderBuilder(config.getSinkHttpHeaders());
         HttpRequestMethodType httpMethod = config.getSinkHttpRequestMethod();
