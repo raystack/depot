@@ -10,6 +10,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.IOException;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class HttpSinkResponseTest {
@@ -77,7 +79,7 @@ public class HttpSinkResponseTest {
     }
 
     @Test
-    public void shouldGetResponseBody() {
+    public void shouldGetResponseBody() throws IOException {
         Mockito.when(response.getStatusLine()).thenReturn(statusLine);
         Mockito.when(statusLine.getStatusCode()).thenReturn(500);
         Mockito.when(response.getEntity()).thenReturn(httpEntity);

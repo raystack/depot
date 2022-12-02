@@ -3,7 +3,6 @@ package io.odpf.depot.http.record;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.exception.DeserializerException;
-import io.odpf.depot.exception.InvalidMessageException;
 import io.odpf.depot.http.response.HttpSinkResponse;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -51,7 +50,7 @@ public class HttpRequestRecordTest {
 
     @Test
     public void shouldGetRecordErrorInfo() {
-        ErrorInfo errorInfo = new ErrorInfo(new InvalidMessageException("Invalid Message Error"), ErrorType.INVALID_MESSAGE_ERROR);
+        ErrorInfo errorInfo = new ErrorInfo(new DeserializerException("Deserialization Error"), ErrorType.DESERIALIZATION_ERROR);
         HttpRequestRecord httpRequestRecord = createRecord(errorInfo, true);
         assertEquals(errorInfo, httpRequestRecord.getErrorInfo());
     }
@@ -99,7 +98,7 @@ public class HttpRequestRecordTest {
     }
 
     @Test
-    public void shouldGetNullIfRequestIsNull() {
+    public void shouldGetNullIfRequestIsNull() throws IOException {
         when(httpRequest.getEntity()).thenReturn(httpEntity);
         HttpRequestRecord httpRequestRecord = createRecord(null, true);
         assertNull(httpRequestRecord.getRequestBody());

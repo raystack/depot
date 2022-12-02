@@ -5,13 +5,14 @@ import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.metrics.Instrumentation;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class HttpResponseParser {
 
-    public static Map<Long, ErrorInfo> getErrorsFromResponse(List<HttpRequestRecord> records, List<HttpSinkResponse> responses, Instrumentation instrumentation) {
+    public static Map<Long, ErrorInfo> getErrorsFromResponse(List<HttpRequestRecord> records, List<HttpSinkResponse> responses, Instrumentation instrumentation) throws IOException {
         Map<Long, ErrorInfo> errors = new HashMap<>();
         for (int i = 0; i < responses.size(); i++) {
             HttpRequestRecord record = records.get(i);

@@ -1,7 +1,6 @@
 package io.odpf.depot.http.request.body;
 
 import io.odpf.depot.config.HttpSinkConfig;
-import io.odpf.depot.exception.InvalidMessageException;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.MessageUtils;
 import org.json.JSONObject;
@@ -18,17 +17,13 @@ public class RawBody implements RequestBody {
     }
 
     @Override
-    public String build(OdpfMessage message) {
+    public String build(OdpfMessage message) throws IOException {
         JSONObject payload = new JSONObject();
-        try {
-            MessageUtils.validate(message, byte[].class);
-            payload.put("log_key", encodedSerializedStringFrom((byte[]) message.getLogKey()));
-            payload.put("log_message", encodedSerializedStringFrom((byte[]) message.getLogMessage()));
-            MessageUtils.getMetaData(message, config, Date::new).forEach(payload::put);
-            return payload.toString();
-        } catch (IOException e) {
-            throw new InvalidMessageException("Could not encode the key or message. Key or message should be in bytes");
-        }
+        MessageUtils.validate(message, byte[].class);
+        payload.put("log_key", encodedSerializedStringFrom((byte[]) message.getLogKey()));
+        payload.put("log_message", encodedSerializedStringFrom((byte[]) message.getLogMessage()));
+        MessageUtils.getMetaData(message, config, Date::new).forEach(payload::put);
+        return payload.toString();
     }
 
     private String encodedSerializedStringFrom(byte[] bytes) {

@@ -31,12 +31,8 @@ public class HttpRequestRecord implements Iterable<Integer> {
         return new HttpSinkResponse(response);
     }
 
-    public String getRequestBody() {
-        try {
-            return EntityUtils.toString(httpRequest.getEntity());
-        } catch (IOException e) {
-            return null;
-        }
+    public String getRequestBody() throws IOException {
+        return EntityUtils.toString(httpRequest.getEntity());
     }
 
     public void addIndex(Integer index) {

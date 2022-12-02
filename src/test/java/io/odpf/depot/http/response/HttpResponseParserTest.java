@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class HttpResponseParserTest {
     private HttpEntity entity;
 
     @Test
-    public void shouldGetErrorsFromResponse() {
+    public void shouldGetErrorsFromResponse() throws IOException {
         List<HttpRequestRecord> records = new ArrayList<>();
         records.add(createRecord(0));
         records.add(createRecord(1));
@@ -73,7 +74,7 @@ public class HttpResponseParserTest {
     }
 
     @Test
-    public void shouldGetEmptyMapWhenNoErrors() {
+    public void shouldGetEmptyMapWhenNoErrors() throws IOException {
         List<HttpRequestRecord> records = new ArrayList<>();
         records.add(createRecord(0));
         records.add(createRecord(1));

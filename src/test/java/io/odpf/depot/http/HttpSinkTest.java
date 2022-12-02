@@ -4,7 +4,6 @@ import io.odpf.depot.OdpfSinkResponse;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.exception.DeserializerException;
-import io.odpf.depot.exception.InvalidMessageException;
 import io.odpf.depot.http.client.HttpSinkClient;
 import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.http.request.Request;
@@ -79,7 +78,7 @@ public class HttpSinkTest {
     public void shouldReportParsingErrors() throws IOException {
         List<OdpfMessage> messages = new ArrayList<>();
         List<HttpRequestRecord> records = new ArrayList<>();
-        records.add(createRecord(0, new ErrorInfo(new InvalidMessageException("Invalid Message Error"), ErrorType.INVALID_MESSAGE_ERROR), false));
+        records.add(createRecord(0, new ErrorInfo(new DeserializerException("Deserialization Error"), ErrorType.DESERIALIZATION_ERROR), false));
         records.add(createRecord(1, null, true));
         records.add(createRecord(2, new ErrorInfo(new DeserializerException("Deserialization Error"), ErrorType.DESERIALIZATION_ERROR), false));
         records.add(createRecord(3, null, true));
@@ -95,7 +94,7 @@ public class HttpSinkTest {
         OdpfSinkResponse odpfSinkResponse = httpSink.pushToSink(messages);
         Assert.assertTrue(odpfSinkResponse.hasErrors());
         Assert.assertEquals(2, odpfSinkResponse.getErrors().size());
-        Assert.assertEquals(ErrorType.INVALID_MESSAGE_ERROR, odpfSinkResponse.getErrorsFor(0).getErrorType());
+        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, odpfSinkResponse.getErrorsFor(0).getErrorType());
         Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, odpfSinkResponse.getErrorsFor(2).getErrorType());
     }
 
