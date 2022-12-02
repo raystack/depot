@@ -1,7 +1,7 @@
 package io.odpf.depot.message.field.proto;
 
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.Message;
 import io.odpf.depot.message.field.DefaultField;
 import io.odpf.depot.message.field.GenericField;
 import org.json.JSONObject;
@@ -19,10 +19,10 @@ public class MapField implements GenericField {
     public String getString() {
         JSONObject json = new JSONObject();
         ((Collection<?>) value).forEach(m -> {
-            DynamicMessage message = (DynamicMessage) m;
-            String k = message.getField(message.getDescriptorForType().findFieldByName("key")).toString();
-            Descriptors.FieldDescriptor vDescriptor = message.getDescriptorForType().findFieldByName("value");
-            Object v = message.getField(vDescriptor);
+            Message mapEntry = (Message) m;
+            String k = mapEntry.getField(mapEntry.getDescriptorForType().findFieldByName("key")).toString();
+            Descriptors.FieldDescriptor vDescriptor = mapEntry.getDescriptorForType().findFieldByName("value");
+            Object v = mapEntry.getField(vDescriptor);
             if (vDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE
                     && vDescriptor.getMessageType().getFullName().equals(com.google.protobuf.Timestamp.getDescriptor().getFullName())) {
                 json.put(k, new TimeStampField(v).getString());

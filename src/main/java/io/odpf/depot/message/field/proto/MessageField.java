@@ -1,7 +1,7 @@
 package io.odpf.depot.message.field.proto;
 
-import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.odpf.depot.message.field.GenericField;
 
@@ -11,10 +11,10 @@ public class MessageField implements GenericField {
             .preservingProtoFieldNames()
             .includingDefaultValueFields();
 
-    private final DynamicMessage message;
+    private final Message message;
 
     public MessageField(Object value) {
-        this.message = (DynamicMessage) value;
+        this.message = (Message) value;
     }
 
     @Override

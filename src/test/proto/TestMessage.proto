@@ -37,6 +37,9 @@ message TestNestedRepeatedMessage {
 message TestMapMessage {
   string order_number = 1;
   map<string, string> current_state = 2;
+  map<int32, TestMessage> metadata = 3;
+  map<string, google.protobuf.Duration> durations = 4;
+  map<string, google.protobuf.Timestamp> timeStamps = 5;
 }
 
 message TestDurationMessage {

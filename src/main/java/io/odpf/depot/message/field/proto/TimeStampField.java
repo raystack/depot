@@ -1,7 +1,7 @@
 package io.odpf.depot.message.field.proto;
 
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.Message;
 import io.odpf.depot.message.field.GenericField;
 
 import java.time.Instant;
@@ -18,7 +18,7 @@ public class TimeStampField implements GenericField {
 
     @Override
     public String getString() {
-        DynamicMessage dynamicField = (DynamicMessage) value;
+        Message dynamicField = (Message) value;
         List<Descriptors.FieldDescriptor> descriptors = dynamicField.getDescriptorForType().getFields();
         List<Object> timeFields = new ArrayList<>();
         descriptors.forEach(desc -> timeFields.add(dynamicField.getField(desc)));

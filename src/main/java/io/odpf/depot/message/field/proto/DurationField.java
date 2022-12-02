@@ -1,7 +1,7 @@
 package io.odpf.depot.message.field.proto;
 
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.Message;
 import io.odpf.depot.message.field.GenericField;
 
 import java.util.Collection;
@@ -24,11 +24,15 @@ public class DurationField implements GenericField {
     }
 
     private String getDurationString(Object field) {
-        DynamicMessage message = (DynamicMessage) field;
+        Message message = (Message) field;
         Descriptors.FieldDescriptor secondsDescriptor = message.getDescriptorForType().findFieldByName("seconds");
         Descriptors.FieldDescriptor nanosDescriptor = message.getDescriptorForType().findFieldByName("nanos");
         long seconds = (Long) message.getField(secondsDescriptor);
         int nanos = (Integer) message.getField(nanosDescriptor);
-        return (seconds + (nanos * NANO)) + "s";
+        if (nanos != 0) {
+            return (seconds + (nanos * NANO)) + "s";
+        } else {
+            return seconds + "s";
+        }
     }
 }
