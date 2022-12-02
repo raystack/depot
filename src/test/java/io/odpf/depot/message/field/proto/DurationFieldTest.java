@@ -40,6 +40,7 @@ public class DurationFieldTest {
             add(DynamicMessage.parseFrom(duration4.getDescriptorForType(), duration4.toByteArray()));
         }};
         DurationField field = new DurationField(messages);
-        Assert.assertEquals("[1200.001232138s,1300.003333434s,1400.005665656s,1500.009089898s]", field.getString());
+        Assert.assertEquals(
+                "[\"1200.001232138s\",\"1300.003333434s\",\"1400.005665656s\",\"1500.009089898s\"]", field.getString());
     }
 }

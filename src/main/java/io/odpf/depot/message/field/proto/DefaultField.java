@@ -1,12 +1,16 @@
 package io.odpf.depot.message.field.proto;
 
-import com.google.protobuf.DynamicMessage;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.protobuf.Message;
 import io.odpf.depot.message.field.GenericField;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class DefaultField implements GenericField {
+    private static final Gson GSON = new GsonBuilder().create();
     private final Object value;
 
     public DefaultField(Object value) {
@@ -16,14 +20,17 @@ public class DefaultField implements GenericField {
     @Override
     public String getString() {
         if (value instanceof Collection<?>) {
-            return "[" + ((Collection<?>) value).stream().map(ob -> {
-                if (ob instanceof DynamicMessage) {
-                    return new MessageField(ob).getString();
-                } else {
-                    return new DefaultField(ob).getString();
-                }
-            }).collect(Collectors.joining(",")) + "]";
+            if (((List<?>) value).get(0) instanceof Message) {
+                Object messageJsons = ((Collection<?>) value)
+                        .stream()
+                        .map(cValue -> new MessageField(cValue).getString())
+                        .collect(Collectors.joining(","));
+                return "[" + messageJsons + "]";
+            } else {
+                return GSON.toJson(((Collection<?>) value).stream().map(Object::toString).collect(Collectors.toList()));
+            }
+        } else {
+            return value.toString();
         }
-        return value.toString();
     }
 }

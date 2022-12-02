@@ -64,10 +64,13 @@ public class ProtoOdpfParsedMessageTest {
             put(String.format("%s", TestBookingLogMessage.class.getName()), TestBookingLogMessage.getDescriptor());
             put(String.format("%s", TestLocation.class.getName()), TestLocation.getDescriptor());
             put(String.format("%s", TestBookingLogMessage.TopicMetadata.class.getName()), TestBookingLogMessage.TopicMetadata.getDescriptor());
+            put(String.format("%s", TestTypesMessage.class.getName()), TestTypesMessage.getDescriptor());
+            put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
             put("io.odpf.depot.TestMessageBQ.CurrentStateEntry", TestMessageBQ.getDescriptor().getNestedTypes().get(0));
             put("com.google.protobuf.Struct.FieldsEntry", Struct.getDescriptor().getNestedTypes().get(0));
             put("com.google.protobuf.Duration", com.google.protobuf.Duration.getDescriptor());
             put("com.google.type.Date", com.google.type.Date.getDescriptor());
+            put("google.protobuf.BoolValue", com.google.protobuf.BoolValue.getDescriptor());
         }};
         odpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
     }
@@ -535,5 +538,22 @@ public class ProtoOdpfParsedMessageTest {
         Object intervals = ((ProtoField) protoOdpfParsedMessage.getFieldByName("intervals", odpfMessageSchema)).getValue();
         Assert.assertEquals(Duration.newBuilder().setSeconds(12).setNanos(1000).build(), ((List<?>) intervals).get(0));
         Assert.assertEquals(Duration.newBuilder().setSeconds(15).setNanos(1000).build(), ((List<?>) intervals).get(1));
+    }
+
+    @Test
+    public void shouldReturnRepeatedString() throws IOException {
+        TestTypesMessage message = TestTypesMessage
+                .newBuilder()
+                .addListValues("test1")
+                .addListValues("test2")
+                .addListValues("test3")
+                .build();
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestTypesMessage", descriptorsMap);
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()));
+        List<?> listValues = (List<?>) ((ProtoField) protoOdpfParsedMessage.getFieldByName("list_values", odpfMessageSchema)).getValue();
+        Assert.assertEquals("test1", listValues.get(0));
+        Assert.assertEquals("test2", listValues.get(1));
+        Assert.assertEquals("test3", listValues.get(2));
     }
 }

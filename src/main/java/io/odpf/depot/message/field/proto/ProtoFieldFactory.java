@@ -5,6 +5,7 @@ import io.odpf.depot.message.proto.converter.fields.DurationProtoField;
 import io.odpf.depot.message.proto.converter.fields.MapProtoField;
 import io.odpf.depot.message.proto.converter.fields.MessageProtoField;
 import io.odpf.depot.message.proto.converter.fields.ProtoField;
+import io.odpf.depot.message.proto.converter.fields.StructProtoField;
 
 
 public class ProtoFieldFactory {
@@ -17,6 +18,9 @@ public class ProtoFieldFactory {
         }
         if (field instanceof MapProtoField) {
             return new MapField(field.getValue());
+        }
+        if (field instanceof StructProtoField) {
+            return new StructField(field.getValue());
         }
         return new DefaultField(field.getValue());
     }
