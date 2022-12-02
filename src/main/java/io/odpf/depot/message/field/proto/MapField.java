@@ -29,7 +29,7 @@ public class MapField implements GenericField {
                     && vDescriptor.getMessageType().getFullName().equals(com.google.protobuf.Duration.getDescriptor().getFullName())) {
                 json.put(k, new DurationField(v).getString());
             } else if (vDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
-                json.put(k, new MessageField(v).getString());
+                json.put(k, new JSONObject(new MessageField(v).getString()));
             } else {
                 json.put(k, new DefaultField(v).getString());
             }

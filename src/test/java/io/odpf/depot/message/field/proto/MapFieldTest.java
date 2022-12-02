@@ -30,7 +30,7 @@ public class MapFieldTest {
                 new JSONObject("{\"country\":\"japan\",\"city\":\"tokyo\",\"currency\":\"jpy\"}").toString(),
                 new JSONObject(field1.getString()).toString());
         Assert.assertEquals(
-                new JSONObject("{\"23\":\"{\\\"order_number\\\":\\\"order1\\\",\\\"order_url\\\":\\\"\\\",\\\"order_details\\\":\\\"\\\"}\",\"10\":\"{\\\"order_number\\\":\\\"order2\\\",\\\"order_url\\\":\\\"\\\",\\\"order_details\\\":\\\"\\\"}\"}").toString(),
+                new JSONObject("{\"23\":{\"order_url\":\"\",\"order_number\":\"order1\",\"order_details\":\"\"},\"10\":{\"order_url\":\"\",\"order_number\":\"order2\",\"order_details\":\"\"}}").toString(),
                 new JSONObject(field2.getString()).toString());
     }
 
