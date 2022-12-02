@@ -1,8 +1,8 @@
 package io.odpf.depot.message.proto.converter.fields;
 
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import lombok.AllArgsConstructor;
 
@@ -35,7 +35,7 @@ public class StructProtoField implements ProtoField {
     }
 
     private String getString(Object field) throws InvalidProtocolBufferException {
-        return printer.print((DynamicMessage) field);
+        return printer.print((Message) field);
     }
 
     @Override

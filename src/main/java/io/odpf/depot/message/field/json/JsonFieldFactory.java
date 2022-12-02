@@ -1,6 +1,5 @@
 package io.odpf.depot.message.field.json;
 
-import io.odpf.depot.message.field.DefaultField;
 import io.odpf.depot.message.field.GenericField;
 
 public class JsonFieldFactory {

@@ -1,6 +1,5 @@
 package io.odpf.depot.message.field.proto;
 
-import io.odpf.depot.message.field.DefaultField;
 import io.odpf.depot.message.field.GenericField;
 import io.odpf.depot.message.proto.converter.fields.DurationProtoField;
 import io.odpf.depot.message.proto.converter.fields.MapProtoField;

@@ -2,16 +2,16 @@ package io.odpf.depot.message.proto;
 
 import com.google.api.client.util.DateTime;
 import com.google.protobuf.*;
+import com.google.protobuf.util.JsonFormat;
 import io.odpf.depot.*;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.field.GenericFieldFactory;
 import io.odpf.depot.message.proto.converter.fields.DefaultProtoField;
 import io.odpf.depot.message.proto.converter.fields.ProtoField;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
-import org.json.JSONObject;
+import org.json.JSONArray;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +26,9 @@ import static org.junit.Assert.*;
 
 public class ProtoOdpfParsedMessageTest {
 
+    private static JsonFormat.Printer printer = JsonFormat.printer()
+            .preservingProtoFieldNames()
+            .omittingInsignificantWhitespace();
     private Timestamp createdAt;
     private DynamicMessage dynamicMessage;
     private Instant now;
@@ -327,7 +330,8 @@ public class ProtoOdpfParsedMessageTest {
     public void shouldGetFieldByName() throws IOException {
         OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(dynamicMessage);
-        Assert.assertEquals("order-1", GenericFieldFactory.getField(protoOdpfParsedMessage.getFieldByName("order_number", odpfMessageSchema)).getString());
+        Object orderNumber = ((ProtoField) protoOdpfParsedMessage.getFieldByName("order_number", odpfMessageSchema)).getValue();
+        Assert.assertEquals("order-1", orderNumber);
     }
 
     @Test
@@ -373,9 +377,8 @@ public class ProtoOdpfParsedMessageTest {
         Parser protoParser = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
         DynamicMessage bookingLogDynamicMessage = protoParser.parse(testBookingLogMessage.toByteArray());
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(bookingLogDynamicMessage);
-        String driverPickupLocation = GenericFieldFactory.getField(protoOdpfParsedMessage.getFieldByName("driver_pickup_location", odpfMessageSchema)).getString();
-        Assert.assertEquals(new JSONObject("{\"note\":\"\",\"accuracy_meter\":0,\"address\":\"\",\"gate_id\":\"\",\"latitude\":10,\"name\":\"\",\"type\":\"\",\"place_id\":\"\",\"longitude\":12}").toString(),
-                new JSONObject(driverPickupLocation).toString());
+        Object driverPickupLocation = ((ProtoField) protoOdpfParsedMessage.getFieldByName("driver_pickup_location", odpfMessageSchema)).getValue();
+        Assert.assertEquals(TestLocation.newBuilder().setLatitude(10.0).setLongitude(12.0).build(), driverPickupLocation);
     }
 
     @Test
@@ -392,8 +395,14 @@ public class ProtoOdpfParsedMessageTest {
 
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
-        String attributes = GenericFieldFactory.getField(new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray())).getFieldByName("attributes", odpfMessageSchema)).getString();
-        Assert.assertEquals("[{\"name\":\"John\",\"age\":50.0},{\"name\":\"John\",\"age\":60.0},{\"name\":\"John\",\"active\":true,\"height\":175.0}]", attributes);
+        List<?> attributes = (List<?>) ((ProtoField) (new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray())).getFieldByName("attributes", odpfMessageSchema))).getValue();
+        JSONArray expectedArray = new JSONArray();
+        JSONArray actualArray = new JSONArray();
+        for (int ii = 0; ii < message.getAttributesCount(); ii++) {
+            expectedArray.put(printer.print(message.getAttributes(ii)));
+            actualArray.put(attributes.get(ii));
+        }
+        Assert.assertEquals(expectedArray.toString(), actualArray.toString());
     }
 
     @Test
@@ -407,8 +416,8 @@ public class ProtoOdpfParsedMessageTest {
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()));
-        String discount = GenericFieldFactory.getField(protoOdpfParsedMessage.getFieldByName("discount", odpfMessageSchema)).getString();
-        Assert.assertEquals("10000012010", discount);
+        Object discount = ((ProtoField) protoOdpfParsedMessage.getFieldByName("discount", odpfMessageSchema)).getValue();
+        Assert.assertEquals(10000012010L, discount);
         float price = (float) ((ProtoField) protoOdpfParsedMessage.getFieldByName("price", odpfMessageSchema)).getValue();
         Assert.assertEquals(10.2f, price, 0.00000000001);
     }
@@ -419,8 +428,10 @@ public class ProtoOdpfParsedMessageTest {
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(message1.toByteArray()));
-        String updatedTimeStamps = GenericFieldFactory.getField(protoOdpfParsedMessage.getFieldByName("updated_at", odpfMessageSchema)).getString();
-        Assert.assertEquals("[" + now + "," + now + "]", updatedTimeStamps);
+        Object updatedTimeStamps = ((ProtoField) protoOdpfParsedMessage.getFieldByName("updated_at", odpfMessageSchema)).getValue();
+        Assert.assertEquals(2, ((List<?>) updatedTimeStamps).size());
+        Assert.assertEquals(now, ((List<?>) updatedTimeStamps).get(0));
+        Assert.assertEquals(now, ((List<?>) updatedTimeStamps).get(1));
     }
 
 
@@ -451,17 +462,24 @@ public class ProtoOdpfParsedMessageTest {
         TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
         OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(parser.parse(message1.toByteArray()));
-        Object tripDuration = protoOdpfParsedMessage.getFieldByName("trip_duration", odpfMessageSchema);
-        Assert.assertEquals("1.000001s", GenericFieldFactory.getField(tripDuration).getString());
+        Object tripDuration = ((ProtoField) protoOdpfParsedMessage.getFieldByName("trip_duration", odpfMessageSchema)).getValue();
+        Assert.assertEquals(
+                Duration.newBuilder().setSeconds(1).setNanos(TestProtoUtil.TRIP_DURATION_NANOS).build(),
+                tripDuration);
     }
 
     @Test
     public void shouldReturnMapFieldAsJSONObject() throws IOException {
-        TestMessageBQ message1 = TestMessageBQ.newBuilder().putCurrentState("something", "in the way").build();
+        TestMessageBQ message1 = TestMessageBQ.newBuilder().putCurrentState("running", "active").build();
         OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(parser.parse(message1.toByteArray()));
-        String currentState = GenericFieldFactory.getField(protoOdpfParsedMessage.getFieldByName("current_state", odpfMessageSchema)).getString();
-        Assert.assertEquals("{\"something\":\"in the way\"}", currentState);
+        Object currentState = ((ProtoField) protoOdpfParsedMessage.getFieldByName("current_state", odpfMessageSchema)).getValue();
+        Assert.assertTrue(currentState instanceof List<?>);
+        Assert.assertEquals(1, ((List<?>) currentState).size());
+        Message m = (Message) ((List<?>) currentState).get(0);
+        m.getField(m.getDescriptorForType().findFieldByName("key"));
+        Assert.assertEquals("running", m.getField(m.getDescriptorForType().findFieldByName("key")));
+        Assert.assertEquals("active", m.getField(m.getDescriptorForType().findFieldByName("value")));
     }
 
     @Test
@@ -514,7 +532,8 @@ public class ProtoOdpfParsedMessageTest {
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(message1.toByteArray()));
-        String intervals = GenericFieldFactory.getField(protoOdpfParsedMessage.getFieldByName("intervals", odpfMessageSchema)).getString();
-        Assert.assertEquals("[12.000001s,15.000001s]", intervals);
+        Object intervals = ((ProtoField) protoOdpfParsedMessage.getFieldByName("intervals", odpfMessageSchema)).getValue();
+        Assert.assertEquals(Duration.newBuilder().setSeconds(12).setNanos(1000).build(), ((List<?>) intervals).get(0));
+        Assert.assertEquals(Duration.newBuilder().setSeconds(15).setNanos(1000).build(), ((List<?>) intervals).get(1));
     }
 }

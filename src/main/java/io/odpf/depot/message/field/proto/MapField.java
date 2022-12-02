@@ -2,7 +2,6 @@ package io.odpf.depot.message.field.proto;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
-import io.odpf.depot.message.field.DefaultField;
 import io.odpf.depot.message.field.GenericField;
 import org.json.JSONObject;
 

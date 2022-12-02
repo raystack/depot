@@ -1,7 +1,7 @@
-package io.odpf.depot.message.field;
+package io.odpf.depot.message.field.proto;
 
 import com.google.protobuf.DynamicMessage;
-import io.odpf.depot.message.field.proto.MessageField;
+import io.odpf.depot.message.field.GenericField;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
