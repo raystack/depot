@@ -91,7 +91,7 @@ public class RedisParserTest {
     public void setupParserResponse() throws IOException {
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessage.class.getName());
         for (OdpfMessage message : messages) {
-            ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(protoParser.parse((byte[]) message.getLogMessage()), configuration, jsonPrinter);
+            ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(protoParser.parse((byte[]) message.getLogMessage()));
             when(odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass)).thenReturn(parsedOdpfMessage);
         }
         ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(redisSinkConfig, statsDReporter);

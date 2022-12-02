@@ -10,9 +10,9 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class NestedProtoFieldTest {
+public class MessageProtoFieldTest {
 
-    private NestedProtoField nestedProtoField;
+    private MessageProtoField messageProtoField;
     private TestMessage childField;
 
     @Before
@@ -26,19 +26,19 @@ public class NestedProtoFieldTest {
         DynamicMessage dynamicMessage = DynamicMessage.parseFrom(nestedMessage.getDescriptorForType(), nestedMessage.toByteArray());
 
         Descriptors.FieldDescriptor fieldDescriptor = nestedMessage.getDescriptorForType().findFieldByName("single_message");
-        nestedProtoField = new NestedProtoField(fieldDescriptor, dynamicMessage.getField(fieldDescriptor));
+        messageProtoField = new MessageProtoField(fieldDescriptor, dynamicMessage.getField(fieldDescriptor));
 
     }
 
     @Test
     public void shouldReturnDynamicMessage() {
-        DynamicMessage nestedChild = nestedProtoField.getValue();
+        DynamicMessage nestedChild = messageProtoField.getValue();
         assertEquals(childField, nestedChild);
     }
 
     @Test
     public void shouldMatchDynamicMessageAsNested() {
-        boolean isMatch = nestedProtoField.matches();
+        boolean isMatch = messageProtoField.matches();
         assertTrue(isMatch);
     }
 }

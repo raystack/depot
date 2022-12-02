@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.proto.converter.fields.ProtoField;
 import io.odpf.depot.utils.StringUtils;
 
 import java.util.ArrayList;
@@ -36,8 +37,16 @@ public class Template {
     public String parse(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
         Object[] patternVariableData = patternVariableFieldNames
                 .stream()
-                .map(fieldName -> parsedOdpfMessage.getFieldByName(fieldName, schema))
+                .map(fieldName -> fetchInternalValue(parsedOdpfMessage.getFieldByName(fieldName, schema)))
                 .toArray();
         return String.format(templatePattern, patternVariableData);
+    }
+
+    private Object fetchInternalValue(Object ob) {
+        if (ob instanceof ProtoField) {
+            return ((ProtoField) ob).getValue();
+        } else {
+            return ob;
+        }
     }
 }

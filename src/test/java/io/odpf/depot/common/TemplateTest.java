@@ -1,9 +1,6 @@
 package io.odpf.depot.common;
 
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.util.JsonFormat;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.TestBookingLogMessage;
 import io.odpf.depot.TestKey;
 import io.odpf.depot.TestLocation;
@@ -36,13 +33,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TemplateTest {
-    private final Configuration configuration = Configuration.builder()
-            .jsonProvider(new JsonOrgJsonProvider())
-            .build();
-    private final JsonFormat.Printer jsonPrinter = JsonFormat.printer()
-            .omittingInsignificantWhitespace()
-            .preservingProtoFieldNames()
-            .includingDefaultValueFields();
     @Mock
     private OdpfSinkConfig sinkConfig;
     @Mock
@@ -67,9 +57,9 @@ public class TemplateTest {
             put(String.format("%s", TestLocation.class.getName()), TestLocation.getDescriptor());
         }};
         Parser protoParserTest = StencilClientFactory.getClient().getParser(TestMessage.class.getName());
-        parsedTestMessage = new ProtoOdpfParsedMessage(protoParserTest.parse((byte[]) message.getLogMessage()), configuration, jsonPrinter);
+        parsedTestMessage = new ProtoOdpfParsedMessage(protoParserTest.parse((byte[]) message.getLogMessage()));
         Parser protoParserBooking = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
-        parsedBookingMessage = new ProtoOdpfParsedMessage(protoParserBooking.parse((byte[]) bookingMessage.getLogMessage()), configuration, jsonPrinter);
+        parsedBookingMessage = new ProtoOdpfParsedMessage(protoParserBooking.parse((byte[]) bookingMessage.getLogMessage()));
         when(sinkConfig.getSinkConnectorSchemaDataType()).thenReturn(SinkConnectorSchemaDataType.PROTOBUF);
         ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
         schemaTest = messageParser.getSchema("io.odpf.depot.TestMessage", descriptorsMap);

@@ -12,6 +12,9 @@ import java.util.List;
 
 @AllArgsConstructor
 public class StructProtoField implements ProtoField {
+    private static JsonFormat.Printer printer = JsonFormat.printer()
+            .preservingProtoFieldNames()
+            .omittingInsignificantWhitespace();
     private final Descriptors.FieldDescriptor descriptor;
     private final Object fieldValue;
 
@@ -32,14 +35,12 @@ public class StructProtoField implements ProtoField {
     }
 
     private String getString(Object field) throws InvalidProtocolBufferException {
-        return JsonFormat.printer()
-                .omittingInsignificantWhitespace()
-                .print((DynamicMessage) field);
+        return printer.print((DynamicMessage) field);
     }
 
     @Override
     public boolean matches() {
         return descriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE
-               && descriptor.getMessageType().getFullName().equals(com.google.protobuf.Struct.getDescriptor().getFullName());
+                && descriptor.getMessageType().getFullName().equals(com.google.protobuf.Struct.getDescriptor().getFullName());
     }
 }
