@@ -6,9 +6,9 @@ import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
 import io.odpf.depot.TestMapMessage;
 import io.odpf.depot.TestMessage;
-import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 public class MapFieldTest {
 
@@ -28,12 +28,10 @@ public class MapFieldTest {
         Object metadata = message.getField(message.getDescriptorForType().findFieldByName("metadata"));
         MapField field1 = new MapField(currentState);
         MapField field2 = new MapField(metadata);
-        Assert.assertEquals(
-                new JSONObject("{\"country\":\"japan\",\"city\":\"tokyo\",\"currency\":\"jpy\"}").toString(),
-                new JSONObject(field1.getString()).toString());
-        Assert.assertEquals(
-                new JSONObject("{\"23\":{\"order_url\":\"\",\"order_number\":\"order1\",\"order_details\":\"\"},\"10\":{\"order_url\":\"\",\"order_number\":\"order2\",\"order_details\":\"\"}}").toString(),
-                new JSONObject(field2.getString()).toString());
+        String expectedJson = "{\"country\":\"japan\",\"city\":\"tokyo\",\"currency\":\"jpy\"}";
+        JSONAssert.assertEquals(expectedJson, field1.getString(), true);
+        expectedJson = "{\"23\":{\"order_url\":\"\",\"order_number\":\"order1\",\"order_details\":\"\"},\"10\":{\"order_url\":\"\",\"order_number\":\"order2\",\"order_details\":\"\"}}";
+        JSONAssert.assertEquals(expectedJson, field2.getString(), true);
     }
 
     @Test
@@ -45,9 +43,8 @@ public class MapFieldTest {
                 .build();
         Object durations = message.getField(message.getDescriptorForType().findFieldByName("durations"));
         MapField field1 = new MapField(durations);
-        Assert.assertEquals(
-                new JSONObject("{\"d1\":\"1234s\",\"d2\":\"1200.000000123s\"}").toString(),
-                new JSONObject(field1.getString()).toString());
+        String expectedJson = "{\"d1\":\"1234s\",\"d2\":\"1200.000000123s\"}";
+        JSONAssert.assertEquals(expectedJson, field1.getString(), true);
     }
 
     @Test
@@ -59,9 +56,8 @@ public class MapFieldTest {
                 .build();
         Object timeStamps = message.getField(message.getDescriptorForType().findFieldByName("time_stamps"));
         MapField field1 = new MapField(timeStamps);
-        Assert.assertEquals(
-                new JSONObject("{\"ts2\":\"2022-12-02T06:46:34Z\",\"ts1\":\"2022-12-02T06:29:54Z\"}").toString(),
-                new JSONObject(field1.getString()).toString());
+        String expectedJson = "{\"ts2\":\"2022-12-02T06:46:34Z\",\"ts1\":\"2022-12-02T06:29:54Z\"}";
+        JSONAssert.assertEquals(expectedJson, field1.getString(), true);
     }
 
     @Test

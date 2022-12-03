@@ -3,9 +3,8 @@ package io.odpf.depot.message.field.proto;
 import com.google.protobuf.Timestamp;
 import io.odpf.depot.TestMessage;
 import io.odpf.depot.TestNestedRepeatedMessage;
-import org.json.JSONObject;
-import org.junit.Assert;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 public class MessageFieldTest {
 
@@ -17,9 +16,8 @@ public class MessageFieldTest {
                 .setOrderUrl("url")
                 .build();
         MessageField field = new MessageField(message);
-        Assert.assertEquals(
-                new JSONObject("{\"order_number\":\"number\",\"order_url\":\"url\",\"order_details\":\"details\"}").toString(),
-                new JSONObject(field.getString()).toString());
+        String expectedJson = "{\"order_number\":\"number\",\"order_url\":\"url\",\"order_details\":\"details\"}";
+        JSONAssert.assertEquals(expectedJson, field.getString(), true);
     }
 
     @Test
@@ -77,8 +75,21 @@ public class MessageFieldTest {
                 + "  },\n"
                 + "  \"number_field\": 10\n"
                 + "}\n";
-        Assert.assertEquals(
-                new JSONObject(expectedJson).toString(),
-                new JSONObject(field.getString()).toString());
+        JSONAssert.assertEquals(expectedJson, field.getString(), true);
+
+        expectedJson = "[\n"
+                + "  {\n"
+                + "    \"order_number\": \"number\",\n"
+                + "    \"order_url\": \"url\",\n"
+                + "    \"order_details\": \"details\"\n"
+                + "  },\n"
+                + "  {\n"
+                + "    \"order_number\": \"o2\",\n"
+                + "    \"order_url\": \"url2\",\n"
+                + "    \"order_details\": \"d2\"\n"
+                + "  }\n"
+                + "]";
+        field = new MessageField(message.getField(message.getDescriptorForType().findFieldByName("repeated_message")));
+        JSONAssert.assertEquals(expectedJson, field.getString(), true);
     }
 }
