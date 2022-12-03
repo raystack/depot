@@ -13,6 +13,7 @@ public class StructField implements GenericField {
 
     @Override
     public String getString() {
+        // This Struct is already converted into strings, so we just need to concat it.
         return FieldUtils.convertToString(value, Object::toString);
     }
 }

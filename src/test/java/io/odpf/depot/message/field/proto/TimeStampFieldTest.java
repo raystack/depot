@@ -13,7 +13,8 @@ public class TimeStampFieldTest {
                 .newBuilder()
                 .setEventTimestamp(Timestamp.newBuilder().setSeconds(1669962594) .build())
                 .build();
-        TimeStampField field = new TimeStampField(message.getField(message.getDescriptorForType().findFieldByName("event_timestamp")));
+        TimeStampField field = new TimeStampField(
+                TimeStampField.getInstant(message.getField(message.getDescriptorForType().findFieldByName("event_timestamp"))));
         Assert.assertEquals("2022-12-02T06:29:54Z", field.getString());
     }
 }

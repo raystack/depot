@@ -20,18 +20,25 @@ public class FieldUtils {
         return toStringFunc.apply(value);
     }
 
-    /* This is used to convert default types which string formats are not in json
-     for example: a list of doubles value.
+    /**
+     * This method is used to convert default types which string formats are not in json.
+     * for example: a list of doubles value or list of string etc
      */
-    public static String convertToStringWithGSON(Object value, Function<Object, String> toStringFunc) {
+    public static String convertToString(Object value) {
         if (value instanceof Collection<?>) {
-            return GSON.toJson(((Collection<?>) value)
-                    .stream()
-                    .map(toStringFunc)
-                    .collect(Collectors.toList()
-                    ));
+            return GSON.toJson(value);
         } else {
-            return toStringFunc.apply(value);
+            return value.toString();
         }
+    }
+
+    public static String convertToStringWithQuotes(Object value, Function<Object, String> toStringFunc) {
+        if (value instanceof Collection<?>) {
+            return "[" + ((Collection<?>) value)
+                    .stream()
+                    .map(o -> ("\"" + toStringFunc.apply(o) + "\""))
+                    .collect(Collectors.joining(",")) + "]";
+        }
+        return toStringFunc.apply(value);
     }
 }

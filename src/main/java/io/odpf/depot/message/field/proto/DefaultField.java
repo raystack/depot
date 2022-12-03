@@ -12,6 +12,6 @@ public class DefaultField implements GenericField {
 
     @Override
     public String getString() {
-        return FieldUtils.convertToStringWithGSON(value, Object::toString);
+        return FieldUtils.convertToString(value);
     }
 }

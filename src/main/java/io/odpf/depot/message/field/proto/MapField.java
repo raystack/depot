@@ -24,7 +24,7 @@ public class MapField implements GenericField {
             Object v = mapEntry.getField(vDescriptor);
             if (vDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE
                     && vDescriptor.getMessageType().getFullName().equals(com.google.protobuf.Timestamp.getDescriptor().getFullName())) {
-                json.put(k, new TimeStampField(v).getString());
+                json.put(k, new TimeStampField(TimeStampField.getInstant(v)).getString());
             } else if (vDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE
                     && vDescriptor.getMessageType().getFullName().equals(com.google.protobuf.Duration.getDescriptor().getFullName())) {
                 json.put(k, new DurationField(v).getString());

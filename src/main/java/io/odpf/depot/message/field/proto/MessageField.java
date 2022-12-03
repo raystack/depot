@@ -30,5 +30,4 @@ public class MessageField implements GenericField {
             throw new IllegalArgumentException(e);
         }
     }
-
 }
