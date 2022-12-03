@@ -13,11 +13,12 @@ public class TimeStampField implements GenericField {
 
     public TimeStampField(Object value) {
         this.value = value;
-
     }
 
     @Override
     public String getString() {
+        /* TimeStamp Field will not be a repeated because this is only used in map
+        *  */
         Message dynamicField = (Message) value;
         List<Descriptors.FieldDescriptor> descriptors = dynamicField.getDescriptorForType().getFields();
         List<Object> timeFields = new ArrayList<>();

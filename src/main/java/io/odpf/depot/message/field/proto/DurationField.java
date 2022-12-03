@@ -1,17 +1,13 @@
 package io.odpf.depot.message.field.proto;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
+import io.odpf.depot.message.field.FieldUtils;
 import io.odpf.depot.message.field.GenericField;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
 
 public class DurationField implements GenericField {
     private static final double NANO = 1e-9;
-    private static final Gson GSON = new GsonBuilder().create();
     private final Object value;
 
     public DurationField(Object value) {
@@ -20,10 +16,7 @@ public class DurationField implements GenericField {
 
     @Override
     public String getString() {
-        if (value instanceof Collection<?>) {
-            return GSON.toJson(((Collection<?>) value).stream().map(this::getDurationString).collect(Collectors.toList()));
-        }
-        return getDurationString(value);
+        return FieldUtils.convertToStringWithGSON(value, this::getDurationString);
     }
 
     private String getDurationString(Object field) {

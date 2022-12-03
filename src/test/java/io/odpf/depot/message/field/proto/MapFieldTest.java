@@ -1,7 +1,9 @@
 package io.odpf.depot.message.field.proto;
 
 import com.google.protobuf.Duration;
+import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
+import com.google.protobuf.Value;
 import io.odpf.depot.TestMapMessage;
 import io.odpf.depot.TestMessage;
 import org.json.JSONObject;
@@ -55,10 +57,31 @@ public class MapFieldTest {
                 .putTimeStamps("ts1", Timestamp.newBuilder().setSeconds(1669962594).build())
                 .putTimeStamps("ts2", Timestamp.newBuilder().setSeconds(1669963594).build())
                 .build();
-        Object timeStamps = message.getField(message.getDescriptorForType().findFieldByName("timeStamps"));
+        Object timeStamps = message.getField(message.getDescriptorForType().findFieldByName("time_stamps"));
         MapField field1 = new MapField(timeStamps);
         Assert.assertEquals(
                 new JSONObject("{\"ts2\":\"2022-12-02T06:46:34Z\",\"ts1\":\"2022-12-02T06:29:54Z\"}").toString(),
                 new JSONObject(field1.getString()).toString());
+    }
+
+    @Test
+    public void shouldReturnStructMap() {
+        TestMapMessage message = TestMapMessage.newBuilder()
+                .putStructMap("test1",
+                        Struct.newBuilder().putFields(
+                                        "mykey",
+                                        Value.newBuilder().setStructValue(
+                                                        Struct.newBuilder().putFields("another",
+                                                                        Value.newBuilder()
+                                                                                .setStringValue("finally")
+                                                                                .build())
+                                                                .build())
+                                                .build())
+                                .build())
+                .build();
+
+        Object structMap = message.getField(message.getDescriptorForType().findFieldByName("struct_map"));
+        MapField field1 = new MapField(structMap);
+        Assert.assertEquals("{\"test1\":{\"mykey\":{\"another\":\"finally\"}}}", field1.getString());
     }
 }

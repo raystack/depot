@@ -32,7 +32,7 @@ public class MessageProtoFieldTest {
 
     @Test
     public void shouldReturnDynamicMessage() {
-        DynamicMessage nestedChild = messageProtoField.getValue();
+        Object nestedChild = messageProtoField.getValue();
         assertEquals(childField, nestedChild);
     }
 

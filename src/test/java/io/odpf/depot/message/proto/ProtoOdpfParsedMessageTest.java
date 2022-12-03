@@ -1,12 +1,27 @@
 package io.odpf.depot.message.proto;
 
 import com.google.api.client.util.DateTime;
-import com.google.protobuf.*;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Duration;
+import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.Message;
+import com.google.protobuf.Struct;
+import com.google.protobuf.Timestamp;
+import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
-import io.odpf.depot.*;
+import io.odpf.depot.StatusBQ;
+import io.odpf.depot.TestBookingLogMessage;
+import io.odpf.depot.TestKeyBQ;
+import io.odpf.depot.TestLocation;
+import io.odpf.depot.TestMessage;
+import io.odpf.depot.TestMessageBQ;
+import io.odpf.depot.TestNestedMessageBQ;
+import io.odpf.depot.TestNestedRepeatedMessageBQ;
+import io.odpf.depot.TestTypesMessage;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.proto.converter.fields.DefaultProtoField;
+import io.odpf.depot.message.proto.converter.fields.MessageProtoField;
 import io.odpf.depot.message.proto.converter.fields.ProtoField;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
@@ -20,7 +35,11 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -353,7 +372,7 @@ public class ProtoOdpfParsedMessageTest {
         DynamicMessage bookingLogDynamicMessage = protoParser.parse(testBookingLogMessage.toByteArray());
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(bookingLogDynamicMessage);
         ProtoField f = (ProtoField) protoOdpfParsedMessage.getFieldByName("topics", odpfMessageSchema);
-        Assert.assertTrue(f instanceof DefaultProtoField);
+        Assert.assertTrue(f instanceof MessageProtoField);
         Assert.assertTrue(f.getValue() instanceof Collection<?>);
         List<?> list = (List<?>) f.getValue();
         Assert.assertEquals(TestBookingLogMessage.TopicMetadata.newBuilder()
@@ -535,6 +554,7 @@ public class ProtoOdpfParsedMessageTest {
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(message1.toByteArray()));
+        protoOdpfParsedMessage.getMapping(odpfMessageSchema);
         Object intervals = ((ProtoField) protoOdpfParsedMessage.getFieldByName("intervals", odpfMessageSchema)).getValue();
         Assert.assertEquals(Duration.newBuilder().setSeconds(12).setNanos(1000).build(), ((List<?>) intervals).get(0));
         Assert.assertEquals(Duration.newBuilder().setSeconds(15).setNanos(1000).build(), ((List<?>) intervals).get(1));

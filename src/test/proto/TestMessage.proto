@@ -41,7 +41,8 @@ message TestMapMessage {
   map<string, string> current_state = 2;
   map<int32, TestMessage> metadata = 3;
   map<string, google.protobuf.Duration> durations = 4;
-  map<string, google.protobuf.Timestamp> timeStamps = 5;
+  map<string, google.protobuf.Timestamp> time_stamps = 5;
+  map<string, google.protobuf.Struct> struct_map = 6;
 }
 
 message TestDurationMessage {
