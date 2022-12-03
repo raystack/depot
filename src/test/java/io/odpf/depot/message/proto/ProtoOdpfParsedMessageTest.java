@@ -417,7 +417,9 @@ public class ProtoOdpfParsedMessageTest {
 
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
-        List<?> attributes = (List<?>) ((ProtoField) (new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray())).getFieldByName("attributes", odpfMessageSchema))).getValue();
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()));
+        List<?> attributes = (List<?>) ((ProtoField) (protoOdpfParsedMessage.getFieldByName("attributes", odpfMessageSchema))).getValue();
+        protoOdpfParsedMessage.getMapping(odpfMessageSchema);
         JSONArray expectedArray = new JSONArray();
         JSONArray actualArray = new JSONArray();
         for (int ii = 0; ii < message.getAttributesCount(); ii++) {

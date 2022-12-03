@@ -20,7 +20,7 @@ public class MessageField implements GenericField {
 
     @Override
     public String getString() {
-        return FieldUtils.convertToString(value, this::getMessageString);
+        return FieldUtils.convertToStringForMessageTypes(value, this::getMessageString);
     }
 
     private String getMessageString(Object ob) {

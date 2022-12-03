@@ -16,7 +16,7 @@ public class DurationField implements GenericField {
 
     @Override
     public String getString() {
-        return FieldUtils.convertToStringWithQuotes(value, this::getDurationString);
+        return FieldUtils.convertToStringForSpecialTypes(value, this::getDurationString);
     }
 
     private String getDurationString(Object field) {

@@ -22,6 +22,6 @@ public class TimeStampField implements GenericField {
 
     @Override
     public String getString() {
-        return FieldUtils.convertToStringWithQuotes(value, Object::toString);
+        return FieldUtils.convertToStringForSpecialTypes(value, Object::toString);
     }
 }

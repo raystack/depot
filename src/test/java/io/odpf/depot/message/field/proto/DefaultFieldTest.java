@@ -1,5 +1,6 @@
 package io.odpf.depot.message.field.proto;
 
+import io.odpf.depot.message.field.GenericField;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,8 +11,8 @@ import java.util.List;
 public class DefaultFieldTest {
 
     @Test
-    public void shouldReturnDefaultStringField() {
-        DefaultField f = new DefaultField("test");
+    public void shouldReturnDefaultPrimitiveFields() {
+        GenericField f = new DefaultField("test");
         Assert.assertEquals("test", f.getString());
         List<String> strings = new ArrayList<>();
         strings.add("test1");
@@ -30,7 +31,35 @@ public class DefaultFieldTest {
         tss.add(Instant.ofEpochSecond(1000121010));
         tss.add(Instant.ofEpochSecond(1002121010));
         tss.add(Instant.ofEpochSecond(1003121010));
-        TimeStampField tsf = new TimeStampField(tss);
-        Assert.assertEquals("[\"2001-09-10T11:23:30Z\",\"2001-10-03T14:56:50Z\",\"2001-10-15T04:43:30Z\"]", tsf.getString());
+        f = new TimeStampField(tss);
+        Assert.assertEquals("[\"2001-09-10T11:23:30Z\",\"2001-10-03T14:56:50Z\",\"2001-10-15T04:43:30Z\"]", f.getString());
+
+        List<Boolean> booleanList = new ArrayList<>();
+        booleanList.add(true);
+        booleanList.add(false);
+        booleanList.add(true);
+        f = new DefaultField(booleanList);
+        Assert.assertEquals("[true,false,true]", f.getString());
+
+        List<Double> doubles = new ArrayList<>();
+        doubles.add(123.93);
+        doubles.add(13.0);
+        doubles.add(23.0);
+        f = new DefaultField(doubles);
+        Assert.assertEquals("[123.93,13.0,23.0]", f.getString());
+
+        List<TestEnum> enums = new ArrayList<>();
+        enums.add(TestEnum.INACTIVE);
+        enums.add(TestEnum.COMPLETED);
+        enums.add(TestEnum.RUNNING);
+        f = new DefaultField(enums);
+        Assert.assertEquals("[\"INACTIVE\",\"COMPLETED\",\"RUNNING\"]", f.getString());
+
+    }
+
+    private enum TestEnum {
+        COMPLETED,
+        RUNNING,
+        INACTIVE
     }
 }

@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class FieldUtils {
     private static final Gson GSON = new GsonBuilder().create();
 
-    public static String convertToString(Object value, Function<Object, String> toStringFunc) {
+    public static String convertToStringForMessageTypes(Object value, Function<Object, String> toStringFunc) {
         if (value instanceof Collection<?>) {
             return "[" + ((Collection<?>) value)
                     .stream()
@@ -22,7 +22,7 @@ public class FieldUtils {
 
     /**
      * This method is used to convert default types which string formats are not in json.
-     * for example: a list of doubles value or list of string etc
+     * for example: a list of doubles, strings, enum etc.
      */
     public static String convertToString(Object value) {
         if (value instanceof Collection<?>) {
@@ -32,7 +32,7 @@ public class FieldUtils {
         }
     }
 
-    public static String convertToStringWithQuotes(Object value, Function<Object, String> toStringFunc) {
+    public static String convertToStringForSpecialTypes(Object value, Function<Object, String> toStringFunc) {
         if (value instanceof Collection<?>) {
             return "[" + ((Collection<?>) value)
                     .stream()
