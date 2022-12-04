@@ -34,10 +34,10 @@ public class FieldUtils {
 
     public static String convertToStringForSpecialTypes(Object value, Function<Object, String> toStringFunc) {
         if (value instanceof Collection<?>) {
-            return "[" + ((Collection<?>) value)
+            return GSON.toJson(((Collection<?>) value)
                     .stream()
-                    .map(o -> ("\"" + toStringFunc.apply(o) + "\""))
-                    .collect(Collectors.joining(",")) + "]";
+                    .map(toStringFunc)
+                    .collect(Collectors.toList()));
         }
         return toStringFunc.apply(value);
     }

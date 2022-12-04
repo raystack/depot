@@ -12,11 +12,11 @@ public class ProtoFieldFactory {
         List<ProtoField> protoFields = Arrays.asList(
                 new DurationProtoField(descriptor, fieldValue),
                 new TimestampProtoField(descriptor, fieldValue),
+                new MapProtoField(descriptor, fieldValue),
                 new EnumProtoField(descriptor, fieldValue),
                 new ByteProtoField(descriptor, fieldValue),
                 new StructProtoField(descriptor, fieldValue),
-                new MessageProtoField(descriptor, fieldValue),
-                new MapProtoField(descriptor, fieldValue)
+                new MessageProtoField(descriptor, fieldValue)
         );
         Optional<ProtoField> first = protoFields
                 .stream()
