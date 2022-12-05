@@ -70,9 +70,35 @@ public class SingleRequestTest {
 
     @Test
     public void shouldGetInvalidRequestRecords() throws IOException {
-        when(headerBuilder.build(any(MessageContainer.class), any(OdpfMessageParser.class))).thenThrow(IOException.class);
+        when(headerBuilder.build(any(MessageContainer.class), any(OdpfMessageParser.class))).thenReturn(new HashMap<String, String>());
         when(requestBody.build(messages.get(0))).thenThrow(IOException.class);
         when(requestBody.build(messages.get(1))).thenThrow(DeserializerException.class);
+        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody, odpfMessageParser);
+        List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
+        Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
+        List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
+        List<HttpRequestRecord> validRecords = splitterRecords.get(Boolean.TRUE);
+        assertEquals(2, parsedRecords.size());
+        assertEquals(0, validRecords.size());
+        assertEquals(2, invalidRecords.size());
+    }
+
+    @Test
+    public void shouldGetInvalidRequestRecordsWhenHeaderBuilderThrowsIOException() throws IOException {
+        when(headerBuilder.build(any(MessageContainer.class), any(OdpfMessageParser.class))).thenThrow(IOException.class);
+        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody, odpfMessageParser);
+        List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
+        Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
+        List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
+        List<HttpRequestRecord> validRecords = splitterRecords.get(Boolean.TRUE);
+        assertEquals(2, parsedRecords.size());
+        assertEquals(0, validRecords.size());
+        assertEquals(2, invalidRecords.size());
+    }
+
+    @Test
+    public void shouldGetInvalidRequestRecordsWhenHeaderBuilderThrowsIllegalArgumentException() throws IOException {
+        when(headerBuilder.build(any(MessageContainer.class), any(OdpfMessageParser.class))).thenThrow(IOException.class);
         Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody, odpfMessageParser);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
