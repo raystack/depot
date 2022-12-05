@@ -3,7 +3,6 @@ package io.odpf.depot.http.response;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +11,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class HttpSinkResponseTest {
@@ -80,15 +80,13 @@ public class HttpSinkResponseTest {
 
     @Test
     public void shouldGetResponseBody() throws IOException {
-        String body = "[{\"key\":\"value1\"}, {\"key\":\"value2\"}]";
         Mockito.when(response.getStatusLine()).thenReturn(statusLine);
         Mockito.when(statusLine.getStatusCode()).thenReturn(500);
         Mockito.when(response.getEntity()).thenReturn(httpEntity);
-        Mockito.when(httpEntity.getContent()).thenReturn(new StringInputStream(body));
 
         HttpSinkResponse httpSinkResponse = new HttpSinkResponse(response);
 
         Assert.assertTrue(httpSinkResponse.isFailed());
-        Assert.assertEquals(body, httpSinkResponse.getResponseBody());
+        Assert.assertNull(httpSinkResponse.getResponseBody());
     }
 }

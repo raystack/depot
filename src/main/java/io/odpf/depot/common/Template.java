@@ -40,4 +40,9 @@ public class Template {
                 .toArray();
         return String.format(templatePattern, patternVariableData);
     }
+
+    @Override
+    public String toString() {
+        return String.format(templatePattern);
+    }
 }
