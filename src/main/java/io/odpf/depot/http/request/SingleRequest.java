@@ -2,6 +2,9 @@ package io.odpf.depot.http.request;
 
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.DeserializerException;
+import io.odpf.depot.exception.EmptyMessageException;
 import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.http.request.body.RequestBody;
@@ -12,12 +15,9 @@ import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,22 +59,23 @@ public class SingleRequest implements Request {
             HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, requestMethodType);
             requestHeaders.forEach(request::addHeader);
             request.setEntity(buildEntity(requestBody.build(message)));
-            return new HttpRequestRecord((long) index, null, true, request);
-        } catch (IOException e) {
-            return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, index, message.getMetadata());
-        } catch (IllegalArgumentException | URISyntaxException e) {
+            HttpRequestRecord record = new HttpRequestRecord(null, true, request);
+            record.addIndex(index);
+            return record;
+        } catch (EmptyMessageException e) {
+            return createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, index, message.getMetadata());
+        } catch (ConfigurationException | IllegalArgumentException e) {
             return createErrorRecord(e, ErrorType.UNKNOWN_FIELDS_ERROR, index, message.getMetadata());
+        } catch (DeserializerException | IOException e) {
+            return createErrorRecord(e, ErrorType.DESERIALIZATION_ERROR, index, message.getMetadata());
         }
     }
 
-    private StringEntity buildEntity(String stringBody) {
-        return new StringEntity(stringBody, ContentType.APPLICATION_JSON);
-    }
-
-    private HttpRequestRecord createErrorRecord(Exception e, ErrorType type, int index, Map<String, Object> metadata) {
+    private HttpRequestRecord createErrorRecord(Exception e, ErrorType type, Integer index, Map<String, Object> metadata) {
         ErrorInfo errorInfo = new ErrorInfo(e, type);
-        HttpRequestRecord record = new HttpRequestRecord((long) index, errorInfo, false, null);
         log.error("Error while parsing record for message. Metadata : {}, Error: {}", metadata, errorInfo);
+        HttpRequestRecord record = new HttpRequestRecord(errorInfo, false, null);
+        record.addIndex(index);
         return record;
     }
 }

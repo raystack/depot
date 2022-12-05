@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +26,7 @@ public class RawBodyTest {
     private HttpSinkConfig config;
 
     @Test
-    public void shouldWrapProtoByteInsideJson() {
+    public void shouldWrapProtoByteInsideJson() throws IOException {
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order-1").setOrderDetails("ORDER-DETAILS-1").build();
         message = new OdpfMessage(testMessage.toByteArray(), testMessage.toByteArray());
         RequestBody body = new RawBody(config);
@@ -34,7 +35,7 @@ public class RawBodyTest {
     }
 
     @Test
-    public void shouldPutEmptyStringIfKeyIsNull() {
+    public void shouldPutEmptyStringIfKeyIsNull() throws IOException {
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order-1").setOrderDetails("ORDER-DETAILS-1").build();
         message = new OdpfMessage(null, testMessage.toByteArray());
         RequestBody body = new RawBody(config);
@@ -43,7 +44,7 @@ public class RawBodyTest {
     }
 
     @Test
-    public void shouldAddMetadataToRawBody() {
+    public void shouldAddMetadataToRawBody() throws IOException {
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order-1").setOrderDetails("ORDER-DETAILS-1").build();
         message = new OdpfMessage(
                 testMessage.toByteArray(),
@@ -58,5 +59,12 @@ public class RawBodyTest {
         RequestBody body = new RawBody(config);
         String rawBody = body.build(message);
         assertTrue(new JSONObject("{\"message_partition\":1,\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"message_topic\":\"sample-topic\"}").similar(new JSONObject(rawBody)));
+    }
+
+    @Test(expected = IOException.class)
+    public void shouldThrowExceptionIfMessageIsNotBytes() throws IOException {
+        message = new OdpfMessage("", "test-string");
+        RequestBody body = new RawBody(config);
+        body.build(message);
     }
 }

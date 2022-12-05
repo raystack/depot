@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+
 public class MessageUtilsTest {
     private final Configuration configuration = Configuration.builder()
             .jsonProvider(new JsonOrgJsonProvider())
@@ -82,20 +83,6 @@ public class MessageUtilsTest {
     }
 
     @Test
-    public void shouldNotThrowExceptionIfValid() throws IOException {
-        OdpfMessage message = new OdpfMessage("test", "test");
-        MessageUtils.validate(message, String.class);
-
-    }
-
-    @Test
-    public void shouldThrowExceptionIfNotValid() {
-        OdpfMessage message = new OdpfMessage("test", "test");
-        IOException ioException = Assertions.assertThrows(IOException.class, () -> MessageUtils.validate(message, Integer.class));
-        Assert.assertEquals("Expected class class java.lang.Integer, but found: LogKey class: class java.lang.String, LogMessage class: class java.lang.String", ioException.getMessage());
-    }
-
-    @Test
     public void shouldCheckAndSetTimeStampColumns() {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("col1", "value1");
@@ -138,5 +125,12 @@ public class MessageUtilsTest {
         Assert.assertEquals("value2", finalMetadata.get("col2"));
         Assert.assertEquals(50000, finalMetadata.get("col3"));
         Assert.assertEquals(new Date(1668158346000L), finalMetadata.get("col4"));
+    }
+
+    @Test
+    public void shouldThrowExceptionIfNotValid() {
+        OdpfMessage message = new OdpfMessage("test", "test");
+        IOException ioException = Assertions.assertThrows(IOException.class, () -> MessageUtils.validate(message, Integer.class));
+        Assert.assertEquals("Expected class class java.lang.Integer, but found: LogKey class: class java.lang.String, LogMessage class: class java.lang.String", ioException.getMessage());
     }
 }

@@ -1,6 +1,7 @@
 package io.odpf.depot.http.request;
 
 import io.odpf.depot.config.HttpSinkConfig;
+import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.http.enums.HttpRequestBodyType;
 import io.odpf.depot.http.enums.HttpRequestType;
 import io.odpf.depot.message.OdpfMessageParser;
@@ -23,7 +24,8 @@ public class RequestFactoryTest {
     private OdpfMessageParser odpfMessageParser;
 
     @Test
-    public void shouldReturnSingleRequest() throws IOException {
+    public void shouldReturnSingleRequest() throws InvalidTemplateException, IOException {
+        Mockito.when(sinkConfig.getSinkHttpServiceUrl()).thenReturn("http://dummy.com");
         Mockito.when(sinkConfig.getRequestType()).thenReturn(HttpRequestType.SINGLE);
         Mockito.when(sinkConfig.getRequestBodyType()).thenReturn(HttpRequestBodyType.RAW);
         Mockito.when(sinkConfig.getSinkHttpHeadersTemplate()).thenReturn(new Properties());
@@ -32,7 +34,8 @@ public class RequestFactoryTest {
     }
 
     @Test
-    public void shouldReturnBatchRequest() throws IOException {
+    public void shouldReturnBatchRequest() throws InvalidTemplateException, IOException {
+        Mockito.when(sinkConfig.getSinkHttpServiceUrl()).thenReturn("http://dummy.com");
         Mockito.when(sinkConfig.getRequestType()).thenReturn(HttpRequestType.BATCH);
         Mockito.when(sinkConfig.getRequestBodyType()).thenReturn(HttpRequestBodyType.RAW);
         Mockito.when(sinkConfig.getSinkHttpHeadersTemplate()).thenReturn(new Properties());

@@ -1,6 +1,7 @@
 package io.odpf.depot.http.request;
 
 import io.odpf.depot.TestMessage;
+import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.http.request.body.RequestBody;
@@ -70,7 +71,9 @@ public class SingleRequestTest {
     @Test
     public void shouldGetInvalidRequestRecords() throws IOException {
         when(headerBuilder.build(any(MessageContainer.class), any(OdpfMessageParser.class))).thenThrow(IOException.class);
-        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, null, requestBody, odpfMessageParser);
+        when(requestBody.build(messages.get(0))).thenThrow(IOException.class);
+        when(requestBody.build(messages.get(1))).thenThrow(DeserializerException.class);
+        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody, odpfMessageParser);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
         List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
@@ -81,8 +84,8 @@ public class SingleRequestTest {
     }
 
     @Test
-    public void shouldGetValidAndInvalidRequestRecords() {
-        when(requestBody.build(messages.get(0))).thenReturn(null);
+    public void shouldGetValidAndInvalidRequestRecords() throws IOException {
+        when(requestBody.build(messages.get(0))).thenThrow(IOException.class);
         when(requestBody.build(messages.get(1))).thenReturn("{\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}");
         Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody, odpfMessageParser);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
