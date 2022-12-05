@@ -1,44 +1,86 @@
 package io.odpf.depot.http.request.builder;
 
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.common.Template;
+import io.odpf.depot.config.HttpSinkConfig;
+import io.odpf.depot.exception.InvalidTemplateException;
+import io.odpf.depot.http.enums.HttpParameterSourceType;
+import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
-import io.odpf.depot.redis.parsers.Template;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
+import static io.odpf.depot.http.enums.HttpParameterSourceType.KEY;
+
+@Getter
 public class HeaderBuilder {
 
-    private final OdpfMessageParser odpfMessageParser;
     private final Map<String, String> baseHeaders;
-    private final Map<Template, Template> headersTemplate;
-    private final SinkConnectorSchemaMessageMode headersParameterSource;
-    private final String headersParameterSourceSchemaClass;
-    private final OdpfMessageSchema headersParameterSourceSchema;
+    private final Properties headersTemplateProperty;
+    private final HttpParameterSourceType headersParameterSource;
+    private final String schemaProtoKeyClass;
+    private final String schemaProtoMessageClass;
 
-    public HeaderBuilder(OdpfMessageParser odpfMessageParser, Map<String, String> baseHeaders, Map<Template, Template> headersTemplate, SinkConnectorSchemaMessageMode headersParameterSource, String headersParameterSourceSchemaClass, OdpfMessageSchema headersParameterSourceSchema) {
-        this.odpfMessageParser = odpfMessageParser;
-        this.baseHeaders = baseHeaders;
-        this.headersTemplate = headersTemplate;
-        this.headersParameterSource = headersParameterSource;
-        this.headersParameterSourceSchemaClass = headersParameterSourceSchemaClass;
-        this.headersParameterSourceSchema = headersParameterSourceSchema;
+    public HeaderBuilder(HttpSinkConfig config) {
+        this.baseHeaders = config.getSinkHttpHeaders();
+        this.headersTemplateProperty = config.getSinkHttpHeadersTemplate();
+        this.headersParameterSource = config.getSinkHttpHeadersParameterSource();
+        this.schemaProtoKeyClass = config.getSinkConnectorSchemaProtoKeyClass();
+        this.schemaProtoMessageClass = config.getSinkConnectorSchemaProtoMessageClass();
     }
 
     public Map<String, String> build() {
         return baseHeaders;
     }
 
-    public Map<String, String> build(OdpfMessage message) throws IOException {
-        Map<String, String> headerConfig = new HashMap<>(baseHeaders);
-        if (headersTemplate == null || headersTemplate.size() == 0) {
-            return headerConfig;
+    public Map<String, String> build(MessageContainer container, OdpfMessageParser odpfMessageParser) throws IOException {
+        if (headersTemplateProperty == null || headersTemplateProperty.isEmpty()) {
+            return build();
         }
-        ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, headersParameterSource, headersParameterSourceSchemaClass);
+
+        Map<Template, Template> headersTemplateMap = createHeadersTemplateMap();
+
+        if (headersParameterSource == KEY) {
+            return this.createHeaders(headersTemplateMap,
+                    container.getParsedLogKey(odpfMessageParser, schemaProtoKeyClass),
+                    odpfMessageParser.getSchema(schemaProtoKeyClass));
+        } else {
+            return this.createHeaders(headersTemplateMap,
+                    container.getParsedLogMessage(odpfMessageParser, schemaProtoMessageClass),
+                    odpfMessageParser.getSchema(schemaProtoMessageClass));
+        }
+    }
+
+    private Map<Template, Template> createHeadersTemplateMap() {
+        return headersTemplateProperty
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        kv -> {
+                            try {
+                                return new Template(kv.getKey().toString());
+                            } catch (InvalidTemplateException e) {
+                                throw new IllegalArgumentException(e.getMessage());
+                            }
+                        },
+                        kv -> {
+                            try {
+                                return new Template(kv.getValue().toString());
+                            } catch (InvalidTemplateException e) {
+                                throw new IllegalArgumentException(e.getMessage());
+                            }
+                        }
+                ));
+    }
+
+    private Map<String, String> createHeaders(Map<Template, Template> headersTemplate, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema headersParameterSourceSchema) {
+        Map<String, String> headerConfig = new HashMap<>(baseHeaders);
         headersTemplate
                 .forEach((k, v) -> {
                     String key = k.parse(parsedOdpfMessage, headersParameterSourceSchema);
