@@ -10,10 +10,11 @@ import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.DeserializerException;
 import io.odpf.depot.exception.EmptyMessageException;
 import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import io.odpf.depot.message.field.GenericFieldFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -61,7 +62,7 @@ public class BigTableRecordParser {
                             .getColumns(columnFamily)
                             .forEach(column -> {
                                 String fieldName = bigTableSchema.getField(columnFamily, column);
-                                String value = String.valueOf(parsedOdpfMessage.getFieldByName(fieldName, schema));
+                                String value = GenericFieldFactory.getField(parsedOdpfMessage.getFieldByName(fieldName, schema)).getString();
                                 rowMutationEntry.setCell(columnFamily, column, value);
                             }));
             BigTableRecord bigTableRecord = new BigTableRecord(rowMutationEntry, index, null, message.getMetadata());

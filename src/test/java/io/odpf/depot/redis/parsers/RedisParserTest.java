@@ -1,9 +1,6 @@
 package io.odpf.depot.redis.parsers;
 
 import com.google.protobuf.Descriptors;
-import com.google.protobuf.util.JsonFormat;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.TestKey;
 import io.odpf.depot.TestMessage;
 import io.odpf.depot.TestNestedMessage;
@@ -45,13 +42,6 @@ import static org.mockito.Mockito.when;
 public class RedisParserTest {
     private final List<OdpfMessage> messages = new ArrayList<>();
     private final String schemaClass = "io.odpf.depot.TestMessage";
-    private final Configuration configuration = Configuration.builder()
-            .jsonProvider(new JsonOrgJsonProvider())
-            .build();
-    private final JsonFormat.Printer jsonPrinter = JsonFormat.printer()
-            .omittingInsignificantWhitespace()
-            .preservingProtoFieldNames()
-            .includingDefaultValueFields();
     private final Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
         put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
         put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
@@ -91,7 +81,7 @@ public class RedisParserTest {
     public void setupParserResponse() throws IOException {
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessage.class.getName());
         for (OdpfMessage message : messages) {
-            ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(protoParser.parse((byte[]) message.getLogMessage()), configuration, jsonPrinter);
+            ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(protoParser.parse((byte[]) message.getLogMessage()));
             when(odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass)).thenReturn(parsedOdpfMessage);
         }
         ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(redisSinkConfig, statsDReporter);

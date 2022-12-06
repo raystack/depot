@@ -1,6 +1,7 @@
 package io.odpf.depot.redis.parsers;
 
 import io.odpf.depot.common.Template;
+import io.odpf.depot.message.field.GenericFieldFactory;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.metrics.Instrumentation;
@@ -22,7 +23,7 @@ public class RedisKeyValueEntryParser implements RedisEntryParser {
     @Override
     public List<RedisEntry> getRedisEntry(ParsedOdpfMessage parsedOdpfMessage) {
         String redisKey = keyTemplate.parse(parsedOdpfMessage, schema);
-        String redisValue = parsedOdpfMessage.getFieldByName(fieldName, schema).toString();
+        String redisValue = GenericFieldFactory.getField(parsedOdpfMessage.getFieldByName(fieldName, schema)).getString();
         RedisKeyValueEntry redisKeyValueEntry = new RedisKeyValueEntry(redisKey, redisValue, new Instrumentation(statsDReporter, RedisKeyValueEntry.class));
         return Collections.singletonList(redisKeyValueEntry);
     }
