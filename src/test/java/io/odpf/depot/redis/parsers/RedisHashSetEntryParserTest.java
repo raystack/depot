@@ -21,6 +21,7 @@ import io.odpf.depot.redis.client.entry.RedisEntry;
 import io.odpf.depot.redis.client.entry.RedisHashSetFieldEntry;
 import io.odpf.depot.redis.enums.RedisSinkDataType;
 import org.aeonbits.owner.ConfigFactory;
+import org.json.JSONArray;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -100,8 +101,8 @@ public class RedisHashSetEntryParserTest {
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisEntry.get(0);
         assertEquals("subscription:driver:johndoe", redisHashSetFieldEntry.getKey());
         assertEquals("topics_johndoe", redisHashSetFieldEntry.getField());
-        assertEquals("[{\"qos\":1,\"topic\":\"hellowo/rl/dcom.world.partner\"},{\"qos\":123,\"topic\":\"topic2\"}]",
-                redisHashSetFieldEntry.getValue());
+        assertEquals(new JSONArray("[{\"qos\":1,\"topic\":\"hellowo/rl/dcom.world.partner\"},{\"qos\":123,\"topic\":\"topic2\"}]").toString(),
+                new JSONArray(redisHashSetFieldEntry.getValue()).toString());
     }
 
     @Test
@@ -134,7 +135,7 @@ public class RedisHashSetEntryParserTest {
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisEntry.get(0);
         assertEquals("subscription:order:test_order", redisHashSetFieldEntry.getKey());
         assertEquals("test_order_2022-11-26T03:29:19Z", redisHashSetFieldEntry.getField());
-        assertEquals("[{\"name\":\"John\",\"age\":50},{\"name\":\"John\",\"age\":60},{\"name\":\"John\",\"active\":true,\"height\":175}]",
+        assertEquals("[{\"name\":\"John\",\"age\":50.0},{\"name\":\"John\",\"age\":60.0},{\"name\":\"John\",\"active\":true,\"height\":175.0}]",
                 redisHashSetFieldEntry.getValue());
     }
 
