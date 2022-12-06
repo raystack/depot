@@ -7,7 +7,7 @@ import io.odpf.depot.message.field.FieldUtils;
 import io.odpf.depot.message.field.GenericField;
 
 public class MessageField implements GenericField {
-    private static final JsonFormat.Printer PRINTER = JsonFormat.printer()
+    private static final JsonFormat.Printer JSON_PRINTER = JsonFormat.printer()
             .omittingInsignificantWhitespace()
             .preservingProtoFieldNames()
             .includingDefaultValueFields();
@@ -25,7 +25,7 @@ public class MessageField implements GenericField {
 
     private String getMessageString(Object ob) {
         try {
-            return PRINTER.print((Message) ob);
+            return JSON_PRINTER.print((Message) ob);
         } catch (InvalidProtocolBufferException e) {
             throw new IllegalArgumentException(e);
         }
