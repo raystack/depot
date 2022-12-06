@@ -290,12 +290,14 @@ public class ProtoOdpfParsedMessageTest {
 
         TestMessageBQ message = TestMessageBQ.newBuilder()
                 .addUpdatedAt(createdAt).addUpdatedAt(createdAt)
+                .setCreatedAt(createdAt)
                 .build();
 
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
 
         OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
-        Map<String, Object> fields = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray())).getMapping(odpfMessageSchema);
+        ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()));
+        Map<String, Object> fields = protoOdpfParsedMessage.getMapping(odpfMessageSchema);
 
         assertEquals(Arrays.asList(new DateTime(now.toEpochMilli()), new DateTime(now.toEpochMilli())), fields.get("updated_at"));
     }

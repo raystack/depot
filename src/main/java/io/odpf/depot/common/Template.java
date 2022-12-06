@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.field.GenericFieldFactory;
 import io.odpf.depot.message.proto.converter.fields.ProtoField;
 import io.odpf.depot.utils.StringUtils;
 
@@ -44,7 +45,7 @@ public class Template {
 
     private Object fetchInternalValue(Object ob) {
         if (ob instanceof ProtoField) {
-            return ((ProtoField) ob).getValue();
+            return GenericFieldFactory.getField(ob).getString();
         } else {
             return ob;
         }

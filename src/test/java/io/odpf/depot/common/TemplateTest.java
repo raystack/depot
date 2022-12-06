@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +46,12 @@ public class TemplateTest {
     @Before
     public void setUp() throws Exception {
         TestKey testKey = TestKey.newBuilder().setOrderNumber("ORDER-1-FROM-KEY").build();
-        TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder().setOrderNumber("booking-order-1").setCustomerTotalFareWithoutSurge(2000L).setAmountPaidByCash(12.3F).build();
+        TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder()
+                .setOrderNumber("booking-order-1")
+                .setCustomerTotalFareWithoutSurge(2000L)
+                .setAmountPaidByCash(12.3F)
+                .setDriverPickupLocation(TestLocation.newBuilder().setLongitude(10.0).setLatitude(23.9).build())
+                .build();
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS").build();
         OdpfMessage message = new OdpfMessage(testKey.toByteArray(), testMessage.toByteArray());
         OdpfMessage bookingMessage = new OdpfMessage(testKey.toByteArray(), testBookingLogMessage.toByteArray());
@@ -80,8 +86,8 @@ public class TemplateTest {
 
     @Test
     public void shouldParseFloatMessageForCollectionKeyTemplate() throws InvalidTemplateException {
-        Template template = new Template("Test-%.2f,amount_paid_by_cash");
-        assertEquals("Test-12.30", template.parse(parsedBookingMessage, schemaBooking));
+        Template template = new Template("Test-%s,amount_paid_by_cash");
+        assertEquals("Test-12.3", template.parse(parsedBookingMessage, schemaBooking));
     }
 
     @Test
@@ -121,5 +127,12 @@ public class TemplateTest {
     public void shouldAcceptStringWithPatternForCollectionKeyWithMultipleVariables() throws InvalidTemplateException {
         Template template = new Template("Test-%s::%s, order_number, order_details");
         assertEquals("Test-test-order::ORDER-DETAILS", template.parse(parsedTestMessage, schemaTest));
+    }
+
+    @Test
+    public void shouldParseComplexObject() throws InvalidTemplateException {
+        Template template = new Template("%s,driver_pickup_location");
+        String expectedLocation = "{\"name\":\"\",\"address\":\"\",\"latitude\":23.9,\"longitude\":10.0,\"type\":\"\",\"note\":\"\",\"place_id\":\"\",\"accuracy_meter\":0.0,\"gate_id\":\"\"}";
+        JSONAssert.assertEquals(expectedLocation, template.parse(parsedBookingMessage, schemaBooking), true);
     }
 }
