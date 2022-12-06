@@ -22,14 +22,14 @@ import static io.odpf.depot.http.enums.HttpParameterSourceType.KEY;
 public class HeaderBuilder {
 
     private final Map<String, String> baseHeaders;
-    private final Properties headersTemplateProperty;
+    private final Map<Template, Template> headersTemplate;
     private final HttpParameterSourceType headersParameterSource;
     private final String schemaProtoKeyClass;
     private final String schemaProtoMessageClass;
 
     public HeaderBuilder(HttpSinkConfig config) {
         this.baseHeaders = config.getSinkHttpHeaders();
-        this.headersTemplateProperty = config.getSinkHttpHeadersTemplate();
+        this.headersTemplate = createHeadersTemplateMap(config.getSinkHttpHeadersTemplate());
         this.headersParameterSource = config.getSinkHttpHeadersParameterSource();
         this.schemaProtoKeyClass = config.getSinkConnectorSchemaProtoKeyClass();
         this.schemaProtoMessageClass = config.getSinkConnectorSchemaProtoMessageClass();
@@ -40,24 +40,18 @@ public class HeaderBuilder {
     }
 
     public Map<String, String> build(MessageContainer container, OdpfMessageParser odpfMessageParser) throws IOException {
-        if (headersTemplateProperty == null || headersTemplateProperty.isEmpty()) {
-            return build();
-        }
-
-        Map<Template, Template> headersTemplateMap = createHeadersTemplateMap();
-
         if (headersParameterSource == KEY) {
-            return this.createHeaders(headersTemplateMap,
-                    container.getParsedLogKey(odpfMessageParser, schemaProtoKeyClass),
-                    odpfMessageParser.getSchema(schemaProtoKeyClass));
+            return this.createHeaders(container.getParsedLogKey(odpfMessageParser, schemaProtoKeyClass), odpfMessageParser.getSchema(schemaProtoKeyClass));
         } else {
-            return this.createHeaders(headersTemplateMap,
-                    container.getParsedLogMessage(odpfMessageParser, schemaProtoMessageClass),
-                    odpfMessageParser.getSchema(schemaProtoMessageClass));
+            return this.createHeaders(container.getParsedLogMessage(odpfMessageParser, schemaProtoMessageClass), odpfMessageParser.getSchema(schemaProtoMessageClass));
         }
     }
 
-    private Map<Template, Template> createHeadersTemplateMap() {
+    private Map<Template, Template> createHeadersTemplateMap(Properties headersTemplateProperty) {
+        if (headersTemplateProperty == null || headersTemplateProperty.isEmpty()) {
+            return new HashMap<>();
+        }
+
         return headersTemplateProperty
                 .entrySet()
                 .stream()
@@ -79,7 +73,7 @@ public class HeaderBuilder {
                 ));
     }
 
-    private Map<String, String> createHeaders(Map<Template, Template> headersTemplate, ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema headersParameterSourceSchema) {
+    private Map<String, String> createHeaders(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema headersParameterSourceSchema) {
         Map<String, String> headerConfig = new HashMap<>(baseHeaders);
         headersTemplate
                 .forEach((k, v) -> {
