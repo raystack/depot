@@ -4,9 +4,6 @@ import com.google.api.client.util.DateTime;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.UnknownFieldSet;
-import com.google.protobuf.util.JsonFormat;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import io.odpf.depot.TestMessage;
 import io.odpf.depot.bigquery.TestMetadata;
 import io.odpf.depot.bigquery.TestOdpfMessageBuilder;
@@ -35,13 +32,6 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class MessageRecordConverterTest {
-    private final Configuration configuration = Configuration.builder()
-            .jsonProvider(new JsonOrgJsonProvider())
-            .build();
-    private final JsonFormat.Printer jsonPrinter = JsonFormat.printer()
-            .omittingInsignificantWhitespace()
-            .preservingProtoFieldNames()
-            .includingDefaultValueFields();
     private MessageRecordConverter recordConverter;
     @Mock
     private ClassLoadStencilClient stencilClient;
@@ -257,7 +247,7 @@ public class MessageRecordConverterTest {
                         .addField(1, UnknownFieldSet.Field.getDefaultInstance())
                         .build())
                 .build();
-        ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage, configuration, jsonPrinter);
+        ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage);
         when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage")).thenReturn(parsedOdpfMessage);
 
         recordConverter = new MessageRecordConverter(mockParser, ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
@@ -285,7 +275,7 @@ public class MessageRecordConverterTest {
                         .addField(1, UnknownFieldSet.Field.getDefaultInstance())
                         .build())
                 .build();
-        ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage, configuration, jsonPrinter);
+        ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage);
         when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage")).thenReturn(parsedOdpfMessage);
 
         recordConverter = new MessageRecordConverter(mockParser,

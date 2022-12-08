@@ -8,3 +8,4 @@ public class EmptyMessageException extends DeserializerException {
         super("log message is empty");
     }
 }
+
