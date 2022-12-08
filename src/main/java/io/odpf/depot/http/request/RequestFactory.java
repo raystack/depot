@@ -20,7 +20,7 @@ public class RequestFactory {
         if (config.getRequestType().equals(HttpRequestType.SINGLE)) {
             return new SingleRequest(httpMethod, headerBuilder, uriBuilder, requestBody);
         } else {
-            return new BatchRequest();
+            return new BatchRequest(httpMethod, headerBuilder, uriBuilder, requestBody);
         }
     }
 }
