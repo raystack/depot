@@ -16,7 +16,6 @@ public class MessageContainer {
             parsedLogKey = parser.parse(message, SinkConnectorSchemaMessageMode.LOG_KEY, schemaProtoKeyClass);
         }
         return parsedLogKey;
-
     }
 
     public ParsedOdpfMessage getParsedLogMessage(OdpfMessageParser parser, String schemaProtoMessageClass) throws IOException {

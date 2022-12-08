@@ -52,7 +52,8 @@ public class SingleRequest implements Request {
 
     private HttpRequestRecord createRecord(OdpfMessage message, int index) {
         try {
-            Map<String, String> requestHeaders = headerBuilder.build(new MessageContainer(message), odpfMessageParser);
+            MessageContainer messageContainer = new MessageContainer(message);
+            Map<String, String> requestHeaders = headerBuilder.build(messageContainer, odpfMessageParser);
             URI requestUrl = uriBuilder.build();
             HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, requestMethodType);
             requestHeaders.forEach(request::addHeader);
