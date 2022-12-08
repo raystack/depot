@@ -15,7 +15,7 @@ import java.util.Set;
 
 public class HttpRequestRecord implements Iterable<Integer> {
 
-    private final Set<Integer> indexes = new HashSet<>();
+    private final Set<Integer> recordIndexes = new HashSet<>();
     private final ErrorInfo errorInfo;
     private final boolean valid;
     private final HttpEntityEnclosingRequestBase httpRequest;
@@ -25,6 +25,15 @@ public class HttpRequestRecord implements Iterable<Integer> {
         this.valid = valid;
         this.httpRequest = httpRequest;
     }
+
+    public HttpRequestRecord(HttpEntityEnclosingRequestBase httpRequest) {
+        this(null, true, httpRequest);
+    }
+
+    public HttpRequestRecord(ErrorInfo errorInfo) {
+        this(errorInfo, false, null);
+    }
+
 
     public HttpSinkResponse send(HttpClient httpClient) throws IOException {
         HttpResponse response = httpClient.execute(httpRequest);
@@ -36,7 +45,11 @@ public class HttpRequestRecord implements Iterable<Integer> {
     }
 
     public void addIndex(Integer index) {
-        indexes.add(index);
+        recordIndexes.add(index);
+    }
+
+    public void addAllIndexes(Set<Integer> indexes) {
+        recordIndexes.addAll(indexes);
     }
 
     public ErrorInfo getErrorInfo() {
@@ -50,6 +63,6 @@ public class HttpRequestRecord implements Iterable<Integer> {
     @NotNull
     @Override
     public Iterator<Integer> iterator() {
-        return indexes.iterator();
+        return recordIndexes.iterator();
     }
 }
