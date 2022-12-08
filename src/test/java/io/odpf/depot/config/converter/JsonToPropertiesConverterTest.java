@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.Properties;
+
 import static org.junit.Assert.*;
 
 public class JsonToPropertiesConverterTest {
@@ -36,7 +37,10 @@ public class JsonToPropertiesConverterTest {
     public void shouldValidateJsonConfigForDuplicatesInNestedJsons() {
         String json = "{\"order_number\":\"ORDER_NUMBER\",\"event_timestamp\":\"TIMESTAMP\",\"nested\":{\"1\":\"TIMESTAMP\",\"2\":\"ORDER_NUMBER\"}}";
         IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class, () -> new JsonToPropertiesConverter().convert(null, json));
-        Assert.assertEquals("duplicates found in SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING for : [ORDER_NUMBER, TIMESTAMP]", e.getMessage());
+        String message = e.getMessage();
+        String[] actualMessage = (message.split(" : "));
+        Assert.assertEquals("duplicates found in SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING for", actualMessage[0]);
+        Assert.assertTrue("[ORDER_NUMBER, TIMESTAMP]" .equals(actualMessage[1]) || "[TIMESTAMP, ORDER_NUMBER]" .equals(actualMessage[1]));
     }
 
     @Test

@@ -10,11 +10,13 @@ public class ProtoFieldFactory {
 
     public static ProtoField getField(Descriptors.FieldDescriptor descriptor, Object fieldValue) {
         List<ProtoField> protoFields = Arrays.asList(
+                new DurationProtoField(descriptor, fieldValue),
                 new TimestampProtoField(descriptor, fieldValue),
+                new MapProtoField(descriptor, fieldValue),
                 new EnumProtoField(descriptor, fieldValue),
                 new ByteProtoField(descriptor, fieldValue),
                 new StructProtoField(descriptor, fieldValue),
-                new NestedProtoField(descriptor, fieldValue)
+                new MessageProtoField(descriptor, fieldValue)
         );
         Optional<ProtoField> first = protoFields
                 .stream()
@@ -22,5 +24,4 @@ public class ProtoFieldFactory {
                 .findFirst();
         return first.orElseGet(() -> new DefaultProtoField(fieldValue));
     }
-
 }

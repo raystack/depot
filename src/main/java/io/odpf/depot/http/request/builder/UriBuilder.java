@@ -9,6 +9,7 @@ import org.apache.http.client.utils.URIBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Map;
 
 public class UriBuilder {
@@ -25,6 +26,14 @@ public class UriBuilder {
 
     public URI build(Map<String, String> queryParam) {
         return build(urlTemplate.toString(), queryParam);
+    }
+
+    public URI build(ParsedOdpfMessage message, OdpfMessageSchema schema) {
+        return build(message, schema, Collections.emptyMap());
+    }
+
+    public URI build() {
+        return build(Collections.emptyMap());
     }
 
     private URI build(String url, Map<String, String> queryParam) {

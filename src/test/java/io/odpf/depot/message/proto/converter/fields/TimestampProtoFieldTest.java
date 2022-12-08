@@ -1,6 +1,5 @@
 package io.odpf.depot.message.proto.converter.fields;
 
-import com.google.api.client.util.DateTime;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -33,11 +32,8 @@ public class TimestampProtoFieldTest {
     }
 
     @Test
-    public void shouldParseGoogleProtobufTimestampProtoMessageToDateTime() throws InvalidProtocolBufferException {
-        DateTime dateTimeResult = (DateTime) timestampProtoField.getValue();
-
-        DateTime expected = new DateTime(time.toEpochMilli());
-        assertEquals(expected, dateTimeResult);
+    public void shouldParseGoogleProtobufTimestampProtoMessageToInstant() throws InvalidProtocolBufferException {
+        assertEquals(time, timestampProtoField.getValue());
     }
 
     @Test
