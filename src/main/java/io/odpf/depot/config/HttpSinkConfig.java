@@ -35,12 +35,12 @@ public interface HttpSinkConfig extends HttpClientConfig {
     @Key("SINK_HTTP_HEADERS_TEMPLATE")
     @DefaultValue("")
     @ConverterClass(JsonToPropertiesConverter.class)
-    Properties getHeaderTemplate();
+    Properties getSinkHttpHeadersTemplate();
 
     @Key("SINK_HTTP_HEADERS_PARAMETER_SOURCE")
     @DefaultValue("MESSAGE")
     @ConverterClass(HttpParameterSourceTypeConverter.class)
-    HttpParameterSourceType getHeaderSourceMode();
+    HttpParameterSourceType getSinkHttpHeadersParameterSource();
 
     @Key("SINK_HTTP_QUERY_PARAMETER_SOURCE")
     @DefaultValue("MESSAGE")

@@ -9,7 +9,9 @@ import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.http.request.body.RequestBody;
 import io.odpf.depot.http.request.builder.HeaderBuilder;
 import io.odpf.depot.http.request.builder.UriBuilder;
+import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.message.OdpfMessageParser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
@@ -23,16 +25,18 @@ import java.util.stream.IntStream;
 @Slf4j
 public class SingleRequest implements Request {
 
-    private final HttpRequestMethodType httpMethod;
+    private final HttpRequestMethodType requestMethodType;
     private final HeaderBuilder headerBuilder;
     private final UriBuilder uriBuilder;
     private final RequestBody requestBody;
+    private final OdpfMessageParser odpfMessageParser;
 
-    public SingleRequest(HttpRequestMethodType httpMethod, HeaderBuilder headerBuilder, UriBuilder uriBuilder, RequestBody requestBody) {
-        this.httpMethod = httpMethod;
+    public SingleRequest(HttpRequestMethodType requestMethodType, HeaderBuilder headerBuilder, UriBuilder uriBuilder, RequestBody requestBody, OdpfMessageParser odpfMessageParser) {
+        this.requestMethodType = requestMethodType;
         this.headerBuilder = headerBuilder;
         this.uriBuilder = uriBuilder;
         this.requestBody = requestBody;
+        this.odpfMessageParser = odpfMessageParser;
     }
 
     @Override
@@ -48,9 +52,10 @@ public class SingleRequest implements Request {
 
     private HttpRequestRecord createRecord(OdpfMessage message, int index) {
         try {
-            Map<String, String> requestHeaders = headerBuilder.build();
+            MessageContainer messageContainer = new MessageContainer(message);
+            Map<String, String> requestHeaders = headerBuilder.build(messageContainer, odpfMessageParser);
             URI requestUrl = uriBuilder.build();
-            HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
+            HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, requestMethodType);
             requestHeaders.forEach(request::addHeader);
             request.setEntity(RequestUtils.buildStringEntity(requestBody.build(message)));
             HttpRequestRecord record = new HttpRequestRecord(request);
