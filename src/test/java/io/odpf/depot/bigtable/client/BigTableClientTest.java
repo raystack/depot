@@ -114,10 +114,12 @@ public class BigTableClientTest {
     @Test
     public void shouldThrowInvalidSchemaExceptionIfTableDoesNotExist() {
         when(bigtableTableAdminClient.exists(sinkConfig.getTableId())).thenReturn(false);
+        when(bigtableTableAdminClient.getProjectId()).thenReturn(sinkConfig.getGCloudProjectID());
+        when(bigtableTableAdminClient.getInstanceId()).thenReturn(sinkConfig.getInstanceId());
         try {
             bigTableClient.validateBigTableSchema();
         } catch (BigTableInvalidSchemaException e) {
-            Assert.assertEquals("Table: " + sinkConfig.getTableId() + " does not exist!", e.getMessage());
+            Assert.assertEquals("Table not found on the path: projects/test-gcloud-project/instances/test-instance/tables/test-table", e.getMessage());
         }
     }
 

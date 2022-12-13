@@ -1,7 +1,9 @@
 package io.odpf.depot.bigtable.parser;
 
+import com.google.protobuf.Timestamp;
 import io.odpf.depot.TestBookingLogKey;
 import io.odpf.depot.TestBookingLogMessage;
+import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestServiceType;
 import io.odpf.depot.bigtable.model.BigTableRecord;
 import io.odpf.depot.bigtable.model.BigTableSchema;
@@ -60,14 +62,22 @@ public class BigTableRecordParserTest {
         MockitoAnnotations.openMocks(this);
         System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "io.odpf.depot.TestBookingLogMessage");
         System.setProperty("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", String.valueOf(SinkConnectorSchemaMessageMode.LOG_MESSAGE));
-        System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{}");
+        System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{ \"cf1\" : { \"q1\" : \"order_number\", \"q2\" : \"service_type\"} }");
         System.setProperty("SINK_BIGTABLE_ROW_KEY_TEMPLATE", "row-key-constant-string");
 
 
         TestBookingLogKey bookingLogKey1 = TestBookingLogKey.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1").build();
-        TestBookingLogMessage bookingLogMessage1 = TestBookingLogMessage.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1").setServiceType(TestServiceType.Enum.GO_SEND).build();
+        TestBookingLogMessage bookingLogMessage1 = TestBookingLogMessage.newBuilder().setOrderNumber("order#1").setOrderUrl("order-url#1")
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(100L).setNanos(200).build())
+                .setServiceType(TestServiceType.Enum.GO_SEND)
+                .setDriverPickupLocation(TestLocation.newBuilder().setLatitude(100D).setLongitude(200D).build())
+                .build();
         TestBookingLogKey bookingLogKey2 = TestBookingLogKey.newBuilder().setOrderNumber("order#2").setOrderUrl("order-url#2").build();
-        TestBookingLogMessage bookingLogMessage2 = TestBookingLogMessage.newBuilder().setOrderNumber("order#2").setOrderUrl("order-url#2").setServiceType(TestServiceType.Enum.GO_SHOP).build();
+        TestBookingLogMessage bookingLogMessage2 = TestBookingLogMessage.newBuilder().setOrderNumber("order#2").setOrderUrl("order-url#2")
+                .setEventTimestamp(Timestamp.newBuilder().setSeconds(101L).setNanos(202).build())
+                .setServiceType(TestServiceType.Enum.GO_SHOP)
+                .setDriverPickupLocation(TestLocation.newBuilder().setLatitude(300D).setLongitude(400D).build())
+                .build();
 
         OdpfMessage message1 = new OdpfMessage(bookingLogKey1.toByteArray(), bookingLogMessage1.toByteArray());
         OdpfMessage message2 = new OdpfMessage(bookingLogKey2.toByteArray(), bookingLogMessage2.toByteArray());
@@ -85,6 +95,57 @@ public class BigTableRecordParserTest {
 
     @Test
     public void shouldReturnValidRecordsForListOfValidOdpfMessages() {
+        List<BigTableRecord> records = bigTableRecordParser.convert(messages);
+        assertTrue(records.get(0).isValid());
+        assertTrue(records.get(1).isValid());
+        assertNull(records.get(0).getErrorInfo());
+        assertNull(records.get(1).getErrorInfo());
+    }
+
+    @Test
+    public void shouldReturnValidRecordsForListOfValidOdpfMessagesForComplexFieldsInColumnsMapping() throws InvalidTemplateException {
+        System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{ \"cf1\" : { \"q1\" : \"order_number\", \"q2\" : \"service_type\", \"q3\" : \"driver_pickup_location\"} }");
+        ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
+        sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
+        Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
+        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema);
+        BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
+        bigTableRecordParser = new BigTableRecordParser(protoOdpfMessageParser, bigTableRowKeyParser, modeAndSchema, schema, bigtableSchema);
+
+        List<BigTableRecord> records = bigTableRecordParser.convert(messages);
+        assertTrue(records.get(0).isValid());
+        assertTrue(records.get(1).isValid());
+        assertNull(records.get(0).getErrorInfo());
+        assertNull(records.get(1).getErrorInfo());
+    }
+
+    @Test
+    public void shouldReturnValidRecordsForListOfValidOdpfMessagesForNestedTimestampFieldsInColumnsMapping() throws InvalidTemplateException {
+        System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{ \"cf1\" : { \"q1\" : \"order_number\", \"q2\" : \"service_type\", \"q3\" : \"event_timestamp.nanos\"} }");
+        ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
+        sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
+        Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
+        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema);
+        BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
+        bigTableRecordParser = new BigTableRecordParser(protoOdpfMessageParser, bigTableRowKeyParser, modeAndSchema, schema, bigtableSchema);
+
+        List<BigTableRecord> records = bigTableRecordParser.convert(messages);
+        assertTrue(records.get(0).isValid());
+        assertTrue(records.get(1).isValid());
+        assertNull(records.get(0).getErrorInfo());
+        assertNull(records.get(1).getErrorInfo());
+    }
+
+    @Test
+    public void shouldReturnValidRecordsForListOfValidOdpfMessagesForNestedFieldsInColumnsMapping() throws InvalidTemplateException {
+        System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "{ \"cf1\" : { \"q1\" : \"order_number\", \"q2\" : \"service_type\", \"q3\" : \"driver_pickup_location.latitude\"} }");
+        ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
+        sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
+        Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
+        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema);
+        BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
+        bigTableRecordParser = new BigTableRecordParser(protoOdpfMessageParser, bigTableRowKeyParser, modeAndSchema, schema, bigtableSchema);
+
         List<BigTableRecord> records = bigTableRecordParser.convert(messages);
         assertTrue(records.get(0).isValid());
         assertTrue(records.get(1).isValid());
