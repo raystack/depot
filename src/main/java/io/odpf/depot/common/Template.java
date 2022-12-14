@@ -7,10 +7,12 @@ import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.field.GenericFieldFactory;
 import io.odpf.depot.message.proto.converter.fields.ProtoField;
 import io.odpf.depot.utils.StringUtils;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class Template {
     private final String templatePattern;
     private final List<String> patternVariableFieldNames;
@@ -49,10 +51,5 @@ public class Template {
         } else {
             return ob;
         }
-    }
-
-    @Override
-    public String toString() {
-        return String.format(templatePattern);
     }
 }

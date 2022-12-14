@@ -6,6 +6,7 @@ import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.http.request.body.RequestBody;
 import io.odpf.depot.http.request.builder.HeaderBuilder;
+import io.odpf.depot.http.request.builder.QueryParamBuilder;
 import io.odpf.depot.http.request.builder.UriBuilder;
 import io.odpf.depot.message.OdpfMessage;
 import org.junit.Before;
@@ -32,6 +33,9 @@ public class BatchRequestTest {
     private HeaderBuilder headerBuilder;
 
     @Mock
+    private QueryParamBuilder queryParamBuilder;
+
+    @Mock
     private UriBuilder uriBuilder;
 
     @Mock
@@ -48,7 +52,7 @@ public class BatchRequestTest {
     public void shouldWrapMessagesToSingleRequestBody() throws IOException {
         when(requestBody.build(messages.get(0))).thenReturn("{\"log_key\":\"\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}");
         when(requestBody.build(messages.get(1))).thenReturn("{\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}");
-        Request requestParser = new BatchRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody);
+        Request requestParser = new BatchRequest(HttpRequestMethodType.PUT, headerBuilder, queryParamBuilder, uriBuilder, requestBody);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
         List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
@@ -63,7 +67,7 @@ public class BatchRequestTest {
     public void shouldGetValidRequestRecords() throws IOException {
         when(requestBody.build(messages.get(0))).thenReturn("{\"log_key\":\"\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}");
         when(requestBody.build(messages.get(1))).thenReturn("{\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}");
-        Request requestParser = new BatchRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody);
+        Request requestParser = new BatchRequest(HttpRequestMethodType.PUT, headerBuilder, queryParamBuilder, uriBuilder, requestBody);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
         List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
@@ -77,7 +81,7 @@ public class BatchRequestTest {
     public void shouldGetInvalidRequestRecords() throws IOException {
         when(requestBody.build(messages.get(0))).thenThrow(DeserializerException.class);
         when(requestBody.build(messages.get(1))).thenThrow(DeserializerException.class);
-        Request requestParser = new BatchRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody);
+        Request requestParser = new BatchRequest(HttpRequestMethodType.PUT, headerBuilder, queryParamBuilder, uriBuilder, requestBody);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
         List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
@@ -90,7 +94,7 @@ public class BatchRequestTest {
     @Test
     public void shouldGetValidAndInvalidRequestRecords() throws IOException {
         when(requestBody.build(messages.get(0))).thenThrow(DeserializerException.class);
-        Request requestParser = new BatchRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody);
+        Request requestParser = new BatchRequest(HttpRequestMethodType.PUT, headerBuilder, queryParamBuilder, uriBuilder, requestBody);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
         List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);

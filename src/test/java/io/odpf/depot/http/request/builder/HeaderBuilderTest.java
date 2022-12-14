@@ -30,7 +30,6 @@ import static org.mockito.Mockito.when;
 
 public class HeaderBuilderTest {
 
-    @Mock
     private HttpSinkConfig sinkConfig;
     @Mock
     private StatsDReporter statsDReporter;

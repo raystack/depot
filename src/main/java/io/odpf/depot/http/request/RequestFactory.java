@@ -7,6 +7,7 @@ import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.http.request.body.RequestBody;
 import io.odpf.depot.http.request.body.RequestBodyFactory;
 import io.odpf.depot.http.request.builder.HeaderBuilder;
+import io.odpf.depot.http.request.builder.QueryParamBuilder;
 import io.odpf.depot.http.request.builder.UriBuilder;
 import io.odpf.depot.message.OdpfMessageParser;
 
@@ -14,14 +15,15 @@ public class RequestFactory {
 
     public static Request create(HttpSinkConfig config, OdpfMessageParser odpfMessageParser) throws InvalidTemplateException {
         HeaderBuilder headerBuilder = new HeaderBuilder(config);
-        UriBuilder uriBuilder = new UriBuilder(config.getSinkHttpServiceUrl());
+        QueryParamBuilder queryParamBuilder = new QueryParamBuilder(config);
+        UriBuilder uriBuilder = new UriBuilder(config);
         HttpRequestMethodType httpRequestMethod = config.getSinkHttpRequestMethod();
         RequestBody requestBody = RequestBodyFactory.create(config);
 
         if (config.getRequestType().equals(HttpRequestType.SINGLE)) {
-            return new SingleRequest(httpRequestMethod, headerBuilder, uriBuilder, requestBody, odpfMessageParser);
+            return new SingleRequest(httpRequestMethod, headerBuilder, queryParamBuilder, uriBuilder, requestBody, odpfMessageParser);
         } else {
-            return new BatchRequest(httpRequestMethod, headerBuilder, uriBuilder, requestBody);
+            return new BatchRequest(httpRequestMethod, headerBuilder, queryParamBuilder, uriBuilder, requestBody);
         }
     }
 }

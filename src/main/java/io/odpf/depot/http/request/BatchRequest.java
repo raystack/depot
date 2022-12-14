@@ -8,6 +8,7 @@ import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.http.request.body.RequestBody;
 import io.odpf.depot.http.request.builder.HeaderBuilder;
+import io.odpf.depot.http.request.builder.QueryParamBuilder;
 import io.odpf.depot.http.request.builder.UriBuilder;
 import io.odpf.depot.message.OdpfMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -25,12 +26,14 @@ public class BatchRequest implements Request {
 
     private final HttpRequestMethodType httpMethod;
     private final HeaderBuilder headerBuilder;
+    private final QueryParamBuilder queryParamBuilder;
     private final UriBuilder uriBuilder;
     private final RequestBody requestBody;
 
-    public BatchRequest(HttpRequestMethodType httpMethod, HeaderBuilder headerBuilder, UriBuilder uriBuilder, RequestBody requestBody) {
+    public BatchRequest(HttpRequestMethodType httpMethod, HeaderBuilder headerBuilder, QueryParamBuilder queryParamBuilder, UriBuilder uriBuilder, RequestBody requestBody) {
         this.httpMethod = httpMethod;
         this.headerBuilder = headerBuilder;
+        this.queryParamBuilder = queryParamBuilder;
         this.uriBuilder = uriBuilder;
         this.requestBody = requestBody;
     }
@@ -54,7 +57,8 @@ public class BatchRequest implements Request {
         }
         if (validBodies.size() != 0) {
             Map<String, String> requestHeaders = headerBuilder.build();
-            URI requestUrl = uriBuilder.build();
+            Map<String, String> queryParam = queryParamBuilder.build();
+            URI requestUrl = uriBuilder.build(queryParam);
             HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
             requestHeaders.forEach(request::addHeader);
             request.setEntity(RequestUtils.buildStringEntity(validBodies.values()));

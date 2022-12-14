@@ -25,7 +25,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -137,8 +140,27 @@ public class TemplateTest {
     }
 
     @Test
-    public void shouldGetTemplateString() throws InvalidTemplateException {
+    public void shouldGetTemplateStringFromConstantString() throws InvalidTemplateException {
         Template template = new Template("http://dummy.com");
-        assertEquals("http://dummy.com", template.toString());
+        assertEquals("http://dummy.com", template.getTemplatePattern());
+    }
+
+    @Test
+    public void shouldGetTemplatePatternFromParameterizedString() throws InvalidTemplateException {
+        Template template = new Template("http://dummy.com/%s,order_number");
+        assertEquals("http://dummy.com/%s", template.getTemplatePattern());
+    }
+
+    @Test
+    public void shouldGetTemplateFieldNames() throws InvalidTemplateException {
+        Template template = new Template("http://dummy.com/%s,order_number");
+        assertEquals(Collections.singletonList("order_number"), template.getPatternVariableFieldNames());
+    }
+
+    @Test
+    public void shouldGetMultipleTemplateFieldNames() throws InvalidTemplateException {
+        List<String> fieldNames = Arrays.asList("order_number", "order_id");
+        Template template = new Template("http://dummy.com/%s/%s,order_number,order_id");
+        assertEquals(fieldNames, template.getPatternVariableFieldNames());
     }
 }
