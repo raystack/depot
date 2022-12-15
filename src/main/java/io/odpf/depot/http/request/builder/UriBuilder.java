@@ -4,8 +4,8 @@ import io.odpf.depot.config.HttpSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.MessageContainer;
-import io.odpf.depot.message.OdpfMessageParser;
 import io.odpf.depot.common.Template;
+import io.odpf.depot.message.SchemaContainer;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import org.apache.http.client.utils.URIBuilder;
 
@@ -28,22 +28,22 @@ public class UriBuilder {
         this.schemaProtoMessageClass = config.getSinkConnectorSchemaProtoMessageClass();
     }
 
-    public URI build(MessageContainer container, OdpfMessageParser parser, Map<String, String> queryParam) throws IOException {
+    public URI build(MessageContainer container, SchemaContainer schemaContainer, Map<String, String> queryParam) throws IOException {
         if (sourceType == SinkConnectorSchemaMessageMode.LOG_KEY) {
             return build(urlTemplate.parse(
-                            container.getParsedLogKey(parser, schemaProtoKeyClass),
-                            parser.getSchema(schemaProtoKeyClass)),
+                            container.getParsedLogKey(schemaProtoKeyClass),
+                            schemaContainer.getSchemaKey(schemaProtoKeyClass)),
                     queryParam);
         } else {
             return build(urlTemplate.parse(
-                            container.getParsedLogMessage(parser, schemaProtoMessageClass),
-                            parser.getSchema(schemaProtoMessageClass)),
+                            container.getParsedLogMessage(schemaProtoMessageClass),
+                            schemaContainer.getSchemaMessage(schemaProtoMessageClass)),
                     queryParam);
         }
     }
 
     public URI build(Map<String, String> queryParam) {
-        return build(urlTemplate.getTemplatePattern(), queryParam);
+        return build(urlTemplate.getTemplateString(), queryParam);
     }
 
     private URI build(String url, Map<String, String> queryParam) {

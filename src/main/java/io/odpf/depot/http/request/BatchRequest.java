@@ -25,16 +25,14 @@ import java.util.Map;
 public class BatchRequest implements Request {
 
     private final HttpRequestMethodType requestMethod;
-    private final HeaderBuilder headerBuilder;
-    private final QueryParamBuilder queryParamBuilder;
-    private final UriBuilder uriBuilder;
+    private final Map<String, String> requestHeaders;
+    private final URI requestUrl;
     private final RequestBody requestBody;
 
     public BatchRequest(HttpRequestMethodType requestMethod, HeaderBuilder headerBuilder, QueryParamBuilder queryParamBuilder, UriBuilder uriBuilder, RequestBody requestBody) {
         this.requestMethod = requestMethod;
-        this.headerBuilder = headerBuilder;
-        this.queryParamBuilder = queryParamBuilder;
-        this.uriBuilder = uriBuilder;
+        this.requestHeaders = headerBuilder.build();
+        this.requestUrl = uriBuilder.build(queryParamBuilder.build());
         this.requestBody = requestBody;
     }
 
@@ -56,10 +54,8 @@ public class BatchRequest implements Request {
             }
         }
         if (validBodies.size() != 0) {
-            Map<String, String> requestHeaders = headerBuilder.build();
-            Map<String, String> queryParam = queryParamBuilder.build();
-            URI requestUrl = uriBuilder.build(queryParam);
-            HttpEntityEnclosingRequestBase request = RequestUtils.buildRequest(requestMethod, requestHeaders, requestUrl, validBodies.values());
+            HttpEntityEnclosingRequestBase request = RequestUtils.buildRequest(
+                    requestMethod, requestHeaders, requestUrl, validBodies.values());
             HttpRequestRecord validRecord = new HttpRequestRecord(request);
             validRecord.addAllIndexes(validBodies.keySet());
             records.add(validRecord);

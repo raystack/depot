@@ -5,7 +5,7 @@ import io.odpf.depot.common.TemplateUtils;
 import io.odpf.depot.config.HttpSinkConfig;
 import io.odpf.depot.http.enums.HttpParameterSourceType;
 import io.odpf.depot.message.MessageContainer;
-import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.SchemaContainer;
 
 import java.io.IOException;
 import java.util.Map;
@@ -31,23 +31,23 @@ public class QueryParamBuilder {
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(
-                        templateKey -> templateKey.getKey().getTemplatePattern(),
-                        templateValue -> templateValue.getValue().getTemplatePattern()
+                        templateKey -> templateKey.getKey().getTemplateString(),
+                        templateValue -> templateValue.getValue().getTemplateString()
                 ));
     }
 
-    public Map<String, String> build(MessageContainer container, OdpfMessageParser odpfMessageParser) throws IOException {
+    public Map<String, String> build(MessageContainer msgContainer, SchemaContainer schemaContainer) throws IOException {
         if (queryParameterSource == HttpParameterSourceType.KEY) {
             return TemplateUtils.parseTemplateMap(
                     queryParamTemplates,
-                    container.getParsedLogKey(odpfMessageParser, schemaProtoKeyClass),
-                    odpfMessageParser.getSchema(schemaProtoKeyClass)
+                    msgContainer.getParsedLogKey(schemaProtoKeyClass),
+                    schemaContainer.getSchemaKey(schemaProtoKeyClass)
             );
         } else {
             return TemplateUtils.parseTemplateMap(
                     queryParamTemplates,
-                    container.getParsedLogMessage(odpfMessageParser, schemaProtoMessageClass),
-                    odpfMessageParser.getSchema(schemaProtoMessageClass)
+                    msgContainer.getParsedLogMessage(schemaProtoMessageClass),
+                    schemaContainer.getSchemaMessage(schemaProtoMessageClass)
             );
         }
     }

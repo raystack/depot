@@ -11,6 +11,7 @@ import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.SchemaContainer;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
@@ -34,9 +35,9 @@ public class HeaderBuilderTest {
     @Mock
     private StatsDReporter statsDReporter;
     @Mock
-    private ProtoOdpfMessageParser mockOdpfMessageParser;
-    @Mock
     private MessageContainer messageContainer;
+    @Mock
+    private SchemaContainer schemaContainer;
 
     private final Map<String, String> configuration = new HashMap<>();
 
@@ -67,10 +68,10 @@ public class HeaderBuilderTest {
         OdpfMessageSchema messageSchema = odpfMessageParser.getSchema(sinkConfig.getSinkConnectorSchemaProtoMessageClass(), descriptorsMap);
         OdpfMessageSchema keySchema = odpfMessageParser.getSchema(sinkConfig.getSinkConnectorSchemaProtoKeyClass(), descriptorsMap);
 
-        when(mockOdpfMessageParser.getSchema(sinkConfig.getSinkConnectorSchemaProtoKeyClass())).thenReturn(keySchema);
-        when(mockOdpfMessageParser.getSchema(sinkConfig.getSinkConnectorSchemaProtoMessageClass())).thenReturn(messageSchema);
-        when(messageContainer.getParsedLogKey(mockOdpfMessageParser, sinkConfig.getSinkConnectorSchemaProtoKeyClass())).thenReturn(parsedOdpfLogKey);
-        when(messageContainer.getParsedLogMessage(mockOdpfMessageParser, sinkConfig.getSinkConnectorSchemaProtoMessageClass())).thenReturn(parsedOdpfLogMessage);
+        when(schemaContainer.getSchemaKey(sinkConfig.getSinkConnectorSchemaProtoKeyClass())).thenReturn(keySchema);
+        when(schemaContainer.getSchemaMessage(sinkConfig.getSinkConnectorSchemaProtoMessageClass())).thenReturn(messageSchema);
+        when(messageContainer.getParsedLogKey(sinkConfig.getSinkConnectorSchemaProtoKeyClass())).thenReturn(parsedOdpfLogKey);
+        when(messageContainer.getParsedLogMessage(sinkConfig.getSinkConnectorSchemaProtoMessageClass())).thenReturn(parsedOdpfLogMessage);
     }
 
     @Test
@@ -119,7 +120,7 @@ public class HeaderBuilderTest {
 
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
 
-        Map<String, String> headers = headerBuilder.build(messageContainer, mockOdpfMessageParser);
+        Map<String, String> headers = headerBuilder.build(messageContainer, schemaContainer);
 
         assertEquals(2, headers.size());
         assertEquals("json", headers.get("content-type"));
@@ -135,7 +136,7 @@ public class HeaderBuilderTest {
 
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
 
-        Map<String, String> headers = headerBuilder.build(messageContainer, mockOdpfMessageParser);
+        Map<String, String> headers = headerBuilder.build(messageContainer, schemaContainer);
 
         assertEquals(2, headers.size());
         assertEquals("json", headers.get("content-type"));
@@ -149,7 +150,7 @@ public class HeaderBuilderTest {
 
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
 
-        Map<String, String> headers = headerBuilder.build(messageContainer, mockOdpfMessageParser);
+        Map<String, String> headers = headerBuilder.build(messageContainer, schemaContainer);
 
         assertEquals(1, headers.size());
         assertEquals("V-GO_SEND", headers.get("H-ON#1"));
@@ -163,7 +164,7 @@ public class HeaderBuilderTest {
 
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
 
-        Map<String, String> headers = headerBuilder.build(messageContainer, mockOdpfMessageParser);
+        Map<String, String> headers = headerBuilder.build(messageContainer, schemaContainer);
 
         assertEquals(3, headers.size());
         assertEquals("V-GO_SEND", headers.get("H-ON#1"));
@@ -179,7 +180,7 @@ public class HeaderBuilderTest {
 
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
 
-        Map<String, String> headers = headerBuilder.build(messageContainer, mockOdpfMessageParser);
+        Map<String, String> headers = headerBuilder.build(messageContainer, schemaContainer);
 
         assertEquals(1, headers.size());
         assertEquals("json", headers.get("content-type"));
@@ -193,7 +194,7 @@ public class HeaderBuilderTest {
 
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
 
-        Map<String, String> headers = headerBuilder.build(messageContainer, mockOdpfMessageParser);
+        Map<String, String> headers = headerBuilder.build(messageContainer, schemaContainer);
 
         assertEquals(1, headers.size());
         assertEquals("json", headers.get("content-type"));
@@ -206,7 +207,7 @@ public class HeaderBuilderTest {
 
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
 
-        Map<String, String> headers = headerBuilder.build(messageContainer, mockOdpfMessageParser);
+        Map<String, String> headers = headerBuilder.build(messageContainer, schemaContainer);
 
         assertEquals(1, headers.size());
         assertEquals("json", headers.get("content-type"));
@@ -222,7 +223,7 @@ public class HeaderBuilderTest {
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
 
         try {
-            headerBuilder.build(messageContainer, mockOdpfMessageParser);
+            headerBuilder.build(messageContainer, schemaContainer);
         } catch (Exception e) {
             assertTrue(e instanceof IllegalArgumentException);
             assertEquals("Invalid field config : RANDOM_FIELD", e.getMessage());

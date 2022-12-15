@@ -13,6 +13,7 @@ import io.odpf.depot.http.request.builder.UriBuilder;
 import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.SchemaContainer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
@@ -60,10 +61,11 @@ public class SingleRequest implements Request {
 
     private HttpRequestRecord createRecord(OdpfMessage message, int index) {
         try {
-            MessageContainer messageContainer = new MessageContainer(message);
-            Map<String, String> requestHeaders = headerBuilder.build(messageContainer, odpfMessageParser);
-            Map<String, String> queryParam = queryParamBuilder.build(messageContainer, odpfMessageParser);
-            URI requestUrl = uriBuilder.build(messageContainer, odpfMessageParser, queryParam);
+            MessageContainer messageContainer = new MessageContainer(message, odpfMessageParser);
+            SchemaContainer schemaContainer = new SchemaContainer(odpfMessageParser);
+            Map<String, String> requestHeaders = headerBuilder.build(messageContainer, schemaContainer);
+            Map<String, String> queryParam = queryParamBuilder.build(messageContainer, schemaContainer);
+            URI requestUrl = uriBuilder.build(messageContainer, schemaContainer, queryParam);
             HttpEntityEnclosingRequestBase request = RequestUtils.buildRequest(requestMethod, requestHeaders, requestUrl, requestBody.build(message));
             HttpRequestRecord record = new HttpRequestRecord(request);
             record.addIndex(index);

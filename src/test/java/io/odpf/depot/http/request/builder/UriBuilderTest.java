@@ -1,18 +1,15 @@
 package io.odpf.depot.http.request.builder;
 
-import com.google.protobuf.Descriptors;
 import io.odpf.depot.TestBookingLogKey;
 import io.odpf.depot.TestBookingLogMessage;
-import io.odpf.depot.TestLocation;
-import io.odpf.depot.TestServiceType;
 import io.odpf.depot.config.HttpSinkConfig;
 import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParserFactory;
-import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
+import io.odpf.depot.message.SchemaContainer;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
@@ -44,9 +41,9 @@ public class UriBuilderTest {
     @Mock
     private StatsDReporter statsDReporter;
     @Mock
-    private MessageContainer container;
+    private MessageContainer messageContainer;
     @Mock
-    private ProtoOdpfMessageParser mockParser;
+    private SchemaContainer schemaContainer;
     private final Map<String, String> queryParam = new HashMap<>();
     private final Map<String, String> configuration = new HashMap<>();
 
@@ -61,17 +58,7 @@ public class UriBuilderTest {
         OdpfMessage message = new OdpfMessage(bookingLogKey.toByteArray(), bookingLogMessage.toByteArray());
         ProtoOdpfMessageParser parser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
         ParsedOdpfMessage parsedMessage = parser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, sinkConfig.getSinkConnectorSchemaProtoMessageClass());
-
-        Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
-            put(String.format("%s", TestBookingLogKey.class.getName()), TestBookingLogKey.getDescriptor());
-            put(String.format("%s", TestBookingLogMessage.class.getName()), TestBookingLogMessage.getDescriptor());
-            put(String.format("%s", TestBookingLogMessage.TopicMetadata.class.getName()), TestBookingLogMessage.TopicMetadata.getDescriptor());
-            put(String.format("%s", TestServiceType.class.getName()), TestServiceType.getDescriptor());
-            put(String.format("%s", TestLocation.class.getName()), TestLocation.getDescriptor());
-        }};
-        OdpfMessageSchema messageSchema = parser.getSchema(sinkConfig.getSinkConnectorSchemaProtoMessageClass(), descriptorsMap);
-        when(mockParser.getSchema(sinkConfig.getSinkConnectorSchemaProtoMessageClass())).thenReturn(messageSchema);
-        when(container.getParsedLogMessage(mockParser, sinkConfig.getSinkConnectorSchemaProtoMessageClass())).thenReturn(parsedMessage);
+        when(messageContainer.getParsedLogMessage(sinkConfig.getSinkConnectorSchemaProtoMessageClass())).thenReturn(parsedMessage);
     }
 
     @Test
@@ -133,7 +120,7 @@ public class UriBuilderTest {
         configuration.put("SINK_HTTP_SERVICE_URL", "http://dummy.com/%s,order_url");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         UriBuilder uriBuilder = new UriBuilder(sinkConfig);
-        assertEquals(new URI("http://dummy.com/test-url"), uriBuilder.build(container, mockParser, queryParam));
+        assertEquals(new URI("http://dummy.com/test-url"), uriBuilder.build(messageContainer, schemaContainer, queryParam));
     }
 
     @Test
@@ -143,6 +130,6 @@ public class UriBuilderTest {
         configuration.put("SINK_HTTP_SERVICE_URL", "http://dummy.com/%s,order_url");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         UriBuilder uriBuilder = new UriBuilder(sinkConfig);
-        assertEquals(new URI("http://dummy.com/test-url?test-key-1=test-value-1&test-key-2=test-value-2"), uriBuilder.build(container, mockParser, queryParam));
+        assertEquals(new URI("http://dummy.com/test-url?test-key-1=test-value-1&test-key-2=test-value-2"), uriBuilder.build(messageContainer, schemaContainer, queryParam));
     }
 }

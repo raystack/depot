@@ -43,16 +43,16 @@ public class MessageContainerTest {
     @Test
     public void shouldReturnParsedLogKey() throws IOException {
         ParsedOdpfMessage expectedParsedLogKey = odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_KEY, sinkConfig.getSinkConnectorSchemaProtoKeyClass());
-        MessageContainer messageContainer = new MessageContainer(message);
-        ParsedOdpfMessage parsedLogKey = messageContainer.getParsedLogKey(odpfMessageParser, sinkConfig.getSinkConnectorSchemaProtoKeyClass());
+        MessageContainer messageContainer = new MessageContainer(message, odpfMessageParser);
+        ParsedOdpfMessage parsedLogKey = messageContainer.getParsedLogKey(sinkConfig.getSinkConnectorSchemaProtoKeyClass());
         Assert.assertEquals(expectedParsedLogKey.getRaw(), parsedLogKey.getRaw());
     }
 
     @Test
     public void shouldReturnParsedLogMessage() throws IOException {
         ParsedOdpfMessage expectedParsedLogMessage = odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, sinkConfig.getSinkConnectorSchemaProtoMessageClass());
-        MessageContainer messageContainer = new MessageContainer(message);
-        ParsedOdpfMessage parsedLogMessage = messageContainer.getParsedLogMessage(odpfMessageParser, sinkConfig.getSinkConnectorSchemaProtoMessageClass());
+        MessageContainer messageContainer = new MessageContainer(message, odpfMessageParser);
+        ParsedOdpfMessage parsedLogMessage = messageContainer.getParsedLogMessage(sinkConfig.getSinkConnectorSchemaProtoMessageClass());
         Assert.assertEquals(expectedParsedLogMessage.getRaw(), parsedLogMessage.getRaw());
     }
 }
