@@ -17,13 +17,13 @@ public class RequestFactory {
         HeaderBuilder headerBuilder = new HeaderBuilder(config);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(config);
         UriBuilder uriBuilder = new UriBuilder(config);
-        HttpRequestMethodType httpRequestMethod = config.getSinkHttpRequestMethod();
+        HttpRequestMethodType requestMethod = config.getSinkHttpRequestMethod();
         RequestBody requestBody = RequestBodyFactory.create(config);
 
         if (config.getRequestType().equals(HttpRequestType.SINGLE)) {
-            return new SingleRequest(httpRequestMethod, headerBuilder, queryParamBuilder, uriBuilder, requestBody, odpfMessageParser);
+            return new SingleRequest(requestMethod, headerBuilder, queryParamBuilder, uriBuilder, requestBody, odpfMessageParser);
         } else {
-            return new BatchRequest(httpRequestMethod, headerBuilder, queryParamBuilder, uriBuilder, requestBody);
+            return new BatchRequest(requestMethod, headerBuilder, queryParamBuilder, uriBuilder, requestBody);
         }
     }
 }

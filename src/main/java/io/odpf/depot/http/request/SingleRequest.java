@@ -26,20 +26,20 @@ import java.util.stream.IntStream;
 @Slf4j
 public class SingleRequest implements Request {
 
-    private final HttpRequestMethodType requestMethodType;
+    private final HttpRequestMethodType requestMethod;
     private final HeaderBuilder headerBuilder;
     private final QueryParamBuilder queryParamBuilder;
     private final UriBuilder uriBuilder;
     private final RequestBody requestBody;
     private final OdpfMessageParser odpfMessageParser;
 
-    public SingleRequest(HttpRequestMethodType requestMethodType,
+    public SingleRequest(HttpRequestMethodType requestMethod,
                          HeaderBuilder headerBuilder,
                          QueryParamBuilder queryParamBuilder,
                          UriBuilder uriBuilder,
                          RequestBody requestBody,
                          OdpfMessageParser odpfMessageParser) {
-        this.requestMethodType = requestMethodType;
+        this.requestMethod = requestMethod;
         this.headerBuilder = headerBuilder;
         this.queryParamBuilder = queryParamBuilder;
         this.uriBuilder = uriBuilder;
@@ -64,9 +64,7 @@ public class SingleRequest implements Request {
             Map<String, String> requestHeaders = headerBuilder.build(messageContainer, odpfMessageParser);
             Map<String, String> queryParam = queryParamBuilder.build(messageContainer, odpfMessageParser);
             URI requestUrl = uriBuilder.build(messageContainer, odpfMessageParser, queryParam);
-            HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, requestMethodType);
-            requestHeaders.forEach(request::addHeader);
-            request.setEntity(RequestUtils.buildStringEntity(requestBody.build(message)));
+            HttpEntityEnclosingRequestBase request = RequestUtils.buildRequest(requestMethod, requestHeaders, requestUrl, requestBody.build(message));
             HttpRequestRecord record = new HttpRequestRecord(request);
             record.addIndex(index);
             return record;
