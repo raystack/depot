@@ -137,8 +137,14 @@ public class TemplateTest {
     }
 
     @Test
-    public void shouldGetTemplateString() throws InvalidTemplateException {
+    public void shouldGetTemplateStringFromConstantString() throws InvalidTemplateException {
         Template template = new Template("http://dummy.com");
-        assertEquals("http://dummy.com", template.toString());
+        assertEquals("http://dummy.com", template.getTemplateString());
+    }
+
+    @Test
+    public void shouldGetTemplatePatternFromParameterizedString() throws InvalidTemplateException {
+        Template template = new Template("http://dummy.com/%s,order_number");
+        assertEquals("http://dummy.com/%s", template.getTemplateString());
     }
 }

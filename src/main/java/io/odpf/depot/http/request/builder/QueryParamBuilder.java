@@ -6,48 +6,49 @@ import io.odpf.depot.config.HttpSinkConfig;
 import io.odpf.depot.http.enums.HttpParameterSourceType;
 import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.message.SchemaContainer;
-import lombok.Getter;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-@Getter
-public class HeaderBuilder {
+public class QueryParamBuilder {
 
-    private final Map<String, String> baseHeaders;
-    private final Map<Template, Template> headersTemplate;
-    private final HttpParameterSourceType headersParameterSource;
+    private final Map<Template, Template> queryParamTemplates;
+    private final HttpParameterSourceType queryParameterSource;
     private final String schemaProtoKeyClass;
     private final String schemaProtoMessageClass;
 
-    public HeaderBuilder(HttpSinkConfig config) {
-        this.baseHeaders = config.getSinkHttpHeaders();
-        this.headersTemplate = config.getSinkHttpHeadersTemplate();
-        this.headersParameterSource = config.getSinkHttpHeadersParameterSource();
+
+    public QueryParamBuilder(HttpSinkConfig config) {
+        this.queryParamTemplates = config.getQueryTemplate();
+        this.queryParameterSource = config.getQueryParamSourceMode();
         this.schemaProtoKeyClass = config.getSinkConnectorSchemaProtoKeyClass();
         this.schemaProtoMessageClass = config.getSinkConnectorSchemaProtoMessageClass();
     }
 
     public Map<String, String> build() {
-        return baseHeaders;
+        return queryParamTemplates
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        templateKey -> templateKey.getKey().getTemplateString(),
+                        templateValue -> templateValue.getValue().getTemplateString()
+                ));
     }
 
     public Map<String, String> build(MessageContainer msgContainer, SchemaContainer schemaContainer) throws IOException {
-        Map<String, String> headers;
-        if (headersParameterSource == HttpParameterSourceType.KEY) {
-            headers = TemplateUtils.parseTemplateMap(
-                    headersTemplate,
+        if (queryParameterSource == HttpParameterSourceType.KEY) {
+            return TemplateUtils.parseTemplateMap(
+                    queryParamTemplates,
                     msgContainer.getParsedLogKey(schemaProtoKeyClass),
                     schemaContainer.getSchemaKey(schemaProtoKeyClass)
             );
         } else {
-            headers = TemplateUtils.parseTemplateMap(
-                    headersTemplate,
+            return TemplateUtils.parseTemplateMap(
+                    queryParamTemplates,
                     msgContainer.getParsedLogMessage(schemaProtoMessageClass),
                     schemaContainer.getSchemaMessage(schemaProtoMessageClass)
             );
         }
-        baseHeaders.putAll(headers);
-        return baseHeaders;
     }
 }

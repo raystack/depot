@@ -8,6 +8,7 @@ import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.http.request.body.RequestBody;
 import io.odpf.depot.http.request.builder.HeaderBuilder;
+import io.odpf.depot.http.request.builder.QueryParamBuilder;
 import io.odpf.depot.http.request.builder.UriBuilder;
 import io.odpf.depot.message.OdpfMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -23,15 +24,15 @@ import java.util.Map;
 @Slf4j
 public class BatchRequest implements Request {
 
-    private final HttpRequestMethodType httpMethod;
-    private final HeaderBuilder headerBuilder;
-    private final UriBuilder uriBuilder;
+    private final HttpRequestMethodType requestMethod;
+    private final Map<String, String> requestHeaders;
+    private final URI requestUrl;
     private final RequestBody requestBody;
 
-    public BatchRequest(HttpRequestMethodType httpMethod, HeaderBuilder headerBuilder, UriBuilder uriBuilder, RequestBody requestBody) {
-        this.httpMethod = httpMethod;
-        this.headerBuilder = headerBuilder;
-        this.uriBuilder = uriBuilder;
+    public BatchRequest(HttpRequestMethodType requestMethod, HeaderBuilder headerBuilder, QueryParamBuilder queryParamBuilder, UriBuilder uriBuilder, RequestBody requestBody) {
+        this.requestMethod = requestMethod;
+        this.requestHeaders = headerBuilder.build();
+        this.requestUrl = uriBuilder.build(queryParamBuilder.build());
         this.requestBody = requestBody;
     }
 
@@ -53,11 +54,8 @@ public class BatchRequest implements Request {
             }
         }
         if (validBodies.size() != 0) {
-            Map<String, String> requestHeaders = headerBuilder.build();
-            URI requestUrl = uriBuilder.build();
-            HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(requestUrl, httpMethod);
-            requestHeaders.forEach(request::addHeader);
-            request.setEntity(RequestUtils.buildStringEntity(validBodies.values()));
+            HttpEntityEnclosingRequestBase request = RequestUtils.buildRequest(
+                    requestMethod, requestHeaders, requestUrl, validBodies.values());
             HttpRequestRecord validRecord = new HttpRequestRecord(request);
             validRecord.addAllIndexes(validBodies.keySet());
             records.add(validRecord);

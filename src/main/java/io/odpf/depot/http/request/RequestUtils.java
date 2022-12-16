@@ -2,11 +2,14 @@ package io.odpf.depot.http.request;
 
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
+import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.record.HttpRequestRecord;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 
+import java.net.URI;
 import java.util.Map;
 
 @Slf4j
@@ -20,7 +23,14 @@ public class RequestUtils {
         return record;
     }
 
-    public static StringEntity buildStringEntity(Object input) {
+    private static StringEntity buildStringEntity(Object input) {
         return new StringEntity(input.toString(), ContentType.APPLICATION_JSON);
+    }
+
+    public static HttpEntityEnclosingRequestBase buildRequest(HttpRequestMethodType requestMethod, Map<String, String> headers, URI uri, Object requestBodies) {
+        HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(uri, requestMethod);
+        headers.forEach(request::addHeader);
+        request.setEntity(buildStringEntity(requestBodies));
+        return request;
     }
 }

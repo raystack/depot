@@ -6,10 +6,12 @@ import io.odpf.depot.http.enums.HttpRequestMethodType;
 import io.odpf.depot.http.record.HttpRequestRecord;
 import io.odpf.depot.http.request.body.RequestBody;
 import io.odpf.depot.http.request.builder.HeaderBuilder;
+import io.odpf.depot.http.request.builder.QueryParamBuilder;
 import io.odpf.depot.http.request.builder.UriBuilder;
 import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParser;
+import io.odpf.depot.message.SchemaContainer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +39,9 @@ public class SingleRequestTest {
     private HeaderBuilder headerBuilder;
 
     @Mock
+    private QueryParamBuilder queryParamBuilder;
+
+    @Mock
     private UriBuilder uriBuilder;
 
     @Mock
@@ -55,10 +60,10 @@ public class SingleRequestTest {
 
     @Test
     public void shouldGetValidRequestRecords() throws IOException {
-        when(headerBuilder.build(any(MessageContainer.class), any(OdpfMessageParser.class))).thenReturn(new HashMap<String, String>());
+        when(headerBuilder.build(any(MessageContainer.class), any(SchemaContainer.class))).thenReturn(new HashMap<String, String>());
         when(requestBody.build(messages.get(0))).thenReturn("{\"log_key\":\"\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}");
         when(requestBody.build(messages.get(1))).thenReturn("{\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}");
-        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody, odpfMessageParser);
+        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, queryParamBuilder, uriBuilder, requestBody, odpfMessageParser);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
         List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
@@ -70,10 +75,10 @@ public class SingleRequestTest {
 
     @Test
     public void shouldGetInvalidRequestRecords() throws IOException {
-        when(headerBuilder.build(any(MessageContainer.class), any(OdpfMessageParser.class))).thenReturn(new HashMap<String, String>());
+        when(headerBuilder.build(any(MessageContainer.class), any(SchemaContainer.class))).thenReturn(new HashMap<String, String>());
         when(requestBody.build(messages.get(0))).thenThrow(IOException.class);
         when(requestBody.build(messages.get(1))).thenThrow(DeserializerException.class);
-        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody, odpfMessageParser);
+        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, queryParamBuilder, uriBuilder, requestBody, odpfMessageParser);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
         List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
@@ -85,8 +90,8 @@ public class SingleRequestTest {
 
     @Test
     public void shouldGetInvalidRequestRecordsWhenHeaderBuilderThrowsIOException() throws IOException {
-        when(headerBuilder.build(any(MessageContainer.class), any(OdpfMessageParser.class))).thenThrow(IOException.class);
-        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody, odpfMessageParser);
+        when(headerBuilder.build(any(MessageContainer.class), any(SchemaContainer.class))).thenThrow(IOException.class);
+        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, queryParamBuilder, uriBuilder, requestBody, odpfMessageParser);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
         List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
@@ -98,8 +103,8 @@ public class SingleRequestTest {
 
     @Test
     public void shouldGetInvalidRequestRecordsWhenHeaderBuilderThrowsIllegalArgumentException() throws IOException {
-        when(headerBuilder.build(any(MessageContainer.class), any(OdpfMessageParser.class))).thenThrow(IOException.class);
-        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody, odpfMessageParser);
+        when(headerBuilder.build(any(MessageContainer.class), any(SchemaContainer.class))).thenThrow(IOException.class);
+        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, queryParamBuilder, uriBuilder, requestBody, odpfMessageParser);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
         List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
@@ -113,7 +118,7 @@ public class SingleRequestTest {
     public void shouldGetValidAndInvalidRequestRecords() throws IOException {
         when(requestBody.build(messages.get(0))).thenThrow(IOException.class);
         when(requestBody.build(messages.get(1))).thenReturn("{\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}");
-        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, uriBuilder, requestBody, odpfMessageParser);
+        Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, queryParamBuilder, uriBuilder, requestBody, odpfMessageParser);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));
         List<HttpRequestRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);

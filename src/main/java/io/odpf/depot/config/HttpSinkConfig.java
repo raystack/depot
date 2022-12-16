@@ -1,11 +1,12 @@
 package io.odpf.depot.config;
 
+import io.odpf.depot.common.Template;
 import io.odpf.depot.config.converter.HttpHeaderConverter;
 import io.odpf.depot.config.converter.HttpParameterSourceTypeConverter;
 import io.odpf.depot.config.converter.HttpRequestBodyTypeConverter;
 import io.odpf.depot.config.converter.HttpRequestMethodConverter;
 import io.odpf.depot.config.converter.HttpRequestTypeConverter;
-import io.odpf.depot.config.converter.JsonToPropertiesConverter;
+import io.odpf.depot.config.converter.TemplateMapConverter;
 import io.odpf.depot.http.enums.HttpParameterSourceType;
 import io.odpf.depot.http.enums.HttpRequestBodyType;
 import io.odpf.depot.http.enums.HttpRequestMethodType;
@@ -13,7 +14,6 @@ import io.odpf.depot.http.enums.HttpRequestType;
 import org.aeonbits.owner.Config;
 
 import java.util.Map;
-import java.util.Properties;
 
 
 @Config.DisableFeature(Config.DisableableFeature.PARAMETER_FORMATTING)
@@ -34,13 +34,18 @@ public interface HttpSinkConfig extends HttpClientConfig {
 
     @Key("SINK_HTTP_HEADERS_TEMPLATE")
     @DefaultValue("")
-    @ConverterClass(JsonToPropertiesConverter.class)
-    Properties getSinkHttpHeadersTemplate();
+    @ConverterClass(TemplateMapConverter.class)
+    Map<Template, Template> getSinkHttpHeadersTemplate();
 
     @Key("SINK_HTTP_HEADERS_PARAMETER_SOURCE")
     @DefaultValue("MESSAGE")
     @ConverterClass(HttpParameterSourceTypeConverter.class)
     HttpParameterSourceType getSinkHttpHeadersParameterSource();
+
+    @Key("SINK_HTTP_QUERY_TEMPLATE")
+    @DefaultValue("")
+    @ConverterClass(TemplateMapConverter.class)
+    Map<Template, Template> getQueryTemplate();
 
     @Key("SINK_HTTP_QUERY_PARAMETER_SOURCE")
     @DefaultValue("MESSAGE")
