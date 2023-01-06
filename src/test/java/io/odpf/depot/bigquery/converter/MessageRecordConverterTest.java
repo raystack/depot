@@ -272,7 +272,7 @@ public class MessageRecordConverterTest {
 
         DynamicMessage dynamicMessage = DynamicMessage.newBuilder(TestMessage.getDescriptor())
                 .setUnknownFields(UnknownFieldSet.newBuilder()
-                        .addField(1, UnknownFieldSet.Field.getDefaultInstance())
+                        .addField(10, UnknownFieldSet.Field.getDefaultInstance())
                         .build())
                 .build();
         ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage);

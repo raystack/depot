@@ -22,7 +22,7 @@ public class JsonOdpfParsedMessageTest {
     public void shouldGetEmptyMappingKeysForEmptyJsonObject() {
         //for empty json object
         JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(new JSONObject(), configuration);
-        Map<String, Object> parsedMessageMapping = parsedMessage.getMapping(null);
+        Map<String, Object> parsedMessageMapping = parsedMessage.getMapping();
         assertEquals(Collections.emptyMap(), parsedMessageMapping);
 
     }
@@ -30,7 +30,7 @@ public class JsonOdpfParsedMessageTest {
     @Test
     public void shouldGetEmptyMappingKeysForNullJsonObject() {
         JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(null, configuration);
-        Map<String, Object> parsedMessageMapping = parsedMessage.getMapping(null);
+        Map<String, Object> parsedMessageMapping = parsedMessage.getMapping();
         assertEquals(Collections.emptyMap(), parsedMessageMapping);
     }
 
@@ -38,7 +38,7 @@ public class JsonOdpfParsedMessageTest {
     public void shouldGetMappings() {
         JSONObject personDetails = new JSONObject("{\"first_name\": \"john doe\", \"address\": \"planet earth\"}");
         JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails, configuration);
-        Map<String, Object> parsedMessageMapping = parsedMessage.getMapping(null);
+        Map<String, Object> parsedMessageMapping = parsedMessage.getMapping();
         Map<String, Object> expectedMap = new HashMap<>();
         expectedMap.put("first_name", "john doe");
         expectedMap.put("address", "planet earth");

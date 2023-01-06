@@ -10,7 +10,7 @@ public interface ParsedOdpfMessage {
 
     void validate(OdpfSinkConfig config);
 
-    Map<String, Object> getMapping(OdpfMessageSchema schema) throws IOException;
+    Map<String, Object> getMapping() throws IOException;
 
     Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema);
 }

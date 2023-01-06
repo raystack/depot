@@ -101,4 +101,18 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
                 getTypeNameToPackageNameMap(newDescriptors));
         return new ProtoOdpfMessageSchema(protoField);
     }
+
+    public ProtoField getProtoField(String schemaClass, Map<String, Descriptors.Descriptor> newDescriptors) throws IOException {
+        ProtoField protoField = new ProtoField();
+        protoField = protoMappingParser.parseFields(protoField, schemaClass, newDescriptors,
+                getTypeNameToPackageNameMap(newDescriptors));
+        return protoField;
+    }
+
+    public ProtoField getProtoField(String schemaClass) throws IOException {
+        ProtoField protoField = new ProtoField();
+        protoField = protoMappingParser.parseFields(protoField, schemaClass, getDescriptorMap(),
+                getTypeNameToPackageNameMap(getDescriptorMap()));
+        return protoField;
+    }
 }

@@ -34,7 +34,7 @@ public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
     }
 
     @Override
-    public Map<String, Object> getMapping(OdpfMessageSchema schema) {
+    public Map<String, Object> getMapping() {
         if (jsonObject == null || jsonObject.isEmpty()) {
             return Collections.emptyMap();
         }

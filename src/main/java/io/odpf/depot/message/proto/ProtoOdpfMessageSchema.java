@@ -20,7 +20,7 @@ public class ProtoOdpfMessageSchema implements OdpfMessageSchema {
     private final Properties properties;
 
     public ProtoOdpfMessageSchema(ProtoField protoField) throws IOException {
-        this(protoField, createProperties(protoField));
+        this(protoField, null);
     }
 
     public ProtoOdpfMessageSchema(ProtoField protoField, Properties properties) {
@@ -31,25 +31,5 @@ public class ProtoOdpfMessageSchema implements OdpfMessageSchema {
     @Override
     public Properties getSchema() {
         return this.properties;
-    }
-
-    private static Properties createProperties(ProtoField protoField) throws IOException {
-        String protoMappingString = ProtoMapper.generateColumnMappings(protoField.getFields());
-        Type type = new TypeToken<Map<String, Object>>() {
-        }.getType();
-        Map<String, Object> m = GSON.fromJson(protoMappingString, type);
-        return mapToProperties(m);
-    }
-
-    private static Properties mapToProperties(Map<String, Object> inputMap) {
-        Properties properties = new Properties();
-        for (Map.Entry<String, Object> kv : inputMap.entrySet()) {
-            if (kv.getValue() instanceof String) {
-                properties.put(kv.getKey(), kv.getValue());
-            } else if (kv.getValue() instanceof Map) {
-                properties.put(kv.getKey(), mapToProperties((Map) kv.getValue()));
-            }
-        }
-        return properties;
     }
 }

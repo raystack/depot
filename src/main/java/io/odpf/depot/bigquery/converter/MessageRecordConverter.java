@@ -59,7 +59,7 @@ public class MessageRecordConverter {
                     ? config.getSinkConnectorSchemaProtoMessageClass() : config.getSinkConnectorSchemaProtoKeyClass();
             ParsedOdpfMessage parsedOdpfMessage = parser.parse(message, mode, schemaClass);
             parsedOdpfMessage.validate(config);
-            Map<String, Object> columns = parsedOdpfMessage.getMapping(schema);
+            Map<String, Object> columns = parsedOdpfMessage.getMapping();
             MessageRecordConverterUtils.addMetadata(columns, message, config);
             MessageRecordConverterUtils.addTimeStampColumnForJson(columns, config);
             return new Record(message.getMetadata(), columns, index, null);

@@ -47,16 +47,16 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
                     ? config.getSinkConnectorSchemaProtoMessageClass() : config.getSinkConnectorSchemaProtoKeyClass();
             ProtoOdpfMessageParser odpfMessageParser = (ProtoOdpfMessageParser) getOdpfMessageParser();
             OdpfMessageSchema schema;
+            ProtoField protoField;
             if (newDescriptors == null) {
-                schema = odpfMessageParser.getSchema(schemaClass);
+                protoField = odpfMessageParser.getProtoField(schemaClass);
             } else {
-                schema = odpfMessageParser.getSchema(schemaClass, newDescriptors);
+                protoField = odpfMessageParser.getProtoField(schemaClass, newDescriptors);
             }
-            ProtoField protoField = ((ProtoOdpfMessageSchema) schema).getProtoField();
             List<Field> bqSchemaFields = BigqueryFields.generateBigquerySchema(protoField);
             addMetadataFields(bqSchemaFields);
             bqClient.upsertTable(bqSchemaFields);
-            converterCache.setMessageRecordConverter(new MessageRecordConverter(odpfMessageParser, config, schema));
+            converterCache.setMessageRecordConverter(new MessageRecordConverter(odpfMessageParser, config, null));
         } catch (BigQueryException | IOException e) {
             String errMsg = "Error while updating bigquery table on callback:" + e.getMessage();
             log.error(errMsg);
