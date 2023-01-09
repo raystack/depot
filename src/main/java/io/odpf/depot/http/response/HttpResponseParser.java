@@ -12,32 +12,42 @@ import java.util.Map;
 
 public class HttpResponseParser {
 
-    public static Map<Long, ErrorInfo> getErrorsFromResponse(List<HttpRequestRecord> records, List<HttpSinkResponse> responses, Instrumentation instrumentation) throws IOException {
+    public static Map<Long, ErrorInfo> getErrorsFromResponse(
+            List<HttpRequestRecord> records,
+            List<HttpSinkResponse> responses,
+            Instrumentation instrumentation,
+            Map<Integer, Boolean> requestLogStatusCodeRanges) throws IOException {
         Map<Long, ErrorInfo> errors = new HashMap<>();
         for (int i = 0; i < responses.size(); i++) {
             HttpRequestRecord record = records.get(i);
             HttpSinkResponse response = responses.get(i);
+            String responseCode = response.getResponseCode();
+            if (shouldLogRequest(responseCode, requestLogStatusCodeRanges)) {
+                instrumentation.logInfo(record.printRequest());
+            }
             if (response.isFailed()) {
-                errors.putAll(getErrors(record, response));
-                instrumentation.logError("Error while pushing message request to http services. Record: {}, Response Code: {}, Response Body: {}",
-                        record.getRequestBody(), response.getResponseCode(), response.getResponseBody());
+                errors.putAll(getErrors(record, responseCode));
+                instrumentation.logError("Error while pushing message request to http services. Response Code: {}, Response Body: {}", responseCode, response.getResponseBody());
             }
         }
         return errors;
     }
 
-    private static Map<Long, ErrorInfo> getErrors(HttpRequestRecord record, HttpSinkResponse response) {
+    private static Map<Long, ErrorInfo> getErrors(HttpRequestRecord record, String responseCode) {
         Map<Long, ErrorInfo> errors = new HashMap<>();
-        String httpStatusCode = response.getResponseCode();
         for (long messageIndex: record) {
-            if (httpStatusCode.startsWith("4")) {
-                errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + httpStatusCode), ErrorType.SINK_4XX_ERROR));
-            } else if (httpStatusCode.startsWith("5")) {
-                errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + httpStatusCode), ErrorType.SINK_5XX_ERROR));
+            if (responseCode.startsWith("4")) {
+                errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + responseCode), ErrorType.SINK_4XX_ERROR));
+            } else if (responseCode.startsWith("5")) {
+                errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + responseCode), ErrorType.SINK_5XX_ERROR));
             } else {
-                errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + httpStatusCode), ErrorType.SINK_UNKNOWN_ERROR));
+                errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + responseCode), ErrorType.SINK_UNKNOWN_ERROR));
             }
         }
         return errors;
+    }
+
+    private static boolean shouldLogRequest(String responseCode, Map<Integer, Boolean> requestLogStatusCodeRanges) {
+        return responseCode.equals("null") || requestLogStatusCodeRanges.containsKey(Integer.parseInt(responseCode));
     }
 }

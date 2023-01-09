@@ -4,6 +4,7 @@ import com.timgroup.statsd.NoOpStatsDClient;
 import io.odpf.depot.OdpfSink;
 import io.odpf.depot.common.client.HttpClientUtils;
 import io.odpf.depot.config.HttpSinkConfig;
+import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.http.client.HttpSinkClient;
 import io.odpf.depot.http.request.Request;
 import io.odpf.depot.http.request.RequestFactory;
@@ -46,7 +47,7 @@ public class HttpSinkFactory {
         return new HttpSink(
                 httpSinkClient,
                 request,
-                new Instrumentation(statsDReporter, HttpSink.class)
-        );
+                new Instrumentation(statsDReporter, HttpSink.class),
+                sinkConfig.getSinkHttpRequestLogStatusCodeRanges());
     }
 }

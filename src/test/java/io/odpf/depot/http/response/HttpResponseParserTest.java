@@ -1,5 +1,6 @@
 package io.odpf.depot.http.response;
 
+import io.odpf.depot.config.converter.RangeToHashMapConverter;
 import io.odpf.depot.error.ErrorInfo;
 import io.odpf.depot.error.ErrorType;
 import io.odpf.depot.http.record.HttpRequestRecord;
@@ -8,11 +9,14 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
@@ -21,7 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -31,10 +38,7 @@ public class HttpResponseParserTest {
     private Instrumentation instrumentation;
 
     @Mock
-    private HttpEntityEnclosingRequestBase request;
-
-    @Mock
-    private HttpEntity entity;
+    private HttpEntity responseEntity;
 
     @Test
     public void shouldGetErrorsFromResponse() throws IOException {
@@ -45,18 +49,16 @@ public class HttpResponseParserTest {
         records.add(createRecord(7));
         records.add(createRecord(12));
 
-        Mockito.when(request.getEntity()).thenReturn(entity);
+        HttpResponse successHttpResponse = mock(HttpResponse.class);
+        StatusLine successStatusLine = mock(StatusLine.class);
+        when(successHttpResponse.getStatusLine()).thenReturn(successStatusLine);
+        when(successStatusLine.getStatusCode()).thenReturn(200);
 
-        HttpResponse successHttpResponse = Mockito.mock(HttpResponse.class);
-        StatusLine successStatusLine = Mockito.mock(StatusLine.class);
-        Mockito.when(successHttpResponse.getStatusLine()).thenReturn(successStatusLine);
-        Mockito.when(successStatusLine.getStatusCode()).thenReturn(200);
-
-        HttpResponse failedHttpResponse = Mockito.mock(HttpResponse.class);
-        StatusLine failedStatusLine = Mockito.mock(StatusLine.class);
-        Mockito.when(failedHttpResponse.getStatusLine()).thenReturn(failedStatusLine);
-        Mockito.when(failedStatusLine.getStatusCode()).thenReturn(500);
-        Mockito.when(failedHttpResponse.getEntity()).thenReturn(entity);
+        HttpResponse failedHttpResponse = mock(HttpResponse.class);
+        StatusLine failedStatusLine = mock(StatusLine.class);
+        when(failedHttpResponse.getStatusLine()).thenReturn(failedStatusLine);
+        when(failedStatusLine.getStatusCode()).thenReturn(500);
+        when(failedHttpResponse.getEntity()).thenReturn(responseEntity);
         List<HttpSinkResponse> responses = new ArrayList<HttpSinkResponse>() {{
             add(new HttpSinkResponse(successHttpResponse));
             add(new HttpSinkResponse(failedHttpResponse));
@@ -65,12 +67,12 @@ public class HttpResponseParserTest {
             add(new HttpSinkResponse(failedHttpResponse));
         }};
 
-        Map<Long, ErrorInfo> errors = HttpResponseParser.getErrorsFromResponse(records, responses, instrumentation);
-        Assert.assertEquals(3, errors.size());
-        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(1L).getErrorType());
-        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(7L).getErrorType());
-        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(12L).getErrorType());
-        Mockito.verify(instrumentation, times(3)).logError("Error while pushing message request to http services. Record: {}, Response Code: {}, Response Body: {}", null, "500", null);
+        Map<Long, ErrorInfo> errors = HttpResponseParser.getErrorsFromResponse(records, responses, instrumentation, createRequestLogStatusCode());
+        assertEquals(3, errors.size());
+        assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(1L).getErrorType());
+        assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(7L).getErrorType());
+        assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(12L).getErrorType());
+        verify(instrumentation, times(3)).logError("Error while pushing message request to http services. Response Code: {}, Response Body: {}", "500", null);
     }
 
     @Test
@@ -83,24 +85,90 @@ public class HttpResponseParserTest {
         records.add(createRecord(12));
 
         List<HttpSinkResponse> responses = new ArrayList<>();
-        responses.add(Mockito.mock(HttpSinkResponse.class));
-        responses.add(Mockito.mock(HttpSinkResponse.class));
-        responses.add(Mockito.mock(HttpSinkResponse.class));
-        responses.add(Mockito.mock(HttpSinkResponse.class));
-        responses.add(Mockito.mock(HttpSinkResponse.class));
+        responses.add(mock(HttpSinkResponse.class));
+        responses.add(mock(HttpSinkResponse.class));
+        responses.add(mock(HttpSinkResponse.class));
+        responses.add(mock(HttpSinkResponse.class));
+        responses.add(mock(HttpSinkResponse.class));
 
         IntStream.range(0, responses.size()).forEach(
-                index -> {
-                    when(responses.get(index).isFailed()).thenReturn(false);
-                }
+                index -> when(responses.get(index).getResponseCode()).thenReturn("500")
         );
-        Map<Long, ErrorInfo> errors = HttpResponseParser.getErrorsFromResponse(records, responses, instrumentation);
+        Map<Long, ErrorInfo> errors = HttpResponseParser.getErrorsFromResponse(records, responses, instrumentation, createRequestLogStatusCode());
         Assert.assertTrue(errors.isEmpty());
     }
 
+    @Test
+    public void shouldLogRequestIfResponseCodeInStatusCodeRanges() throws IOException {
+        List<HttpRequestRecord> records = new ArrayList<>();
+        records.add(createRecord(0));
+        records.add(createRecord(1));
+        records.add(createRecord(4));
+
+        HttpResponse failedHttpResponse = mock(HttpResponse.class);
+        StatusLine failedStatusLine = mock(StatusLine.class);
+        when(failedHttpResponse.getStatusLine()).thenReturn(failedStatusLine);
+        when(failedStatusLine.getStatusCode()).thenReturn(500);
+        when(failedHttpResponse.getEntity()).thenReturn(responseEntity);
+        List<HttpSinkResponse> responses = new ArrayList<HttpSinkResponse>() {{
+            add(new HttpSinkResponse(failedHttpResponse));
+            add(new HttpSinkResponse(failedHttpResponse));
+            add(new HttpSinkResponse(failedHttpResponse));
+        }};
+        Map<Long, ErrorInfo> errors = HttpResponseParser.getErrorsFromResponse(records, responses, instrumentation, createRequestLogStatusCode());
+        assertEquals(3, errors.size());
+        assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(0L).getErrorType());
+        assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(1L).getErrorType());
+        assertEquals(ErrorType.SINK_5XX_ERROR, errors.get(4L).getErrorType());
+        verify(instrumentation, times(3)).logInfo(
+                "\nRequest Method: PUT"
+                        + "\nRequest Url: http://dummy.com"
+                        + "\nRequest Headers: [Accept: text/plain]"
+                        + "\nRequest Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]"
+        );
+        verify(instrumentation, times(3)).logError("Error while pushing message request to http services. Response Code: {}, Response Body: {}", "500", null);
+    }
+
+    @Test
+    public void shouldNotLogRequestIfResponseCodeIsNotInStatusCodeRanges() throws IOException {
+        List<HttpRequestRecord> records = new ArrayList<>();
+        records.add(createRecord(0));
+        records.add(createRecord(1));
+        records.add(createRecord(4));
+
+        HttpResponse failedHttpResponse = mock(HttpResponse.class);
+        StatusLine failedStatusLine = mock(StatusLine.class);
+        when(failedHttpResponse.getStatusLine()).thenReturn(failedStatusLine);
+        when(failedStatusLine.getStatusCode()).thenReturn(400);
+        when(failedHttpResponse.getEntity()).thenReturn(responseEntity);
+        List<HttpSinkResponse> responses = new ArrayList<HttpSinkResponse>() {{
+            add(new HttpSinkResponse(failedHttpResponse));
+            add(new HttpSinkResponse(failedHttpResponse));
+            add(new HttpSinkResponse(failedHttpResponse));
+        }};
+        Map<Long, ErrorInfo> errors = HttpResponseParser.getErrorsFromResponse(records, responses, instrumentation, createRequestLogStatusCode());
+        assertEquals(3, errors.size());
+        assertEquals(ErrorType.SINK_4XX_ERROR, errors.get(0L).getErrorType());
+        assertEquals(ErrorType.SINK_4XX_ERROR, errors.get(1L).getErrorType());
+        assertEquals(ErrorType.SINK_4XX_ERROR, errors.get(4L).getErrorType());
+        verify(instrumentation, times(0)).logInfo(
+                "\nRequest Method: PUT"
+                        + "\nRequest Url: http://dummy.com"
+                        + "\nRequest Headers: [Accept: text/plain]"
+                        + "\nRequest Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]"
+        );
+    }
+
     private HttpRequestRecord createRecord(Integer index) {
+        HttpEntityEnclosingRequestBase request = new HttpPut("http://dummy.com");
+        request.setEntity(new StringEntity("[{\"key\":\"value1\"},{\"key\":\"value2\"}]", ContentType.APPLICATION_JSON));
+        request.setHeader(new BasicHeader("Accept", "text/plain"));
         HttpRequestRecord record = new HttpRequestRecord(null, true, request);
         record.addIndex(index);
         return record;
+    }
+
+    private Map<Integer, Boolean> createRequestLogStatusCode() {
+        return new RangeToHashMapConverter().convert(null, "401-600");
     }
 }
