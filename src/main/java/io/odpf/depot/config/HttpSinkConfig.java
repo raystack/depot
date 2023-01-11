@@ -8,6 +8,7 @@ import io.odpf.depot.config.converter.HttpRequestMethodConverter;
 import io.odpf.depot.config.converter.HttpRequestTypeConverter;
 import io.odpf.depot.config.converter.RangeToHashMapConverter;
 import io.odpf.depot.config.converter.TemplateMapConverter;
+import io.odpf.depot.config.converter.RangeToHashMapConverter;
 import io.odpf.depot.http.enums.HttpParameterSourceType;
 import io.odpf.depot.http.enums.HttpRequestBodyType;
 import io.odpf.depot.http.enums.HttpRequestMethodType;
@@ -68,4 +69,8 @@ public interface HttpSinkConfig extends HttpClientConfig {
     @ConverterClass(RangeToHashMapConverter.class)
     Map<Integer, Boolean> getSinkHttpRequestLogStatusCodeRanges();
 
+    @Key("SINK_HTTP_RETRY_STATUS_CODE_RANGES")
+    @DefaultValue("400-600")
+    @ConverterClass(RangeToHashMapConverter.class)
+    Map<Integer, Boolean> getSinkHttpRetryStatusCodeRanges();
 }

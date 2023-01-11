@@ -19,9 +19,9 @@ public class RangeToHashMapConverter implements Converter<Map<Integer, Boolean>>
 
         Arrays.stream(ranges).forEach(range -> {
             if (!range.contains("-")) {
-                throw new IllegalArgumentException("input value '" + range + "' is invalid or not in range values");
+                throw new IllegalArgumentException("input value '" + range + "' is not a valid range");
             }
-            List<Integer> rangeList = Arrays.stream(range.split("-")).map(Integer::parseInt).collect(Collectors.toList());
+            List<Integer> rangeList = Arrays.stream(range.trim().split("-")).map(Integer::parseInt).collect(Collectors.toList());
             IntStream.rangeClosed(rangeList.get(0), rangeList.get(1)).forEach(statusCode -> statusMap.put(statusCode, true));
         });
         return statusMap;

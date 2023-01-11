@@ -46,7 +46,9 @@ public class HttpSinkFactory {
         return new HttpSink(
                 httpSinkClient,
                 request,
-                new Instrumentation(statsDReporter, HttpSink.class),
-                sinkConfig.getSinkHttpRequestLogStatusCodeRanges());
+                sinkConfig.getSinkHttpRetryStatusCodeRanges(),
+                sinkConfig.getSinkHttpRequestLogStatusCodeRanges(),
+                new Instrumentation(statsDReporter, HttpSink.class)
+        );
     }
 }

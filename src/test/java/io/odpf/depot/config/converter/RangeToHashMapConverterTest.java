@@ -28,14 +28,14 @@ public class RangeToHashMapConverterTest {
     @Test
     public void shouldThrowExceptionIfConfigNotRangeValues() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("input value '100' is invalid or not in range values");
+        expectedException.expectMessage("input value '100' is not a valid range");
         new RangeToHashMapConverter().convert(null, "100,200-203");
     }
 
     @Test
     public void shouldThrowExceptionIfConfigIsInvalid() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("input value 'string' is invalid or not in range values");
+        expectedException.expectMessage("input value 'string' is not a valid range");
         new RangeToHashMapConverter().convert(null, "string");
     }
 }
