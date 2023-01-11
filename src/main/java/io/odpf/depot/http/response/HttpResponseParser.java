@@ -12,13 +12,13 @@ import java.util.Map;
 
 public class HttpResponseParser {
 
-    public static Map<Long, ErrorInfo> getErrorsFromResponse(List<HttpRequestRecord> records, List<HttpSinkResponse> responses, Instrumentation instrumentation) throws IOException {
+    public static Map<Long, ErrorInfo> getErrorsFromResponse(List<HttpRequestRecord> records, List<HttpSinkResponse> responses, Map<Integer, Boolean> retryStatusCodeRanges, Instrumentation instrumentation) throws IOException {
         Map<Long, ErrorInfo> errors = new HashMap<>();
         for (int i = 0; i < responses.size(); i++) {
             HttpRequestRecord record = records.get(i);
             HttpSinkResponse response = responses.get(i);
             if (response.isFailed()) {
-                errors.putAll(getErrors(record, response));
+                errors.putAll(getErrors(record, response, retryStatusCodeRanges));
                 instrumentation.logError("Error while pushing message request to http services. Record: {}, Response Code: {}, Response Body: {}",
                         record.getRequestBody(), response.getResponseCode(), response.getResponseBody());
             }
@@ -26,11 +26,13 @@ public class HttpResponseParser {
         return errors;
     }
 
-    private static Map<Long, ErrorInfo> getErrors(HttpRequestRecord record, HttpSinkResponse response) {
+    private static Map<Long, ErrorInfo> getErrors(HttpRequestRecord record, HttpSinkResponse response, Map<Integer, Boolean> retryStatusCodeRanges) {
         Map<Long, ErrorInfo> errors = new HashMap<>();
         String httpStatusCode = response.getResponseCode();
         for (long messageIndex: record) {
-            if (httpStatusCode.startsWith("4")) {
+            if (retryStatusCodeRanges.containsKey(Integer.parseInt(httpStatusCode))) {
+                errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + httpStatusCode), ErrorType.SINK_RETRYABLE_ERROR));
+            } else if (httpStatusCode.startsWith("4")) {
                 errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + httpStatusCode), ErrorType.SINK_4XX_ERROR));
             } else if (httpStatusCode.startsWith("5")) {
                 errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + httpStatusCode), ErrorType.SINK_5XX_ERROR));

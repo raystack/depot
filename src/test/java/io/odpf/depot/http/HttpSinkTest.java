@@ -23,7 +23,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.when;
@@ -69,7 +71,8 @@ public class HttpSinkTest {
         responses.add(Mockito.mock(HttpSinkResponse.class));
         when(request.createRecords(messages)).thenReturn(records);
         when(httpSinkClient.send(records)).thenReturn(responses);
-        HttpSink httpSink = new HttpSink(httpSinkClient, request, instrumentation);
+        Map<Integer, Boolean> retryStatusCodeRanges = new HashMap<>();
+        HttpSink httpSink = new HttpSink(httpSinkClient, request, retryStatusCodeRanges, instrumentation);
         OdpfSinkResponse odpfSinkResponse = httpSink.pushToSink(messages);
         Assert.assertFalse(odpfSinkResponse.hasErrors());
     }
@@ -90,12 +93,50 @@ public class HttpSinkTest {
         when(request.createRecords(messages)).thenReturn(records);
         List<HttpRequestRecord> validRecords = records.stream().filter(HttpRequestRecord::isValid).collect(Collectors.toList());
         when(httpSinkClient.send(validRecords)).thenReturn(responses);
-        HttpSink httpSink = new HttpSink(httpSinkClient, request, instrumentation);
+        Map<Integer, Boolean> retryStatusCodeRanges = new HashMap<>();
+        HttpSink httpSink = new HttpSink(httpSinkClient, request, retryStatusCodeRanges, instrumentation);
         OdpfSinkResponse odpfSinkResponse = httpSink.pushToSink(messages);
         Assert.assertTrue(odpfSinkResponse.hasErrors());
         Assert.assertEquals(2, odpfSinkResponse.getErrors().size());
         Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, odpfSinkResponse.getErrorsFor(0).getErrorType());
         Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, odpfSinkResponse.getErrorsFor(2).getErrorType());
+    }
+
+    @Test
+    public void shouldReportErrorsBasedOnStatusCodeWhenNoRetryStatusCodeRangeIsConfigured() throws IOException {
+        List<OdpfMessage> messages = new ArrayList<>();
+        List<HttpRequestRecord> records = new ArrayList<>();
+        records.add(createRecord(0, null, true));
+        records.add(createRecord(1, null, true));
+        records.add(createRecord(2, null, true));
+        records.add(createRecord(3, null, true));
+        records.add(createRecord(4, null, true));
+
+        Mockito.when(httpRequest.getEntity()).thenReturn(httpEntity);
+        Mockito.when(response.getStatusLine()).thenReturn(statusLine);
+        Mockito.when(statusLine.getStatusCode()).thenReturn(500);
+        Mockito.when(response.getEntity()).thenReturn(httpEntity);
+        List<HttpSinkResponse> responses = new ArrayList<>();
+        responses.add(new HttpSinkResponse(response));
+        responses.add(new HttpSinkResponse(response));
+        responses.add(new HttpSinkResponse(response));
+        responses.add(new HttpSinkResponse(response));
+        responses.add(new HttpSinkResponse(response));
+
+        when(request.createRecords(messages)).thenReturn(records);
+        List<HttpRequestRecord> validRecords = records.stream().filter(HttpRequestRecord::isValid).collect(Collectors.toList());
+        when(httpSinkClient.send(validRecords)).thenReturn(responses);
+        when(httpSinkClient.send(records)).thenReturn(responses);
+
+        Map<Integer, Boolean> retryStatusCodeRanges = new HashMap<>();
+
+        HttpSink httpSink = new HttpSink(httpSinkClient, request, retryStatusCodeRanges, instrumentation);
+        OdpfSinkResponse odpfSinkResponse = httpSink.pushToSink(messages);
+        Assert.assertTrue(odpfSinkResponse.hasErrors());
+        Assert.assertEquals(5, odpfSinkResponse.getErrors().size());
+        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, odpfSinkResponse.getErrorsFor(1).getErrorType());
+        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, odpfSinkResponse.getErrorsFor(3).getErrorType());
+        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, odpfSinkResponse.getErrorsFor(4).getErrorType());
     }
 
     @Test
@@ -124,7 +165,12 @@ public class HttpSinkTest {
         when(httpSinkClient.send(validRecords)).thenReturn(responses);
         when(httpSinkClient.send(records)).thenReturn(responses);
 
-        HttpSink httpSink = new HttpSink(httpSinkClient, request, instrumentation);
+        Map<Integer, Boolean> retryStatusCodeRanges = new HashMap<>();
+        retryStatusCodeRanges.put(400, true);
+        retryStatusCodeRanges.put(499, true);
+        retryStatusCodeRanges.put(501, true);
+
+        HttpSink httpSink = new HttpSink(httpSinkClient, request, retryStatusCodeRanges, instrumentation);
         OdpfSinkResponse odpfSinkResponse = httpSink.pushToSink(messages);
         Assert.assertTrue(odpfSinkResponse.hasErrors());
         Assert.assertEquals(5, odpfSinkResponse.getErrors().size());
@@ -132,6 +178,7 @@ public class HttpSinkTest {
         Assert.assertEquals(ErrorType.SINK_5XX_ERROR, odpfSinkResponse.getErrorsFor(3).getErrorType());
         Assert.assertEquals(ErrorType.SINK_5XX_ERROR, odpfSinkResponse.getErrorsFor(4).getErrorType());
     }
+
 
     private HttpRequestRecord createRecord(Integer index, ErrorInfo errorInfo, boolean isValid) {
         HttpRequestRecord record = new HttpRequestRecord(errorInfo, isValid, httpRequest);
