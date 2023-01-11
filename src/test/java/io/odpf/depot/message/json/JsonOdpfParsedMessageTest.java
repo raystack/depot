@@ -49,7 +49,7 @@ public class JsonOdpfParsedMessageTest {
     public void shouldReturnValueFromFlatJson() {
         JSONObject personDetails = new JSONObject("{\"first_name\": \"john doe\", \"address\": \"planet earth\"}");
         JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails, configuration);
-        Assert.assertEquals("john doe", parsedMessage.getFieldByName("first_name", null));
+        Assert.assertEquals("john doe", parsedMessage.getFieldByName("first_name"));
     }
 
     @Test
@@ -60,7 +60,7 @@ public class JsonOdpfParsedMessageTest {
                 + "\"family\" : {\"brother\" : \"david doe\"}"
                 + "}");
         JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails, configuration);
-        Assert.assertEquals("david doe", parsedMessage.getFieldByName("family.brother", null));
+        Assert.assertEquals("david doe", parsedMessage.getFieldByName("family.brother"));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class JsonOdpfParsedMessageTest {
                 + "\"family\" : {\"brother\" : \"david doe\"}"
                 + "}");
         JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails, configuration);
-        java.lang.IllegalArgumentException illegalArgumentException = Assert.assertThrows(java.lang.IllegalArgumentException.class, () -> parsedMessage.getFieldByName("family.sister", null));
+        java.lang.IllegalArgumentException illegalArgumentException = Assert.assertThrows(java.lang.IllegalArgumentException.class, () -> parsedMessage.getFieldByName("family.sister"));
         Assert.assertEquals("Invalid field config : family.sister", illegalArgumentException.getMessage());
     }
 
@@ -83,7 +83,7 @@ public class JsonOdpfParsedMessageTest {
                 + "\"family\" : [{\"brother\" : \"david doe\"}, {\"brother\" : \"cain doe\"}]"
                 + "}");
         JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails, configuration);
-        JSONArray family = (JSONArray) parsedMessage.getFieldByName("family", null);
+        JSONArray family = (JSONArray) parsedMessage.getFieldByName("family");
         Assert.assertEquals(2, family.length());
         Assert.assertEquals("david doe", ((JSONObject) family.get(0)).get("brother"));
         Assert.assertEquals("cain doe", ((JSONObject) family.get(1)).get("brother"));

@@ -1,10 +1,13 @@
 package io.odpf.depot.message.proto;
 
+import com.google.common.io.BaseEncoding;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.jayway.jsonpath.InvalidJsonException;
+import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import io.odpf.depot.exception.DeserializerException;
@@ -12,8 +15,10 @@ import lombok.AllArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.json.JSONWriter;
 
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -22,9 +27,9 @@ import java.util.stream.Collectors;
 
 public class ProtoJsonProvider implements JsonProvider {
 
+    private static final Long LONG_MASK = 0x00000000FFFFFFFFL;
     private static final JsonFormat.Printer PRINTER = JsonFormat.printer()
             .preservingProtoFieldNames()
-            .includingDefaultValueFields()
             .omittingInsignificantWhitespace();
     private static final JsonOrgJsonProvider JSON_P = new JsonOrgJsonProvider();
 
@@ -34,6 +39,55 @@ public class ProtoJsonProvider implements JsonProvider {
         } catch (InvalidProtocolBufferException e) {
             String name = msg.getDescriptorForType().getFullName();
             throw new DeserializerException("Unable to convert message to JSON" + name, e);
+        }
+    }
+
+    private static boolean isPrimitive(Descriptors.FieldDescriptor fd) {
+        return !fd.getJavaType().equals(Descriptors.FieldDescriptor.JavaType.MESSAGE);
+    }
+
+    private static Object getPrimitiveValue(Descriptors.FieldDescriptor fd, Object value) {
+        switch (fd.getType()) {
+            case UINT32:
+            case FIXED32:
+                return unsignedToString((Integer) value);
+            case UINT64:
+            case FIXED64:
+                return unsignedToString((Long) value);
+            case BYTES:
+                return BaseEncoding.base64().encode(((ByteString) value).toByteArray());
+            case ENUM:
+                // Special-case google.protobuf.NullValue (it's an Enum).
+                if (fd.getEnumType().getFullName().equals("google.protobuf.NullValue")) {
+                    return null;
+                }
+                return value.toString();
+            default:
+                return value;
+        }
+    }
+
+    /**
+     * Convert an unsigned 32-bit integer to a string.
+     */
+    private static String unsignedToString(final int value) {
+        if (value >= 0) {
+            return Integer.toString(value);
+        } else {
+            return Long.toString(value & LONG_MASK);
+        }
+    }
+
+    /**
+     * Convert an unsigned 64-bit integer to a string.
+     */
+    private static String unsignedToString(final long value) {
+        if (value >= 0) {
+            return Long.toString(value);
+        } else {
+            // Pull off the most-significant bit so that BigInteger doesn't think
+            // the number is negative, then set it again using setBit().
+            return BigInteger.valueOf(value & Long.MAX_VALUE).setBit(Long.SIZE - 1).toString();
         }
     }
 
@@ -130,21 +184,6 @@ public class ProtoJsonProvider implements JsonProvider {
     }
 
     @Override
-    public Object getMapValue(Object obj, String key) {
-        if (obj instanceof DynamicMessage) {
-            DynamicMessage msg = (DynamicMessage) obj;
-            Descriptors.FieldDescriptor fd = msg.getDescriptorForType().getFields().stream()
-                    .filter(fieldDescriptor -> fieldDescriptor.getName().equals(key)).findFirst().get();
-            Object value = msg.getField(fd);
-            return new ProtoFieldValue(fd, value);
-        }
-        if (obj instanceof ProtoFieldValue) {
-            return getMapValue(unwrap(obj), key);
-        }
-        return JSON_P.getMapValue(obj, key);
-    }
-
-    @Override
     public void setProperty(Object obj, Object key, Object value) {
         if (value instanceof ProtoFieldValue) {
             JSON_P.setProperty(obj, key, ((ProtoFieldValue) value).getJsonValue());
@@ -174,6 +213,23 @@ public class ProtoJsonProvider implements JsonProvider {
         return obj;
     }
 
+    @Override
+    public Object getMapValue(Object obj, String key) {
+        if (obj instanceof DynamicMessage) {
+            DynamicMessage msg = (DynamicMessage) obj;
+            Descriptors.FieldDescriptor fd = msg.getDescriptorForType().findFieldByName(key);
+            if (fd == null) {
+                throw new PathNotFoundException(String.format("\"%s\" not found", key));
+            }
+            Object value = msg.getField(fd);
+            return new ProtoFieldValue(fd, value);
+        }
+        if (obj instanceof ProtoFieldValue) {
+            return getMapValue(unwrap(obj), key);
+        }
+        return JSON_P.getMapValue(obj, key);
+    }
+
     @AllArgsConstructor
     private class ProtoFieldValue implements Iterable {
         private Descriptors.FieldDescriptor fd;
@@ -186,9 +242,17 @@ public class ProtoJsonProvider implements JsonProvider {
         private boolean isArray() {
             return value instanceof List;
         }
-
         private Object getJsonValue() {
             Descriptors.Descriptor parent = fd.getContainingType();
+            if (isArray() && ((List) value).isEmpty()) {
+                return value;
+            }
+            if (isPrimitive(fd)) {
+                if (isArray()) {
+                    return new JSONArray(((List) value).stream().map(a -> getPrimitiveValue(fd, a)).toArray());
+                }
+                return getPrimitiveValue(fd, value);
+            }
             Object newValue = value;
             if (fd.isRepeated() && !isArray()) {
                 newValue = new ArrayList() {{
@@ -196,6 +260,9 @@ public class ProtoJsonProvider implements JsonProvider {
                 }};
             }
             DynamicMessage.Builder builder = DynamicMessage.newBuilder(parent).setField(fd, newValue);
+            if (!isArray() && !builder.hasField(fd)) {
+                return value;
+            }
             String jsonValue;
             try {
                 jsonValue = PRINTER.print(builder);
@@ -215,7 +282,7 @@ public class ProtoJsonProvider implements JsonProvider {
 
         @Override
         public String toString() {
-            return getJsonValue().toString();
+            return JSONWriter.valueToString(getJsonValue());
         }
 
         @Override

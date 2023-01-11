@@ -5,10 +5,10 @@ import com.google.api.client.util.Preconditions;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Timestamp;
+import com.jayway.jsonpath.Configuration;
 import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.UnknownFieldsException;
-import io.odpf.depot.message.OdpfMessageSchema;
+import io.odpf.depot.message.MessageUtils;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.proto.converter.fields.ProtoField;
 import io.odpf.depot.message.proto.converter.fields.ProtoFieldFactory;
@@ -24,9 +24,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
-    private final DynamicMessage dynamicMessage;
 
-    private final Map<OdpfMessageSchema, Map<String, Object>> cachedMapping = new HashMap<>();
+    private static final Configuration JSON_PATH_CONFIG = Configuration.builder()
+            .jsonProvider(new ProtoJsonProvider())
+            .build();
+    private final DynamicMessage dynamicMessage;
 
     public ProtoOdpfParsedMessage(DynamicMessage dynamicMessage) {
         this.dynamicMessage = dynamicMessage;
@@ -58,8 +60,8 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
         if (fd.getJavaType().equals(Descriptors.FieldDescriptor.JavaType.FLOAT)) {
             floatCheck(value);
         }
-        if (fd.getType().equals(Descriptors.FieldDescriptor.Type.MESSAGE) &&
-                !fd.getMessageType().getFullName().equals(com.google.protobuf.Struct.getDescriptor().getFullName())) {
+        if (fd.getType().equals(Descriptors.FieldDescriptor.Type.MESSAGE)
+                && !fd.getMessageType().getFullName().equals(com.google.protobuf.Struct.getDescriptor().getFullName())) {
             if (fd.getMessageType().getFullName().equals(Timestamp.getDescriptor().getFullName())) {
                 ProtoField field = ProtoFieldFactory.getField(fd, value);
                 return new DateTime(((Instant) field.getValue()).toEpochMilli());
@@ -89,7 +91,7 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
             if (!field.getJavaType().equals(Descriptors.FieldDescriptor.JavaType.ENUM)) {
                 continue;
             }
-            if(!allFields.containsKey(field)) {
+            if (!allFields.containsKey(field)) {
                 allFields.put(field, message.getField(field));
             }
         }
@@ -104,24 +106,10 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
         }));
     }
 
-    public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
+    public Object getFieldByName(String name) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }
-        String[] keys = name.split("\\.");
-        Object currentValue = dynamicMessage;
-        Descriptors.FieldDescriptor descriptor = null;
-        for (String key : keys) {
-            if (!(currentValue instanceof DynamicMessage)) {
-                throw new IllegalArgumentException("Invalid field config : " + name);
-            }
-            DynamicMessage message = (DynamicMessage) currentValue;
-            descriptor = message.getDescriptorForType().findFieldByName(key);
-            if (descriptor == null) {
-                throw new IllegalArgumentException("Invalid field config : " + name);
-            }
-            currentValue = message.getField(descriptor);
-        }
-        return ProtoFieldFactory.getField(descriptor, currentValue);
+        return MessageUtils.getFieldFromJsonObject(name, dynamicMessage, JSON_PATH_CONFIG);
     }
 }

@@ -3,13 +3,12 @@ package io.odpf.depot.message;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 
 public class MessageUtils {
 
-    public static Object getFieldFromJsonObject(String name, JSONObject jsonObject, Configuration jsonPathConfig) {
+    public static Object getFieldFromJsonObject(String name, Object jsonObject, Configuration jsonPathConfig) {
         try {
             String jsonPathName = "$." + name;
             JsonPath jsonPath = JsonPath.compile(jsonPathName);

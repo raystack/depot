@@ -11,6 +11,6 @@ public class BigTableRowKeyParser {
     private final OdpfMessageSchema schema;
 
     public String parse(ParsedOdpfMessage parsedOdpfMessage) {
-        return keyTemplate.parse(parsedOdpfMessage, schema);
+        return keyTemplate.parse(parsedOdpfMessage);
     }
 }

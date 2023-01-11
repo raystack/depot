@@ -3,7 +3,6 @@ package io.odpf.depot.message.json;
 import com.jayway.jsonpath.Configuration;
 import io.odpf.depot.config.OdpfSinkConfig;
 import io.odpf.depot.message.MessageUtils;
-import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import org.json.JSONObject;
 
@@ -41,7 +40,7 @@ public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
         return jsonObject.toMap();
     }
 
-    public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
+    public Object getFieldByName(String name) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }

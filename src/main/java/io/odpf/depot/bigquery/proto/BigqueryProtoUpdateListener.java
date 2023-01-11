@@ -10,11 +10,9 @@ import io.odpf.depot.bigquery.converter.MessageRecordConverter;
 import io.odpf.depot.bigquery.converter.MessageRecordConverterCache;
 import io.odpf.depot.common.TupleString;
 import io.odpf.depot.config.BigQuerySinkConfig;
-import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.proto.ProtoField;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
-import io.odpf.depot.message.proto.ProtoOdpfMessageSchema;
 import io.odpf.depot.stencil.OdpfStencilUpdateListener;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +44,6 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
             String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
                     ? config.getSinkConnectorSchemaProtoMessageClass() : config.getSinkConnectorSchemaProtoKeyClass();
             ProtoOdpfMessageParser odpfMessageParser = (ProtoOdpfMessageParser) getOdpfMessageParser();
-            OdpfMessageSchema schema;
             ProtoField protoField;
             if (newDescriptors == null) {
                 protoField = odpfMessageParser.getProtoField(schemaClass);

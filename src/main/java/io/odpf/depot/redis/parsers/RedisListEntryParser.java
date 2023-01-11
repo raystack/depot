@@ -26,8 +26,8 @@ public class RedisListEntryParser implements RedisEntryParser {
 
     @Override
     public List<RedisEntry> getRedisEntry(ParsedOdpfMessage parsedOdpfMessage) {
-        String redisKey = keyTemplate.parse(parsedOdpfMessage, schema);
-        String redisValue = GenericFieldFactory.getField(parsedOdpfMessage.getFieldByName(field, schema)).getString();
+        String redisKey = keyTemplate.parse(parsedOdpfMessage);
+        String redisValue = GenericFieldFactory.getField(parsedOdpfMessage.getFieldByName(field)).getString();
         return Collections.singletonList(new RedisListEntry(redisKey, redisValue, new Instrumentation(statsDReporter, RedisListEntry.class)));
     }
 }

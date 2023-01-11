@@ -27,13 +27,13 @@ public class RedisHashSetEntryParser implements RedisEntryParser {
 
     @Override
     public List<RedisEntry> getRedisEntry(ParsedOdpfMessage parsedOdpfMessage) {
-        String redisKey = keyTemplate.parse(parsedOdpfMessage, schema);
+        String redisKey = keyTemplate.parse(parsedOdpfMessage);
         return fieldTemplates
                 .entrySet()
                 .stream()
                 .map(fieldTemplate -> {
-                    String field = fieldTemplate.getValue().parse(parsedOdpfMessage, schema);
-                    String redisValue = GenericFieldFactory.getField(parsedOdpfMessage.getFieldByName(fieldTemplate.getKey(), schema)).getString();
+                    String field = fieldTemplate.getValue().parse(parsedOdpfMessage);
+                    String redisValue = GenericFieldFactory.getField(parsedOdpfMessage.getFieldByName(fieldTemplate.getKey())).getString();
                     return new RedisHashSetFieldEntry(redisKey, field, redisValue, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class));
                 }).collect(Collectors.toList());
     }

@@ -12,5 +12,5 @@ public interface ParsedOdpfMessage {
 
     Map<String, Object> getMapping() throws IOException;
 
-    Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema);
+    Object getFieldByName(String name);
 }
