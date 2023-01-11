@@ -8,7 +8,6 @@ import io.odpf.depot.config.converter.HttpRequestMethodConverter;
 import io.odpf.depot.config.converter.HttpRequestTypeConverter;
 import io.odpf.depot.config.converter.RangeToHashMapConverter;
 import io.odpf.depot.config.converter.TemplateMapConverter;
-import io.odpf.depot.config.converter.RangeToHashMapConverter;
 import io.odpf.depot.http.enums.HttpParameterSourceType;
 import io.odpf.depot.http.enums.HttpRequestBodyType;
 import io.odpf.depot.http.enums.HttpRequestMethodType;

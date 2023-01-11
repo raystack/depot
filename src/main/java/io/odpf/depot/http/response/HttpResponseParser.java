@@ -33,7 +33,7 @@ public class HttpResponseParser {
         }
         return errors;
     }
-    
+
     private static Map<Long, ErrorInfo> getErrors(HttpRequestRecord record, String responseCode, Map<Integer, Boolean> retryStatusCodeRanges) {
         Map<Long, ErrorInfo> errors = new HashMap<>();
         for (long messageIndex: record) {
