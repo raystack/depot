@@ -15,6 +15,7 @@ public class TestProtoUtil {
     public static final int TRIP_DURATION_NANOS = 1000;
     private static final long TRIP_DURATION_SECONDS_1 = 12;
     private static final long TRIP_DURATION_SECONDS_2 = 15;
+    private static final float PRICE = 12.12f;
     private static int call = 0;
 
     public static TestMessageBQ generateTestMessage(Instant now) {
@@ -25,6 +26,7 @@ public class TestProtoUtil {
                 .setOrderUrl("order-url-" + call)
                 .setOrderDetails("order-details-" + call)
                 .setCreatedAt(createdAt)
+                .setPrice(PRICE)
                 .setStatus(StatusBQ.COMPLETED)
                 .setTripDuration(Duration.newBuilder().setSeconds(1).setNanos(TRIP_DURATION_NANOS).build())
                 .addUpdatedAt(createdAt)

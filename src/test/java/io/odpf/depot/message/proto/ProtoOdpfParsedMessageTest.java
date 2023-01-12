@@ -1,24 +1,9 @@
 package io.odpf.depot.message.proto;
 
 import com.google.api.client.util.DateTime;
-import com.google.protobuf.Descriptors;
-import com.google.protobuf.Duration;
-import com.google.protobuf.DynamicMessage;
-import com.google.protobuf.ListValue;
-import com.google.protobuf.Message;
-import com.google.protobuf.Struct;
-import com.google.protobuf.Timestamp;
-import com.google.protobuf.Value;
+import com.google.protobuf.*;
 import com.google.protobuf.util.JsonFormat;
-import io.odpf.depot.StatusBQ;
-import io.odpf.depot.TestBookingLogMessage;
-import io.odpf.depot.TestKeyBQ;
-import io.odpf.depot.TestLocation;
-import io.odpf.depot.TestMessage;
-import io.odpf.depot.TestMessageBQ;
-import io.odpf.depot.TestNestedMessageBQ;
-import io.odpf.depot.TestNestedRepeatedMessageBQ;
-import io.odpf.depot.TestTypesMessage;
+import io.odpf.depot.*;
 import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
 import io.odpf.depot.message.proto.converter.fields.MessageProtoField;
@@ -26,10 +11,12 @@ import io.odpf.depot.message.proto.converter.fields.ProtoField;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
+import org.apache.xerces.impl.dv.util.Base64;
 import org.json.JSONArray;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -45,7 +32,7 @@ import static org.junit.Assert.*;
 
 public class ProtoOdpfParsedMessageTest {
 
-    private static JsonFormat.Printer printer = JsonFormat.printer()
+    private static final JsonFormat.Printer PRINTER = JsonFormat.printer()
             .preservingProtoFieldNames()
             .omittingInsignificantWhitespace();
     private Timestamp createdAt;
@@ -85,6 +72,8 @@ public class ProtoOdpfParsedMessageTest {
             put(String.format("%s", TestBookingLogMessage.TopicMetadata.class.getName()), TestBookingLogMessage.TopicMetadata.getDescriptor());
             put(String.format("%s", TestTypesMessage.class.getName()), TestTypesMessage.getDescriptor());
             put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
+            put(String.format("%s", FloatTest.class.getName()), FloatTest.getDescriptor());
+            put(String.format("%s", FloatTestContainer.class.getName()), FloatTestContainer.getDescriptor());
             put("io.odpf.depot.TestMessageBQ.CurrentStateEntry", TestMessageBQ.getDescriptor().getNestedTypes().get(0));
             put("com.google.protobuf.Struct.FieldsEntry", Struct.getDescriptor().getNestedTypes().get(0));
             put("com.google.protobuf.Duration", com.google.protobuf.Duration.getDescriptor());
@@ -107,6 +96,15 @@ public class ProtoOdpfParsedMessageTest {
         assertEquals(1996, dateFields.get("year"));
         assertEquals(11, dateFields.get("month"));
         assertEquals(21, dateFields.get("day"));
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenFloatingPointIsNaN() throws IOException {
+        String data = "ogQFJQAAwH8=";
+        byte[] decode = Base64.decode(data);
+        DynamicMessage message = DynamicMessage.parseFrom(FloatTest.getDescriptor(), decode);
+        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.FloatTest", descriptorsMap);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new ProtoOdpfParsedMessage(message).getMapping(odpfMessageSchema));
     }
 
     @Test
@@ -425,7 +423,7 @@ public class ProtoOdpfParsedMessageTest {
         JSONArray expectedArray = new JSONArray();
         JSONArray actualArray = new JSONArray();
         for (int ii = 0; ii < message.getAttributesCount(); ii++) {
-            expectedArray.put(printer.print(message.getAttributes(ii)));
+            expectedArray.put(PRINTER.print(message.getAttributes(ii)));
             actualArray.put(attributes.get(ii));
         }
         Assert.assertEquals(expectedArray.toString(), actualArray.toString());

@@ -1,6 +1,7 @@
 package io.odpf.depot.message.proto;
 
 import com.google.api.client.util.DateTime;
+import com.google.api.client.util.Preconditions;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import io.odpf.depot.common.Tuple;
@@ -89,11 +90,22 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
                     Tuple<String, Object> nestedColumns = getNestedColumnName(field, value);
                     row.put(nestedColumns.getFirst(), nestedColumns.getSecond());
                 } else {
+                    floatCheck(fieldValue);
                     row.put(columnName, fieldValue);
                 }
             }
         });
         return row;
+    }
+
+    private void floatCheck(Object fieldValue) {
+        if (fieldValue instanceof Float) {
+            float floatValue = ((Number) fieldValue).floatValue();
+            Preconditions.checkArgument(!Float.isInfinite(floatValue) && !Float.isNaN(floatValue));
+        } else if (fieldValue instanceof Double) {
+            double doubleValue = ((Number) fieldValue).doubleValue();
+            Preconditions.checkArgument(!Double.isInfinite(doubleValue) && !Double.isNaN(doubleValue));
+        }
     }
 
     private Tuple<String, Object> getNestedColumnName(Object field, Object value) {
@@ -127,6 +139,7 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
                 if (f instanceof Instant) {
                     repeatedNestedFields.add(new DateTime(((Instant) f).toEpochMilli()));
                 } else {
+                    floatCheck(f);
                     repeatedNestedFields.add(f);
                 }
                 assert value instanceof String;
