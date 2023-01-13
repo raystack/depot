@@ -24,7 +24,7 @@ public class HttpResponseParser {
             HttpSinkResponse response = responses.get(i);
             String responseCode = response.getResponseCode();
             if (shouldLogRequest(responseCode, requestLogStatusCodeRanges)) {
-                instrumentation.logInfo(record.printRequest());
+                instrumentation.logInfo(record.getRequestString());
             }
             if (response.isFailed()) {
                 errors.putAll(getErrors(record, responseCode, retryStatusCodeRanges));

@@ -61,7 +61,7 @@ public class HttpRequestRecord implements Iterable<Integer> {
         return valid;
     }
 
-    public String printRequest() throws IOException {
+    public String getRequestString() throws IOException {
         return String.format("\nRequest Method: %s\nRequest Url: %s\nRequest Headers: %s\nRequest Body: %s",
                 httpRequest.getMethod(),
                 httpRequest.getURI(),
