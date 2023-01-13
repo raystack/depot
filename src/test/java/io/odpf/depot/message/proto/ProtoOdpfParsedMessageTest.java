@@ -1,11 +1,16 @@
 package io.odpf.depot.message.proto;
 
 import com.google.api.client.util.DateTime;
-import com.google.protobuf.*;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Duration;
+import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.ListValue;
+import com.google.protobuf.Struct;
+import com.google.protobuf.Timestamp;
+import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import io.odpf.depot.FloatTest;
 import io.odpf.depot.FloatTestContainer;
-import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.StatusBQ;
 import io.odpf.depot.TestBookingLogMessage;
 import io.odpf.depot.TestKeyBQ;
@@ -16,7 +21,6 @@ import io.odpf.depot.TestNestedMessageBQ;
 import io.odpf.depot.TestNestedRepeatedMessageBQ;
 import io.odpf.depot.TestTypesMessage;
 import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.proto.converter.fields.ProtoField;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
 import io.odpf.stencil.client.StencilClient;
@@ -32,7 +36,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,7 +49,7 @@ import static org.junit.Assert.assertThrows;
 
 public class ProtoOdpfParsedMessageTest {
 
-    private static final JsonFormat.Printer printer = JsonFormat.printer()
+    private static final JsonFormat.Printer PRINTER = JsonFormat.printer()
             .preservingProtoFieldNames()
             .omittingInsignificantWhitespace();
     private Timestamp createdAt;
@@ -389,7 +392,7 @@ public class ProtoOdpfParsedMessageTest {
         DynamicMessage bookingLogDynamicMessage = protoParser.parse(testBookingLogMessage.toByteArray());
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(bookingLogDynamicMessage);
         Object driverPickupLocation = protoOdpfParsedMessage.getFieldByName("driver_pickup_location");
-        Assert.assertEquals(printer.print(TestLocation.newBuilder().setLatitude(10.2).setLongitude(12.01).build()), driverPickupLocation.toString());
+        Assert.assertEquals(PRINTER.print(TestLocation.newBuilder().setLatitude(10.2).setLongitude(12.01).build()), driverPickupLocation.toString());
     }
 
     @Test
@@ -409,7 +412,7 @@ public class ProtoOdpfParsedMessageTest {
         JSONArray attributes = (JSONArray) protoOdpfParsedMessage.getFieldByName("attributes");
         protoOdpfParsedMessage.getMapping();
         for (int ii = 0; ii < message.getAttributesCount(); ii++) {
-            Assert.assertEquals(printer.print(message.getAttributes(ii)), attributes.get(ii).toString());
+            Assert.assertEquals(PRINTER.print(message.getAttributes(ii)), attributes.get(ii).toString());
         }
     }
 
@@ -470,7 +473,7 @@ public class ProtoOdpfParsedMessageTest {
         // Whereas JSONObject, JSONArray returns java types.
         // To return valid value we have to use JSONWriter.
         Assert.assertEquals(
-                printer.print(Duration.newBuilder().setSeconds(1).setNanos(TestProtoUtil.TRIP_DURATION_NANOS).build()),
+                PRINTER.print(Duration.newBuilder().setSeconds(1).setNanos(TestProtoUtil.TRIP_DURATION_NANOS).build()),
                 JSONWriter.valueToString(tripDuration.toString()));
     }
 
@@ -528,8 +531,8 @@ public class ProtoOdpfParsedMessageTest {
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(protoParser.parse(message1.toByteArray()));
         JSONArray intervals = (JSONArray) protoOdpfParsedMessage.getFieldByName("intervals");
-        Assert.assertEquals(printer.print(Duration.newBuilder().setSeconds(12).setNanos(1000).build()), JSONWriter.valueToString(intervals.get(0)));
-        Assert.assertEquals(printer.print(Duration.newBuilder().setSeconds(15).setNanos(1000).build()), JSONWriter.valueToString(intervals.get(1)));
+        Assert.assertEquals(PRINTER.print(Duration.newBuilder().setSeconds(12).setNanos(1000).build()), JSONWriter.valueToString(intervals.get(0)));
+        Assert.assertEquals(PRINTER.print(Duration.newBuilder().setSeconds(15).setNanos(1000).build()), JSONWriter.valueToString(intervals.get(1)));
     }
 
     @Test

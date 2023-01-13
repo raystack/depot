@@ -1,36 +1,24 @@
 package io.odpf.depot.common;
 
-import com.google.protobuf.Descriptors;
 import io.odpf.depot.TestBookingLogMessage;
 import io.odpf.depot.TestKey;
 import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestMessage;
-import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
 import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.OdpfMessageParserFactory;
-import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.message.proto.ProtoOdpfParsedMessage;
-import io.odpf.depot.metrics.StatsDReporter;
 import io.odpf.stencil.Parser;
 import io.odpf.stencil.StencilClientFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TemplateTest {

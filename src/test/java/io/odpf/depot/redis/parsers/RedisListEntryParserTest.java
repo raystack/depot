@@ -1,10 +1,6 @@
 package io.odpf.depot.redis.parsers;
 
-import com.google.protobuf.Descriptors;
-import io.odpf.depot.TestKey;
 import io.odpf.depot.TestMessage;
-import io.odpf.depot.TestNestedMessage;
-import io.odpf.depot.TestNestedRepeatedMessage;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageSchema;
@@ -22,9 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;

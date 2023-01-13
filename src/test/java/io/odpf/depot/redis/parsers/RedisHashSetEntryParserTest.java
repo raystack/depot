@@ -1,13 +1,11 @@
 package io.odpf.depot.redis.parsers;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
 import io.odpf.depot.TestBookingLogMessage;
 import io.odpf.depot.TestKey;
-import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestMessageBQ;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.config.converter.JsonToPropertiesConverter;
@@ -29,7 +27,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.IllegalFormatConversionException;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
