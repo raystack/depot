@@ -9,6 +9,7 @@ import org.apache.http.util.EntityUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -58,6 +59,14 @@ public class HttpRequestRecord implements Iterable<Integer> {
 
     public boolean isValid() {
         return valid;
+    }
+
+    public String getRequestString() throws IOException {
+        return String.format("\nRequest Method: %s\nRequest Url: %s\nRequest Headers: %s\nRequest Body: %s",
+                httpRequest.getMethod(),
+                httpRequest.getURI(),
+                Arrays.asList(httpRequest.getAllHeaders()),
+                getRequestBody());
     }
 
     @NotNull

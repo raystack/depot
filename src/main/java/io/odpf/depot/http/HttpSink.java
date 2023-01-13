@@ -23,12 +23,14 @@ public class HttpSink implements OdpfSink {
     private final Request request;
     private final Map<Integer, Boolean> retryStatusCodeRanges;
     private final Instrumentation instrumentation;
+    private final Map<Integer, Boolean> requestLogStatusCodeRanges;
 
-    public HttpSink(HttpSinkClient httpSinkClient, Request request, Map<Integer, Boolean> retryStatusCodeRanges, Instrumentation instrumentation) {
+    public HttpSink(HttpSinkClient httpSinkClient, Request request, Map<Integer, Boolean> retryStatusCodeRanges, Map<Integer, Boolean> requestLogStatusCodeRanges, Instrumentation instrumentation) {
         this.httpSinkClient = httpSinkClient;
         this.request = request;
         this.retryStatusCodeRanges = retryStatusCodeRanges;
         this.instrumentation = instrumentation;
+        this.requestLogStatusCodeRanges = requestLogStatusCodeRanges;
     }
 
     @Override
@@ -44,7 +46,7 @@ public class HttpSink implements OdpfSink {
             instrumentation.logInfo("Processed {} records to Http Service", validRecords.size());
             try {
                 List<HttpSinkResponse> responses = httpSinkClient.send(validRecords);
-                Map<Long, ErrorInfo> errorInfoMap = HttpResponseParser.getErrorsFromResponse(validRecords, responses, retryStatusCodeRanges, instrumentation);
+                Map<Long, ErrorInfo> errorInfoMap = HttpResponseParser.getErrorsFromResponse(validRecords, responses, retryStatusCodeRanges, requestLogStatusCodeRanges, instrumentation);
                 errorInfoMap.forEach(odpfSinkResponse::addErrors);
             } catch (IOException e) {
                 throw new OdpfSinkException("Exception occurred while execute the request ", e);
