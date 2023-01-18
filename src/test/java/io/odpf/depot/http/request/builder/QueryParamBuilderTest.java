@@ -1,17 +1,13 @@
 package io.odpf.depot.http.request.builder;
 
-import com.google.protobuf.Descriptors;
 import io.odpf.depot.TestBookingLogKey;
 import io.odpf.depot.TestBookingLogMessage;
-import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestServiceType;
 import io.odpf.depot.config.HttpSinkConfig;
 import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParserFactory;
-import io.odpf.depot.message.OdpfMessageSchema;
 import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.SchemaContainer;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
@@ -36,12 +32,7 @@ public class QueryParamBuilderTest {
     @Mock
     private StatsDReporter statsDReporter;
     @Mock
-    private ProtoOdpfMessageParser parser;
-    @Mock
     private MessageContainer messageContainer;
-    @Mock
-    private SchemaContainer schemaContainer;
-
     private final Map<String, String> configuration = new HashMap<>();
 
     @Before
@@ -54,25 +45,12 @@ public class QueryParamBuilderTest {
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         ProtoOdpfMessageParser odpfMessageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
-
         TestBookingLogKey bookingLogKey = TestBookingLogKey.newBuilder().setOrderNumber("ON#1").setOrderUrl("OURL#1").build();
         TestBookingLogMessage bookingLogMessage = TestBookingLogMessage.newBuilder().setOrderNumber("ON#1").setServiceType(TestServiceType.Enum.GO_SEND).setCancelReasonId(1).build();
         OdpfMessage message = new OdpfMessage(bookingLogKey.toByteArray(), bookingLogMessage.toByteArray());
         ParsedOdpfMessage parsedOdpfLogMessage = odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, sinkConfig.getSinkConnectorSchemaProtoMessageClass());
         ParsedOdpfMessage parsedOdpfLogKey = odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_KEY, sinkConfig.getSinkConnectorSchemaProtoKeyClass());
 
-        Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
-            put(String.format("%s", TestBookingLogKey.class.getName()), TestBookingLogKey.getDescriptor());
-            put(String.format("%s", TestBookingLogMessage.class.getName()), TestBookingLogMessage.getDescriptor());
-            put(String.format("%s", TestBookingLogMessage.TopicMetadata.class.getName()), TestBookingLogMessage.TopicMetadata.getDescriptor());
-            put(String.format("%s", TestServiceType.class.getName()), TestServiceType.getDescriptor());
-            put(String.format("%s", TestLocation.class.getName()), TestLocation.getDescriptor());
-        }};
-        OdpfMessageSchema messageSchema = odpfMessageParser.getSchema(sinkConfig.getSinkConnectorSchemaProtoMessageClass(), descriptorsMap);
-        OdpfMessageSchema keySchema = odpfMessageParser.getSchema(sinkConfig.getSinkConnectorSchemaProtoKeyClass(), descriptorsMap);
-
-        when(parser.getSchema(sinkConfig.getSinkConnectorSchemaProtoKeyClass())).thenReturn(keySchema);
-        when(parser.getSchema(sinkConfig.getSinkConnectorSchemaProtoMessageClass())).thenReturn(messageSchema);
         when(messageContainer.getParsedLogKey(sinkConfig.getSinkConnectorSchemaProtoKeyClass())).thenReturn(parsedOdpfLogKey);
         when(messageContainer.getParsedLogMessage(sinkConfig.getSinkConnectorSchemaProtoMessageClass())).thenReturn(parsedOdpfLogMessage);
     }
@@ -93,7 +71,7 @@ public class QueryParamBuilderTest {
         configuration.put("SINK_HTTP_QUERY_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,service_type\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
-        Map<String, String> queryParam = queryParamBuilder.build(messageContainer, schemaContainer);
+        Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
 
         assertEquals(1, queryParam.size());
         assertEquals("V-GO_SEND", queryParam.get("H-ON#1"));
@@ -105,7 +83,7 @@ public class QueryParamBuilderTest {
         configuration.put("SINK_HTTP_QUERY_PARAMETER_SOURCE", "KEY");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
-        Map<String, String> queryParam = queryParamBuilder.build(messageContainer, schemaContainer);
+        Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
 
         assertEquals(1, queryParam.size());
         assertEquals("V-ON#1", queryParam.get("H-OURL#1"));
@@ -116,7 +94,7 @@ public class QueryParamBuilderTest {
         configuration.put("SINK_HTTP_QUERY_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,service_type\", \"H-const\":\"V-const\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
-        Map<String, String> queryParam = queryParamBuilder.build(messageContainer, schemaContainer);
+        Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
 
         assertEquals(2, queryParam.size());
         assertEquals("V-GO_SEND", queryParam.get("H-ON#1"));
@@ -128,7 +106,7 @@ public class QueryParamBuilderTest {
         configuration.put("SINK_HTTP_QUERY_TEMPLATE", "{}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
-        Map<String, String> queryParam = queryParamBuilder.build(messageContainer, schemaContainer);
+        Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
 
         assertEquals(0, queryParam.size());
         assertEquals(Collections.emptyMap(), queryParam);
@@ -139,7 +117,7 @@ public class QueryParamBuilderTest {
         configuration.put("SINK_HTTP_QUERY_TEMPLATE", "");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
-        Map<String, String> queryParam = queryParamBuilder.build(messageContainer, schemaContainer);
+        Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
 
         assertEquals(0, queryParam.size());
         assertEquals(Collections.emptyMap(), queryParam);
@@ -149,7 +127,7 @@ public class QueryParamBuilderTest {
     public void shouldReturnEmptyMapIfQueryTemplateIsNotProvided() throws IOException {
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
-        Map<String, String> queryParam = queryParamBuilder.build(messageContainer, schemaContainer);
+        Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
 
         assertEquals(0, queryParam.size());
         assertEquals(Collections.emptyMap(), queryParam);
@@ -162,7 +140,7 @@ public class QueryParamBuilderTest {
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
 
         try {
-            queryParamBuilder.build(messageContainer, schemaContainer);
+            queryParamBuilder.build(messageContainer);
         } catch (Exception e) {
             assertTrue(e instanceof IllegalArgumentException);
             assertEquals("Invalid field config : RANDOM_FIELD", e.getMessage());

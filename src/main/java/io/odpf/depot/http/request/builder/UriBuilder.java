@@ -5,7 +5,6 @@ import io.odpf.depot.exception.ConfigurationException;
 import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.common.Template;
-import io.odpf.depot.message.SchemaContainer;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import org.apache.http.client.utils.URIBuilder;
 
@@ -28,16 +27,14 @@ public class UriBuilder {
         this.schemaProtoMessageClass = config.getSinkConnectorSchemaProtoMessageClass();
     }
 
-    public URI build(MessageContainer container, SchemaContainer schemaContainer, Map<String, String> queryParam) throws IOException {
+    public URI build(MessageContainer container, Map<String, String> queryParam) throws IOException {
         if (sourceType == SinkConnectorSchemaMessageMode.LOG_KEY) {
             return build(urlTemplate.parse(
-                            container.getParsedLogKey(schemaProtoKeyClass),
-                            schemaContainer.getSchemaKey(schemaProtoKeyClass)),
+                    container.getParsedLogKey(schemaProtoKeyClass)),
                     queryParam);
         } else {
             return build(urlTemplate.parse(
-                            container.getParsedLogMessage(schemaProtoMessageClass),
-                            schemaContainer.getSchemaMessage(schemaProtoMessageClass)),
+                    container.getParsedLogMessage(schemaProtoMessageClass)),
                     queryParam);
         }
     }

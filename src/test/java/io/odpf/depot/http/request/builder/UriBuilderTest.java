@@ -9,7 +9,6 @@ import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.OdpfMessageParserFactory;
 import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.SchemaContainer;
 import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
 import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
 import io.odpf.depot.metrics.StatsDReporter;
@@ -42,8 +41,6 @@ public class UriBuilderTest {
     private StatsDReporter statsDReporter;
     @Mock
     private MessageContainer messageContainer;
-    @Mock
-    private SchemaContainer schemaContainer;
     private final Map<String, String> queryParam = new HashMap<>();
     private final Map<String, String> configuration = new HashMap<>();
 
@@ -120,7 +117,7 @@ public class UriBuilderTest {
         configuration.put("SINK_HTTP_SERVICE_URL", "http://dummy.com/%s,order_url");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         UriBuilder uriBuilder = new UriBuilder(sinkConfig);
-        assertEquals(new URI("http://dummy.com/test-url"), uriBuilder.build(messageContainer, schemaContainer, queryParam));
+        assertEquals(new URI("http://dummy.com/test-url"), uriBuilder.build(messageContainer, queryParam));
     }
 
     @Test
@@ -130,6 +127,6 @@ public class UriBuilderTest {
         configuration.put("SINK_HTTP_SERVICE_URL", "http://dummy.com/%s,order_url");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         UriBuilder uriBuilder = new UriBuilder(sinkConfig);
-        assertEquals(new URI("http://dummy.com/test-url?test-key-1=test-value-1&test-key-2=test-value-2"), uriBuilder.build(messageContainer, schemaContainer, queryParam));
+        assertEquals(new URI("http://dummy.com/test-url?test-key-1=test-value-1&test-key-2=test-value-2"), uriBuilder.build(messageContainer, queryParam));
     }
 }

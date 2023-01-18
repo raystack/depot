@@ -5,7 +5,6 @@ import io.odpf.depot.common.TemplateUtils;
 import io.odpf.depot.config.HttpSinkConfig;
 import io.odpf.depot.http.enums.HttpParameterSourceType;
 import io.odpf.depot.message.MessageContainer;
-import io.odpf.depot.message.SchemaContainer;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -32,19 +31,17 @@ public class HeaderBuilder {
         return baseHeaders;
     }
 
-    public Map<String, String> build(MessageContainer msgContainer, SchemaContainer schemaContainer) throws IOException {
+    public Map<String, String> build(MessageContainer msgContainer) throws IOException {
         Map<String, String> headers;
         if (headersParameterSource == HttpParameterSourceType.KEY) {
             headers = TemplateUtils.parseTemplateMap(
                     headersTemplate,
-                    msgContainer.getParsedLogKey(schemaProtoKeyClass),
-                    schemaContainer.getSchemaKey(schemaProtoKeyClass)
+                    msgContainer.getParsedLogKey(schemaProtoKeyClass)
             );
         } else {
             headers = TemplateUtils.parseTemplateMap(
                     headersTemplate,
-                    msgContainer.getParsedLogMessage(schemaProtoMessageClass),
-                    schemaContainer.getSchemaMessage(schemaProtoMessageClass)
+                    msgContainer.getParsedLogMessage(schemaProtoMessageClass)
             );
         }
         baseHeaders.putAll(headers);

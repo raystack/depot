@@ -5,7 +5,6 @@ import io.odpf.depot.common.TemplateUtils;
 import io.odpf.depot.config.HttpSinkConfig;
 import io.odpf.depot.http.enums.HttpParameterSourceType;
 import io.odpf.depot.message.MessageContainer;
-import io.odpf.depot.message.SchemaContainer;
 
 import java.io.IOException;
 import java.util.Map;
@@ -36,18 +35,16 @@ public class QueryParamBuilder {
                 ));
     }
 
-    public Map<String, String> build(MessageContainer msgContainer, SchemaContainer schemaContainer) throws IOException {
+    public Map<String, String> build(MessageContainer msgContainer) throws IOException {
         if (queryParameterSource == HttpParameterSourceType.KEY) {
             return TemplateUtils.parseTemplateMap(
                     queryParamTemplates,
-                    msgContainer.getParsedLogKey(schemaProtoKeyClass),
-                    schemaContainer.getSchemaKey(schemaProtoKeyClass)
+                    msgContainer.getParsedLogKey(schemaProtoKeyClass)
             );
         } else {
             return TemplateUtils.parseTemplateMap(
                     queryParamTemplates,
-                    msgContainer.getParsedLogMessage(schemaProtoMessageClass),
-                    schemaContainer.getSchemaMessage(schemaProtoMessageClass)
+                    msgContainer.getParsedLogMessage(schemaProtoMessageClass)
             );
         }
     }
