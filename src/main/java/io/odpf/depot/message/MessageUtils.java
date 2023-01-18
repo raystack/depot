@@ -5,8 +5,6 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import io.odpf.depot.common.TupleString;
 import io.odpf.depot.config.OdpfSinkConfig;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +36,7 @@ public class MessageUtils {
         }));
     }
 
-    public static Object getFieldFromJsonObject(String name, JSONObject jsonObject, Configuration jsonPathConfig) {
+    public static Object getFieldFromJsonObject(String name, Object jsonObject, Configuration jsonPathConfig) {
         try {
             String jsonPathName = "$." + name;
             JsonPath jsonPath = JsonPath.compile(jsonPathName);

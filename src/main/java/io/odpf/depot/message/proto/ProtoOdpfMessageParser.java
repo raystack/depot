@@ -95,10 +95,17 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
         return t -> objects.add(keyExtractor.apply(t));
     }
 
-    public OdpfMessageSchema getSchema(String schemaClass, Map<String, Descriptors.Descriptor> newDescriptors) throws IOException {
+    public ProtoField getProtoField(String schemaClass, Map<String, Descriptors.Descriptor> newDescriptors) throws IOException {
         ProtoField protoField = new ProtoField();
         protoField = protoMappingParser.parseFields(protoField, schemaClass, newDescriptors,
                 getTypeNameToPackageNameMap(newDescriptors));
-        return new ProtoOdpfMessageSchema(protoField);
+        return protoField;
+    }
+
+    public ProtoField getProtoField(String schemaClass) throws IOException {
+        ProtoField protoField = new ProtoField();
+        protoField = protoMappingParser.parseFields(protoField, schemaClass, getDescriptorMap(),
+                getTypeNameToPackageNameMap(getDescriptorMap()));
+        return protoField;
     }
 }

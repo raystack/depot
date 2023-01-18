@@ -1,13 +1,11 @@
 package io.odpf.depot.redis.parsers;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
 import io.odpf.depot.TestBookingLogMessage;
 import io.odpf.depot.TestKey;
-import io.odpf.depot.TestLocation;
 import io.odpf.depot.TestMessageBQ;
 import io.odpf.depot.config.RedisSinkConfig;
 import io.odpf.depot.config.converter.JsonToPropertiesConverter;
@@ -29,24 +27,15 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.IllegalFormatConversionException;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisHashSetEntryParserTest {
-    private final Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
-        put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
-        put(String.format("%s", TestBookingLogMessage.class.getName()), TestBookingLogMessage.getDescriptor());
-        put(String.format("%s", TestLocation.class.getName()), TestLocation.getDescriptor());
-        put(String.format("%s", TestBookingLogMessage.TopicMetadata.class.getName()), TestBookingLogMessage.TopicMetadata.getDescriptor());
-        put(String.format("%s", TestMessageBQ.class.getName()), TestMessageBQ.getDescriptor());
-        put("io.odpf.depot.TestMessageBQ.CurrentStateEntry", TestMessageBQ.getDescriptor().getNestedTypes().get(0));
-        put("com.google.protobuf.Struct.FieldsEntry", Struct.getDescriptor().getNestedTypes().get(0));
-        put("com.google.protobuf.Duration", com.google.protobuf.Duration.getDescriptor());
-        put("com.google.type.Date", com.google.type.Date.getDescriptor());
-    }};
     @Mock
     private RedisSinkConfig redisSinkConfig;
     @Mock
@@ -68,8 +57,8 @@ public class RedisHashSetEntryParserTest {
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
         parsedBookingMessage = odpfMessageParser.parse(bookingMessage, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaBookingClass);
         parsedOdpfKey = odpfMessageParser.parse(bookingMessage, SinkConnectorSchemaMessageMode.LOG_KEY, schemaKeyClass);
-        schemaBooking = odpfMessageParser.getSchema(schemaBookingClass, descriptorsMap);
-        schemaKey = odpfMessageParser.getSchema(schemaKeyClass, descriptorsMap);
+        schemaBooking = null;
+        schemaKey = null;
     }
 
     @Test
@@ -91,7 +80,7 @@ public class RedisHashSetEntryParserTest {
                 .build();
         OdpfMessage bookingMessage = new OdpfMessage(null, testBookingLogMessage.toByteArray());
         String schemaMessageClass = "io.odpf.depot.TestBookingLogMessage";
-        OdpfMessageSchema schema = odpfMessageParser.getSchema(schemaMessageClass, descriptorsMap);
+        OdpfMessageSchema schema = null;
 
         parsedBookingMessage = odpfMessageParser.parse(bookingMessage, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaMessageClass);
 
@@ -125,7 +114,7 @@ public class RedisHashSetEntryParserTest {
                 .setOrderNumber("test_order")
                 .build();
 
-        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        OdpfMessageSchema odpfMessageSchema = null;
         OdpfMessage odpfMessage = new OdpfMessage(null, message.toByteArray());
         ParsedOdpfMessage parsedMessage = odpfMessageParser.parse(odpfMessage, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessageBQ");
 
@@ -135,7 +124,7 @@ public class RedisHashSetEntryParserTest {
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisEntry.get(0);
         assertEquals("subscription:order:test_order", redisHashSetFieldEntry.getKey());
         assertEquals("test_order_2022-11-26T03:29:19Z", redisHashSetFieldEntry.getField());
-        assertEquals("[{\"name\":\"John\",\"age\":50.0},{\"name\":\"John\",\"age\":60.0},{\"name\":\"John\",\"active\":true,\"height\":175.0}]",
+        assertEquals("[{\"name\":\"John\",\"age\":50},{\"name\":\"John\",\"age\":60},{\"name\":\"John\",\"active\":true,\"height\":175}]",
                 redisHashSetFieldEntry.getValue());
     }
 
@@ -149,7 +138,7 @@ public class RedisHashSetEntryParserTest {
 
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(config, statsDReporter, null);
         TestMessageBQ message = TestMessageBQ.newBuilder().setOrderNumber("test").build();
-        OdpfMessageSchema odpfMessageSchema = odpfMessageParser.getSchema("io.odpf.depot.TestMessageBQ", descriptorsMap);
+        OdpfMessageSchema odpfMessageSchema = null;
         OdpfMessage odpfMessage = new OdpfMessage(null, message.toByteArray());
         ParsedOdpfMessage parsedMessage = odpfMessageParser.parse(odpfMessage, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessageBQ");
 

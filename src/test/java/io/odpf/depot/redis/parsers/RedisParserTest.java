@@ -86,7 +86,7 @@ public class RedisParserTest {
         }
         ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(redisSinkConfig, statsDReporter);
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(redisSinkConfig);
-        OdpfMessageSchema schema = messageParser.getSchema(modeAndSchema.getSecond(), descriptorsMap);
+        OdpfMessageSchema schema = null;
         RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema);
         redisParser = new RedisParser(odpfMessageParser, redisEntryParser, modeAndSchema);
     }

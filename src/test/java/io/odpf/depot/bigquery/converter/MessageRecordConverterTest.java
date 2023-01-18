@@ -49,7 +49,7 @@ public class MessageRecordConverterTest {
             put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
         }};
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
-        schema = protoOdpfMessageParser.getSchema("io.odpf.depot.TestMessage", descriptorsMap);
+        schema = null;
         recordConverter = new MessageRecordConverter(protoOdpfMessageParser,
                 ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
 
@@ -272,7 +272,7 @@ public class MessageRecordConverterTest {
 
         DynamicMessage dynamicMessage = DynamicMessage.newBuilder(TestMessage.getDescriptor())
                 .setUnknownFields(UnknownFieldSet.newBuilder()
-                        .addField(1, UnknownFieldSet.Field.getDefaultInstance())
+                        .addField(10, UnknownFieldSet.Field.getDefaultInstance())
                         .build())
                 .build();
         ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage);

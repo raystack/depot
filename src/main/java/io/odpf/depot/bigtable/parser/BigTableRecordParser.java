@@ -62,7 +62,7 @@ public class BigTableRecordParser {
                             .getColumns(columnFamily)
                             .forEach(column -> {
                                 String fieldName = bigTableSchema.getField(columnFamily, column);
-                                String value = GenericFieldFactory.getField(parsedOdpfMessage.getFieldByName(fieldName, schema)).getString();
+                                String value = GenericFieldFactory.getField(parsedOdpfMessage.getFieldByName(fieldName)).getString();
                                 rowMutationEntry.setCell(columnFamily, column, value);
                             }));
             BigTableRecord bigTableRecord = new BigTableRecord(rowMutationEntry, index, null, message.getMetadata());

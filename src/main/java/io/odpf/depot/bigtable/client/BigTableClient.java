@@ -101,8 +101,9 @@ public class BigTableClient {
 
     private void checkIfTableExists(String tableId) throws BigTableInvalidSchemaException {
         if (!bigtableTableAdminClient.exists(tableId)) {
-            throw new BigTableInvalidSchemaException(String.format("Table: %s does not exist!", tableId));
-        }
+                throw new BigTableInvalidSchemaException(String.format("Table not found on the path: projects/%s/instances/%s/tables/%s",
+                        bigtableTableAdminClient.getProjectId(), bigtableTableAdminClient.getInstanceId(), tableId));
+            }
     }
 
     private void checkIfColumnFamiliesExist(String tableId) throws BigTableInvalidSchemaException {

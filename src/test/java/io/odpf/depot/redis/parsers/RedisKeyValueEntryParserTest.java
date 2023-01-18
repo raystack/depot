@@ -52,7 +52,7 @@ public class RedisKeyValueEntryParserTest {
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn(template);
         ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
         String schemaClass = "io.odpf.depot.TestMessage";
-        schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
+        schema = null;
         byte[] logMessage = TestMessage.newBuilder()
                 .setOrderNumber("xyz-order")
                 .setOrderDetails("new-eureka-order")
