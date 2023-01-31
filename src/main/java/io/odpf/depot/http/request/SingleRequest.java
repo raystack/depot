@@ -64,7 +64,8 @@ public class SingleRequest implements Request {
             Map<String, String> requestHeaders = headerBuilder.build(messageContainer);
             Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
             URI requestUrl = uriBuilder.build(messageContainer, queryParam);
-            HttpEntityEnclosingRequestBase request = RequestUtils.buildRequest(requestMethod, requestHeaders, requestUrl, requestBody.build(message));
+            HttpEntityEnclosingRequestBase request = RequestUtils.buildRequest(
+                    requestMethod, requestHeaders, requestUrl, requestBody.build(messageContainer));
             HttpRequestRecord record = new HttpRequestRecord(request);
             record.addIndex(index);
             return record;

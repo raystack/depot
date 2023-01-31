@@ -10,7 +10,9 @@ import io.odpf.depot.http.request.body.RequestBody;
 import io.odpf.depot.http.request.builder.HeaderBuilder;
 import io.odpf.depot.http.request.builder.QueryParamBuilder;
 import io.odpf.depot.http.request.builder.UriBuilder;
+import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.message.OdpfMessageParser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
@@ -28,12 +30,19 @@ public class BatchRequest implements Request {
     private final Map<String, String> requestHeaders;
     private final URI requestUrl;
     private final RequestBody requestBody;
+    private final OdpfMessageParser parser;
 
-    public BatchRequest(HttpRequestMethodType requestMethod, HeaderBuilder headerBuilder, QueryParamBuilder queryParamBuilder, UriBuilder uriBuilder, RequestBody requestBody) {
+    public BatchRequest(HttpRequestMethodType requestMethod,
+                        HeaderBuilder headerBuilder,
+                        QueryParamBuilder queryParamBuilder,
+                        UriBuilder uriBuilder,
+                        RequestBody requestBody,
+                        OdpfMessageParser parser) {
         this.requestMethod = requestMethod;
         this.requestHeaders = headerBuilder.build();
         this.requestUrl = uriBuilder.build(queryParamBuilder.build());
         this.requestBody = requestBody;
+        this.parser = parser;
     }
 
     @Override
@@ -42,8 +51,9 @@ public class BatchRequest implements Request {
         Map<Integer, String> validBodies = new HashMap<>();
         for (int index = 0; index < messages.size(); index++) {
             OdpfMessage message = messages.get(index);
+            MessageContainer messageContainer = new MessageContainer(message, parser);
             try {
-                String body = requestBody.build(messages.get(index));
+                String body = requestBody.build(messageContainer);
                 validBodies.put(index, body);
             } catch (EmptyMessageException e) {
                 records.add(RequestUtils.createErrorRecord(e, ErrorType.INVALID_MESSAGE_ERROR, index, message.getMetadata()));

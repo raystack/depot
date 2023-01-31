@@ -23,7 +23,7 @@ public class RequestFactory {
         if (config.getRequestType().equals(HttpRequestType.SINGLE)) {
             return new SingleRequest(requestMethod, headerBuilder, queryParamBuilder, uriBuilder, requestBody, odpfMessageParser);
         } else {
-            return new BatchRequest(requestMethod, headerBuilder, queryParamBuilder, uriBuilder, requestBody);
+            return new BatchRequest(requestMethod, headerBuilder, queryParamBuilder, uriBuilder, requestBody, odpfMessageParser);
         }
     }
 }

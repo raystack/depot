@@ -3,12 +3,16 @@ package io.odpf.depot.http.request.body;
 import io.odpf.depot.TestMessage;
 import io.odpf.depot.common.Tuple;
 import io.odpf.depot.config.HttpSinkConfig;
+import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.message.OdpfMessage;
+import io.odpf.depot.message.OdpfMessageParser;
 import org.aeonbits.owner.ConfigFactory;
 import org.json.JSONObject;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
@@ -21,16 +25,24 @@ import static org.junit.Assert.assertTrue;
 public class RawBodyTest {
 
     private OdpfMessage message;
-
+    private MessageContainer messageContainer;
+    @Mock
+    private OdpfMessageParser parser;
     @Mock
     private HttpSinkConfig config;
 
-    @Test
-    public void shouldWrapProtoByteInsideJson() throws IOException {
+    @Before
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order-1").setOrderDetails("ORDER-DETAILS-1").build();
         message = new OdpfMessage(testMessage.toByteArray(), testMessage.toByteArray());
+        messageContainer = new MessageContainer(message, parser);
+    }
+
+    @Test
+    public void shouldWrapProtoByteInsideJson() throws IOException {
         RequestBody body = new RawBody(config);
-        String rawBody = body.build(message);
+        String rawBody = body.build(messageContainer);
         assertTrue(new JSONObject("{\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}").similar(new JSONObject(rawBody)));
     }
 
@@ -38,8 +50,9 @@ public class RawBodyTest {
     public void shouldPutEmptyStringIfKeyIsNull() throws IOException {
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order-1").setOrderDetails("ORDER-DETAILS-1").build();
         message = new OdpfMessage(null, testMessage.toByteArray());
+        messageContainer = new MessageContainer(message, parser);
         RequestBody body = new RawBody(config);
-        String rawBody = body.build(message);
+        String rawBody = body.build(messageContainer);
         assertTrue(new JSONObject("{\"log_key\":\"\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\"}").similar(new JSONObject(rawBody)));
     }
 
@@ -51,20 +64,22 @@ public class RawBodyTest {
                 testMessage.toByteArray(),
                 new Tuple<>("message_topic", "sample-topic"),
                 new Tuple<>("message_partition", 1));
+        messageContainer = new MessageContainer(message, parser);
         Map<String, String> configuration = new HashMap<>();
         configuration.put("SINK_ADD_METADATA_ENABLED", "true");
         configuration.put("SINK_METADATA_COLUMNS_TYPES", "message_partition=integer,message_topic=string");
         config = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         RequestBody body = new RawBody(config);
-        String rawBody = body.build(message);
+        String rawBody = body.build(messageContainer);
         assertTrue(new JSONObject("{\"message_partition\":1,\"log_key\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"log_message\":\"Cgx0ZXN0LW9yZGVyLTEaD09SREVSLURFVEFJTFMtMQ==\",\"message_topic\":\"sample-topic\"}").similar(new JSONObject(rawBody)));
     }
 
     @Test(expected = IOException.class)
     public void shouldThrowExceptionIfMessageIsNotBytes() throws IOException {
         message = new OdpfMessage("", "test-string");
+        messageContainer = new MessageContainer(message, parser);
         RequestBody body = new RawBody(config);
-        body.build(message);
+        body.build(messageContainer);
     }
 }

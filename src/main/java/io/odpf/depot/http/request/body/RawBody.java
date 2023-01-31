@@ -1,6 +1,7 @@
 package io.odpf.depot.http.request.body;
 
 import io.odpf.depot.config.HttpSinkConfig;
+import io.odpf.depot.message.MessageContainer;
 import io.odpf.depot.message.OdpfMessage;
 import io.odpf.depot.message.MessageUtils;
 import org.json.JSONObject;
@@ -17,7 +18,8 @@ public class RawBody implements RequestBody {
     }
 
     @Override
-    public String build(OdpfMessage message) throws IOException {
+    public String build(MessageContainer messageContainer) throws IOException {
+        OdpfMessage message = messageContainer.getMessage();
         JSONObject payload = new JSONObject();
         MessageUtils.validate(message, byte[].class);
         payload.put("log_key", encodedSerializedStringFrom((byte[]) message.getLogKey()));

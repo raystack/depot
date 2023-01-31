@@ -27,4 +27,8 @@ public class MessageContainer {
         }
         return parsedLogMessage;
     }
+
+    public OdpfMessage getMessage() {
+        return message;
+    }
 }
