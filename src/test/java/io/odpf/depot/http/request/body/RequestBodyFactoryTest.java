@@ -39,6 +39,7 @@ public class RequestBodyFactoryTest {
     @Test
     public void shouldReturnTemplatizedJsonBodyType() {
         Mockito.when(sinkConfig.getRequestBodyType()).thenReturn(HttpRequestBodyType.TEMPLATIZED_JSON);
+        Mockito.when(sinkConfig.getSinkHttpJsonBodyTemplate()).thenReturn("{}");
         RequestBody requestBody = RequestBodyFactory.create(sinkConfig);
         Assert.assertTrue(requestBody instanceof TemplatizedJsonBody);
     }

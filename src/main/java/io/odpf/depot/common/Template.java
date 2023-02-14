@@ -43,6 +43,17 @@ public class Template {
         return String.format(templatePattern, patternVariableData);
     }
 
+    public Object parseWithType(ParsedOdpfMessage parsedOdpfMessage) {
+        if (!patternVariableFieldNames.isEmpty()) {
+            if (templatePattern.equals("%s")) {
+                return parsedOdpfMessage.getFieldByName(patternVariableFieldNames.get(0));
+            } else {
+                return parse(parsedOdpfMessage);
+            }
+        }
+        return templatePattern;
+    }
+
     private Object fetchInternalValue(Object ob) {
         return GenericFieldFactory.getField(ob).getString();
     }

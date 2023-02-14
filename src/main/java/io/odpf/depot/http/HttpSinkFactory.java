@@ -4,6 +4,8 @@ import com.timgroup.statsd.NoOpStatsDClient;
 import io.odpf.depot.OdpfSink;
 import io.odpf.depot.common.client.HttpClientUtils;
 import io.odpf.depot.config.HttpSinkConfig;
+import io.odpf.depot.exception.ConfigurationException;
+import io.odpf.depot.exception.InvalidTemplateException;
 import io.odpf.depot.http.client.HttpSinkClient;
 import io.odpf.depot.http.request.Request;
 import io.odpf.depot.http.request.RequestFactory;
@@ -37,7 +39,7 @@ public class HttpSinkFactory {
             httpSinkClient = new HttpSinkClient(closeableHttpClient, new Instrumentation(statsDReporter, HttpSinkClient.class));
             OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
             request = RequestFactory.create(sinkConfig, odpfMessageParser);
-        } catch (Exception e) {
+        } catch (ConfigurationException | InvalidTemplateException e) {
             throw new IllegalArgumentException("Exception occurred while creating Http sink", e);
         }
     }

@@ -72,4 +72,8 @@ public interface HttpSinkConfig extends HttpClientConfig {
     @DefaultValue("400-600")
     @ConverterClass(RangeToHashMapConverter.class)
     Map<Integer, Boolean> getSinkHttpRetryStatusCodeRanges();
+
+    @Key("SINK_HTTP_JSON_BODY_TEMPLATE")
+    @DefaultValue("")
+    String getSinkHttpJsonBodyTemplate();
 }

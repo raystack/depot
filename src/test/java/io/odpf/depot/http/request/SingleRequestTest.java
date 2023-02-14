@@ -70,8 +70,8 @@ public class SingleRequestTest {
     @Test
     public void shouldGetInvalidRequestRecords() throws IOException {
         when(headerBuilder.build(any(MessageContainer.class))).thenReturn(new HashMap<>());
-        messages.add(new OdpfMessage("", 1));
-        messages.add(new OdpfMessage(1, "test"));
+        messages.add(new OdpfMessage("", 123));
+        messages.add(new OdpfMessage(123, "test"));
         Request requestParser = new SingleRequest(HttpRequestMethodType.PUT, headerBuilder, queryParamBuilder, uriBuilder, requestBody, parser);
         List<HttpRequestRecord> parsedRecords = requestParser.createRecords(messages);
         Map<Boolean, List<HttpRequestRecord>> splitterRecords = parsedRecords.stream().collect(Collectors.partitioningBy(HttpRequestRecord::isValid));

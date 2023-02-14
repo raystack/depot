@@ -13,7 +13,7 @@ public class RequestBodyFactory {
             case MESSAGE:
                 return new MessageBody();
             case TEMPLATIZED_JSON:
-                return new TemplatizedJsonBody();
+                return new TemplatizedJsonBody(config);
             default:
                 return new RawBody(config);
         }
