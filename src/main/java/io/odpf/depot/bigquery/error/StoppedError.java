@@ -22,6 +22,6 @@ public class StoppedError implements ErrorDescriptor {
 
     @Override
     public String toString() {
-        return "Stopped";
+        return "StoppedError: Failed to insert this row because of some (other)error records in batch";
     }
 }

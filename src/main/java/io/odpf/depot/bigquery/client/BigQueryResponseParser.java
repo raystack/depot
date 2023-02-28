@@ -42,8 +42,8 @@ public class BigQueryResponseParser {
             Record record = records.get(errorEntry.getKey().intValue());
             long messageIndex = record.getIndex();
             List<ErrorDescriptor> errors = ErrorParser.parseError(errorEntry.getValue());
-            instrumentation.logError("Error while bigquery insert for message. Record: {}, Error: {}, MetaData: {}, BQ errors {}",
-                    record.getColumns(), errors, record.getMetadata(), errorEntry.getValue());
+            instrumentation.logError("Error while bigquery insert for message. Record: {}, Error: {}, MetaData: {}",
+                    record.getColumns(), errors, record.getMetadata());
 
             if (errorMatch(errors, UnknownError.class)) {
                 errorInfoResponse.put(messageIndex, new ErrorInfo(new BigQuerySinkException(), ErrorType.SINK_UNKNOWN_ERROR));

@@ -23,7 +23,7 @@ public class ErrorParser {
                 .stream()
                 .filter(ErrorDescriptor::matches)
                 .findFirst()
-                .orElse(new UnknownError());
+                .orElse(new UnknownError(reasonText, msgText));
     }
 
     public static List<ErrorDescriptor> parseError(List<BigQueryError> bqErrors) {

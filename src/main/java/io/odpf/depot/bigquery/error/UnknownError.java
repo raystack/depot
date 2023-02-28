@@ -9,6 +9,10 @@ import lombok.AllArgsConstructor;
  * */
 public class UnknownError implements ErrorDescriptor {
 
+    private String reason;
+
+    private String message;
+
     @Override
     public boolean matches() {
         return false;
@@ -16,6 +20,6 @@ public class UnknownError implements ErrorDescriptor {
 
     @Override
     public String toString() {
-        return "UnknownError";
+        return String.format("%s: %s", !reason.equals("") ? reason : "UnknownError", message != null ? message : "");
     }
 }

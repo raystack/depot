@@ -22,6 +22,6 @@ public class InvalidSchemaError implements ErrorDescriptor {
 
     @Override
     public String toString() {
-        return "InvalidSchemaError";
+        return String.format("InvalidSchemaError: %s", message);
     }
 }
