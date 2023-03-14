@@ -19,7 +19,7 @@ Check out the list of [metrics](../reference/metrics.md#bigtable-sink) captured 
 
 ## Error Handling
 
-[BigtableResponse](../../src/main/java/io/odpf/depot/bigtable/response/BigTableResponse.java) class have the list of failed [mutations](https://cloud.google.com/bigtable/docs/writes#write-types). [BigtableResponseParser](../../src/main/java/io/odpf/depot/bigtable/parser/BigTableResponseParser.java) looks for errors from each failed mutation and create [ErrorInfo](../../src/main/java/io/odpf/depot/error/ErrorInfo.java) objects based on the type/HttpStatusCode of the underlying error. This error info is then sent to the application.
+[BigtableResponse](../../src/main/java/com/gotocompany/depot/bigtable/response/BigTableResponse.java) class have the list of failed [mutations](https://cloud.google.com/bigtable/docs/writes#write-types). [BigtableResponseParser](../../src/main/java/com/gotocompany/depot/bigtable/parser/BigTableResponseParser.java) looks for errors from each failed mutation and create [ErrorInfo](../../src/main/java/com/gotocompany/depot/error/ErrorInfo.java) objects based on the type/HttpStatusCode of the underlying error. This error info is then sent to the application.
 
 | Error From Bigtable | Error Type Captured |
 | --------------- | -------------------- |
@@ -30,7 +30,7 @@ Check out the list of [metrics](../reference/metrics.md#bigtable-sink) captured 
 
 ### Error Telemetry
 
-[BigtableResponseParser](../../src/main/java/io/odpf/depot/bigtable/parser/BigTableResponseParser.java) looks for any specific error types sent from Bigtable and capture those under [BigtableTotalErrorMetrics](../reference/metrics.md#bigtable-sink) with suitable error tags.
+[BigtableResponseParser](../../src/main/java/com/gotocompany/depot/bigtable/parser/BigTableResponseParser.java) looks for any specific error types sent from Bigtable and capture those under [BigtableTotalErrorMetrics](../reference/metrics.md#bigtable-sink) with suitable error tags.
 
 | Error Type | Error Tag Assigned |
 | --------------- | -------------------- |

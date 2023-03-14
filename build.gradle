@@ -21,8 +21,8 @@ plugins {
     id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
 }
 
-group 'io.odpf'
-version '0.3.8'
+group 'com.gotocompany'
+version '0.4.0'
 
 repositories {
     mavenCentral()
@@ -33,7 +33,7 @@ dependencies {
     implementation group: 'com.google.protobuf', name: 'protobuf-java', version: '3.1.0'
     implementation group: 'com.datadoghq', name: 'java-dogstatsd-client', version: '2.13.0'
     implementation group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.1.0'
-    implementation group: 'io.odpf', name: 'stencil', version: '0.2.1' exclude group: 'org.slf4j'
+    implementation group: 'com.gotocompany', name: 'stencil', version: '0.4.0' exclude group: 'org.slf4j'
     implementation group: 'org.aeonbits.owner', name: 'owner', version: '1.0.9'
     implementation 'com.google.cloud:google-cloud-bigquery:1.115.0'
     implementation (group: 'com.google.cloud', name:'google-cloud-bigtable', version:'2.11.2') {
@@ -142,10 +142,10 @@ publishing {
                 version = project.version
                 name = 'Depot'
                 description = 'A sink connector library containing multiple sink implementations'
-                url = 'https://github.com/odpf/depot'
+                url = 'https://github.com/goto/depot'
 
                 scm {
-                    url = 'https://github.com/odpf/depot.git'
+                    url = 'https://github.com/goto/depot.git'
                 }
 
                 licenses {

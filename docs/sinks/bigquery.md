@@ -14,7 +14,7 @@ Currently we only support string data type for fields, so all incoming json data
 ## Bigquery Table Schema Update
 
 ### Protobuf 
-Bigquery Sink update the bigquery table schema on separate table update operation. Bigquery utilise [Stencil](https://github.com/odpf/stencil) to parse protobuf messages generate schema and update bigquery tables with the latest schema. 
+Bigquery Sink update the bigquery table schema on separate table update operation. Bigquery utilise [Stencil](https://github.com/goto/stencil) to parse protobuf messages generate schema and update bigquery tables with the latest schema. 
 The stencil client periodically reload the descriptor cache. Table schema update happened after the descriptor caches uploaded. 
 
 ### JSON

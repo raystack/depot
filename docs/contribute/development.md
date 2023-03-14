@@ -24,23 +24,23 @@ Environment variables can be configured in the following way -
 * run  `export SAMPLE_VARIABLE=287` on a UNIX shell, to directly assign the required environment variable.
 
 ### Custom application 
-We need to create an application which has io.odpf.depot as a dependency.
+We need to create an application which has com.gotocompany.depot as a dependency.
 This application will create any sink that a developer wants to test by using sink-factories. 
-The OdpfSink's APIs can be used to send data to sinks and check the response. 
+The Sink's APIs can be used to send data to sinks and check the response. 
 One can setup monitoring to see metrics emitted too.
 #### Maven and gradle dependency
 
 ```xml
 
 <dependency>
-    <groupId>io.odpf</groupId>
+    <groupId>com.gotocompany</groupId>
     <artifactId>depot</artifactId>
     <version>version</version>
 </dependency>
 ```
 
 ```sh
-implementation group: 'io.odpf', name: 'depot', version: 'version'
+implementation group: 'com.gotocompany', name: 'depot', version: 'version'
 ```
 #### Sample Application
 ```java
@@ -75,7 +75,7 @@ The environment variable `SCHEMA_REGISTRY_STENCIL_ENABLE` must be set to `true` 
 Stencil server URL must be specified in the variable `SCHEMA_REGISTRY_STENCIL_URLS` . 
 The Proto Descriptor Set file of the messages must be uploaded to the Stencil server.
 
-Refer [this guide](https://github.com/odpf/stencil/tree/master/server#readme) on how to set up and configure the Stencil server, and how to generate and upload Proto descriptor set file to the server.
+Refer [this guide](https://github.com/goto/stencil/tree/master/server#readme) on how to set up and configure the Stencil server, and how to generate and upload Proto descriptor set file to the server.
 
 ### Monitoring
 
@@ -89,10 +89,10 @@ Following are the typical requirements:
 
 
 ### Adding a new Sink
-To add a new sink implementation the Sink class has to implement OdpfSink interface 
+To add a new sink implementation the Sink class has to implement Sink interface 
 ```java
-public interface OdpfSink extends Closeable {
-    OdpfSinkResponse pushToSink(List<OdpfMessage> messages) throws OdpfSinkException;
+public interface Sink extends Closeable {
+    SinkResponse pushToSink(List<Message> messages) throws SinkException;
 }
 ```
 Sink implementations will normally have a factory class too which will be used to setup and create objects of Impl classes. 
