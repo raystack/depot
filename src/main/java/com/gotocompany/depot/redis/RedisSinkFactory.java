@@ -5,7 +5,6 @@ import com.gotocompany.depot.common.Tuple;
 import com.gotocompany.depot.config.RedisSinkConfig;
 import com.gotocompany.depot.message.MessageParser;
 import com.gotocompany.depot.message.MessageParserFactory;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.message.SinkConnectorSchemaMessageMode;
 import com.gotocompany.depot.metrics.Instrumentation;
 import com.gotocompany.depot.metrics.StatsDReporter;
@@ -16,8 +15,6 @@ import com.gotocompany.depot.redis.parsers.RedisParser;
 import com.gotocompany.depot.utils.MessageConfigUtils;
 import com.timgroup.statsd.NoOpStatsDClient;
 import com.gotocompany.depot.Sink;
-
-import java.io.IOException;
 
 public class RedisSinkFactory {
     private final RedisSinkConfig sinkConfig;
@@ -61,11 +58,10 @@ public class RedisSinkFactory {
             instrumentation.logInfo("Redis server type = {}", sinkConfig.getSinkRedisDeploymentType());
             MessageParser messageParser = MessageParserFactory.getParser(sinkConfig, statsDReporter);
             Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
-            MessageSchema schema = messageParser.getSchema(modeAndSchema.getSecond());
-            RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(sinkConfig, statsDReporter, schema);
+            RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(sinkConfig, statsDReporter);
             this.redisParser = new RedisParser(messageParser, redisEntryParser, modeAndSchema);
             instrumentation.logInfo("Connection to redis established successfully");
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException("Exception occurred while creating Redis sink", e);
         }
     }

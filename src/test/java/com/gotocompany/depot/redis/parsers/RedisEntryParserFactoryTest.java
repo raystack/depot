@@ -2,7 +2,6 @@ package com.gotocompany.depot.redis.parsers;
 
 import com.gotocompany.depot.config.RedisSinkConfig;
 import com.gotocompany.depot.config.converter.JsonToPropertiesConverter;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.metrics.StatsDReporter;
 import com.gotocompany.depot.redis.enums.RedisSinkDataType;
 import org.junit.Assert;
@@ -22,8 +21,6 @@ public class RedisEntryParserFactoryTest {
     private RedisSinkConfig redisSinkConfig;
     @Mock
     private StatsDReporter statsDReporter;
-    @Mock
-    private MessageSchema schema;
 
     @Before
     public void setup() {
@@ -36,21 +33,21 @@ public class RedisEntryParserFactoryTest {
     @Test
     public void shouldReturnNewRedisListParser() {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
-        RedisEntryParser parser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema);
+        RedisEntryParser parser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
         assertEquals(RedisListEntryParser.class, parser.getClass());
     }
 
     @Test
     public void shouldReturnNewRedisHashSetParser() {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.HASHSET);
-        RedisEntryParser parser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema);
+        RedisEntryParser parser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
         assertEquals(RedisHashSetEntryParser.class, parser.getClass());
     }
 
     @Test
     public void shouldReturnNewRedisKeyValueParser() {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.KEYVALUE);
-        RedisEntryParser parser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema);
+        RedisEntryParser parser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
         assertEquals(RedisKeyValueEntryParser.class, parser.getClass());
     }
 
@@ -59,7 +56,7 @@ public class RedisEntryParserFactoryTest {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.HASHSET);
         when(redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping()).thenReturn(new JsonToPropertiesConverter().convert(null, ""));
         IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class,
-                () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema));
+                () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter));
         assertEquals("Empty config SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING found", e.getMessage());
     }
 
@@ -68,7 +65,7 @@ public class RedisEntryParserFactoryTest {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.HASHSET);
         when(redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping()).thenReturn(new JsonToPropertiesConverter().convert(null, null));
         IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class,
-                () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema));
+                () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter));
         assertEquals("Empty config SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING found", e.getMessage());
     }
 
@@ -77,7 +74,7 @@ public class RedisEntryParserFactoryTest {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.HASHSET);
         when(redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping()).thenReturn(new JsonToPropertiesConverter().convert(null, "{\"order_details\":\"\"}"));
         IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class,
-                () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema));
+                () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter));
         assertEquals("Template cannot be empty", e.getMessage());
     }
 
@@ -86,7 +83,7 @@ public class RedisEntryParserFactoryTest {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.KEYVALUE);
         when(redisSinkConfig.getSinkRedisKeyValueDataFieldName()).thenReturn("");
         IllegalArgumentException illegalArgumentException =
-                assertThrows(IllegalArgumentException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema));
+                assertThrows(IllegalArgumentException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter));
         assertEquals("Empty config SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME found", illegalArgumentException.getMessage());
     }
 
@@ -95,7 +92,7 @@ public class RedisEntryParserFactoryTest {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
         when(redisSinkConfig.getSinkRedisListDataFieldName()).thenReturn("");
         IllegalArgumentException illegalArgumentException =
-                assertThrows(IllegalArgumentException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema));
+                assertThrows(IllegalArgumentException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter));
         assertEquals("Empty config SINK_REDIS_LIST_DATA_FIELD_NAME found", illegalArgumentException.getMessage());
     }
 
@@ -103,7 +100,7 @@ public class RedisEntryParserFactoryTest {
     public void shouldThrowExceptionForEmptyRedisTemplate() {
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn("");
         IllegalArgumentException illegalArgumentException =
-                assertThrows(IllegalArgumentException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema));
+                assertThrows(IllegalArgumentException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter));
         assertEquals("Template cannot be empty", illegalArgumentException.getMessage());
     }
 }

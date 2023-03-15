@@ -8,7 +8,6 @@ import com.gotocompany.depot.exception.EmptyMessageException;
 import com.gotocompany.depot.message.MessageUtils;
 import com.gotocompany.depot.message.Message;
 import com.gotocompany.depot.message.MessageParser;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.message.ParsedMessage;
 import com.gotocompany.depot.message.SinkConnectorSchemaMessageMode;
 import com.gotocompany.depot.metrics.StatsDReporter;
@@ -72,14 +71,6 @@ public class ProtoMessageParser implements MessageParser {
 
     public Map<String, Descriptors.Descriptor> getDescriptorMap() {
         return stencilClient.getAll();
-    }
-
-    @Override
-    public MessageSchema getSchema(String schemaClass) throws IOException {
-        ProtoField protoField = new ProtoField();
-        protoField = protoMappingParser.parseFields(protoField, schemaClass, getDescriptorMap(),
-                getTypeNameToPackageNameMap(getDescriptorMap()));
-        return new ProtoMessageSchema(protoField);
     }
 
     private Map<String, String> getTypeNameToPackageNameMap(Map<String, Descriptors.Descriptor> descriptors) {

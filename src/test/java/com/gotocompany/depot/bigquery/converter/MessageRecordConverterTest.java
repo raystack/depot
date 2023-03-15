@@ -36,7 +36,6 @@ public class MessageRecordConverterTest {
     @Mock
     private ClassLoadStencilClient stencilClient;
     private Instant now;
-    private MessageSchema schema;
 
     @Before
     public void setUp() throws IOException {
@@ -49,9 +48,8 @@ public class MessageRecordConverterTest {
             put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
         }};
         ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
-        schema = null;
         recordConverter = new MessageRecordConverter(protoMessageParser,
-                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
+                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
 
         now = Instant.now();
     }
@@ -138,7 +136,7 @@ public class MessageRecordConverterTest {
     public void shouldNotNamespaceMetadataFieldWhenNamespaceIsNotProvided() {
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
-        MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoMessageParser, sinkConfig, schema);
+        MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoMessageParser, sinkConfig);
 
         TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
         Message record1 = TestMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
@@ -164,7 +162,7 @@ public class MessageRecordConverterTest {
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "metadata_ns");
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
-        MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoMessageParser, sinkConfig, schema);
+        MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoMessageParser, sinkConfig);
 
         TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
         Message record1 = TestMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
@@ -250,7 +248,7 @@ public class MessageRecordConverterTest {
         ParsedMessage parsedMessage = new ProtoParsedMessage(dynamicMessage);
         when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "com.gotocompany.depot.TestMessage")).thenReturn(parsedMessage);
 
-        recordConverter = new MessageRecordConverter(mockParser, ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
+        recordConverter = new MessageRecordConverter(mockParser, ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
 
         List<Message> messages = Collections.singletonList(consumerRecord);
         Records records = recordConverter.convert(messages);
@@ -279,7 +277,7 @@ public class MessageRecordConverterTest {
         when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "com.gotocompany.depot.TestMessage")).thenReturn(parsedMessage);
 
         recordConverter = new MessageRecordConverter(mockParser,
-                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
+                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
 
         List<Message> messages = Collections.singletonList(consumerRecord);
         Records records = recordConverter.convert(messages);

@@ -1,38 +1,24 @@
 package com.gotocompany.depot.bigtable.parser;
 
-import com.google.protobuf.Descriptors;
 import com.gotocompany.depot.common.Template;
 import com.gotocompany.depot.config.BigTableSinkConfig;
 import com.gotocompany.depot.exception.InvalidTemplateException;
 import com.gotocompany.depot.message.Message;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.message.ParsedMessage;
 import com.gotocompany.depot.message.SinkConnectorSchemaMessageMode;
 import com.gotocompany.depot.message.proto.ProtoMessageParser;
 import com.gotocompany.depot.metrics.StatsDReporter;
 import com.timgroup.statsd.NoOpStatsDClient;
-import com.gotocompany.depot.TestKey;
 import com.gotocompany.depot.TestMessage;
-import com.gotocompany.depot.TestNestedMessage;
-import com.gotocompany.depot.TestNestedRepeatedMessage;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
 public class BigTableRowKeyParserTest {
-
-    private final Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
-        put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
-        put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
-        put(String.format("%s", TestNestedMessage.class.getName()), TestNestedMessage.getDescriptor());
-        put(String.format("%s", TestNestedRepeatedMessage.class.getName()), TestNestedRepeatedMessage.getDescriptor());
-    }};
 
     @Test
     public void shouldReturnParsedRowKeyForValidParameterisedTemplate() throws IOException, InvalidTemplateException {
@@ -41,7 +27,6 @@ public class BigTableRowKeyParserTest {
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
 
         ProtoMessageParser messageParser = new ProtoMessageParser(sinkConfig, new StatsDReporter(new NoOpStatsDClient()), null);
-        MessageSchema schema = null;
 
         byte[] logMessage = TestMessage.newBuilder()
                 .setOrderNumber("xyz-order")
@@ -51,7 +36,7 @@ public class BigTableRowKeyParserTest {
         Message message = new Message(null, logMessage);
         ParsedMessage parsedMessage = messageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, sinkConfig.getSinkConnectorSchemaProtoMessageClass());
 
-        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema);
+        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()));
         String parsedRowKey = bigTableRowKeyParser.parse(parsedMessage);
         assertEquals("row-xyz-order$key#eureka*test", parsedRowKey);
     }
@@ -63,7 +48,6 @@ public class BigTableRowKeyParserTest {
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
 
         ProtoMessageParser messageParser = new ProtoMessageParser(sinkConfig, new StatsDReporter(new NoOpStatsDClient()), null);
-        MessageSchema schema = null;
 
         byte[] logMessage = TestMessage.newBuilder()
                 .setOrderNumber("xyz-order")
@@ -73,7 +57,7 @@ public class BigTableRowKeyParserTest {
         Message message = new Message(null, logMessage);
         ParsedMessage parsedMessage = messageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, sinkConfig.getSinkConnectorSchemaProtoMessageClass());
 
-        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema);
+        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()));
         String parsedRowKey = bigTableRowKeyParser.parse(parsedMessage);
         assertEquals("row-key#constant$String", parsedRowKey);
     }
@@ -84,9 +68,7 @@ public class BigTableRowKeyParserTest {
         System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "com.gotocompany.depot.TestMessage");
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
 
-        MessageSchema schema = null;
-
-        InvalidTemplateException illegalArgumentException = Assertions.assertThrows(InvalidTemplateException.class, () -> new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema));
+        InvalidTemplateException illegalArgumentException = Assertions.assertThrows(InvalidTemplateException.class, () -> new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate())));
         assertEquals("Template is not valid, variables=1, validArgs=1, values=0", illegalArgumentException.getMessage());
     }
 

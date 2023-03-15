@@ -42,7 +42,7 @@ public class BigqueryJsonUpdateListener extends DepotStencilUpdateListener {
     @Override
     public void updateSchema() {
         MessageParser parser = getMessageParser();
-        MessageRecordConverter messageRecordConverter = new MessageRecordConverter(parser, config, null);
+        MessageRecordConverter messageRecordConverter = new MessageRecordConverter(parser, config);
         converterCache.setMessageRecordConverter(messageRecordConverter);
         List<TupleString> defaultColumns = config.getSinkBigqueryDefaultColumns();
         HashSet<Field> fieldsToBeUpdated = defaultColumns

@@ -53,7 +53,7 @@ public class BigqueryProtoUpdateListener extends DepotStencilUpdateListener {
             List<Field> bqSchemaFields = BigqueryFields.generateBigquerySchema(protoField);
             addMetadataFields(bqSchemaFields);
             bqClient.upsertTable(bqSchemaFields);
-            converterCache.setMessageRecordConverter(new MessageRecordConverter(messageParser, config, null));
+            converterCache.setMessageRecordConverter(new MessageRecordConverter(messageParser, config));
         } catch (BigQueryException | IOException e) {
             String errMsg = "Error while updating bigquery table on callback:" + e.getMessage();
             log.error(errMsg);

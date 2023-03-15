@@ -17,7 +17,6 @@ import com.gotocompany.depot.exception.ConfigurationException;
 import com.gotocompany.depot.exception.EmptyMessageException;
 import com.gotocompany.depot.exception.InvalidTemplateException;
 import com.gotocompany.depot.message.Message;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.message.ParsedMessage;
 import com.gotocompany.depot.message.MessageParser;
 import com.gotocompany.depot.message.SinkConnectorSchemaMessageMode;
@@ -45,8 +44,6 @@ public class BigTableRecordParserTest {
 
     @Mock
     private ClassLoadStencilClient stencilClient;
-    @Mock
-    private MessageSchema schema;
     @Mock
     private MessageParser mockMessageParser;
     @Mock
@@ -88,9 +85,9 @@ public class BigTableRecordParserTest {
         sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
         BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
-        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema);
+        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()));
 
-        bigTableRecordParser = new BigTableRecordParser(protoMessageParser, bigTableRowKeyParser, modeAndSchema, schema, bigtableSchema);
+        bigTableRecordParser = new BigTableRecordParser(protoMessageParser, bigTableRowKeyParser, modeAndSchema, bigtableSchema);
     }
 
     @Test
@@ -108,9 +105,9 @@ public class BigTableRecordParserTest {
         ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
         sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
-        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema);
+        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()));
         BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
-        bigTableRecordParser = new BigTableRecordParser(protoMessageParser, bigTableRowKeyParser, modeAndSchema, schema, bigtableSchema);
+        bigTableRecordParser = new BigTableRecordParser(protoMessageParser, bigTableRowKeyParser, modeAndSchema, bigtableSchema);
 
         List<BigTableRecord> records = bigTableRecordParser.convert(messages);
         assertTrue(records.get(0).isValid());
@@ -125,9 +122,9 @@ public class BigTableRecordParserTest {
         ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
         sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
-        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema);
+        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()));
         BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
-        bigTableRecordParser = new BigTableRecordParser(protoMessageParser, bigTableRowKeyParser, modeAndSchema, schema, bigtableSchema);
+        bigTableRecordParser = new BigTableRecordParser(protoMessageParser, bigTableRowKeyParser, modeAndSchema, bigtableSchema);
 
         List<BigTableRecord> records = bigTableRecordParser.convert(messages);
         assertTrue(records.get(0).isValid());
@@ -142,9 +139,9 @@ public class BigTableRecordParserTest {
         ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
         sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
-        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()), schema);
+        BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(new Template(sinkConfig.getRowKeyTemplate()));
         BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
-        bigTableRecordParser = new BigTableRecordParser(protoMessageParser, bigTableRowKeyParser, modeAndSchema, schema, bigtableSchema);
+        bigTableRecordParser = new BigTableRecordParser(protoMessageParser, bigTableRowKeyParser, modeAndSchema, bigtableSchema);
 
         List<BigTableRecord> records = bigTableRecordParser.convert(messages);
         assertTrue(records.get(0).isValid());
@@ -165,7 +162,6 @@ public class BigTableRecordParserTest {
         bigTableRecordParser = new BigTableRecordParser(mockMessageParser,
                 mockBigTableRowKeyParser,
                 MessageConfigUtils.getModeAndSchema(sinkConfig),
-                schema,
                 new BigTableSchema(sinkConfig.getColumnFamilyMapping())
         );
         when(mockMessageParser.parse(any(), any(), any())).thenThrow(EmptyMessageException.class);
@@ -183,7 +179,6 @@ public class BigTableRecordParserTest {
         bigTableRecordParser = new BigTableRecordParser(mockMessageParser,
                 mockBigTableRowKeyParser,
                 MessageConfigUtils.getModeAndSchema(sinkConfig),
-                schema,
                 new BigTableSchema(sinkConfig.getColumnFamilyMapping())
         );
         when(mockMessageParser.parse(any(), any(), any())).thenThrow(ConfigurationException.class);
@@ -201,7 +196,6 @@ public class BigTableRecordParserTest {
         bigTableRecordParser = new BigTableRecordParser(mockMessageParser,
                 mockBigTableRowKeyParser,
                 MessageConfigUtils.getModeAndSchema(sinkConfig),
-                schema,
                 new BigTableSchema(sinkConfig.getColumnFamilyMapping())
         );
         when(mockMessageParser.parse(any(), any(), any())).thenThrow(IOException.class);
@@ -219,7 +213,6 @@ public class BigTableRecordParserTest {
         bigTableRecordParser = new BigTableRecordParser(mockMessageParser,
                 mockBigTableRowKeyParser,
                 MessageConfigUtils.getModeAndSchema(sinkConfig),
-                schema,
                 new BigTableSchema(sinkConfig.getColumnFamilyMapping())
         );
         when(mockMessageParser.parse(any(), any(), any())).thenReturn(mockParsedMessage);

@@ -13,7 +13,6 @@ import com.gotocompany.depot.common.Tuple;
 import com.gotocompany.depot.config.BigTableSinkConfig;
 import com.gotocompany.depot.message.MessageParser;
 import com.gotocompany.depot.message.MessageParserFactory;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.message.SinkConnectorSchemaMessageMode;
 import com.gotocompany.depot.metrics.BigTableMetrics;
 import com.gotocompany.depot.metrics.Instrumentation;
@@ -59,15 +58,13 @@ public class BigTableSinkFactory {
 
             Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
             MessageParser messageParser = MessageParserFactory.getParser(sinkConfig, statsDReporter);
-            MessageSchema schema = messageParser.getSchema(modeAndSchema.getSecond());
 
             Template keyTemplate = new Template(sinkConfig.getRowKeyTemplate());
-            BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(keyTemplate, schema);
+            BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(keyTemplate);
             bigTableRecordParser = new BigTableRecordParser(
                     messageParser,
                     bigTableRowKeyParser,
                     modeAndSchema,
-                    schema,
                     bigtableSchema);
             instrumentation.logInfo("Connection to bigtable established successfully");
         } catch (IOException | InvalidTemplateException e) {

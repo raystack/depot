@@ -7,7 +7,6 @@ import com.gotocompany.depot.error.ErrorInfo;
 import com.gotocompany.depot.error.ErrorType;
 import com.gotocompany.depot.message.Message;
 import com.gotocompany.depot.message.MessageParser;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.message.json.JsonMessageParser;
 import com.gotocompany.depot.metrics.Instrumentation;
 import com.gotocompany.depot.metrics.JsonParserMetrics;
@@ -35,6 +34,13 @@ import static org.mockito.Mockito.mock;
 
 public class MessageRecordConverterForJsonTest {
 
+    private static final TimeZone TZ = TimeZone.getTimeZone("UTC");
+    private static final DateFormat DF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+
+    static {
+        DF.setTimeZone(TZ);
+    }
+
     private final SinkConfig defaultConfig = ConfigFactory.create(SinkConfig.class, Collections.emptyMap());
     private final Record.RecordBuilder recordBuilder = Record.builder();
     private final Map<String, Object> emptyMetadata = Collections.emptyMap();
@@ -42,18 +48,11 @@ public class MessageRecordConverterForJsonTest {
     private final ErrorInfo noError = null;
     private final Instrumentation instrumentation = mock(Instrumentation.class);
     private final JsonParserMetrics jsonParserMetrics = new JsonParserMetrics(defaultConfig);
-    private static final TimeZone TZ = TimeZone.getTimeZone("UTC");
-    private static final DateFormat DF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-    static {
-        DF.setTimeZone(TZ);
-    }
 
     @Test
-    public void shouldReturnEmptyRecordsforEmptyList() {
+    public void shouldReturnEmptyRecordsForEmptyList() {
         MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
-        MessageSchema schema = null;
-        BigQuerySinkConfig bigQuerySinkConfig = null;
-        MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
+        MessageRecordConverter converter = new MessageRecordConverter(parser, null);
         List<Message> emptyMessageList = Collections.emptyList();
 
         Records records = converter.convert(emptyMessageList);
@@ -65,11 +64,10 @@ public class MessageRecordConverterForJsonTest {
     @Test
     public void shouldConvertJsonMessagesToRecordForLogMessage() {
         MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
-        MessageSchema schema = null;
         HashMap<String, String> configMap = new HashMap<>();
         configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE");
         BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
-        MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
+        MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig);
         List<Message> messages = new ArrayList<>();
         messages.add(getMessageForString("{ \"first_name\": \"john doe\"}"));
         messages.add(getMessageForString("{ \"last_name\": \"walker\"}"));
@@ -104,11 +102,10 @@ public class MessageRecordConverterForJsonTest {
     @Test
     public void shouldConvertJsonMessagesToRecordForLogKey() {
         MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
-        MessageSchema schema = null;
         HashMap<String, String> configMap = new HashMap<>();
         configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_KEY");
         BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
-        MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
+        MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig);
         List<Message> messages = new ArrayList<>();
         messages.add(new Message("{ \"first_name\": \"john doe\"}".getBytes(), null));
         messages.add(new Message("{ \"last_name\": \"walker\"}".getBytes(), null));
@@ -143,11 +140,10 @@ public class MessageRecordConverterForJsonTest {
     @Test
     public void shouldHandleBothInvalidAndValidJsonMessages() {
         MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
-        MessageSchema schema = null;
         HashMap<String, String> configMap = new HashMap<>();
         configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE");
         BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
-        MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
+        MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig);
         List<Message> messages = new ArrayList<>();
         messages.add(getMessageForString("{ \"first_name\": \"john doe\"}"));
         messages.add(getMessageForString("{ invalid json str"));
@@ -221,14 +217,13 @@ public class MessageRecordConverterForJsonTest {
     @Test
     public void shouldInjectEventTimestamp() throws ParseException {
         MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
-        MessageSchema schema = null;
         Map<String, String> configMap = ImmutableMap.of(
                 "SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE",
                 "SINK_CONNECTOR_SCHEMA_DATA_TYPE", "json",
                 "SINK_BIGQUERY_ADD_EVENT_TIMESTAMP_ENABLE", "true");
 
         BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
-        MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
+        MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig);
         List<Message> messages = new ArrayList<>();
         messages.add(getMessageForString("{ \"first_name\": \"john doe\"}"));
         messages.add(getMessageForString("{ \"last_name\": \"walker\"}"));

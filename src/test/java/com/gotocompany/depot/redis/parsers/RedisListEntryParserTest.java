@@ -2,7 +2,6 @@ package com.gotocompany.depot.redis.parsers;
 
 import com.gotocompany.depot.config.RedisSinkConfig;
 import com.gotocompany.depot.message.Message;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.message.ParsedMessage;
 import com.gotocompany.depot.message.SinkConnectorSchemaMessageMode;
 import com.gotocompany.depot.message.proto.ProtoMessageParser;
@@ -31,7 +30,6 @@ public class RedisListEntryParserTest {
     @Mock
     private StatsDReporter statsDReporter;
     private RedisEntryParser redisListEntryParser;
-    private MessageSchema schema;
     private ParsedMessage parsedMessage;
 
     private void redisSinkSetup(String template, String field) throws IOException {
@@ -40,7 +38,6 @@ public class RedisListEntryParserTest {
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn(template);
         ProtoMessageParser protoMessageParser = new ProtoMessageParser(redisSinkConfig, statsDReporter, null);
         String schemaClass = "com.gotocompany.depot.TestMessage";
-        schema = null;
         byte[] logMessage = TestMessage.newBuilder()
                 .setOrderNumber("xyz-order")
                 .setOrderDetails("new-eureka-order")
@@ -48,7 +45,7 @@ public class RedisListEntryParserTest {
                 .toByteArray();
         Message message = new Message(null, logMessage);
         parsedMessage = protoMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass);
-        redisListEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema);
+        redisListEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
     }
 
     @Test

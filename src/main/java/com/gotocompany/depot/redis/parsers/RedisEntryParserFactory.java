@@ -3,7 +3,6 @@ package com.gotocompany.depot.redis.parsers;
 import com.gotocompany.depot.common.Template;
 import com.gotocompany.depot.config.RedisSinkConfig;
 import com.gotocompany.depot.exception.InvalidTemplateException;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.metrics.StatsDReporter;
 
 import java.util.Map;
@@ -17,8 +16,7 @@ public class RedisEntryParserFactory {
 
     public static RedisEntryParser getRedisEntryParser(
             RedisSinkConfig redisSinkConfig,
-            StatsDReporter statsDReporter,
-            MessageSchema schema) {
+            StatsDReporter statsDReporter) {
         Template keyTemplate;
         try {
             keyTemplate = new Template(redisSinkConfig.getSinkRedisKeyTemplate());
@@ -31,13 +29,13 @@ public class RedisEntryParserFactory {
                 if (fieldName == null || fieldName.isEmpty()) {
                     throw new IllegalArgumentException("Empty config SINK_REDIS_KEY_VALUE_DATA_FIELD_NAME found");
                 }
-                return new RedisKeyValueEntryParser(statsDReporter, keyTemplate, fieldName, schema);
+                return new RedisKeyValueEntryParser(statsDReporter, keyTemplate, fieldName);
             case LIST:
                 String field = redisSinkConfig.getSinkRedisListDataFieldName();
                 if (field == null || field.isEmpty()) {
                     throw new IllegalArgumentException("Empty config SINK_REDIS_LIST_DATA_FIELD_NAME found");
                 }
-                return new RedisListEntryParser(statsDReporter, keyTemplate, field, schema);
+                return new RedisListEntryParser(statsDReporter, keyTemplate, field);
             default:
                 Properties properties = redisSinkConfig.getSinkRedisHashsetFieldToColumnMapping();
                 if (properties == null || properties.isEmpty()) {
@@ -53,7 +51,7 @@ public class RedisEntryParserFactory {
                             }
                         }
                 ));
-                return new RedisHashSetEntryParser(statsDReporter, keyTemplate, fieldTemplates, schema);
+                return new RedisHashSetEntryParser(statsDReporter, keyTemplate, fieldTemplates);
         }
     }
 }

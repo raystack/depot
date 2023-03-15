@@ -10,7 +10,6 @@ import com.gotocompany.depot.exception.EmptyMessageException;
 import com.gotocompany.depot.exception.UnknownFieldsException;
 import com.gotocompany.depot.message.Message;
 import com.gotocompany.depot.message.MessageParser;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.message.ParsedMessage;
 import com.gotocompany.depot.message.SinkConnectorSchemaMessageMode;
 import lombok.AllArgsConstructor;

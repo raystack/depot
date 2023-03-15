@@ -7,7 +7,6 @@ import com.gotocompany.stencil.Parser;
 import com.gotocompany.stencil.StencilClientFactory;
 import com.gotocompany.depot.common.Tuple;
 import com.gotocompany.depot.config.RedisSinkConfig;
-import com.gotocompany.depot.config.enums.SinkConnectorSchemaDataType;
 import com.gotocompany.depot.error.ErrorType;
 import com.gotocompany.depot.exception.ConfigurationException;
 import com.gotocompany.depot.message.proto.ProtoMessageParser;
@@ -53,7 +52,6 @@ public class RedisParserTest {
         when(redisSinkConfig.getSinkRedisKeyValueDataFieldName()).thenReturn("order_number");
         when(redisSinkConfig.getSinkConnectorSchemaMessageMode()).thenReturn(SinkConnectorSchemaMessageMode.LOG_MESSAGE);
         when(redisSinkConfig.getSinkConnectorSchemaProtoMessageClass()).thenReturn(schemaClass);
-        when(redisSinkConfig.getSinkConnectorSchemaDataType()).thenReturn(SinkConnectorSchemaDataType.PROTOBUF);
         TestMessage message1 = TestMessage.newBuilder().setOrderNumber("test-order-1").setOrderDetails("ORDER-DETAILS-1").build();
         TestMessage message2 = TestMessage.newBuilder().setOrderNumber("test-order-2").setOrderDetails("ORDER-DETAILS-2").build();
         TestMessage message3 = TestMessage.newBuilder().setOrderNumber("test-order-3").setOrderDetails("ORDER-DETAILS-3").build();
@@ -74,10 +72,8 @@ public class RedisParserTest {
             ParsedMessage parsedMessage = new ProtoParsedMessage(protoParser.parse((byte[]) message.getLogMessage()));
             when(protoMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass)).thenReturn(parsedMessage);
         }
-        ProtoMessageParser messageParser = (ProtoMessageParser) MessageParserFactory.getParser(redisSinkConfig, statsDReporter);
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(redisSinkConfig);
-        MessageSchema schema = null;
-        RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema);
+        RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
         redisParser = new RedisParser(this.protoMessageParser, redisEntryParser, modeAndSchema);
     }
 

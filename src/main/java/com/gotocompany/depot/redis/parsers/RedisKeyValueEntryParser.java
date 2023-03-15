@@ -4,7 +4,6 @@ import com.gotocompany.depot.message.field.GenericFieldFactory;
 import com.gotocompany.depot.redis.client.entry.RedisEntry;
 import com.gotocompany.depot.redis.client.entry.RedisKeyValueEntry;
 import com.gotocompany.depot.common.Template;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.message.ParsedMessage;
 import com.gotocompany.depot.metrics.Instrumentation;
 import com.gotocompany.depot.metrics.StatsDReporter;
@@ -18,7 +17,6 @@ public class RedisKeyValueEntryParser implements RedisEntryParser {
     private final StatsDReporter statsDReporter;
     private final Template keyTemplate;
     private final String fieldName;
-    private final MessageSchema schema;
 
     @Override
     public List<RedisEntry> getRedisEntry(ParsedMessage parsedMessage) {

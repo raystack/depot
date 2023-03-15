@@ -9,7 +9,6 @@ import com.gotocompany.depot.exception.EmptyMessageException;
 import com.gotocompany.depot.message.MessageUtils;
 import com.gotocompany.depot.message.Message;
 import com.gotocompany.depot.message.MessageParser;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.message.ParsedMessage;
 import com.gotocompany.depot.message.SinkConnectorSchemaMessageMode;
 import com.gotocompany.depot.metrics.Instrumentation;
@@ -69,8 +68,4 @@ public class JsonMessageParser implements MessageParser {
         }
     }
 
-    @Override
-    public MessageSchema getSchema(String schemaClass) {
-        return null;
-    }
 }

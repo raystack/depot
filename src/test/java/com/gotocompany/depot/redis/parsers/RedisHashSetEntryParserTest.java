@@ -7,7 +7,6 @@ import com.google.protobuf.Value;
 import com.gotocompany.depot.config.RedisSinkConfig;
 import com.gotocompany.depot.config.converter.JsonToPropertiesConverter;
 import com.gotocompany.depot.message.Message;
-import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.message.ParsedMessage;
 import com.gotocompany.depot.message.SinkConnectorSchemaMessageMode;
 import com.gotocompany.depot.message.proto.ProtoMessageParser;
@@ -42,8 +41,6 @@ public class RedisHashSetEntryParserTest {
     private StatsDReporter statsDReporter;
     private ParsedMessage parsedBookingMessage;
     private ParsedMessage parsedKey;
-    private MessageSchema schemaBooking;
-    private MessageSchema schemaKey;
 
     private void redisSinkSetup(String field) throws IOException {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.HASHSET);
@@ -57,8 +54,6 @@ public class RedisHashSetEntryParserTest {
         ProtoMessageParser protoMessageParser = new ProtoMessageParser(redisSinkConfig, statsDReporter, null);
         parsedBookingMessage = protoMessageParser.parse(bookingMessage, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaBookingClass);
         parsedKey = protoMessageParser.parse(bookingMessage, SinkConnectorSchemaMessageMode.LOG_KEY, schemaKeyClass);
-        schemaBooking = null;
-        schemaKey = null;
     }
 
     @Test
@@ -80,11 +75,10 @@ public class RedisHashSetEntryParserTest {
                 .build();
         Message bookingMessage = new Message(null, testBookingLogMessage.toByteArray());
         String schemaMessageClass = "com.gotocompany.depot.TestBookingLogMessage";
-        MessageSchema schema = null;
 
         parsedBookingMessage = protoMessageParser.parse(bookingMessage, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaMessageClass);
 
-        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(config, statsDReporter, schema);
+        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(config, statsDReporter);
         List<RedisEntry> redisEntry = redisHashSetEntryParser.getRedisEntry(parsedBookingMessage);
         assertEquals(1, redisEntry.size());
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisEntry.get(0);
@@ -114,11 +108,10 @@ public class RedisHashSetEntryParserTest {
                 .setOrderNumber("test_order")
                 .build();
 
-        MessageSchema messageSchema = null;
         Message message1 = new Message(null, message.toByteArray());
         ParsedMessage parsedMessage = protoMessageParser.parse(message1, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "com.gotocompany.depot.TestMessageBQ");
 
-        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(config, statsDReporter, messageSchema);
+        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(config, statsDReporter);
         List<RedisEntry> redisEntry = redisHashSetEntryParser.getRedisEntry(parsedMessage);
         assertEquals(1, redisEntry.size());
         RedisHashSetFieldEntry redisHashSetFieldEntry = (RedisHashSetFieldEntry) redisEntry.get(0);
@@ -138,11 +131,10 @@ public class RedisHashSetEntryParserTest {
 
         ProtoMessageParser protoMessageParser = new ProtoMessageParser(config, statsDReporter, null);
         TestMessageBQ message = TestMessageBQ.newBuilder().setOrderNumber("test").build();
-        MessageSchema messageSchema = null;
         Message message1 = new Message(null, message.toByteArray());
         ParsedMessage parsedMessage = protoMessageParser.parse(message1, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "com.gotocompany.depot.TestMessageBQ");
 
-        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(config, statsDReporter, messageSchema);
+        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(config, statsDReporter);
         IllegalArgumentException exception = Assert.assertThrows(IllegalArgumentException.class, () -> redisHashSetEntryParser.getRedisEntry(parsedMessage));
         Assert.assertEquals("Invalid field config : does_not_exist", exception.getMessage());
     }
@@ -150,7 +142,7 @@ public class RedisHashSetEntryParserTest {
     @Test
     public void shouldParseLongMessageForKey() throws IOException {
         redisSinkSetup("{\"order_number\":\"ORDER_NUMBER_%s,customer_total_fare_without_surge\"}");
-        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schemaBooking);
+        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
         List<RedisEntry> redisEntries = redisHashSetEntryParser.getRedisEntry(parsedBookingMessage);
         RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_2000", "booking-order-1", null);
         assertEquals(Collections.singletonList(expectedEntry), redisEntries);
@@ -159,7 +151,7 @@ public class RedisHashSetEntryParserTest {
     @Test
     public void shouldParseLongMessageWithSpaceForKey() throws IOException {
         redisSinkSetup("{\"order_number\":\"ORDER_NUMBER_%s, customer_total_fare_without_surge\"}");
-        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schemaBooking);
+        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
         List<RedisEntry> redisEntries = redisHashSetEntryParser.getRedisEntry(parsedBookingMessage);
         RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_2000", "booking-order-1", null);
         assertEquals(Collections.singletonList(expectedEntry), redisEntries);
@@ -168,7 +160,7 @@ public class RedisHashSetEntryParserTest {
     @Test
     public void shouldParseStringMessageForKey() throws IOException {
         redisSinkSetup("{\"order_number\":\"ORDER_NUMBER_%s,order_number\"}");
-        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schemaBooking);
+        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
         List<RedisEntry> redisEntries = redisHashSetEntryParser.getRedisEntry(parsedBookingMessage);
         RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER_booking-order-1", "booking-order-1", null);
         assertEquals(Collections.singletonList(expectedEntry), redisEntries);
@@ -177,7 +169,7 @@ public class RedisHashSetEntryParserTest {
     @Test
     public void shouldHandleStaticStringForKey() throws IOException {
         redisSinkSetup("{\"order_number\":\"ORDER_NUMBER\"}");
-        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schemaBooking);
+        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
         List<RedisEntry> redisEntries = redisHashSetEntryParser.getRedisEntry(parsedBookingMessage);
         RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER", "booking-order-1", null);
         assertEquals(Collections.singletonList(expectedEntry), redisEntries);
@@ -186,14 +178,14 @@ public class RedisHashSetEntryParserTest {
     @Test
     public void shouldThrowErrorForInvalidFormatForKey() throws IOException {
         redisSinkSetup("{\"order_details\":\"ORDER_NUMBER%, order_number\"}");
-        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schemaBooking));
+        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class, () -> RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter));
         assertEquals("Template is not valid, variables=1, validArgs=0, values=1", e.getMessage());
     }
 
     @Test
     public void shouldThrowErrorForIncompatibleFormatForKey() throws IOException {
         redisSinkSetup("{\"order_details\":\"order_number-%d, order_number\"}");
-        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schemaBooking);
+        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
         IllegalFormatConversionException e = Assert.assertThrows(IllegalFormatConversionException.class,
                 () -> redisHashSetEntryParser.getRedisEntry(parsedBookingMessage));
         assertEquals("d != java.lang.String", e.getMessage());
@@ -202,7 +194,7 @@ public class RedisHashSetEntryParserTest {
     @Test
     public void shouldParseKeyWhenKafkaMessageParseModeSetToKey() throws IOException {
         redisSinkSetup("{\"order_number\":\"ORDER_NUMBER\"}");
-        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schemaKey);
+        RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter);
         List<RedisEntry> redisEntries = redisHashSetEntryParser.getRedisEntry(parsedKey);
         RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER", "ORDER-1-FROM-KEY", null);
         assertEquals(Collections.singletonList(expectedEntry), redisEntries);
