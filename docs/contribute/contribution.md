@@ -2,7 +2,7 @@
 
 The following is a set of guidelines for contributing to Depot. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request. Here are some important resources:
 
-* Github [issues](https://github.com/odpf/depot/issues) track the ongoing and reported issues.
+* Github [issues](https://github.com/goto/depot/issues) track the ongoing and reported issues.
 
 Development of Depot happens in the open on GitHub, and we are grateful to the community for contributing bug fixes and improvements. Read below to learn how you can take part in improving Depot.
 
@@ -53,5 +53,5 @@ Please follow these practices for your change to get merged fast and smoothly:
 * If you are introducing a completely new feature or making any major changes to an existing one, we recommend starting with an RFC and get consensus on the basic design first.
 * Make sure your local build is running with all the tests and checkstyle passing.
 * If your change is related to user-facing protocols/configurations, you need to make the corresponding change in the documentation as well.
-* Docs live in the code repo under [`docs`](https://github.com/odpf/depot/tree/main/docs/README.md) so that changes to that can be done in the same PR as changes to the code.
+* Docs live in the code repo under [`docs`](https://github.com/goto/depot/tree/main/docs/README.md) so that changes to that can be done in the same PR as changes to the code.
 
