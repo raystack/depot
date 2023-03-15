@@ -27,7 +27,6 @@ import java.util.Map;
 public class MessageRecordConverter {
     private final MessageParser parser;
     private final BigQuerySinkConfig config;
-    private final MessageSchema schema;
 
 
     public Records convert(List<Message> messages) {
