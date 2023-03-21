@@ -22,6 +22,6 @@ public class StoppedError implements ErrorDescriptor {
 
     @Override
     public String toString() {
-        return "StoppedError: BigQuery encounters an error on individual rows in the request, none of the rows are inserted. This error can be retried";
+        return "StoppedError: BigQuery encountered an error on individual rows in the request, none of the rows are inserted. This error can be retried";
     }
 }
