@@ -1,12 +1,11 @@
 package com.gotocompany.depot.redis.parsers;
 
-import com.gotocompany.depot.message.field.GenericFieldFactory;
-import com.gotocompany.depot.redis.client.entry.RedisEntry;
-import com.gotocompany.depot.redis.client.entry.RedisHashSetFieldEntry;
 import com.gotocompany.depot.common.Template;
 import com.gotocompany.depot.message.ParsedMessage;
 import com.gotocompany.depot.metrics.Instrumentation;
 import com.gotocompany.depot.metrics.StatsDReporter;
+import com.gotocompany.depot.redis.client.entry.RedisEntry;
+import com.gotocompany.depot.redis.client.entry.RedisHashSetFieldEntry;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
@@ -31,7 +30,7 @@ public class RedisHashSetEntryParser implements RedisEntryParser {
                 .stream()
                 .map(fieldTemplate -> {
                     String field = fieldTemplate.getValue().parse(parsedMessage);
-                    String redisValue = GenericFieldFactory.getField(parsedMessage.getFieldByName(fieldTemplate.getKey())).getString();
+                    String redisValue = parsedMessage.getFieldByName(fieldTemplate.getKey()).toString();
                     return new RedisHashSetFieldEntry(redisKey, field, redisValue, new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class));
                 }).collect(Collectors.toList());
     }

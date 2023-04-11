@@ -3,7 +3,6 @@ package com.gotocompany.depot.common;
 import com.google.common.base.Splitter;
 import com.gotocompany.depot.exception.InvalidTemplateException;
 import com.gotocompany.depot.message.ParsedMessage;
-import com.gotocompany.depot.message.field.GenericFieldFactory;
 import com.gotocompany.depot.utils.StringUtils;
 import lombok.EqualsAndHashCode;
 
@@ -38,7 +37,7 @@ public class Template {
     public String parse(ParsedMessage parsedMessage) {
         Object[] patternVariableData = patternVariableFieldNames
                 .stream()
-                .map(fieldName -> fetchInternalValue(parsedMessage.getFieldByName(fieldName)))
+                .map(fieldName -> parsedMessage.getFieldByName(fieldName).toString())
                 .toArray();
         return String.format(templatePattern, patternVariableData);
     }
@@ -52,10 +51,6 @@ public class Template {
             }
         }
         return templatePattern;
-    }
-
-    private Object fetchInternalValue(Object ob) {
-        return GenericFieldFactory.getField(ob).getString();
     }
 
     public String getTemplateString() {

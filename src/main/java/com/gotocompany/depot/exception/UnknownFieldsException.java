@@ -1,7 +1,7 @@
 package com.gotocompany.depot.exception;
 
 
-import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.Message;
 
 /**
  * UnknownFieldsException is thrown when unknown fields is detected on the log message although the proto message was succesfuly parsed.
@@ -12,7 +12,7 @@ import com.google.protobuf.DynamicMessage;
  */
 public class UnknownFieldsException extends DeserializerException {
 
-    public UnknownFieldsException(DynamicMessage dynamicMessage) {
+    public UnknownFieldsException(Message dynamicMessage) {
         super(String.format("unknown fields found, message : %s", dynamicMessage));
     }
 }

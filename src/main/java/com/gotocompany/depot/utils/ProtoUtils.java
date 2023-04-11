@@ -1,6 +1,6 @@
 package com.gotocompany.depot.utils;
 
-import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.Message;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -9,24 +9,24 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 
 public class ProtoUtils {
-    public static boolean hasUnknownField(DynamicMessage root) {
-        List<DynamicMessage> dynamicMessageFields = collectNestedFields(root);
-        List<DynamicMessage> messageWithUnknownFields = getMessageWithUnknownFields(dynamicMessageFields);
+    public static boolean hasUnknownField(Message root) {
+        List<Message> messageFields = collectNestedFields(root);
+        List<Message> messageWithUnknownFields = getMessageWithUnknownFields(messageFields);
         return messageWithUnknownFields.size() > 0;
     }
 
-    private static List<DynamicMessage> collectNestedFields(DynamicMessage node) {
-        List<DynamicMessage> output = new LinkedList<>();
-        Queue<DynamicMessage> stack = Collections.asLifoQueue(new LinkedList<>());
+    private static List<Message> collectNestedFields(Message node) {
+        List<Message> output = new LinkedList<>();
+        Queue<Message> stack = Collections.asLifoQueue(new LinkedList<>());
         stack.add(node);
         while (true) {
-            DynamicMessage current = stack.poll();
+            Message current = stack.poll();
             if (current == null) {
                 break;
             }
-            List<DynamicMessage> nestedChildNodes = current.getAllFields().values().stream()
-                    .filter(field -> field instanceof DynamicMessage)
-                    .map(field -> (DynamicMessage) field)
+            List<Message> nestedChildNodes = current.getAllFields().values().stream()
+                    .filter(field -> field instanceof Message)
+                    .map(field -> (Message) field)
                     .collect(Collectors.toList());
             stack.addAll(nestedChildNodes);
 
@@ -36,7 +36,7 @@ public class ProtoUtils {
         return output;
     }
 
-    private static List<DynamicMessage> getMessageWithUnknownFields(List<DynamicMessage> messages) {
+    private static List<Message> getMessageWithUnknownFields(List<Message> messages) {
         return messages.stream().filter(message -> message.getUnknownFields().asMap().size() > 0).collect(Collectors.toList());
     }
 }

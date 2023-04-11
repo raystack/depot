@@ -1,6 +1,8 @@
 package com.gotocompany.depot.bigquery.converter;
 
 import com.google.common.collect.ImmutableMap;
+import com.gotocompany.depot.bigquery.models.Record;
+import com.gotocompany.depot.bigquery.models.Records;
 import com.gotocompany.depot.config.BigQuerySinkConfig;
 import com.gotocompany.depot.config.SinkConfig;
 import com.gotocompany.depot.error.ErrorInfo;
@@ -10,8 +12,6 @@ import com.gotocompany.depot.message.MessageParser;
 import com.gotocompany.depot.message.json.JsonMessageParser;
 import com.gotocompany.depot.metrics.Instrumentation;
 import com.gotocompany.depot.metrics.JsonParserMetrics;
-import com.gotocompany.depot.bigquery.models.Record;
-import com.gotocompany.depot.bigquery.models.Records;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Test;
 
@@ -29,7 +29,9 @@ import java.util.stream.Collectors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class MessageRecordConverterForJsonTest {
@@ -94,10 +96,7 @@ public class MessageRecordConverterForJsonTest {
         List<Record> invalidRecords = Collections.emptyList();
         Records expectedRecords = new Records(expectedValidRecords, invalidRecords);
         assertEquals(expectedRecords, records);
-
-
     }
-
 
     @Test
     public void shouldConvertJsonMessagesToRecordForLogKey() {
@@ -132,10 +131,7 @@ public class MessageRecordConverterForJsonTest {
         List<Record> invalidRecords = Collections.emptyList();
         Records expectedRecords = new Records(expectedValidRecords, invalidRecords);
         assertEquals(expectedRecords, records);
-
-
     }
-
 
     @Test
     public void shouldHandleBothInvalidAndValidJsonMessages() {
@@ -162,10 +158,7 @@ public class MessageRecordConverterForJsonTest {
                 + "}";
 
         messages.add(getMessageForString(nestedJsonStr));
-
         Records records = converter.convert(messages);
-
-
         List<Record> expectedValidRecords = new ArrayList<>();
         Record validRecord1 = recordBuilder
                 .metadata(emptyMetadata)
@@ -207,11 +200,8 @@ public class MessageRecordConverterForJsonTest {
         expectedInvalidRecords.add(invalidRecord1);
         expectedInvalidRecords.add(invalidRecord3);
         expectedInvalidRecords.add(invalidRecord4);
-
         assertEquals(expectedValidRecords, records.getValidRecords());
-
         assertEquals(expectedInvalidRecords, records.getInvalidRecords());
-
     }
 
     @Test
@@ -256,9 +246,24 @@ public class MessageRecordConverterForJsonTest {
         assertTrue("the difference is " + timeDifferenceForSecondDate, timeDifferenceForSecondDate < 60000);
     }
 
-
     private Message getMessageForString(String jsonStr) {
         byte[] logMessage = jsonStr.getBytes();
         return new Message(null, logMessage);
+    }
+
+    @Test
+    public void shouldConvertJsonMessagesToRecordForEmpty() {
+        MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
+        HashMap<String, String> configMap = new HashMap<>();
+        configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_KEY");
+        BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
+        MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig);
+        List<Message> messages = new ArrayList<>();
+        messages.add(new Message("".getBytes(), null));
+        messages.add(new Message(null, null));
+
+        Records records = converter.convert(messages);
+        assertEquals(ErrorType.INVALID_MESSAGE_ERROR, records.getInvalidRecords().get(0).getErrorInfo().getErrorType());
+        assertEquals(ErrorType.INVALID_MESSAGE_ERROR, records.getInvalidRecords().get(1).getErrorInfo().getErrorType());
     }
 }

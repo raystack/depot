@@ -9,7 +9,6 @@ import com.gotocompany.depot.error.ErrorType;
 import com.gotocompany.depot.exception.ConfigurationException;
 import com.gotocompany.depot.exception.DeserializerException;
 import com.gotocompany.depot.exception.EmptyMessageException;
-import com.gotocompany.depot.message.field.GenericFieldFactory;
 import com.gotocompany.depot.message.Message;
 import com.gotocompany.depot.message.MessageParser;
 import com.gotocompany.depot.message.ParsedMessage;
@@ -58,7 +57,7 @@ public class BigTableRecordParser {
                             .getColumns(columnFamily)
                             .forEach(column -> {
                                 String fieldName = bigTableSchema.getField(columnFamily, column);
-                                String value = GenericFieldFactory.getField(parsedMessage.getFieldByName(fieldName)).getString();
+                                String value = parsedMessage.getFieldByName(fieldName).toString();
                                 rowMutationEntry.setCell(columnFamily, column, value);
                             }));
             BigTableRecord bigTableRecord = new BigTableRecord(rowMutationEntry, index, null, message.getMetadata());

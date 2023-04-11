@@ -1,21 +1,28 @@
 package com.gotocompany.depot.message.json;
 
-import com.jayway.jsonpath.Configuration;
 import com.gotocompany.depot.config.SinkConfig;
+import com.gotocompany.depot.message.LogicalValue;
 import com.gotocompany.depot.message.MessageUtils;
 import com.gotocompany.depot.message.ParsedMessage;
+import com.gotocompany.depot.schema.Schema;
+import com.gotocompany.depot.schema.SchemaField;
+import com.gotocompany.depot.schema.json.GenericJsonSchema;
+import com.gotocompany.depot.schema.json.GenericJsonSchemaField;
+import com.jayway.jsonpath.Configuration;
 import org.json.JSONObject;
 
-import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class JsonParsedMessage implements ParsedMessage {
     private final JSONObject jsonObject;
     private final Configuration jsonPathConfig;
+    private final Schema schema;
 
     public JsonParsedMessage(JSONObject jsonObject, Configuration jsonPathConfig) {
         this.jsonObject = jsonObject;
         this.jsonPathConfig = jsonPathConfig;
+        this.schema = new GenericJsonSchema(jsonObject);
     }
 
     public String toString() {
@@ -28,16 +35,11 @@ public class JsonParsedMessage implements ParsedMessage {
     }
 
     @Override
-    public void validate(SinkConfig config) {
-
-    }
+    public void validate(SinkConfig config) { }
 
     @Override
-    public Map<String, Object> getMapping() {
-        if (jsonObject == null || jsonObject.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        return jsonObject.toMap();
+    public Map<SchemaField, Object> getFields() {
+        return jsonObject.keySet().stream().collect(Collectors.toMap(s -> new GenericJsonSchemaField(s, jsonObject.get(s)), jsonObject::get));
     }
 
     public Object getFieldByName(String name) {
@@ -45,5 +47,15 @@ public class JsonParsedMessage implements ParsedMessage {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }
         return MessageUtils.getFieldFromJsonObject(name, jsonObject, jsonPathConfig);
+    }
+
+    @Override
+    public Schema getSchema() {
+        return schema;
+    }
+
+    @Override
+    public LogicalValue getLogicalValue() {
+        return null;
     }
 }

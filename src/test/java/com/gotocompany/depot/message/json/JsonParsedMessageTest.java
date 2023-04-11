@@ -7,43 +7,12 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.junit.Assert.assertEquals;
 
 public class JsonParsedMessageTest {
     private final Configuration configuration = Configuration.builder()
             .jsonProvider(new JsonOrgJsonProvider())
             .build();
-
-    @Test
-    public void shouldGetEmptyMappingKeysForEmptyJsonObject() {
-        //for empty json object
-        JsonParsedMessage parsedMessage = new JsonParsedMessage(new JSONObject(), configuration);
-        Map<String, Object> parsedMessageMapping = parsedMessage.getMapping();
-        assertEquals(Collections.emptyMap(), parsedMessageMapping);
-
-    }
-
-    @Test
-    public void shouldGetEmptyMappingKeysForNullJsonObject() {
-        JsonParsedMessage parsedMessage = new JsonParsedMessage(null, configuration);
-        Map<String, Object> parsedMessageMapping = parsedMessage.getMapping();
-        assertEquals(Collections.emptyMap(), parsedMessageMapping);
-    }
-
-    @Test
-    public void shouldGetMappings() {
-        JSONObject personDetails = new JSONObject("{\"first_name\": \"john doe\", \"address\": \"planet earth\"}");
-        JsonParsedMessage parsedMessage = new JsonParsedMessage(personDetails, configuration);
-        Map<String, Object> parsedMessageMapping = parsedMessage.getMapping();
-        Map<String, Object> expectedMap = new HashMap<>();
-        expectedMap.put("first_name", "john doe");
-        expectedMap.put("address", "planet earth");
-        assertEquals(expectedMap, parsedMessageMapping);
-    }
 
     @Test
     public void shouldReturnValueFromFlatJson() {
