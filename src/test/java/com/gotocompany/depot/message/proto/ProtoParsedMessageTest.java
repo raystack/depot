@@ -1,9 +1,11 @@
 package com.gotocompany.depot.message.proto;
 
+import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
@@ -15,6 +17,7 @@ import com.gotocompany.depot.TestMessage;
 import com.gotocompany.depot.TestMessageBQ;
 import com.gotocompany.depot.TestNestedMessageBQ;
 import com.gotocompany.depot.TestTypesMessage;
+import com.gotocompany.depot.exception.DeserializerException;
 import com.gotocompany.depot.schema.SchemaField;
 import com.gotocompany.stencil.Parser;
 import com.gotocompany.stencil.StencilClientFactory;
@@ -360,5 +363,49 @@ public class ProtoParsedMessageTest {
         Assert.assertFalse(isFieldPresent(fields, "list_values"));
         Assert.assertFalse(isFieldPresent(fields, "list_message_values"));
         Assert.assertFalse(isFieldPresent(fields, "timestamp_value"));
+    }
+
+    @Test
+    public void shouldReturnJsonObjectWithNoPreservedFieldNames() throws InvalidProtocolBufferException {
+        JSONObject jsonObject = new JSONObject(""
+                + "{\"stringValue\": \"test-string\","
+                + " \"floatValue\": 10.0, "
+                + "\"messageValue\" : {\"orderNumber\" : \"order-1\", \"orderDetails\" : \"order-details-1\"}"
+                + "}");
+        TestTypesMessage message = TestTypesMessage
+                .newBuilder()
+                .setStringValue("test-string")
+                .setFloatValue(10.0f)
+                .setMessageValue(TestMessage.newBuilder().setOrderNumber("order-1").setOrderDetails("order-details-1"))
+                .build();
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        assertEquals(jsonObject.toString(), protoParsedMessage.toJson().toString());
+    }
+
+    @Test
+    public void shouldThrowExceptionForInvalidProtoMessage() throws InvalidProtocolBufferException {
+        TestTypesMessage message = TestTypesMessage
+                .newBuilder()
+                .setStringValue("test-string")
+                .setTimestampValue(Timestamp.newBuilder().setSeconds(-99999999999999L).setNanos(0).build())
+                .setMessageValue(TestMessage.newBuilder().setOrderNumber("order-1").setOrderDetails("order-details-1"))
+                .build();
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        assertThrows(DeserializerException.class, protoParsedMessage::toJson);
+    }
+
+    @Test
+    public void shouldThrowExceptionForInvalidType() throws InvalidProtocolBufferException {
+        TestTypesMessage message = TestTypesMessage
+                .newBuilder()
+                .setStringValue("test-string")
+                .setAnyValue(Any.newBuilder().setTypeUrl("type-url").setValue(ByteString.copyFromUtf8("test-string")).build())
+                .setMessageValue(TestMessage.newBuilder().setOrderNumber("order-1").setOrderDetails("order-details-1"))
+                .build();
+        Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        assertThrows(DeserializerException.class, protoParsedMessage::toJson);
     }
 }

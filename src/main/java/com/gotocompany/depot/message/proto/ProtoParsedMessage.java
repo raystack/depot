@@ -2,6 +2,10 @@ package com.gotocompany.depot.message.proto;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
+import com.gotocompany.depot.exception.DeserializerException;
+import com.jayway.jsonpath.Configuration;
 import com.google.protobuf.Message;
 import com.gotocompany.depot.config.SinkConfig;
 import com.gotocompany.depot.exception.UnknownFieldsException;
@@ -13,8 +17,8 @@ import com.gotocompany.depot.schema.SchemaField;
 import com.gotocompany.depot.schema.proto.ProtoSchema;
 import com.gotocompany.depot.schema.proto.ProtoSchemaField;
 import com.gotocompany.depot.utils.ProtoUtils;
-import com.jayway.jsonpath.Configuration;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 
 import java.util.List;
 import java.util.Map;
@@ -43,6 +47,17 @@ public class ProtoParsedMessage implements ParsedMessage {
     @Override
     public Object getRaw() {
         return dynamicMessage;
+    }
+
+    @Override
+    public JSONObject toJson() {
+        String json;
+        try {
+            json = JsonFormat.printer().print(dynamicMessage);
+        } catch (InvalidProtocolBufferException | IllegalArgumentException e) {
+            throw new DeserializerException(e.getMessage());
+        }
+        return new JSONObject(json);
     }
 
     @Override

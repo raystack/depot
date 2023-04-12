@@ -35,6 +35,10 @@ public class JsonParsedMessage implements ParsedMessage {
     }
 
     @Override
+    public JSONObject toJson() {
+        return jsonObject;
+    }
+
     public void validate(SinkConfig config) { }
 
     @Override

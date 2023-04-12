@@ -57,4 +57,15 @@ public class JsonParsedMessageTest {
         Assert.assertEquals("david doe", ((JSONObject) family.get(0)).get("brother"));
         Assert.assertEquals("cain doe", ((JSONObject) family.get(1)).get("brother"));
     }
+
+    @Test
+    public void shouldReturnJsonObjectAsItIs() {
+        JSONObject jsonObject = new JSONObject(""
+                + "{\"first_name\": \"john doe\","
+                + " \"address\": \"planet earth\", "
+                + "\"family\" : [{\"brother\" : \"david doe\"}, {\"brother\" : \"cain doe\"}]"
+                + "}");
+        JsonParsedMessage parsedMessage = new JsonParsedMessage(jsonObject, configuration);
+        assertEquals(jsonObject.toString(), parsedMessage.toJson().toString());
+    }
 }

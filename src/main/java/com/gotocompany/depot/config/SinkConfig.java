@@ -94,4 +94,5 @@ public interface SinkConfig extends Config {
     @ConverterClass(ConfToListConverter.class)
     @Separator(ConfToListConverter.ELEMENT_SEPARATOR)
     List<TupleString> getMetadataColumnsTypes();
+
 }

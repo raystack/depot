@@ -25,7 +25,7 @@ public class ProtoSchemaTest {
     @Test
     public void shouldReturnAllFieldsPresentInProtoSchema() {
         List<SchemaField> fields = schema.getFields();
-        assertEquals(23, fields.size());
+        assertEquals(24, fields.size());
     }
 
     @Test
