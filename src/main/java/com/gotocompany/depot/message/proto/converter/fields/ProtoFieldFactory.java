@@ -16,6 +16,8 @@ public class ProtoFieldFactory {
                 new EnumProtoField(descriptor, fieldValue),
                 new ByteProtoField(descriptor, fieldValue),
                 new StructProtoField(descriptor, fieldValue),
+                new FloatProtoField(descriptor, fieldValue),
+                new IntegerProtoField(descriptor, fieldValue),
                 new MessageProtoField(descriptor, fieldValue)
         );
         Optional<ProtoField> first = protoFields

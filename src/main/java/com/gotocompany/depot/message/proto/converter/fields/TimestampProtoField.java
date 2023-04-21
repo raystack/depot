@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 public class TimestampProtoField implements ProtoField {
@@ -17,13 +18,8 @@ public class TimestampProtoField implements ProtoField {
     @Override
     public Object getValue() {
         if (fieldValue instanceof Collection<?>) {
-            List<Instant> tsValues = new ArrayList<>();
-            for (Object field : (Collection<?>) fieldValue) {
-                tsValues.add(getTime(field));
-            }
-            return tsValues;
+            return ((Collection<?>) fieldValue).stream().map(this::getTime).collect(Collectors.toList());
         }
-
         return getTime(fieldValue);
     }
 

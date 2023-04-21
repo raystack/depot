@@ -100,9 +100,9 @@ public class ProtoParsedMessageTest {
         assertEquals(new DateTime(nowMillis), fields.get("created_at"));
         assertEquals("COMPLETED", fields.get("status"));
         Map dateFields = (Map) fields.get("order_date");
-        assertEquals(1996, dateFields.get("year"));
-        assertEquals(11, dateFields.get("month"));
-        assertEquals(21, dateFields.get("day"));
+        assertEquals(1996L, dateFields.get("year"));
+        assertEquals(11L, dateFields.get("month"));
+        assertEquals(21L, dateFields.get("day"));
     }
 
     @Test
@@ -121,9 +121,9 @@ public class ProtoParsedMessageTest {
         MessageSchema messageSchema = messageParser.getSchema("com.gotocompany.depot.TestMessageBQ", descriptorsMap);
         Map<String, Object> fields = new ProtoParsedMessage(messageProtoParser.parse(message.toByteArray())).getMapping(messageSchema);
         Map durationFields = (Map) fields.get("trip_duration");
-        assertEquals("order-1", fields.get("order_number"));
-        assertEquals((long) 1, durationFields.get("seconds"));
-        assertEquals(TestProtoUtil.TRIP_DURATION_NANOS, durationFields.get("nanos"));
+        assertEquals(message.getOrderNumber(), fields.get("order_number"));
+        assertEquals(1L, durationFields.get("seconds"));
+        assertEquals(1000L, durationFields.get("nanos"));
     }
 
     @Test
@@ -178,7 +178,7 @@ public class ProtoParsedMessageTest {
         MessageSchema messageSchema = messageParser.getSchema("com.gotocompany.depot.TestNestedRepeatedMessageBQ", descriptorsMap);
         Map<String, Object> fields = new ProtoParsedMessage(protoParser.parse(message.toByteArray())).getMapping(messageSchema);
 
-        assertEquals(number, fields.get("number_field"));
+        assertEquals((long) number, fields.get("number_field"));
         List repeatedMessagesMap = (List) fields.get("repeated_message");
         assertTestMessageFields((Map) repeatedMessagesMap.get(0), nested1);
         assertTestMessageFields((Map) repeatedMessagesMap.get(1), nested2);
@@ -186,16 +186,15 @@ public class ProtoParsedMessageTest {
 
     @Test
     public void shouldParseRepeatedNestedMessagesIfRepeatedFieldsAreMissing() throws IOException {
-        int number = 1234;
         TestNestedRepeatedMessageBQ message = TestNestedRepeatedMessageBQ.newBuilder()
-                .setNumberField(number)
+                .setNumberField(1234)
                 .build();
 
         Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedRepeatedMessageBQ.class.getName());
         MessageSchema messageSchema = messageParser.getSchema("com.gotocompany.depot.TestNestedRepeatedMessageBQ", descriptorsMap);
         Map<String, Object> fields = new ProtoParsedMessage(protoParser.parse(message.toByteArray())).getMapping(messageSchema);
 
-        assertEquals(number, fields.get("number_field"));
+        assertEquals(1234L, fields.get("number_field"));
         assertEquals(1, fields.size());
     }
 
@@ -449,8 +448,8 @@ public class ProtoParsedMessageTest {
         ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
         Object discount = ((com.gotocompany.depot.message.proto.converter.fields.ProtoField) protoParsedMessage.getFieldByName("discount", messageSchema)).getValue();
         Assert.assertEquals(10000012010L, discount);
-        float price = (float) ((com.gotocompany.depot.message.proto.converter.fields.ProtoField) protoParsedMessage.getFieldByName("price", messageSchema)).getValue();
-        Assert.assertEquals(10.2f, price, 0.00000000001);
+        double price = (double) ((com.gotocompany.depot.message.proto.converter.fields.ProtoField) protoParsedMessage.getFieldByName("price", messageSchema)).getValue();
+        Assert.assertEquals(10.2D, price, 0.00000000001);
     }
 
     @Test
