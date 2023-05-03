@@ -11,7 +11,7 @@ public class RequestBodyFactory {
             case JSON:
                 return new JsonBody();
             case MESSAGE:
-                return new MessageBody();
+                return new MessageBody(config);
             case TEMPLATIZED_JSON:
                 return new TemplatizedJsonBody(config);
             default:
