@@ -28,6 +28,11 @@ public class GenericJsonSchemaField implements SchemaField {
         return name;
     }
 
+    @Override
+    public String getJsonName() {
+        return name;
+    }
+
     private SchemaFieldType getFieldType(Object inputValue) {
         if (inputValue instanceof JSONObject) {
             return SchemaFieldType.MESSAGE;

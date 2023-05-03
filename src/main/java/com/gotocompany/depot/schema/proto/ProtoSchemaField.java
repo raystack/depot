@@ -17,6 +17,11 @@ public class ProtoSchemaField implements SchemaField {
     }
 
     @Override
+    public String getJsonName() {
+        return fd.getJsonName();
+    }
+
+    @Override
     public SchemaFieldType getType() {
         switch (fd.getJavaType()) {
             case BYTE_STRING:

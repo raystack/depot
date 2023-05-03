@@ -76,4 +76,8 @@ public interface HttpSinkConfig extends HttpClientConfig {
     @Key("SINK_HTTP_JSON_BODY_TEMPLATE")
     @DefaultValue("")
     String getSinkHttpJsonBodyTemplate();
+
+    @Key("SINK_HTTP_DATE_FORMAT_ENABLE")
+    @DefaultValue("false")
+    Boolean isSinkHttpDateFormatEnabled();
 }

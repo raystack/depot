@@ -91,6 +91,13 @@ public class ProtoSchemaFieldTest {
         }
 
         @Test
+        public void testGetJsonName() {
+            Descriptors.FieldDescriptor doubleField = testMessageDescriptor.findFieldByName(fieldName);
+            ProtoSchemaField schemaField = new ProtoSchemaField(doubleField);
+            assertEquals(doubleField.getJsonName(), schemaField.getJsonName());
+        }
+
+        @Test
         public void testIsRepeated() {
             Descriptors.FieldDescriptor doubleField = testMessageDescriptor.findFieldByName(fieldName);
             ProtoSchemaField schemaField = new ProtoSchemaField(doubleField);

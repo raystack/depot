@@ -57,5 +57,11 @@ public class GenericJsonSchemaFieldTest {
             SchemaField schemaField = TEST_SCHEMA.getFieldByName(fieldName);
             assertEquals(repeated, schemaField.isRepeated());
         }
+
+        @Test
+        public void testGetJsonName() {
+            SchemaField schemaField = TEST_SCHEMA.getFieldByName(fieldName);
+            assertEquals(fieldName, schemaField.getJsonName());
+        }
     }
 }
