@@ -14,7 +14,6 @@ public class ProtoFieldFactory {
                 new TimestampProtoField(descriptor, fieldValue),
                 new MapProtoField(descriptor, fieldValue),
                 new EnumProtoField(descriptor, fieldValue),
-                new ByteProtoField(descriptor, fieldValue),
                 new StructProtoField(descriptor, fieldValue),
                 new FloatProtoField(descriptor, fieldValue),
                 new IntegerProtoField(descriptor, fieldValue),
