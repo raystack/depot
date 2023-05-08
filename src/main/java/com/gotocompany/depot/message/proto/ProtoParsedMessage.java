@@ -1,17 +1,17 @@
 package com.gotocompany.depot.message.proto;
 
 import com.google.api.client.util.DateTime;
-import com.google.api.client.util.Preconditions;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import com.gotocompany.depot.message.proto.converter.fields.DurationProtoField;
-import com.gotocompany.depot.message.proto.converter.fields.MessageProtoField;
-import com.gotocompany.depot.message.proto.converter.fields.ProtoField;
-import com.gotocompany.depot.message.proto.converter.fields.ProtoFieldFactory;
 import com.gotocompany.depot.common.Tuple;
 import com.gotocompany.depot.config.SinkConfig;
 import com.gotocompany.depot.message.MessageSchema;
 import com.gotocompany.depot.message.ParsedMessage;
+import com.gotocompany.depot.message.proto.converter.fields.DurationProtoField;
+import com.gotocompany.depot.message.proto.converter.fields.MessageProtoField;
+import com.gotocompany.depot.message.proto.converter.fields.ProtoField;
+import com.gotocompany.depot.message.proto.converter.fields.ProtoFieldFactory;
 import com.gotocompany.depot.utils.ProtoUtils;
 import com.gotocompany.depot.exception.ConfigurationException;
 import com.gotocompany.depot.exception.UnknownFieldsException;
@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +91,7 @@ public class ProtoParsedMessage implements ParsedMessage {
                     Tuple<String, Object> nestedColumns = getNestedColumnName(field, value);
                     row.put(nestedColumns.getFirst(), nestedColumns.getSecond());
                 } else {
-                    floatCheck(fieldValue);
+                    fieldValue = bytesCheck(fieldValue);
                     row.put(columnName, fieldValue);
                 }
             }
@@ -98,13 +99,13 @@ public class ProtoParsedMessage implements ParsedMessage {
         return row;
     }
 
-    private void floatCheck(Object fieldValue) {
-        if (fieldValue instanceof Float) {
-            float floatValue = ((Number) fieldValue).floatValue();
-            Preconditions.checkArgument(!Float.isInfinite(floatValue) && !Float.isNaN(floatValue));
-        } else if (fieldValue instanceof Double) {
-            double doubleValue = ((Number) fieldValue).doubleValue();
-            Preconditions.checkArgument(!Double.isInfinite(doubleValue) && !Double.isNaN(doubleValue));
+    private Object bytesCheck(Object fieldValue) {
+        if (fieldValue instanceof ByteString) {
+            ByteString byteString = (ByteString) fieldValue;
+            byte[] bytes = byteString.toStringUtf8().getBytes();
+            return new String(Base64.getEncoder().encode(bytes));
+        } else {
+            return fieldValue;
         }
     }
 
@@ -139,7 +140,7 @@ public class ProtoParsedMessage implements ParsedMessage {
                 if (f instanceof Instant) {
                     repeatedNestedFields.add(new DateTime(((Instant) f).toEpochMilli()));
                 } else {
-                    floatCheck(f);
+                    f = bytesCheck(f);
                     repeatedNestedFields.add(f);
                 }
                 assert value instanceof String;

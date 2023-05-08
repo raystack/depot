@@ -1,6 +1,5 @@
 package com.gotocompany.depot.bigquery.storage.proto;
 
-import com.google.api.client.util.Preconditions;
 import com.google.cloud.bigquery.storage.v1.AppendRowsResponse;
 import com.google.cloud.bigquery.storage.v1.ProtoRows;
 import com.google.protobuf.Descriptors;
@@ -108,11 +107,11 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
             }
             ProtoField protoField = ProtoFieldFactory.getField(inputField, inputMessage.getField(inputField));
             Object fieldValue = protoField.getValue();
-            if (fieldValue.toString().isEmpty()) {
-                continue;
-            }
             if (fieldValue instanceof List) {
                 addRepeatedFields(messageBuilder, outputField, (List<?>) fieldValue);
+                continue;
+            }
+            if (fieldValue.toString().isEmpty()) {
                 continue;
             }
             if (fieldValue instanceof Instant) {
@@ -125,7 +124,6 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
                 Descriptors.Descriptor messageType = outputField.getMessageType();
                 messageBuilder.setField(outputField, convert((DynamicMessage) fieldValue, messageType).build());
             } else {
-                floatCheck(fieldValue);
                 messageBuilder.setField(outputField, fieldValue);
             }
         }
@@ -135,16 +133,6 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
     private long getBQInstant(Instant instant) {
         // Timestamp should be in microseconds
         return TimeUnit.SECONDS.toMicros(instant.getEpochSecond()) + TimeUnit.NANOSECONDS.toMicros(instant.getNano());
-    }
-
-    private void floatCheck(Object fieldValue) {
-        if (fieldValue instanceof Float) {
-            float floatValue = ((Number) fieldValue).floatValue();
-            Preconditions.checkArgument(!Float.isInfinite(floatValue) && !Float.isNaN(floatValue));
-        } else if (fieldValue instanceof Double) {
-            double doubleValue = ((Number) fieldValue).doubleValue();
-            Preconditions.checkArgument(!Double.isInfinite(doubleValue) && !Double.isNaN(doubleValue));
-        }
     }
 
     private void addRepeatedFields(DynamicMessage.Builder messageBuilder, Descriptors.FieldDescriptor outputField, List<?> fieldValue) {
@@ -158,12 +146,8 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
                 repeatedNestedFields.add(convert((DynamicMessage) f, messageType).build());
             } else {
                 if (f instanceof Instant) {
-                    long timeStampValue = getBQInstant((Instant) f);
-                    if (timeStampValue > 0) {
-                        messageBuilder.setField(outputField, timeStampValue);
-                    }
+                    repeatedNestedFields.add(getBQInstant((Instant) f));
                 } else {
-                    floatCheck(f);
                     repeatedNestedFields.add(f);
                 }
             }

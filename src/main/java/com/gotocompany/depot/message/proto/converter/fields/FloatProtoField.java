@@ -23,11 +23,17 @@ public class FloatProtoField implements ProtoField {
     }
 
     public Double getValue(Object field) {
-        return Double.valueOf(field.toString());
+        double val = Double.parseDouble(field.toString());
+        boolean valid = !Double.isInfinite(val) && !Double.isNaN(val);
+        if (!valid) {
+            throw new IllegalArgumentException("Float/double value is not valid");
+        }
+        return val;
     }
 
     @Override
     public boolean matches() {
-        return descriptor.getType() == Descriptors.FieldDescriptor.Type.FLOAT;
+        return descriptor.getType() == Descriptors.FieldDescriptor.Type.FLOAT
+                || descriptor.getType() == Descriptors.FieldDescriptor.Type.DOUBLE;
     }
 }

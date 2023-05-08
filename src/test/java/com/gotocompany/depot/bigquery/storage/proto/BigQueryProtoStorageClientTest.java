@@ -103,6 +103,11 @@ public class BigQueryProtoStorageClientTest {
                         .setType(TableFieldSchema.Type.DOUBLE)
                         .build())
                 .addFields(TableFieldSchema.newBuilder()
+                        .setName("user_token")
+                        .setMode(TableFieldSchema.Mode.NULLABLE)
+                        .setType(TableFieldSchema.Type.BYTES)
+                        .build())
+                .addFields(TableFieldSchema.newBuilder()
                         .setName("counter")
                         .setMode(TableFieldSchema.Mode.NULLABLE)
                         .setType(TableFieldSchema.Type.INT64)
@@ -147,6 +152,11 @@ public class BigQueryProtoStorageClientTest {
                                 .setType(TableFieldSchema.Type.STRING)
                                 .build())
                         .build())
+                .addFields(TableFieldSchema.newBuilder()
+                        .setName("updated_at")
+                        .setMode(TableFieldSchema.Mode.REPEATED)
+                        .setType(TableFieldSchema.Type.DATETIME)
+                        .build())
                 .build();
         testDescriptor = BQTableSchemaToProtoDescriptor.convertBQTableSchemaToProtoDescriptor(testMessageBQSchema);
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
@@ -162,6 +172,7 @@ public class BigQueryProtoStorageClientTest {
                 .setOrderUrl("order-url-1")
                 .setDiscount(1200L)
                 .setPrice(23)
+                .setUserToken(ByteString.copyFrom("test-token".getBytes()))
                 .setCounter(20)
                 .setStatus(StatusBQ.COMPLETED)
                 .addAliases("alias1").addAliases("alias2")
@@ -178,6 +189,7 @@ public class BigQueryProtoStorageClientTest {
         Assert.assertEquals("order-no-112", convertedMessage.getField(testDescriptor.findFieldByName("order_number")));
         Assert.assertEquals("order-url-1", convertedMessage.getField(testDescriptor.findFieldByName("order_url")));
         Assert.assertEquals(1200L, convertedMessage.getField(testDescriptor.findFieldByName("discount")));
+        Assert.assertEquals(ByteString.copyFrom("test-token".getBytes()), convertedMessage.getField(testDescriptor.findFieldByName("user_token")));
         List aliases = (List) convertedMessage.getField(testDescriptor.findFieldByName("aliases"));
         Assert.assertEquals("alias1", aliases.get(0));
         Assert.assertEquals("alias2", aliases.get(1));
@@ -311,6 +323,8 @@ public class BigQueryProtoStorageClientTest {
     public void shouldConvertTimeStamp() throws IOException {
         TestMessageBQ m1 = TestMessageBQ.newBuilder()
                 .setCreatedAt(Timestamp.newBuilder().setSeconds(1680609402L).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(1680609402L).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(1680609402L).build())
                 .build();
         List<Message> inputList = new ArrayList<Message>() {{
             add(new Message(null, m1.toByteArray()));
@@ -323,6 +337,9 @@ public class BigQueryProtoStorageClientTest {
         long createdAt = (long) convertedMessage.getField(testDescriptor.findFieldByName("created_at"));
         // Microseconds
         Assert.assertEquals(1680609402000000L, createdAt);
+        List<Object> updatedAt = (List) convertedMessage.getField(testDescriptor.findFieldByName("updated_at"));
+        Assert.assertEquals(1680609402000000L, updatedAt.get(0));
+        Assert.assertEquals(1680609402000000L, updatedAt.get(1));
     }
 
     @Test

@@ -127,6 +127,15 @@ public class ProtoParsedMessageTest {
     }
 
     @Test
+    public void shouldParseBytes() throws IOException {
+        TestMessageBQ message = TestProtoUtil.generateTestMessage(now);
+        Parser messageProtoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
+        MessageSchema messageSchema = messageParser.getSchema("com.gotocompany.depot.TestMessageBQ", descriptorsMap);
+        Map<String, Object> fields = new ProtoParsedMessage(messageProtoParser.parse(message.toByteArray())).getMapping(messageSchema);
+        assertEquals("dGVzdC10b2tlbg==", fields.get("user_token"));
+    }
+
+    @Test
     public void shouldParseNestedMessageSuccessfully() {
         TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
         TestMessageBQ message2 = TestProtoUtil.generateTestMessage(now);
