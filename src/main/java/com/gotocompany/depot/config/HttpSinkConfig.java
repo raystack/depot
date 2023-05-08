@@ -1,5 +1,6 @@
 package com.gotocompany.depot.config;
 
+import com.gotocompany.depot.common.Template;
 import com.gotocompany.depot.config.converter.HttpHeaderConverter;
 import com.gotocompany.depot.config.converter.HttpParameterSourceTypeConverter;
 import com.gotocompany.depot.config.converter.HttpRequestBodyTypeConverter;
@@ -11,7 +12,6 @@ import com.gotocompany.depot.http.enums.HttpParameterSourceType;
 import com.gotocompany.depot.http.enums.HttpRequestBodyType;
 import com.gotocompany.depot.http.enums.HttpRequestMethodType;
 import com.gotocompany.depot.http.enums.HttpRequestType;
-import com.gotocompany.depot.common.Template;
 import org.aeonbits.owner.Config;
 
 import java.util.Map;
@@ -80,4 +80,8 @@ public interface HttpSinkConfig extends HttpClientConfig {
     @Key("SINK_HTTP_DATE_FORMAT_ENABLE")
     @DefaultValue("false")
     Boolean isSinkHttpDateFormatEnabled();
+
+    @Key("SINK_HTTP_DELETE_BODY_ENABLE")
+    @DefaultValue("true")
+    Boolean isSinkHttpDeleteBodyEnable();
 }

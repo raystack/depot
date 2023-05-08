@@ -1,5 +1,6 @@
 package com.gotocompany.depot.http.request;
 
+import com.gotocompany.depot.config.HttpSinkConfig;
 import com.gotocompany.depot.error.ErrorInfo;
 import com.gotocompany.depot.error.ErrorType;
 import com.gotocompany.depot.http.enums.HttpRequestMethodType;
@@ -27,10 +28,17 @@ public class RequestUtils {
         return new StringEntity(input.toString(), ContentType.APPLICATION_JSON);
     }
 
-    public static HttpEntityEnclosingRequestBase buildRequest(HttpRequestMethodType requestMethod, Map<String, String> headers, URI uri, Object requestBodies) {
+    public static HttpEntityEnclosingRequestBase buildRequest(HttpSinkConfig config, Map<String, String> headers, URI uri, Object requestBodies) {
+        HttpRequestMethodType requestMethod = config.getSinkHttpRequestMethod();
         HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(uri, requestMethod);
         headers.forEach(request::addHeader);
         request.setEntity(buildStringEntity(requestBodies));
+        return request;
+    }
+
+    public static HttpEntityEnclosingRequestBase buildRequest(HttpRequestMethodType requestMethod, Map<String, String> headers, URI uri) {
+        HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(uri, requestMethod);
+        headers.forEach(request::addHeader);
         return request;
     }
 }

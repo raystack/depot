@@ -1,7 +1,7 @@
 package com.gotocompany.depot.http.record;
 
-import com.gotocompany.depot.http.response.HttpSinkResponse;
 import com.gotocompany.depot.error.ErrorInfo;
+import com.gotocompany.depot.http.response.HttpSinkResponse;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -62,11 +62,14 @@ public class HttpRequestRecord implements Iterable<Integer> {
     }
 
     public String getRequestString() throws IOException {
-        return String.format("\nRequest Method: %s\nRequest Url: %s\nRequest Headers: %s\nRequest Body: %s",
-                httpRequest.getMethod(),
-                httpRequest.getURI(),
-                Arrays.asList(httpRequest.getAllHeaders()),
-                getRequestBody());
+        StringBuilder requestString = new StringBuilder()
+                .append("\nRequest Method: ").append(httpRequest.getMethod())
+                .append("\nRequest Url: ").append(httpRequest.getURI())
+                .append("\nRequest Headers: ").append(Arrays.asList(httpRequest.getAllHeaders()));
+        if (httpRequest.getEntity() != null) {
+            requestString.append("\nRequest Body: ").append(getRequestBody());
+        }
+        return requestString.toString();
     }
 
     @NotNull

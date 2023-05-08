@@ -31,4 +31,10 @@ public class RequestMethodFactoryTest {
         HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(uri, HttpRequestMethodType.PATCH);
         Assert.assertEquals("PATCH", request.getMethod());
     }
+
+    @Test
+    public void shouldReturnDeleteRequestMethod() {
+        HttpEntityEnclosingRequestBase request = RequestMethodFactory.create(uri, HttpRequestMethodType.DELETE);
+        Assert.assertEquals("DELETE", request.getMethod());
+    }
 }

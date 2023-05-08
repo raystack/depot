@@ -1,6 +1,7 @@
 package com.gotocompany.depot.http.request;
 
 import com.gotocompany.depot.http.enums.HttpRequestMethodType;
+import com.gotocompany.depot.http.request.method.HttpDeleteWithBody;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
@@ -16,6 +17,8 @@ public class RequestMethodFactory {
                 return new HttpPost(uri);
             case PATCH:
                 return new HttpPatch(uri);
+            case DELETE:
+                return new HttpDeleteWithBody(uri);
             default:
                 return new HttpPut(uri);
         }

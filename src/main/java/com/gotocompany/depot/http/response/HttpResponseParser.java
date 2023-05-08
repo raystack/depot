@@ -23,6 +23,7 @@ public class HttpResponseParser {
             HttpRequestRecord record = records.get(i);
             HttpSinkResponse response = responses.get(i);
             String responseCode = response.getResponseCode();
+            instrumentation.logInfo("Response Status: {}", responseCode);
             if (shouldLogRequest(responseCode, requestLogStatusCodeRanges)) {
                 instrumentation.logInfo(record.getRequestString());
             }
