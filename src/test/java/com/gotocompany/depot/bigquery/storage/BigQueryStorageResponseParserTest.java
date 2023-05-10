@@ -240,7 +240,7 @@ public class BigQueryStorageResponseParserTest {
         responseParser.setSinkResponseForException(cause, payload, messages, response);
         Assert.assertEquals(3, response.getErrors().size());
         Assert.assertEquals(ErrorType.SINK_4XX_ERROR, response.getErrors().get(0L).getErrorType());
-        Assert.assertEquals(ErrorType.SINK_4XX_ERROR, response.getErrors().get(3L).getErrorType());
+        Assert.assertEquals(ErrorType.SINK_5XX_ERROR, response.getErrors().get(3L).getErrorType());
         Assert.assertEquals(ErrorType.SINK_4XX_ERROR, response.getErrors().get(4L).getErrorType());
         Assert.assertEquals("message1", response.getErrors().get(0L).getException().getMessage());
         Assert.assertEquals("com.google.cloud.bigquery.storage.v1.Exceptions$AppendSerializationError: UNKNOWN: test error", response.getErrors().get(3L).getException().getMessage());

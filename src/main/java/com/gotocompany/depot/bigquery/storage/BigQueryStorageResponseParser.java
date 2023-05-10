@@ -149,20 +149,14 @@ public class BigQueryStorageResponseParser {
             SinkResponse sinkResponse) {
         io.grpc.Status status = io.grpc.Status.fromThrowable(cause);
         instrumentation.logError("Error from exception: {} ", status);
-        if (BigQueryStorageResponseParser.shouldRetry(status)) {
+        if (cause instanceof Exceptions.AppendSerializationError) {
+            // first set all messages to retryable
             IntStream.range(0, payload.getPayloadIndexes().size())
                     .forEach(index -> {
                         sinkResponse.addErrors(payload.getInputIndex(index), new ErrorInfo(new Exception(cause), ErrorType.SINK_5XX_ERROR));
                         instrumentErrors(status.getCode());
                     });
-        } else {
-            IntStream.range(0, payload.getPayloadIndexes().size())
-                    .forEach(index -> {
-                        sinkResponse.addErrors(payload.getInputIndex(index), new ErrorInfo(new Exception(cause), ErrorType.SINK_4XX_ERROR));
-                        instrumentErrors(status.getCode());
-                    });
-        }
-        if (cause instanceof Exceptions.AppendSerializationError) {
+            // then set non retryable messages
             Exceptions.AppendSerializationError ase = (Exceptions.AppendSerializationError) cause;
             Map<Integer, String> rowIndexToErrorMessage = ase.getRowIndexToErrorMessage();
             rowIndexToErrorMessage.forEach((index, err) -> {
@@ -176,6 +170,20 @@ public class BigQueryStorageResponseParser {
                 sinkResponse.addErrors(inputIndex, errorInfo);
                 instrumentErrors(BigQueryMetrics.BigQueryStorageAPIError.ROW_APPEND_ERROR);
             });
+        } else {
+            if (BigQueryStorageResponseParser.shouldRetry(status)) {
+                IntStream.range(0, payload.getPayloadIndexes().size())
+                        .forEach(index -> {
+                            sinkResponse.addErrors(payload.getInputIndex(index), new ErrorInfo(new Exception(cause), ErrorType.SINK_5XX_ERROR));
+                            instrumentErrors(status.getCode());
+                        });
+            } else {
+                IntStream.range(0, payload.getPayloadIndexes().size())
+                        .forEach(index -> {
+                            sinkResponse.addErrors(payload.getInputIndex(index), new ErrorInfo(new Exception(cause), ErrorType.SINK_4XX_ERROR));
+                            instrumentErrors(status.getCode());
+                        });
+            }
         }
     }
 }

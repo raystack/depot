@@ -100,8 +100,6 @@ public class BigQuerySinkFactory {
         } catch (IOException e) {
             throw new IllegalArgumentException("Exception occurred while creating sink", e);
         }
-
-
     }
 
     public Sink create() {
