@@ -71,14 +71,7 @@ public class BigQueryProtoWriter implements BigQueryWriter {
                 WriteStream writeStream = bigQueryInstance.getWriteStream(writeStreamRequest);
                 // saving the descriptor for conversion
                 descriptor = BQTableSchemaToProtoDescriptor.convertBQTableSchemaToProtoDescriptor(writeStream.getTableSchema());
-                Instant start = Instant.now();
-                BigQueryStream bigQueryStream = streamCreator.apply(config,
-                        credCreator.apply(config),
-                        ProtoSchemaConverter.convert(descriptor));
-                instrument(start, BigQueryMetrics.BigQueryStorageAPIType.STREAM_WRITER_CREATED);
-                assert (bigQueryStream instanceof BigQueryProtoStream);
-                // Actual object to write data.
-                streamWriter = ((BigQueryProtoStream) bigQueryStream).getStreamWriter();
+                streamWriter = createStreamWriter();
             }
         } catch (Descriptors.DescriptorValidationException e) {
             throw new IllegalArgumentException("Could not initialise the bigquery writer", e);
@@ -91,7 +84,7 @@ public class BigQueryProtoWriter implements BigQueryWriter {
             isClosed = true;
             instrumentation.logInfo("Closing StreamWriter");
             Instant start = Instant.now();
-            this.streamWriter.close();
+            streamWriter.close();
             instrument(start, BigQueryMetrics.BigQueryStorageAPIType.STREAM_WRITER_CLOSED);
         }
     }
@@ -108,29 +101,24 @@ public class BigQueryProtoWriter implements BigQueryWriter {
         }
         // need to synchronize
         synchronized (this) {
-            TableSchema updatedSchema = this.streamWriter.getUpdatedSchema();
+            TableSchema updatedSchema = streamWriter.getUpdatedSchema();
             if (updatedSchema != null) {
                 instrumentation.logInfo("Updated table schema detected, recreating stream writer");
                 try {
                     // Close the StreamWriter
                     start = Instant.now();
-                    this.streamWriter.close();
+                    streamWriter.close();
                     instrument(start, BigQueryMetrics.BigQueryStorageAPIType.STREAM_WRITER_CLOSED);
-
-                    this.descriptor = BQTableSchemaToProtoDescriptor.convertBQTableSchemaToProtoDescriptor(updatedSchema);
-
-                    start = Instant.now();
-                    BigQueryStream bigQueryStream = streamCreator.apply(config,
-                            credCreator.apply(config),
-                            ProtoSchemaConverter.convert(descriptor));
-                    instrument(start, BigQueryMetrics.BigQueryStorageAPIType.STREAM_WRITER_CREATED);
-
-                    assert (bigQueryStream instanceof BigQueryProtoStream);
-                    // Recreate stream writer
-                    streamWriter = ((BigQueryProtoStream) bigQueryStream).getStreamWriter();
+                    descriptor = BQTableSchemaToProtoDescriptor.convertBQTableSchemaToProtoDescriptor(updatedSchema);
+                    streamWriter = createStreamWriter();
                 } catch (Descriptors.DescriptorValidationException e) {
                     throw new IllegalArgumentException("Could not initialise the bigquery writer", e);
                 }
+            }
+            if (streamWriter.isClosed()) {
+                // somehow the stream writer is not recoverable
+                // we need to create a new one
+                streamWriter = createStreamWriter();
             }
             // timer for append latency
             start = Instant.now();
@@ -140,6 +128,16 @@ public class BigQueryProtoWriter implements BigQueryWriter {
         instrument(start, BigQueryMetrics.BigQueryStorageAPIType.STREAM_WRITER_APPEND);
         captureSizeMetric(payload);
         return appendRowsResponse;
+    }
+
+    private StreamWriter createStreamWriter() {
+        Instant start = Instant.now();
+        BigQueryStream bigQueryStream = streamCreator.apply(config,
+                credCreator.apply(config),
+                ProtoSchemaConverter.convert(descriptor));
+        instrument(start, BigQueryMetrics.BigQueryStorageAPIType.STREAM_WRITER_CREATED);
+        assert (bigQueryStream instanceof BigQueryProtoStream);
+        return ((BigQueryProtoStream) bigQueryStream).getStreamWriter();
     }
 
     private void captureSizeMetric(ProtoRows payload) {

@@ -8,8 +8,6 @@ import com.gotocompany.depot.bigquery.storage.BigQueryStorageClient;
 import com.gotocompany.depot.bigquery.storage.BigQueryStorageResponseParser;
 import com.gotocompany.depot.exception.SinkException;
 import com.gotocompany.depot.message.Message;
-import com.gotocompany.depot.metrics.BigQueryMetrics;
-import com.gotocompany.depot.metrics.Instrumentation;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,18 +15,12 @@ import java.util.concurrent.ExecutionException;
 
 public class BigQueryStorageAPISink implements Sink {
     private final BigQueryStorageClient bigQueryStorageClient;
-    private final Instrumentation instrumentation;
     private final BigQueryStorageResponseParser responseParser;
-    private final BigQueryMetrics bigQueryMetrics;
 
     public BigQueryStorageAPISink(
             BigQueryStorageClient bigQueryStorageClient,
-            BigQueryMetrics bigQueryMetrics,
-            Instrumentation instrumentation,
             BigQueryStorageResponseParser responseParser) {
         this.bigQueryStorageClient = bigQueryStorageClient;
-        this.bigQueryMetrics = bigQueryMetrics;
-        this.instrumentation = instrumentation;
         this.responseParser = responseParser;
     }
 

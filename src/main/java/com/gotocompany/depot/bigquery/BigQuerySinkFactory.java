@@ -106,8 +106,6 @@ public class BigQuerySinkFactory {
         if (sinkConfig.getSinkBigqueryStorageAPIEnable()) {
             return new BigQueryStorageAPISink(
                     bigQueryStorageClient,
-                    bigQueryMetrics,
-                    new Instrumentation(statsDReporter, BigQueryStorageAPISink.class),
                     responseParser);
         } else {
             return new BigQuerySink(

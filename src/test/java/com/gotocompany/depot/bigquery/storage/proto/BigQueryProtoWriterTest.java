@@ -321,4 +321,35 @@ public class BigQueryProtoWriterTest {
                 Mockito.eq(projectId));
     }
 
+    @Test
+    public void shouldRecreateUnRecoverableStreamWriter() throws Exception {
+        Mockito.when(writer.isClosed()).thenReturn(true);
+        ProtoRows rows = Mockito.mock(ProtoRows.class);
+        com.gotocompany.depot.bigquery.storage.BigQueryPayload payload = new BigQueryPayload();
+        payload.setPayload(rows);
+        ApiFuture<AppendRowsResponse> future = Mockito.mock(ApiFuture.class);
+        AppendRowsResponse apiResponse = Mockito.mock(AppendRowsResponse.class);
+        Mockito.when(future.get()).thenReturn(apiResponse);
+        Mockito.when(writer.append(rows)).thenReturn(future);
+        bigQueryWriter.appendAndGet(payload);
+
+        String tableName = String.format(BigQueryMetrics.BIGQUERY_TABLE_TAG, config.getTableName());
+        String datasetName = String.format(BigQueryMetrics.BIGQUERY_DATASET_TAG, config.getDatasetName());
+        String projectId = String.format(BigQueryMetrics.BIGQUERY_PROJECT_TAG, config.getGCloudProjectID());
+        String apiTag = String.format(BigQueryMetrics.BIGQUERY_API_TAG, BigQueryMetrics.BigQueryStorageAPIType.STREAM_WRITER_CREATED);
+        // Created twice, one for init() and another for closed
+        Mockito.verify(instrumentation, Mockito.times(2)).incrementCounter(
+                metrics.getBigqueryOperationTotalMetric(),
+                tableName,
+                datasetName,
+                projectId,
+                apiTag);
+        Mockito.verify(instrumentation, Mockito.times(2)).captureDurationSince(
+                Mockito.eq(metrics.getBigqueryOperationLatencyMetric()),
+                Mockito.any(),
+                Mockito.eq(tableName),
+                Mockito.eq(datasetName),
+                Mockito.eq(projectId),
+                Mockito.eq(apiTag));
+    }
 }
