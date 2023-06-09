@@ -36,6 +36,8 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
     private final MessageParser parser;
     private final String schemaClass;
     private final SinkConnectorSchemaMessageMode mode;
+    private static final long FIVE_YEARS_DAYS = 1825;
+    private static final long ONE_YEAR_DAYS = 365;
 
     public BigQueryProtoStorageClient(BigQueryWriter writer, BigQuerySinkConfig config, MessageParser parser) {
         this.writer = (BigQueryProtoWriter) writer;
@@ -115,8 +117,8 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
                 continue;
             }
             if (fieldValue instanceof Instant) {
-                long timeStampValue = getBQInstant((Instant) fieldValue);
-                if (timeStampValue > 0) {
+                if (((Instant) fieldValue).getEpochSecond() > 0) {
+                    long timeStampValue = getBQInstant((Instant) fieldValue, outputField);
                     messageBuilder.setField(outputField, timeStampValue);
                 }
             } else if (protoField.getClass().getName().equals(MessageProtoField.class.getName())
@@ -130,10 +132,28 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
         return messageBuilder;
     }
 
-    private long getBQInstant(Instant instant) {
+    private long getBQInstant(Instant instant, Descriptors.FieldDescriptor fieldDescriptor) {
+        Instant currentInstant = Instant.now();
+        boolean isPastInstant = currentInstant.isAfter(instant);
+        boolean isValid;
+        if (isPastInstant) {
+            Instant fiveYearPast = currentInstant.minusMillis(TimeUnit.DAYS.toMillis(FIVE_YEARS_DAYS));
+            isValid = fiveYearPast.isBefore(instant);
+        } else {
+            Instant oneYearFuture = currentInstant.plusMillis(TimeUnit.DAYS.toMillis(ONE_YEAR_DAYS));
+            isValid = oneYearFuture.isAfter(instant);
+
+        }
+        if (!isValid) {
+            throw new IllegalArgumentException(instant + " for field "
+                    + fieldDescriptor.getFullName() + " is outside the allowed bounds. "
+                    + "You can only stream to date range within 1825 days in the past "
+                    + "and 366 days in the future relative to the current date.");
+        }
         // Timestamp should be in microseconds
         return TimeUnit.SECONDS.toMicros(instant.getEpochSecond()) + TimeUnit.NANOSECONDS.toMicros(instant.getNano());
     }
+
 
     private void addRepeatedFields(DynamicMessage.Builder messageBuilder, Descriptors.FieldDescriptor outputField, List<?> fieldValue) {
         if (fieldValue.isEmpty()) {
@@ -146,7 +166,9 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
                 repeatedNestedFields.add(convert((DynamicMessage) f, messageType).build());
             } else {
                 if (f instanceof Instant) {
-                    repeatedNestedFields.add(getBQInstant((Instant) f));
+                    if (((Instant) f).getEpochSecond() > 0) {
+                        repeatedNestedFields.add(getBQInstant((Instant) f, outputField));
+                    }
                 } else {
                     repeatedNestedFields.add(f);
                 }

@@ -20,11 +20,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.threeten.extra.Days;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
@@ -171,6 +173,7 @@ public class BigQueryProtoStorageClientTest {
                 .setOrderNumber("order-no-112")
                 .setOrderUrl("order-url-1")
                 .setDiscount(1200L)
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(Instant.now().getEpochSecond()))
                 .setPrice(23)
                 .setUserToken(ByteString.copyFrom("test-token".getBytes()))
                 .setCounter(20)
@@ -200,6 +203,7 @@ public class BigQueryProtoStorageClientTest {
     @Test
     public void shouldReturnDurationField() throws IOException {
         TestMessageBQ m1 = TestMessageBQ.newBuilder()
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(Instant.now().getEpochSecond()))
                 .setTripDuration(Duration.newBuilder().setSeconds(1234L).setNanos(231).build())
                 .build();
         List<Message> inputList = new ArrayList<Message>() {{
@@ -219,6 +223,7 @@ public class BigQueryProtoStorageClientTest {
     public void shouldReturnMapField() throws Exception {
         TestMessageBQ m1 = TestMessageBQ.newBuilder()
                 .putCurrentState("k4", "v4")
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(Instant.now().getEpochSecond()))
                 .putCurrentState("k3", "v3")
                 .putCurrentState("k1", "v1")
                 .putCurrentState("k2", "v2")
@@ -321,10 +326,11 @@ public class BigQueryProtoStorageClientTest {
 
     @Test
     public void shouldConvertTimeStamp() throws IOException {
+        Instant now = Instant.now();
         TestMessageBQ m1 = TestMessageBQ.newBuilder()
-                .setCreatedAt(Timestamp.newBuilder().setSeconds(1680609402L).build())
-                .addUpdatedAt(Timestamp.newBuilder().setSeconds(1680609402L).build())
-                .addUpdatedAt(Timestamp.newBuilder().setSeconds(1680609402L).build())
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(now.getEpochSecond()).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(now.getEpochSecond()).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(now.getEpochSecond()).build())
                 .build();
         List<Message> inputList = new ArrayList<Message>() {{
             add(new Message(null, m1.toByteArray()));
@@ -336,10 +342,10 @@ public class BigQueryProtoStorageClientTest {
         DynamicMessage convertedMessage = DynamicMessage.parseFrom(testDescriptor, serializedRows);
         long createdAt = (long) convertedMessage.getField(testDescriptor.findFieldByName("created_at"));
         // Microseconds
-        Assert.assertEquals(1680609402000000L, createdAt);
+        Assert.assertEquals(TimeUnit.SECONDS.toMicros(now.getEpochSecond()), createdAt);
         List<Object> updatedAt = (List) convertedMessage.getField(testDescriptor.findFieldByName("updated_at"));
-        Assert.assertEquals(1680609402000000L, updatedAt.get(0));
-        Assert.assertEquals(1680609402000000L, updatedAt.get(1));
+        Assert.assertEquals(TimeUnit.SECONDS.toMicros(now.getEpochSecond()), updatedAt.get(0));
+        Assert.assertEquals(TimeUnit.SECONDS.toMicros(now.getEpochSecond()), updatedAt.get(1));
     }
 
     @Test
@@ -359,6 +365,7 @@ public class BigQueryProtoStorageClientTest {
 
         TestMessageBQ m1 = TestMessageBQ.newBuilder()
                 .setOrderNumber("order-1")
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(Instant.now().getEpochSecond()))
                 .setProperties(value)
                 .build();
         List<Message> inputList = new ArrayList<Message>() {{
@@ -385,8 +392,9 @@ public class BigQueryProtoStorageClientTest {
 
     @Test
     public void shouldHaveMetadataOnPayload() throws InvalidProtocolBufferException {
+        Instant now = Instant.now();
         TestMessageBQ m1 = TestMessageBQ.newBuilder()
-                .setCreatedAt(Timestamp.newBuilder().setSeconds(1680609402L).build())
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(now.getEpochSecond()).build())
                 .build();
         List<Message> inputList = new ArrayList<Message>() {{
             add(new Message(
@@ -395,8 +403,8 @@ public class BigQueryProtoStorageClientTest {
                     new Tuple<>("message_partition", 10),
                     new Tuple<>("message_topic", "test-topic"),
                     new Tuple<>("message_offset", 143),
-                    new Tuple<>("load_time", 1680609402L),
-                    new Tuple<>("message_timestamp", 1680609402L))
+                    new Tuple<>("load_time", now.toEpochMilli()),
+                    new Tuple<>("message_timestamp", now.toEpochMilli()))
             );
             add(new Message(
                     null,
@@ -404,8 +412,8 @@ public class BigQueryProtoStorageClientTest {
                     new Tuple<>("message_partition", 10),
                     new Tuple<>("message_topic", "test-topic"),
                     new Tuple<>("message_offset", 144L),
-                    new Tuple<>("load_time", 1680770429L),
-                    new Tuple<>("message_timestamp", 1680770429L))
+                    new Tuple<>("load_time", now.toEpochMilli()),
+                    new Tuple<>("message_timestamp", now.toEpochMilli()))
             );
         }};
         BigQueryPayload payload = converter.convert(inputList);
@@ -416,16 +424,16 @@ public class BigQueryProtoStorageClientTest {
         Assert.assertEquals(10L, convertedMessage.getField(testDescriptor.findFieldByName("message_partition")));
         Assert.assertEquals("test-topic", convertedMessage.getField(testDescriptor.findFieldByName("message_topic")));
         Assert.assertEquals(143L, convertedMessage.getField(testDescriptor.findFieldByName("message_offset")));
-        Assert.assertEquals(1680609402000L, convertedMessage.getField(testDescriptor.findFieldByName("load_time")));
-        Assert.assertEquals(1680609402000L, convertedMessage.getField(testDescriptor.findFieldByName("message_timestamp")));
+        Assert.assertEquals(TimeUnit.MILLISECONDS.toMicros(now.toEpochMilli()), convertedMessage.getField(testDescriptor.findFieldByName("load_time")));
+        Assert.assertEquals(TimeUnit.MILLISECONDS.toMicros(now.toEpochMilli()), convertedMessage.getField(testDescriptor.findFieldByName("message_timestamp")));
 
         serializedRows = protoPayload.getSerializedRows(1);
         convertedMessage = DynamicMessage.parseFrom(testDescriptor, serializedRows);
         Assert.assertEquals(10L, convertedMessage.getField(testDescriptor.findFieldByName("message_partition")));
         Assert.assertEquals("test-topic", convertedMessage.getField(testDescriptor.findFieldByName("message_topic")));
         Assert.assertEquals(144L, convertedMessage.getField(testDescriptor.findFieldByName("message_offset")));
-        Assert.assertEquals(1680770429000L, convertedMessage.getField(testDescriptor.findFieldByName("load_time")));
-        Assert.assertEquals(1680770429000L, convertedMessage.getField(testDescriptor.findFieldByName("message_timestamp")));
+        Assert.assertEquals(TimeUnit.MILLISECONDS.toMicros(now.toEpochMilli()), convertedMessage.getField(testDescriptor.findFieldByName("load_time")));
+        Assert.assertEquals(TimeUnit.MILLISECONDS.toMicros(now.toEpochMilli()), convertedMessage.getField(testDescriptor.findFieldByName("message_timestamp")));
     }
 
 
@@ -475,8 +483,9 @@ public class BigQueryProtoStorageClientTest {
         converter = new BigQueryProtoStorageClient(writer, config, protoMessageParser);
         Mockito.when(writer.getDescriptor()).thenReturn(testDescriptor);
 
+        Instant now = Instant.now();
         TestMessageBQ m1 = TestMessageBQ.newBuilder()
-                .setCreatedAt(Timestamp.newBuilder().setSeconds(1680609402L).build())
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(now.getEpochSecond()).build())
                 .build();
 
         List<Message> inputList = new ArrayList<Message>() {{
@@ -486,8 +495,8 @@ public class BigQueryProtoStorageClientTest {
                     new Tuple<>("message_partition", 10),
                     new Tuple<>("message_topic", "test-topic"),
                     new Tuple<>("message_offset", 143),
-                    new Tuple<>("load_time", 1680609402L),
-                    new Tuple<>("message_timestamp", 1680609402L))
+                    new Tuple<>("load_time", now.toEpochMilli()),
+                    new Tuple<>("message_timestamp", now.toEpochMilli()))
             );
         }};
         BigQueryPayload payload = converter.convert(inputList);
@@ -499,14 +508,15 @@ public class BigQueryProtoStorageClientTest {
         Assert.assertEquals(10L, metadata.getField(metadata.getDescriptorForType().findFieldByName("message_partition")));
         Assert.assertEquals("test-topic", metadata.getField(metadata.getDescriptorForType().findFieldByName("message_topic")));
         Assert.assertEquals(143L, metadata.getField(metadata.getDescriptorForType().findFieldByName("message_offset")));
-        Assert.assertEquals(1680609402000L, metadata.getField(metadata.getDescriptorForType().findFieldByName("load_time")));
-        Assert.assertEquals(1680609402000L, metadata.getField(metadata.getDescriptorForType().findFieldByName("message_timestamp")));
+        Assert.assertEquals(TimeUnit.MILLISECONDS.toMicros(now.toEpochMilli()), metadata.getField(metadata.getDescriptorForType().findFieldByName("load_time")));
+        Assert.assertEquals(TimeUnit.MILLISECONDS.toMicros(now.toEpochMilli()), metadata.getField(metadata.getDescriptorForType().findFieldByName("message_timestamp")));
     }
 
     @Test
     public void shouldReturnInvalidRecords() throws InvalidProtocolBufferException {
+        Instant now = Instant.now();
         TestMessageBQ m1 = TestMessageBQ.newBuilder()
-                .setCreatedAt(Timestamp.newBuilder().setSeconds(1680609402L).build())
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(now.getEpochSecond()).build())
                 .build();
         List<Message> inputList = new ArrayList<Message>() {{
             add(new Message(null, m1.toByteArray(), new Tuple<>("message_offset", 11)));
@@ -526,7 +536,7 @@ public class BigQueryProtoStorageClientTest {
         DynamicMessage convertedMessage = DynamicMessage.parseFrom(testDescriptor, serializedRows);
         long createdAt = (long) convertedMessage.getField(testDescriptor.findFieldByName("created_at"));
         // Microseconds
-        Assert.assertEquals(1680609402000000L, createdAt);
+        Assert.assertEquals(TimeUnit.SECONDS.toMicros(now.getEpochSecond()), createdAt);
 
         List<BigQueryRecordMeta> metas = new ArrayList<>();
         for (BigQueryRecordMeta r : payload) {
@@ -543,5 +553,78 @@ public class BigQueryProtoStorageClientTest {
         Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, invalidRecord.getErrorInfo().getErrorType());
         Assert.assertEquals("While parsing a protocol message, the input ended unexpectedly in the middle of a field.  This could mean either that the input has been truncated or that an embedded message misreported its own length.",
                 invalidRecord.getErrorInfo().getException().getMessage());
+    }
+
+    @Test
+    public void shouldNotConvertFiveYearsOldTimeStamp() throws IOException {
+        Instant moreThanFiveYears = Instant.now().minus(Days.of(1826));
+        TestMessageBQ m1 = TestMessageBQ.newBuilder()
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(moreThanFiveYears.getEpochSecond()).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(moreThanFiveYears.getEpochSecond()).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(moreThanFiveYears.getEpochSecond()).build())
+                .build();
+        List<Message> inputList = new ArrayList<Message>() {{
+            add(new Message(null, m1.toByteArray()));
+        }};
+        BigQueryPayload payload = converter.convert(inputList);
+        ProtoRows protoPayload = (ProtoRows) payload.getPayload();
+        Assert.assertEquals(0, protoPayload.getSerializedRowsCount());
+        List<BigQueryRecordMeta> metas = new ArrayList<>();
+        for (BigQueryRecordMeta r : payload) {
+            metas.add(r);
+        }
+        Assert.assertEquals(1, metas.size());
+        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, metas.get(0).getErrorInfo().getErrorType());
+        Assert.assertTrue(metas.get(0).getErrorInfo().getException().getMessage()
+                .contains("is outside the allowed bounds. You can only stream to date range within 1825 days in the past and 366 days in the future relative to the current date."));
+    }
+
+    @Test
+    public void shouldNotConvertMoreThanOneYearFutureTimeStamp() throws IOException {
+        Instant moreThanOneYear = Instant.now().plus(Days.of(10000));
+        TestMessageBQ m1 = TestMessageBQ.newBuilder()
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(moreThanOneYear.getEpochSecond()).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(moreThanOneYear.getEpochSecond()).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(moreThanOneYear.getEpochSecond()).build())
+                .build();
+        List<Message> inputList = new ArrayList<Message>() {{
+            add(new Message(null, m1.toByteArray()));
+        }};
+        BigQueryPayload payload = converter.convert(inputList);
+        ProtoRows protoPayload = (ProtoRows) payload.getPayload();
+        Assert.assertEquals(0, protoPayload.getSerializedRowsCount());
+        List<BigQueryRecordMeta> metas = new ArrayList<>();
+        for (BigQueryRecordMeta r : payload) {
+            metas.add(r);
+        }
+        Assert.assertEquals(1, metas.size());
+        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, metas.get(0).getErrorInfo().getErrorType());
+        Assert.assertTrue(metas.get(0).getErrorInfo().getException().getMessage()
+                .contains("is outside the allowed bounds. You can only stream to date range within 1825 days in the past and 366 days in the future relative to the current date."));
+    }
+
+    @Test
+    public void shouldConvertTimeStampCloseToLimits() throws IOException {
+        Instant past = Instant.now().minus(Days.of(1824));
+        Instant future = Instant.now().plus(Days.of(365));
+        TestMessageBQ m1 = TestMessageBQ.newBuilder()
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(past.getEpochSecond()).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(future.getEpochSecond()).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(past.getEpochSecond()).build())
+                .build();
+        List<Message> inputList = new ArrayList<Message>() {{
+            add(new Message(null, m1.toByteArray()));
+        }};
+        BigQueryPayload payload = converter.convert(inputList);
+        ProtoRows protoPayload = (ProtoRows) payload.getPayload();
+        Assert.assertEquals(1, protoPayload.getSerializedRowsCount());
+        ByteString serializedRows = protoPayload.getSerializedRows(0);
+        DynamicMessage convertedMessage = DynamicMessage.parseFrom(testDescriptor, serializedRows);
+        long createdAt = (long) convertedMessage.getField(testDescriptor.findFieldByName("created_at"));
+        // Microseconds
+        Assert.assertEquals(TimeUnit.SECONDS.toMicros(past.getEpochSecond()), createdAt);
+        List<Object> updatedAt = (List) convertedMessage.getField(testDescriptor.findFieldByName("updated_at"));
+        Assert.assertEquals(TimeUnit.SECONDS.toMicros(future.getEpochSecond()), updatedAt.get(0));
+        Assert.assertEquals(TimeUnit.SECONDS.toMicros(past.getEpochSecond()), updatedAt.get(1));
     }
 }
