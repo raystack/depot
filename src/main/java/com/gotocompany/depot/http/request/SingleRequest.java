@@ -60,6 +60,18 @@ public class SingleRequest implements Request {
         return records;
     }
 
+    private Object getPayload(MessageContainer messageContainer) throws IOException {
+        // Other http methods than delete.
+        if (config.getSinkHttpRequestMethod() != HttpRequestMethodType.DELETE) {
+            return requestBody.build(messageContainer);
+        }
+        // create payload for delete if enabled
+        if (config.isSinkHttpDeleteBodyEnable()) {
+            return requestBody.build(messageContainer);
+        }
+        return null;
+    }
+
     private HttpRequestRecord createRecord(Message message, int index) {
         try {
             MessageContainer messageContainer = new MessageContainer(message, messageParser);
@@ -67,11 +79,8 @@ public class SingleRequest implements Request {
             Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
             URI requestUrl = uriBuilder.build(messageContainer, queryParam);
             HttpEntityEnclosingRequestBase request;
-            if (!(config.getSinkHttpRequestMethod() == HttpRequestMethodType.DELETE && !config.isSinkHttpDeleteBodyEnable())) {
-                request = RequestUtils.buildRequest(config, requestHeaders, requestUrl, requestBody.build(messageContainer));
-            } else {
-                request = RequestUtils.buildRequest(config.getSinkHttpRequestMethod(), requestHeaders, requestUrl);
-            }
+            Object payload = getPayload(messageContainer);
+            request = RequestUtils.buildRequest(config, requestHeaders, requestUrl, payload);
             HttpRequestRecord record = new HttpRequestRecord(request);
             record.addIndex(index);
             return record;

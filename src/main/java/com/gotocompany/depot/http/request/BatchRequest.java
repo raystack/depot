@@ -52,7 +52,7 @@ public class BatchRequest implements Request {
         if (!(config.getSinkHttpRequestMethod() == HttpRequestMethodType.DELETE && !config.isSinkHttpDeleteBodyEnable())) {
             createRecordsWithBody(messages, records);
         } else {
-            HttpEntityEnclosingRequestBase request = RequestUtils.buildRequest(config.getSinkHttpRequestMethod(), requestHeaders, requestUrl);
+            HttpEntityEnclosingRequestBase request = RequestUtils.buildRequest(config, requestHeaders, requestUrl, null);
             records.add(new HttpRequestRecord(request));
         }
         return records;
@@ -75,8 +75,7 @@ public class BatchRequest implements Request {
             }
         }
         if (validBodies.size() != 0) {
-            HttpEntityEnclosingRequestBase request = RequestUtils.buildRequest(
-                    config, requestHeaders, requestUrl, validBodies.values());
+            HttpEntityEnclosingRequestBase request = RequestUtils.buildRequest(config, requestHeaders, requestUrl, validBodies.values());
             HttpRequestRecord validRecord = new HttpRequestRecord(request);
             validRecord.addAllIndexes(validBodies.keySet());
             records.add(validRecord);
