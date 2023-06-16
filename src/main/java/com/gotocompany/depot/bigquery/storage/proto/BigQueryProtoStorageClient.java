@@ -102,7 +102,7 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
         DynamicMessage.Builder messageBuilder = DynamicMessage.newBuilder(descriptor);
         List<Descriptors.FieldDescriptor> allFields = inputMessage.getDescriptorForType().getFields();
         for (Descriptors.FieldDescriptor inputField : allFields) {
-            Descriptors.FieldDescriptor outputField = descriptor.findFieldByName(inputField.getName());
+            Descriptors.FieldDescriptor outputField = descriptor.findFieldByName(inputField.getName().toLowerCase());
             if (outputField == null) {
                 // not found in table
                 continue;

@@ -159,6 +159,11 @@ public class BigQueryProtoStorageClientTest {
                         .setMode(TableFieldSchema.Mode.REPEATED)
                         .setType(TableFieldSchema.Type.DATETIME)
                         .build())
+                .addFields(TableFieldSchema.newBuilder()
+                        .setName("camelCase")
+                        .setMode(TableFieldSchema.Mode.NULLABLE)
+                        .setType(TableFieldSchema.Type.STRING)
+                        .build())
                 .build();
         testDescriptor = BQTableSchemaToProtoDescriptor.convertBQTableSchemaToProtoDescriptor(testMessageBQSchema);
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
@@ -198,6 +203,22 @@ public class BigQueryProtoStorageClientTest {
         Assert.assertEquals("alias2", aliases.get(1));
         Assert.assertEquals(20L, convertedMessage.getField(testDescriptor.findFieldByName("counter")));
         Assert.assertEquals("COMPLETED", convertedMessage.getField(testDescriptor.findFieldByName("status")));
+    }
+
+    @Test
+    public void shouldReturnCaseInsensitiveFields() throws InvalidProtocolBufferException {
+        TestMessageBQ m1 = TestMessageBQ.newBuilder()
+                .setCamelCase("testing")
+                .build();
+        List<Message> inputList = new ArrayList<Message>() {{
+            add(new Message(null, m1.toByteArray()));
+        }};
+        BigQueryPayload payload = converter.convert(inputList);
+        ProtoRows protoPayload = (ProtoRows) payload.getPayload();
+        Assert.assertEquals(1, protoPayload.getSerializedRowsCount());
+        ByteString serializedRows = protoPayload.getSerializedRows(0);
+        DynamicMessage convertedMessage = DynamicMessage.parseFrom(testDescriptor, serializedRows);
+        Assert.assertEquals("testing", convertedMessage.getField(testDescriptor.findFieldByName("camelcase")));
     }
 
     @Test

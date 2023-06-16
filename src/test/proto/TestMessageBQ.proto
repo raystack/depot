@@ -35,6 +35,7 @@ message TestMessageBQ {
   repeated google.protobuf.Struct attributes = 16;
   repeated google.protobuf.Duration intervals = 17;
   int32 counter = 18;
+  string camelCase = 19;
 }
 
 message TestMessageChildBQ {
