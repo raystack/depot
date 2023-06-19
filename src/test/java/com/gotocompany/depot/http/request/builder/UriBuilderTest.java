@@ -60,7 +60,7 @@ public class UriBuilderTest {
 
     @Test
     public void shouldReturnURIInstanceBasedOnBaseUrl() throws URISyntaxException, InvalidTemplateException {
-        configuration.put("SINK_HTTP_SERVICE_URL", "http://dummy.com   ");
+        configuration.put("SINK_HTTPV2_SERVICE_URL", "http://dummy.com   ");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         UriBuilder uriBuilder = new UriBuilder(sinkConfig);
         assertEquals(new URI("http://dummy.com"), uriBuilder.build(queryParam));
@@ -70,7 +70,7 @@ public class UriBuilderTest {
     public void shouldFailWhenUrlConfigIsEmpty() throws InvalidTemplateException {
         expectedException.expect(InvalidTemplateException.class);
         expectedException.expectMessage("Template cannot be empty");
-        configuration.put("SINK_HTTP_SERVICE_URL", "");
+        configuration.put("SINK_HTTPV2_SERVICE_URL", "");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         UriBuilder uriBuilder = new UriBuilder(sinkConfig);
         uriBuilder.build(queryParam);
@@ -88,7 +88,7 @@ public class UriBuilderTest {
     public void shouldFailWhenUrlConfigIsInvalid() throws InvalidTemplateException {
         expectedException.expect(ConfigurationException.class);
         expectedException.expectMessage("Service URL 'http://dummy.com?s=^IXIC' is invalid");
-        configuration.put("SINK_HTTP_SERVICE_URL", "http://dummy.com?s=^IXIC");
+        configuration.put("SINK_HTTPV2_SERVICE_URL", "http://dummy.com?s=^IXIC");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         UriBuilder uriBuilder = new UriBuilder(sinkConfig);
         uriBuilder.build(queryParam);
@@ -97,7 +97,7 @@ public class UriBuilderTest {
     @Test
     public void shouldAddParameter() throws URISyntaxException, InvalidTemplateException {
         queryParam.put("test-key", "test-value");
-        configuration.put("SINK_HTTP_SERVICE_URL", "http://dummy.com");
+        configuration.put("SINK_HTTPV2_SERVICE_URL", "http://dummy.com");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         UriBuilder uriBuilder = new UriBuilder(sinkConfig);
         assertEquals(new URI("http://dummy.com?test-key=test-value"), uriBuilder.build(queryParam));
@@ -106,7 +106,7 @@ public class UriBuilderTest {
     @Test
     public void shouldAddMultipleParameter() throws URISyntaxException, InvalidTemplateException {
         queryParam.put("test-key", "test-value");
-        configuration.put("SINK_HTTP_SERVICE_URL", "http://dummy.com");
+        configuration.put("SINK_HTTPV2_SERVICE_URL", "http://dummy.com");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         UriBuilder uriBuilder = new UriBuilder(sinkConfig);
         assertEquals(new URI("http://dummy.com?test-key=test-value"), uriBuilder.build(queryParam));
@@ -114,7 +114,7 @@ public class UriBuilderTest {
 
     @Test
     public void shouldParseUriTemplate() throws URISyntaxException, InvalidTemplateException, IOException {
-        configuration.put("SINK_HTTP_SERVICE_URL", "http://dummy.com/%s,order_url");
+        configuration.put("SINK_HTTPV2_SERVICE_URL", "http://dummy.com/%s,order_url");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         UriBuilder uriBuilder = new UriBuilder(sinkConfig);
         assertEquals(new URI("http://dummy.com/test-url"), uriBuilder.build(messageContainer, queryParam));
@@ -124,7 +124,7 @@ public class UriBuilderTest {
     public void shouldReturnParsedUriTemplateWithQueryParam() throws URISyntaxException, InvalidTemplateException, IOException {
         queryParam.put("test-key-1", "test-value-1");
         queryParam.put("test-key-2", "test-value-2");
-        configuration.put("SINK_HTTP_SERVICE_URL", "http://dummy.com/%s,order_url");
+        configuration.put("SINK_HTTPV2_SERVICE_URL", "http://dummy.com/%s,order_url");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         UriBuilder uriBuilder = new UriBuilder(sinkConfig);
         assertEquals(new URI("http://dummy.com/test-url?test-key-1=test-value-1&test-key-2=test-value-2"), uriBuilder.build(messageContainer, queryParam));

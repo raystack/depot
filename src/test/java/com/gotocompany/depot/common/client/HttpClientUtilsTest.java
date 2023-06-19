@@ -61,8 +61,8 @@ public class HttpClientUtilsTest {
         httpRequest.addHeader("foo", "bar");
 
         Map<String, String> configuration = new HashMap<>();
-        configuration.put("HTTP_OAUTH2_ENABLE", "false");
-        configuration.put("HTTP_OAUTH2_ACCESS_TOKEN_URL", "http://127.0.0.1:1080/oauth2/token");
+        configuration.put("SINK_HTTPV2_OAUTH2_ENABLE", "false");
+        configuration.put("SINK_HTTPV2_OAUTH2_ACCESS_TOKEN_URL", "http://127.0.0.1:1080/oauth2/token");
         clientConfig = ConfigFactory.create(HttpClientConfig.class, configuration);
         CloseableHttpClient closeableHttpClient = HttpClientUtils.newHttpClient(clientConfig, statsDReporter);
 
@@ -77,8 +77,9 @@ public class HttpClientUtilsTest {
         httpRequest.addHeader("foo", "bar");
 
         Map<String, String> configuration = new HashMap<>();
-        configuration.put("HTTP_OAUTH2_ENABLE", "true");
-        configuration.put("HTTP_OAUTH2_ACCESS_TOKEN_URL", "http://127.0.0.1:1080/oauth2/token");
+        configuration.put("SINK_HTTPV2_OAUTH2_ENABLE", "true");
+        configuration.put("SINK_HTTPV2_OAUTH2_ACCESS_TOKEN_URL", "http://127.0.0.1:1080/oauth2/token");
+
         clientConfig = ConfigFactory.create(HttpClientConfig.class, configuration);
         CloseableHttpClient closeableHttpClient = HttpClientUtils.newHttpClient(clientConfig, statsDReporter);
 

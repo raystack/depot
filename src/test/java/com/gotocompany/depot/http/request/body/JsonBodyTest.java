@@ -70,7 +70,7 @@ public class JsonBodyTest {
 
     @Test
     public void shouldReturnPayloadWithDateFormatAndMetadata() throws IOException {
-        configuration.put("SINK_HTTP_DATE_FORMAT_ENABLE", "true");
+        configuration.put("SINK_HTTPV2_DATE_FORMAT_ENABLE", "true");
         configuration.put("SINK_ADD_METADATA_ENABLED", "true");
         configuration.put("SINK_METADATA_COLUMNS_TYPES", "message_topic=string");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
@@ -85,10 +85,9 @@ public class JsonBodyTest {
                 + "\\\"messageValue\\\":{\\\"orderDetails\\\":\\\"ORDER-DETAILS-1\\\",\\\"orderNumber\\\":\\\"test-order-1\\\"}}\"}";
         jsonEquals(expected, stringBody);
     }
-
     @Test
     public void shouldReturnPayloadWithStringTimestampAndWithoutMetadata() throws IOException {
-        configuration.put("SINK_HTTP_DATE_FORMAT_ENABLE", "false");
+        configuration.put("SINK_HTTPV2_DATE_FORMAT_ENABLE", "false");
         configuration.put("SINK_ADD_METADATA_ENABLED", "false");
         configuration.put("SINK_METADATA_COLUMNS_TYPES", "message_topic=string");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);

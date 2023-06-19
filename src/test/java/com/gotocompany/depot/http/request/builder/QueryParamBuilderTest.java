@@ -41,7 +41,7 @@ public class QueryParamBuilderTest {
         configuration.put("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "com.gotocompany.depot.TestBookingLogMessage");
         configuration.put("SINK_CONNECTOR_SCHEMA_PROTO_KEY_CLASS", "com.gotocompany.depot.TestBookingLogKey");
         configuration.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", String.valueOf(SinkConnectorSchemaMessageMode.LOG_MESSAGE));
-        configuration.put("SINK_HTTP_QUERY_PARAMETER_SOURCE", "MESSAGE");
+        configuration.put("SINK_HTTPV2_QUERY_PARAMETER_SOURCE", "MESSAGE");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         ProtoMessageParser messageParser = (ProtoMessageParser) MessageParserFactory.getParser(sinkConfig, statsDReporter);
@@ -57,7 +57,7 @@ public class QueryParamBuilderTest {
 
     @Test
     public void shouldGenerateConstantQueryParameter() {
-        configuration.put("SINK_HTTP_QUERY_TEMPLATE", "{\"order_number\":\"V-1234\", \"order_details\":\"test-details\"}");
+        configuration.put("SINK_HTTPV2_QUERY_TEMPLATE", "{\"order_number\":\"V-1234\", \"order_details\":\"test-details\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
         Map<String, String> queryParam = queryParamBuilder.build();
@@ -68,7 +68,7 @@ public class QueryParamBuilderTest {
 
     @Test
     public void shouldGenerateQueryParameterFromTemplate() throws IOException {
-        configuration.put("SINK_HTTP_QUERY_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,service_type\"}");
+        configuration.put("SINK_HTTPV2_QUERY_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,service_type\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
         Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
@@ -79,8 +79,8 @@ public class QueryParamBuilderTest {
 
     @Test
     public void shouldGenerateQueryParameterFromTemplateWhenQueryParamSourceIsKey() throws IOException {
-        configuration.put("SINK_HTTP_QUERY_TEMPLATE", "{\"H-%s,order_url\":\"V-%s,order_number\"}");
-        configuration.put("SINK_HTTP_QUERY_PARAMETER_SOURCE", "KEY");
+        configuration.put("SINK_HTTPV2_QUERY_TEMPLATE", "{\"H-%s,order_url\":\"V-%s,order_number\"}");
+        configuration.put("SINK_HTTPV2_QUERY_PARAMETER_SOURCE", "KEY");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
         Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
@@ -91,7 +91,7 @@ public class QueryParamBuilderTest {
 
     @Test
     public void shouldHandleConstantStringInTemplateAlongWithParameterizedQuery() throws IOException {
-        configuration.put("SINK_HTTP_QUERY_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,service_type\", \"H-const\":\"V-const\"}");
+        configuration.put("SINK_HTTPV2_QUERY_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,service_type\", \"H-const\":\"V-const\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
         Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
@@ -103,7 +103,7 @@ public class QueryParamBuilderTest {
 
     @Test
     public void shouldReturnEmptyCollectionIfQueryTemplateIsEmpty() throws IOException {
-        configuration.put("SINK_HTTP_QUERY_TEMPLATE", "{}");
+        configuration.put("SINK_HTTPV2_QUERY_TEMPLATE", "{}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
         Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
@@ -114,7 +114,7 @@ public class QueryParamBuilderTest {
 
     @Test
     public void shouldReturnEmptyMapIfQueryTemplateIsEmptyString() throws IOException {
-        configuration.put("SINK_HTTP_QUERY_TEMPLATE", "");
+        configuration.put("SINK_HTTPV2_QUERY_TEMPLATE", "");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
         Map<String, String> queryParam = queryParamBuilder.build(messageContainer);
@@ -135,7 +135,7 @@ public class QueryParamBuilderTest {
 
     @Test
     public void shouldThrowIllegalArgumentExceptionIfAnyFieldNameProvidedDoesNotExistInSchema() {
-        configuration.put("SINK_HTTP_QUERY_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,RANDOM_FIELD\"}");
+        configuration.put("SINK_HTTPV2_QUERY_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,RANDOM_FIELD\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         QueryParamBuilder queryParamBuilder = new QueryParamBuilder(sinkConfig);
 

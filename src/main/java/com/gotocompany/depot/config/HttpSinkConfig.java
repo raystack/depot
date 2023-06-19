@@ -20,68 +20,68 @@ import java.util.Map;
 @Config.DisableFeature(Config.DisableableFeature.PARAMETER_FORMATTING)
 public interface HttpSinkConfig extends HttpClientConfig {
 
-    @Key("SINK_HTTP_SERVICE_URL")
+    @Key("SINK_HTTPV2_SERVICE_URL")
     String getSinkHttpServiceUrl();
 
-    @Key("SINK_HTTP_REQUEST_METHOD")
+    @Key("SINK_HTTPV2_REQUEST_METHOD")
     @DefaultValue("put")
     @ConverterClass(HttpRequestMethodConverter.class)
     HttpRequestMethodType getSinkHttpRequestMethod();
 
-    @Key("SINK_HTTP_HEADERS")
+    @Key("SINK_HTTPV2_HEADERS")
     @DefaultValue("")
     @ConverterClass(HttpHeaderConverter.class)
     Map<String, String> getSinkHttpHeaders();
 
-    @Key("SINK_HTTP_HEADERS_TEMPLATE")
+    @Key("SINK_HTTPV2_HEADERS_TEMPLATE")
     @DefaultValue("")
     @ConverterClass(TemplateMapConverter.class)
     Map<Template, Template> getSinkHttpHeadersTemplate();
 
-    @Key("SINK_HTTP_HEADERS_PARAMETER_SOURCE")
+    @Key("SINK_HTTPV2_HEADERS_PARAMETER_SOURCE")
     @DefaultValue("MESSAGE")
     @ConverterClass(HttpParameterSourceTypeConverter.class)
     HttpParameterSourceType getSinkHttpHeadersParameterSource();
 
-    @Key("SINK_HTTP_QUERY_TEMPLATE")
+    @Key("SINK_HTTPV2_QUERY_TEMPLATE")
     @DefaultValue("")
     @ConverterClass(TemplateMapConverter.class)
     Map<Template, Template> getQueryTemplate();
 
-    @Key("SINK_HTTP_QUERY_PARAMETER_SOURCE")
+    @Key("SINK_HTTPV2_QUERY_PARAMETER_SOURCE")
     @DefaultValue("MESSAGE")
     @ConverterClass(HttpParameterSourceTypeConverter.class)
     HttpParameterSourceType getQueryParamSourceMode();
 
-    @Key("SINK_HTTP_REQUEST_MODE")
+    @Key("SINK_HTTPV2_REQUEST_MODE")
     @DefaultValue("SINGLE")
     @ConverterClass(HttpRequestTypeConverter.class)
     HttpRequestType getRequestType();
 
-    @Key("SINK_HTTP_REQUEST_BODY_MODE")
+    @Key("SINK_HTTPV2_REQUEST_BODY_MODE")
     @DefaultValue("RAW")
     @ConverterClass(HttpRequestBodyTypeConverter.class)
     HttpRequestBodyType getRequestBodyType();
 
-    @Key("SINK_HTTP_REQUEST_LOG_STATUS_CODE_RANGES")
+    @Key("SINK_HTTPV2_REQUEST_LOG_STATUS_CODE_RANGES")
     @DefaultValue("400-600")
     @ConverterClass(RangeToHashMapConverter.class)
     Map<Integer, Boolean> getSinkHttpRequestLogStatusCodeRanges();
 
-    @Key("SINK_HTTP_RETRY_STATUS_CODE_RANGES")
+    @Key("SINK_HTTPV2_RETRY_STATUS_CODE_RANGES")
     @DefaultValue("400-600")
     @ConverterClass(RangeToHashMapConverter.class)
     Map<Integer, Boolean> getSinkHttpRetryStatusCodeRanges();
 
-    @Key("SINK_HTTP_JSON_BODY_TEMPLATE")
+    @Key("SINK_HTTPV2_JSON_BODY_TEMPLATE")
     @DefaultValue("")
     String getSinkHttpJsonBodyTemplate();
 
-    @Key("SINK_HTTP_DATE_FORMAT_ENABLE")
+    @Key("SINK_HTTPV2_DATE_FORMAT_ENABLE")
     @DefaultValue("false")
     Boolean isSinkHttpDateFormatEnabled();
 
-    @Key("SINK_HTTP_DELETE_BODY_ENABLE")
+    @Key("SINK_HTTPV2_DELETE_BODY_ENABLE")
     @DefaultValue("true")
     Boolean isSinkHttpDeleteBodyEnable();
 }

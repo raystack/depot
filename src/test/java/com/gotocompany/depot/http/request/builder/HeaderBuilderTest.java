@@ -40,7 +40,7 @@ public class HeaderBuilderTest {
         configuration.put("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "com.gotocompany.depot.TestBookingLogMessage");
         configuration.put("SINK_CONNECTOR_SCHEMA_PROTO_KEY_CLASS", "com.gotocompany.depot.TestBookingLogKey");
         configuration.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", String.valueOf(SinkConnectorSchemaMessageMode.LOG_MESSAGE));
-        configuration.put("SINK_HTTP_HEADERS_PARAMETER_SOURCE", "MESSAGE");
+        configuration.put("SINK_HTTPV2_HEADERS_PARAMETER_SOURCE", "MESSAGE");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         ProtoMessageParser protoMessageParser = (ProtoMessageParser) MessageParserFactory.getParser(sinkConfig, statsDReporter);
@@ -56,7 +56,7 @@ public class HeaderBuilderTest {
 
     @Test
     public void shouldGenerateBaseHeader() {
-        configuration.put("SINK_HTTP_HEADERS", "content-type:json");
+        configuration.put("SINK_HTTPV2_HEADERS", "content-type:json");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
 
@@ -65,7 +65,7 @@ public class HeaderBuilderTest {
 
     @Test
     public void shouldHandleMultipleBaseHeaders() {
-        configuration.put("SINK_HTTP_HEADERS", "Authorization:auth_token,Accept:text/plain");
+        configuration.put("SINK_HTTPV2_HEADERS", "Authorization:auth_token,Accept:text/plain");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
         Map<String, String> header = headerBuilder.build();
@@ -76,7 +76,7 @@ public class HeaderBuilderTest {
 
     @Test
     public void shouldNotThrowNullPointerExceptionWhenHeaderConfigEmpty() {
-        configuration.put("SINK_HTTP_HEADERS", "");
+        configuration.put("SINK_HTTPV2_HEADERS", "");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
         headerBuilder.build();
@@ -84,7 +84,7 @@ public class HeaderBuilderTest {
 
     @Test(expected = ArrayIndexOutOfBoundsException.class)
     public void shouldThrowErrorIfHeaderConfigIsInvalid() {
-        configuration.put("SINK_HTTP_HEADERS", "content-type:json,header_key;header_value,key:,:value");
+        configuration.put("SINK_HTTPV2_HEADERS", "content-type:json,header_key;header_value,key:,:value");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
         headerBuilder.build();
@@ -92,8 +92,8 @@ public class HeaderBuilderTest {
 
     @Test
     public void shouldGenerateParameterisedHeaderFromTemplate() throws IOException {
-        configuration.put("SINK_HTTP_HEADERS", "content-type:json");
-        configuration.put("SINK_HTTP_HEADERS_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,service_type\"}");
+        configuration.put("SINK_HTTPV2_HEADERS", "content-type:json");
+        configuration.put("SINK_HTTPV2_HEADERS_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,service_type\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
         Map<String, String> headers = headerBuilder.build(messageContainer);
@@ -105,9 +105,9 @@ public class HeaderBuilderTest {
 
     @Test
     public void shouldGenerateParameterisedHeaderFromTemplateWhenHeaderParamSourceIsKey() throws IOException {
-        configuration.put("SINK_HTTP_HEADERS", "content-type:json");
-        configuration.put("SINK_HTTP_HEADERS_TEMPLATE", "{\"H-%s,order_url\":\"V-%s,order_number\"}");
-        configuration.put("SINK_HTTP_HEADERS_PARAMETER_SOURCE", "KEY");
+        configuration.put("SINK_HTTPV2_HEADERS", "content-type:json");
+        configuration.put("SINK_HTTPV2_HEADERS_TEMPLATE", "{\"H-%s,order_url\":\"V-%s,order_number\"}");
+        configuration.put("SINK_HTTPV2_HEADERS_PARAMETER_SOURCE", "KEY");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
         Map<String, String> headers = headerBuilder.build(messageContainer);
@@ -119,7 +119,7 @@ public class HeaderBuilderTest {
 
     @Test
     public void shouldGenerateParameterisedHeaderFromTemplateWhenBaseHeadersAreNotProvided() throws IOException {
-        configuration.put("SINK_HTTP_HEADERS_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,service_type\"}");
+        configuration.put("SINK_HTTPV2_HEADERS_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,service_type\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
         Map<String, String> headers = headerBuilder.build(messageContainer);
@@ -130,8 +130,8 @@ public class HeaderBuilderTest {
 
     @Test
     public void shouldHandleConstantHeaderStringsProvidedInTemplateAlongWithAnyFormattedString() throws IOException {
-        configuration.put("SINK_HTTP_HEADERS", "content-type:json");
-        configuration.put("SINK_HTTP_HEADERS_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,service_type\", \"H-const\":\"V-const\"}");
+        configuration.put("SINK_HTTPV2_HEADERS", "content-type:json");
+        configuration.put("SINK_HTTPV2_HEADERS_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,service_type\", \"H-const\":\"V-const\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
         Map<String, String> headers = headerBuilder.build(messageContainer);
@@ -144,8 +144,8 @@ public class HeaderBuilderTest {
 
     @Test
     public void shouldReturnBaseHeadersIfHeadersTemplateIsEmpty() throws IOException {
-        configuration.put("SINK_HTTP_HEADERS", "content-type:json");
-        configuration.put("SINK_HTTP_HEADERS_TEMPLATE", "{}");
+        configuration.put("SINK_HTTPV2_HEADERS", "content-type:json");
+        configuration.put("SINK_HTTPV2_HEADERS_TEMPLATE", "{}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
         Map<String, String> headers = headerBuilder.build(messageContainer);
@@ -156,8 +156,8 @@ public class HeaderBuilderTest {
 
     @Test
     public void shouldReturnBaseHeadersIfHeadersTemplateIsEmptyString() throws IOException {
-        configuration.put("SINK_HTTP_HEADERS", "content-type:json");
-        configuration.put("SINK_HTTP_HEADERS_TEMPLATE", "");
+        configuration.put("SINK_HTTPV2_HEADERS", "content-type:json");
+        configuration.put("SINK_HTTPV2_HEADERS_TEMPLATE", "");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
         Map<String, String> headers = headerBuilder.build(messageContainer);
@@ -168,7 +168,7 @@ public class HeaderBuilderTest {
 
     @Test
     public void shouldReturnBaseHeadersIfHeadersTemplateIsNotProvided() throws IOException {
-        configuration.put("SINK_HTTP_HEADERS", "content-type:json");
+        configuration.put("SINK_HTTPV2_HEADERS", "content-type:json");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
         Map<String, String> headers = headerBuilder.build(messageContainer);
@@ -179,8 +179,8 @@ public class HeaderBuilderTest {
 
     @Test
     public void shouldThrowIllegalArgumentExceptionIfAnyFieldNameProvidedDoesNotExistInSchema() {
-        configuration.put("SINK_HTTP_HEADERS", "content-type:json");
-        configuration.put("SINK_HTTP_HEADERS_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,RANDOM_FIELD\"}");
+        configuration.put("SINK_HTTPV2_HEADERS", "content-type:json");
+        configuration.put("SINK_HTTPV2_HEADERS_TEMPLATE", "{\"H-%s,order_number\":\"V-%s,RANDOM_FIELD\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         HeaderBuilder headerBuilder = new HeaderBuilder(sinkConfig);
 

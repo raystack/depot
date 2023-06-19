@@ -70,7 +70,7 @@ public class TemplatizedJsonBodyTest {
 
     @Test
     public void shouldReturnJsonBodyWithParameterizedValue() throws IOException {
-        configuration.put("SINK_HTTP_JSON_BODY_TEMPLATE",
+        configuration.put("SINK_HTTPV2_JSON_BODY_TEMPLATE",
                 "{"
                         + "\"test_float\":\"%s,float_value\", "
                         + "\"%s,string_value\" : "
@@ -94,7 +94,7 @@ public class TemplatizedJsonBodyTest {
 
     @Test
     public void shouldThrowExceptionIfJsonTemplateBodyIsEmpty() {
-        configuration.put("SINK_HTTP_JSON_BODY_TEMPLATE", "");
+        configuration.put("SINK_HTTPV2_JSON_BODY_TEMPLATE", "");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         ConfigurationException thrown = assertThrows(ConfigurationException.class, () -> new TemplatizedJsonBody(sinkConfig));
         assertEquals("Json body template cannot be empty", thrown.getMessage());
@@ -102,7 +102,7 @@ public class TemplatizedJsonBodyTest {
 
     @Test
     public void shouldThrowExceptionIfJsonTemplateBodyIsNotValid() {
-        configuration.put("SINK_HTTP_JSON_BODY_TEMPLATE", "{\"a\"=\"b\"}");
+        configuration.put("SINK_HTTPV2_JSON_BODY_TEMPLATE", "{\"a\"=\"b\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         ConfigurationException thrown = assertThrows(ConfigurationException.class, () -> new TemplatizedJsonBody(sinkConfig));
         assertEquals("Json body template is not a valid json. Expected a ':' after a key at 5 [character 6 line 1]", thrown.getMessage());
@@ -110,7 +110,7 @@ public class TemplatizedJsonBodyTest {
 
     @Test
     public void shouldThrowExceptionForUnknownFieldInTemplate() {
-        configuration.put("SINK_HTTP_JSON_BODY_TEMPLATE", "{\"test_string\":\"%s,unknown_field\"}");
+        configuration.put("SINK_HTTPV2_JSON_BODY_TEMPLATE", "{\"test_string\":\"%s,unknown_field\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         RequestBody body = new TemplatizedJsonBody(sinkConfig);
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> body.build(messageContainer));
