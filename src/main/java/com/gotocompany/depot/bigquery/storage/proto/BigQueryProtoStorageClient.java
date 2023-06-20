@@ -27,7 +27,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 public class BigQueryProtoStorageClient implements BigQueryStorageClient {
 
@@ -36,8 +35,6 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
     private final MessageParser parser;
     private final String schemaClass;
     private final SinkConnectorSchemaMessageMode mode;
-    private static final long FIVE_YEARS_DAYS = 1825;
-    private static final long ONE_YEAR_DAYS = 365;
 
     public BigQueryProtoStorageClient(BigQueryWriter writer, BigQuerySinkConfig config, MessageParser parser) {
         this.writer = (BigQueryProtoWriter) writer;
@@ -93,12 +90,12 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
     private DynamicMessage convert(Message message, Descriptors.Descriptor descriptor) throws IOException {
         ParsedMessage parsedMessage = parser.parse(message, mode, schemaClass);
         parsedMessage.validate(config);
-        DynamicMessage.Builder messageBuilder = convert((DynamicMessage) parsedMessage.getRaw(), descriptor);
+        DynamicMessage.Builder messageBuilder = convert((DynamicMessage) parsedMessage.getRaw(), descriptor, true);
         BigQueryProtoUtils.addMetadata(message.getMetadata(), messageBuilder, descriptor, config);
         return messageBuilder.build();
     }
 
-    private DynamicMessage.Builder convert(DynamicMessage inputMessage, Descriptors.Descriptor descriptor) {
+    private DynamicMessage.Builder convert(DynamicMessage inputMessage, Descriptors.Descriptor descriptor, boolean isTopLevel) {
         DynamicMessage.Builder messageBuilder = DynamicMessage.newBuilder(descriptor);
         List<Descriptors.FieldDescriptor> allFields = inputMessage.getDescriptorForType().getFields();
         for (Descriptors.FieldDescriptor inputField : allFields) {
@@ -118,42 +115,19 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
             }
             if (fieldValue instanceof Instant) {
                 if (((Instant) fieldValue).getEpochSecond() > 0) {
-                    long timeStampValue = getBQInstant((Instant) fieldValue, outputField);
+                    long timeStampValue = TimeStampUtils.getBQInstant((Instant) fieldValue, outputField, isTopLevel, config);
                     messageBuilder.setField(outputField, timeStampValue);
                 }
             } else if (protoField.getClass().getName().equals(MessageProtoField.class.getName())
                     || protoField.getClass().getName().equals(DurationProtoField.class.getName())) {
                 Descriptors.Descriptor messageType = outputField.getMessageType();
-                messageBuilder.setField(outputField, convert((DynamicMessage) fieldValue, messageType).build());
+                messageBuilder.setField(outputField, convert((DynamicMessage) fieldValue, messageType, false).build());
             } else {
                 messageBuilder.setField(outputField, fieldValue);
             }
         }
         return messageBuilder;
     }
-
-    private long getBQInstant(Instant instant, Descriptors.FieldDescriptor fieldDescriptor) {
-        Instant currentInstant = Instant.now();
-        boolean isPastInstant = currentInstant.isAfter(instant);
-        boolean isValid;
-        if (isPastInstant) {
-            Instant fiveYearPast = currentInstant.minusMillis(TimeUnit.DAYS.toMillis(FIVE_YEARS_DAYS));
-            isValid = fiveYearPast.isBefore(instant);
-        } else {
-            Instant oneYearFuture = currentInstant.plusMillis(TimeUnit.DAYS.toMillis(ONE_YEAR_DAYS));
-            isValid = oneYearFuture.isAfter(instant);
-
-        }
-        if (!isValid) {
-            throw new IllegalArgumentException(instant + " for field "
-                    + fieldDescriptor.getFullName() + " is outside the allowed bounds. "
-                    + "You can only stream to date range within 1825 days in the past "
-                    + "and 366 days in the future relative to the current date.");
-        }
-        // Timestamp should be in microseconds
-        return TimeUnit.SECONDS.toMicros(instant.getEpochSecond()) + TimeUnit.NANOSECONDS.toMicros(instant.getNano());
-    }
-
 
     private void addRepeatedFields(DynamicMessage.Builder messageBuilder, Descriptors.FieldDescriptor outputField, List<?> fieldValue) {
         if (fieldValue.isEmpty()) {
@@ -163,11 +137,11 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
         for (Object f : fieldValue) {
             if (f instanceof DynamicMessage) {
                 Descriptors.Descriptor messageType = outputField.getMessageType();
-                repeatedNestedFields.add(convert((DynamicMessage) f, messageType).build());
+                repeatedNestedFields.add(convert((DynamicMessage) f, messageType, false).build());
             } else {
                 if (f instanceof Instant) {
                     if (((Instant) f).getEpochSecond() > 0) {
-                        repeatedNestedFields.add(getBQInstant((Instant) f, outputField));
+                        repeatedNestedFields.add(TimeStampUtils.getBQInstant((Instant) f, outputField, false, config));
                     }
                 } else {
                     repeatedNestedFields.add(f);

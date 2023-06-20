@@ -46,6 +46,8 @@ public class BigQueryProtoStorageClientTest {
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "");
         System.setProperty("SINK_BIGQUERY_METADATA_COLUMNS_TYPES",
                 "message_offset=integer,message_topic=string,load_time=timestamp,message_timestamp=timestamp,message_partition=integer");
+        System.setProperty("SINK_BIGQUERY_TABLE_PARTITION_KEY", "created_at");
+        System.setProperty("SINK_BIGQUERY_TABLE_PARTITIONING_ENABLE", "true");
         ClassLoadStencilClient stencilClient = Mockito.mock(ClassLoadStencilClient.class, CALLS_REAL_METHODS);
         protoMessageParser = new ProtoMessageParser(stencilClient);
         testMessageBQSchema = TableSchema.newBuilder()
@@ -595,9 +597,32 @@ public class BigQueryProtoStorageClientTest {
             metas.add(r);
         }
         Assert.assertEquals(1, metas.size());
-        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, metas.get(0).getErrorInfo().getErrorType());
+        Assert.assertEquals(ErrorType.INVALID_MESSAGE_ERROR, metas.get(0).getErrorInfo().getErrorType());
         Assert.assertTrue(metas.get(0).getErrorInfo().getException().getMessage()
                 .contains("is outside the allowed bounds. You can only stream to date range within 1825 days in the past and 366 days in the future relative to the current date."));
+    }
+
+    @Test
+    public void shouldConvertAnyTimeStampIfNotPartitionColumn() throws IOException {
+        Instant moreThanFiveYears = Instant.now().minus(Days.of(18216));
+        Instant lessThanFiveYears = Instant.now().minus(Days.of(100));
+        TestMessageBQ m1 = TestMessageBQ.newBuilder()
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(lessThanFiveYears.getEpochSecond()).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(moreThanFiveYears.getEpochSecond()).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(moreThanFiveYears.getEpochSecond()).build())
+                .build();
+        List<Message> inputList = new ArrayList<Message>() {{
+            add(new Message(null, m1.toByteArray()));
+        }};
+        BigQueryPayload payload = converter.convert(inputList);
+        ProtoRows protoPayload = (ProtoRows) payload.getPayload();
+        Assert.assertEquals(1, protoPayload.getSerializedRowsCount());
+        List<BigQueryRecordMeta> metas = new ArrayList<>();
+        for (BigQueryRecordMeta r : payload) {
+            metas.add(r);
+        }
+        Assert.assertEquals(1, metas.size());
+        Assert.assertNull(metas.get(0).getErrorInfo());
     }
 
     @Test
@@ -619,9 +644,33 @@ public class BigQueryProtoStorageClientTest {
             metas.add(r);
         }
         Assert.assertEquals(1, metas.size());
-        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, metas.get(0).getErrorInfo().getErrorType());
+        Assert.assertEquals(ErrorType.INVALID_MESSAGE_ERROR, metas.get(0).getErrorInfo().getErrorType());
         Assert.assertTrue(metas.get(0).getErrorInfo().getException().getMessage()
                 .contains("is outside the allowed bounds. You can only stream to date range within 1825 days in the past and 366 days in the future relative to the current date."));
+    }
+    @Test
+    public void shouldNotConvertIfInvalidTimeStamp() throws IOException {
+        Instant now = Instant.now();
+        Instant invalid = Instant.ofEpochSecond(1111111111111111L);
+        TestMessageBQ m1 = TestMessageBQ.newBuilder()
+                .setCreatedAt(Timestamp.newBuilder().setSeconds(now.getEpochSecond()).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(invalid.getEpochSecond()).build())
+                .addUpdatedAt(Timestamp.newBuilder().setSeconds(now.getEpochSecond()).build())
+                .build();
+        List<Message> inputList = new ArrayList<Message>() {{
+            add(new Message(null, m1.toByteArray()));
+        }};
+        BigQueryPayload payload = converter.convert(inputList);
+        ProtoRows protoPayload = (ProtoRows) payload.getPayload();
+        Assert.assertEquals(0, protoPayload.getSerializedRowsCount());
+        List<BigQueryRecordMeta> metas = new ArrayList<>();
+        for (BigQueryRecordMeta r : payload) {
+            metas.add(r);
+        }
+        Assert.assertEquals(1, metas.size());
+        Assert.assertEquals(ErrorType.INVALID_MESSAGE_ERROR, metas.get(0).getErrorInfo().getErrorType());
+        Assert.assertTrue(metas.get(0).getErrorInfo().getException().getMessage()
+                .contains("is outside the allowed bounds in BQ"));
     }
 
     @Test
