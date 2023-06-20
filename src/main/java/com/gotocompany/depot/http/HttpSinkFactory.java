@@ -9,6 +9,7 @@ import com.gotocompany.depot.http.request.Request;
 import com.gotocompany.depot.http.request.RequestFactory;
 import com.gotocompany.depot.message.MessageParser;
 import com.gotocompany.depot.message.MessageParserFactory;
+import com.gotocompany.depot.metrics.HttpSinkMetrics;
 import com.gotocompany.depot.metrics.Instrumentation;
 import com.gotocompany.depot.metrics.StatsDReporter;
 import com.timgroup.statsd.NoOpStatsDClient;
@@ -36,7 +37,8 @@ public class HttpSinkFactory {
     public void init() {
         try {
             CloseableHttpClient closeableHttpClient = HttpClientUtils.newHttpClient(sinkConfig, statsDReporter);
-            httpSinkClient = new HttpSinkClient(closeableHttpClient, new Instrumentation(statsDReporter, HttpSinkClient.class));
+            HttpSinkMetrics httpSinkMetrics = new HttpSinkMetrics(sinkConfig);
+            httpSinkClient = new HttpSinkClient(closeableHttpClient, httpSinkMetrics, new Instrumentation(statsDReporter, HttpSinkClient.class));
             MessageParser messageParser = MessageParserFactory.getParser(sinkConfig, statsDReporter);
             request = RequestFactory.create(sinkConfig, messageParser);
         } catch (ConfigurationException | InvalidTemplateException e) {
