@@ -16,6 +16,16 @@ public class BigQueryMetrics extends SinkMetrics {
         TABLE_INSERT_ALL,
     }
 
+    public enum BigQueryStorageAPIType {
+        STREAM_WRITER_CREATED,
+        STREAM_WRITER_CLOSED,
+        STREAM_WRITER_APPEND
+    }
+
+    public enum BigQueryStorageAPIError {
+        ROW_APPEND_ERROR
+    }
+
     public enum BigQueryErrorType {
         UNKNOWN_ERROR,
         INVALID_SCHEMA_ERROR,
@@ -26,6 +36,7 @@ public class BigQueryMetrics extends SinkMetrics {
     public static final String BIGQUERY_SINK_PREFIX = "bigquery_";
     public static final String BIGQUERY_TABLE_TAG = "table=%s";
     public static final String BIGQUERY_DATASET_TAG = "dataset=%s";
+    public static final String BIGQUERY_PROJECT_TAG = "project=%s";
     public static final String BIGQUERY_API_TAG = "api=%s";
     public static final String BIGQUERY_ERROR_TAG = "error=%s";
 
@@ -39,5 +50,9 @@ public class BigQueryMetrics extends SinkMetrics {
 
     public String getBigqueryTotalErrorsMetrics() {
         return getApplicationPrefix() + SINK_PREFIX + BIGQUERY_SINK_PREFIX + "errors_total";
+    }
+
+    public String getBigqueryPayloadSizeMetrics() {
+        return getApplicationPrefix() + SINK_PREFIX + BIGQUERY_SINK_PREFIX + "payload_size_bytes";
     }
 }
