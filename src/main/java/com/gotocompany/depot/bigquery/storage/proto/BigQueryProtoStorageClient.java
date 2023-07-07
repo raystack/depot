@@ -101,7 +101,7 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
             double val = Double.parseDouble(value.toString());
             boolean valid = !Double.isInfinite(val) && !Double.isNaN(val);
             if (!valid) {
-                throw new IllegalArgumentException("Float/double value is not valid");
+                throw new IllegalArgumentException(String.format("Float/Double value is not valid for field \"%s\"", outputField.getFullName()));
             }
             return val;
         }
@@ -123,10 +123,10 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
         return value;
     }
 
-    private Object getListValue(Descriptors.FieldDescriptor outputField, SchemaField schemaField, List<?> value, boolean isTopLevel) {
+    private Object getListValue(Descriptors.FieldDescriptor outputField, SchemaField schemaField, List<?> value) {
         return value
                 .stream()
-                .map(eachValue -> getFieldValue(outputField, schemaField, eachValue, isTopLevel))
+                .map(eachValue -> getFieldValue(outputField, schemaField, eachValue, false))
                 .collect(Collectors.toList());
     }
 
@@ -141,7 +141,7 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
             }
             Object value = inputField.getValue();
             if (schemaField.isRepeated()) {
-                messageBuilder.setField(outputField, getListValue(outputField, schemaField, (List<?>) value, isTopLevel));
+                messageBuilder.setField(outputField, getListValue(outputField, schemaField, (List<?>) value));
                 continue;
             }
             messageBuilder.setField(outputField, getFieldValue(outputField, schemaField, value, isTopLevel));
