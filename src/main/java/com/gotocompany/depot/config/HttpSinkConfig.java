@@ -77,10 +77,6 @@ public interface HttpSinkConfig extends HttpClientConfig {
     @DefaultValue("")
     String getSinkHttpJsonBodyTemplate();
 
-    @Key("SINK_HTTPV2_DATE_FORMAT_ENABLE")
-    @DefaultValue("false")
-    Boolean isSinkHttpDateFormatEnabled();
-
     @Key("SINK_HTTPV2_DELETE_BODY_ENABLE")
     @DefaultValue("true")
     Boolean isSinkHttpDeleteBodyEnable();
