@@ -9,12 +9,12 @@ import org.raystack.depot.error.ErrorType;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.exception.DeserializerException;
 import org.raystack.depot.exception.EmptyMessageException;
+import org.raystack.depot.message.field.GenericFieldFactory;
 import org.raystack.depot.message.Message;
 import org.raystack.depot.message.MessageParser;
 import org.raystack.depot.message.MessageSchema;
 import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
-import org.raystack.depot.message.field.GenericFieldFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -24,18 +24,18 @@ import java.util.Map;
 
 @Slf4j
 public class BigTableRecordParser {
-    private final MessageParser raystackMessageParser;
+    private final MessageParser messageParser;
     private final BigTableRowKeyParser bigTableRowKeyParser;
     private final BigTableSchema bigTableSchema;
     private final MessageSchema schema;
     private final Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema;
 
-    public BigTableRecordParser(MessageParser raystackMessageParser,
+    public BigTableRecordParser(MessageParser messageParser,
             BigTableRowKeyParser bigTableRowKeyParser,
             Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema,
             MessageSchema schema,
             BigTableSchema bigTableSchema) {
-        this.raystackMessageParser = raystackMessageParser;
+        this.messageParser = messageParser;
         this.bigTableRowKeyParser = bigTableRowKeyParser;
         this.modeAndSchema = modeAndSchema;
         this.schema = schema;
@@ -54,7 +54,7 @@ public class BigTableRecordParser {
 
     private BigTableRecord createRecord(Message message, long index) {
         try {
-            ParsedMessage parsedMessage = raystackMessageParser.parse(message, modeAndSchema.getFirst(),
+            ParsedMessage parsedMessage = messageParser.parse(message, modeAndSchema.getFirst(),
                     modeAndSchema.getSecond());
             String rowKey = bigTableRowKeyParser.parse(parsedMessage);
             RowMutationEntry rowMutationEntry = RowMutationEntry.create(rowKey);

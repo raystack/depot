@@ -12,5 +12,5 @@ public interface ParsedMessage {
 
     Map<String, Object> getMapping(MessageSchema schema) throws IOException;
 
-    Object getFieldByName(String name, MessageSchema raystackMessageSchema);
+    Object getFieldByName(String name, MessageSchema messageSchema);
 }

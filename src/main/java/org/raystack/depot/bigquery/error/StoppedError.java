@@ -23,6 +23,6 @@ public class StoppedError implements ErrorDescriptor {
 
     @Override
     public String toString() {
-        return "StoppedError: Failed to insert this row because of some (other)error records in batch";
+        return "StoppedError: BigQuery encountered an error on individual rows in the request, none of the rows are inserted. This error can be retried";
     }
 }

@@ -1,10 +1,10 @@
 package org.raystack.depot.bigquery.handler;
 
-import org.raystack.depot.bigquery.client.BigQueryClient;
-import org.raystack.depot.config.enums.SinkConnectorSchemaDataType;
 import org.raystack.depot.config.BigQuerySinkConfig;
+import org.raystack.depot.config.enums.SinkConnectorSchemaDataType;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.StatsDReporter;
+import org.raystack.depot.bigquery.client.BigQueryClient;
 
 public class ErrorHandlerFactory {
     public static ErrorHandler create(BigQuerySinkConfig sinkConfig, BigQueryClient bigQueryClient,

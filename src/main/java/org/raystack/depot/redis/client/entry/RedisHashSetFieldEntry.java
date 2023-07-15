@@ -1,8 +1,8 @@
 package org.raystack.depot.redis.client.entry;
 
-import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.redis.client.response.RedisClusterResponse;
 import org.raystack.depot.redis.client.response.RedisStandaloneResponse;
+import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.redis.ttl.RedisTtl;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

@@ -3,6 +3,7 @@ package org.raystack.depot.message.json;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
 import org.raystack.depot.config.SinkConfig;
+import org.raystack.depot.utils.JsonUtils;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.exception.EmptyMessageException;
 import org.raystack.depot.message.MessageUtils;
@@ -13,7 +14,6 @@ import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.JsonParserMetrics;
-import org.raystack.depot.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,8 +31,7 @@ public class JsonMessageParser implements MessageParser {
             .jsonProvider(new JsonOrgJsonProvider())
             .build();
 
-    public JsonMessageParser(SinkConfig config, Instrumentation instrumentation,
-            JsonParserMetrics jsonParserMetrics) {
+    public JsonMessageParser(SinkConfig config, Instrumentation instrumentation, JsonParserMetrics jsonParserMetrics) {
         this.instrumentation = instrumentation;
         this.jsonParserMetrics = jsonParserMetrics;
         this.config = config;

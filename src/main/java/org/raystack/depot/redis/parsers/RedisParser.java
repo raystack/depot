@@ -1,5 +1,7 @@
 package org.raystack.depot.redis.parsers;
 
+import org.raystack.depot.redis.client.entry.RedisEntry;
+import org.raystack.depot.redis.record.RedisRecord;
 import org.raystack.depot.common.Tuple;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
@@ -9,8 +11,6 @@ import org.raystack.depot.message.Message;
 import org.raystack.depot.message.MessageParser;
 import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
-import org.raystack.depot.redis.client.entry.RedisEntry;
-import org.raystack.depot.redis.record.RedisRecord;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,13 +20,13 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 /**
- * Convert messages to RedisRecords.
+ * Convert Messages to RedisRecords.
  */
 
 @AllArgsConstructor
 @Slf4j
 public class RedisParser {
-    private final MessageParser raystackMessageParser;
+    private final MessageParser messageParser;
     private final RedisEntryParser redisEntryParser;
     private final Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema;
 
@@ -34,8 +34,8 @@ public class RedisParser {
         List<RedisRecord> records = new ArrayList<>();
         IntStream.range(0, messages.size()).forEach(index -> {
             try {
-                ParsedMessage parsedMessage = raystackMessageParser.parse(messages.get(index),
-                        modeAndSchema.getFirst(), modeAndSchema.getSecond());
+                ParsedMessage parsedMessage = messageParser.parse(messages.get(index), modeAndSchema.getFirst(),
+                        modeAndSchema.getSecond());
                 List<RedisEntry> redisDataEntries = redisEntryParser.getRedisEntry(parsedMessage);
                 for (RedisEntry redisEntry : redisDataEntries) {
                     records.add(new RedisRecord(redisEntry, (long) index, null, messages.get(index).getMetadataString(),
@@ -54,8 +54,7 @@ public class RedisParser {
         return records;
     }
 
-    private RedisRecord createAndLogErrorRecord(Exception e, ErrorType type, int index,
-            List<Message> messages) {
+    private RedisRecord createAndLogErrorRecord(Exception e, ErrorType type, int index, List<Message> messages) {
         ErrorInfo errorInfo = new ErrorInfo(e, type);
         RedisRecord record = new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadataString(),
                 false);

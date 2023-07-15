@@ -41,7 +41,7 @@ public class JsonParsedMessage implements ParsedMessage {
         return jsonObject.toMap();
     }
 
-    public Object getFieldByName(String name, MessageSchema raystackMessageSchema) {
+    public Object getFieldByName(String name, MessageSchema messageSchema) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }

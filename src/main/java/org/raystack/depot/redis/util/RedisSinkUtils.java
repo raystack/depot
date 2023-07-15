@@ -1,10 +1,10 @@
 package org.raystack.depot.redis.util;
 
+import org.raystack.depot.redis.client.response.RedisResponse;
+import org.raystack.depot.redis.record.RedisRecord;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
 import org.raystack.depot.metrics.Instrumentation;
-import org.raystack.depot.redis.client.response.RedisResponse;
-import org.raystack.depot.redis.record.RedisRecord;
 
 import java.util.HashMap;
 import java.util.List;

@@ -1,12 +1,12 @@
 package org.raystack.depot.bigtable;
 
-import org.raystack.depot.Sink;
-import org.raystack.depot.SinkResponse;
 import org.raystack.depot.bigtable.client.BigTableClient;
 import org.raystack.depot.bigtable.model.BigTableRecord;
 import org.raystack.depot.bigtable.parser.BigTableRecordParser;
 import org.raystack.depot.bigtable.parser.BigTableResponseParser;
 import org.raystack.depot.bigtable.response.BigTableResponse;
+import org.raystack.depot.Sink;
+import org.raystack.depot.SinkResponse;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.message.Message;
 import org.raystack.depot.metrics.BigTableMetrics;
@@ -39,10 +39,9 @@ public class BigTableSink implements Sink {
         List<BigTableRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
         List<BigTableRecord> validRecords = splitterRecords.get(Boolean.TRUE);
 
-        SinkResponse raystackSinkResponse = new SinkResponse();
+        SinkResponse sinkResponse = new SinkResponse();
         invalidRecords.forEach(
-                invalidRecord -> raystackSinkResponse.addErrors(invalidRecord.getIndex(),
-                        invalidRecord.getErrorInfo()));
+                invalidRecord -> sinkResponse.addErrors(invalidRecord.getIndex(), invalidRecord.getErrorInfo()));
 
         if (validRecords.size() > 0) {
             BigTableResponse bigTableResponse = bigTableClient.send(validRecords);
@@ -50,11 +49,11 @@ public class BigTableSink implements Sink {
                 instrumentation.logInfo("Found {} Error records in response", bigTableResponse.getErrorCount());
                 Map<Long, ErrorInfo> errorInfoMap = BigTableResponseParser.getErrorsFromSinkResponse(validRecords,
                         bigTableResponse, bigtableMetrics, instrumentation);
-                errorInfoMap.forEach(raystackSinkResponse::addErrors);
+                errorInfoMap.forEach(sinkResponse::addErrors);
             }
         }
 
-        return raystackSinkResponse;
+        return sinkResponse;
     }
 
     @Override

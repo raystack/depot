@@ -1,7 +1,5 @@
 package org.raystack.depot.redis;
 
-import com.timgroup.statsd.NoOpStatsDClient;
-import org.raystack.depot.Sink;
 import org.raystack.depot.common.Tuple;
 import org.raystack.depot.config.RedisSinkConfig;
 import org.raystack.depot.message.MessageParser;
@@ -15,6 +13,8 @@ import org.raystack.depot.redis.parsers.RedisEntryParser;
 import org.raystack.depot.redis.parsers.RedisEntryParserFactory;
 import org.raystack.depot.redis.parsers.RedisParser;
 import org.raystack.depot.utils.MessageConfigUtils;
+import com.timgroup.statsd.NoOpStatsDClient;
+import org.raystack.depot.Sink;
 
 import java.io.IOException;
 

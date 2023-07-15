@@ -1,12 +1,12 @@
 package org.raystack.depot.log;
 
-import com.timgroup.statsd.NoOpStatsDClient;
-import org.raystack.depot.message.MessageParserFactory;
-import org.raystack.depot.Sink;
 import org.raystack.depot.config.SinkConfig;
 import org.raystack.depot.message.MessageParser;
+import org.raystack.depot.message.MessageParserFactory;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.StatsDReporter;
+import com.timgroup.statsd.NoOpStatsDClient;
+import org.raystack.depot.Sink;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;
@@ -14,7 +14,7 @@ import java.util.Map;
 public class LogSinkFactory {
 
     private final StatsDReporter statsDReporter;
-    private MessageParser raystackMessageParser;
+    private MessageParser messageParser;
     private final SinkConfig sinkConfig;
 
     public LogSinkFactory(Map<String, String> env, StatsDReporter statsDReporter) {
@@ -31,10 +31,10 @@ public class LogSinkFactory {
     }
 
     public void init() {
-        this.raystackMessageParser = MessageParserFactory.getParser(sinkConfig, statsDReporter);
+        this.messageParser = MessageParserFactory.getParser(sinkConfig, statsDReporter);
     }
 
     public Sink create() {
-        return new LogSink(sinkConfig, raystackMessageParser, new Instrumentation(statsDReporter, LogSink.class));
+        return new LogSink(sinkConfig, messageParser, new Instrumentation(statsDReporter, LogSink.class));
     }
 }

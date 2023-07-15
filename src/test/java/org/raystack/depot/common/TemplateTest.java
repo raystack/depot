@@ -5,18 +5,18 @@ import org.raystack.depot.TestBookingLogMessage;
 import org.raystack.depot.TestKey;
 import org.raystack.depot.TestLocation;
 import org.raystack.depot.TestMessage;
-import org.raystack.depot.config.SinkConfig;
 import org.raystack.depot.config.enums.SinkConnectorSchemaDataType;
+import org.raystack.depot.message.proto.ProtoMessageParser;
+import org.raystack.depot.message.proto.ProtoParsedMessage;
+import org.raystack.stencil.Parser;
+import org.raystack.stencil.StencilClientFactory;
+import org.raystack.depot.config.SinkConfig;
 import org.raystack.depot.exception.InvalidTemplateException;
 import org.raystack.depot.message.Message;
 import org.raystack.depot.message.MessageParserFactory;
 import org.raystack.depot.message.MessageSchema;
 import org.raystack.depot.message.ParsedMessage;
-import org.raystack.depot.message.proto.ProtoMessageParser;
-import org.raystack.depot.message.proto.ProtoParsedMessage;
 import org.raystack.depot.metrics.StatsDReporter;
-import org.raystack.stencil.Parser;
-import org.raystack.stencil.StencilClientFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,8 +55,7 @@ public class TemplateTest {
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS")
                 .build();
         Message message = new Message(testKey.toByteArray(), testMessage.toByteArray());
-        Message bookingMessage = new Message(testKey.toByteArray(),
-                testBookingLogMessage.toByteArray());
+        Message bookingMessage = new Message(testKey.toByteArray(), testBookingLogMessage.toByteArray());
         Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {
             {
                 put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
@@ -73,8 +72,7 @@ public class TemplateTest {
         parsedBookingMessage = new ProtoParsedMessage(
                 protoParserBooking.parse((byte[]) bookingMessage.getLogMessage()));
         when(sinkConfig.getSinkConnectorSchemaDataType()).thenReturn(SinkConnectorSchemaDataType.PROTOBUF);
-        ProtoMessageParser messageParser = (ProtoMessageParser) MessageParserFactory.getParser(
-                sinkConfig,
+        ProtoMessageParser messageParser = (ProtoMessageParser) MessageParserFactory.getParser(sinkConfig,
                 statsDReporter);
         schemaTest = messageParser.getSchema("org.raystack.depot.TestMessage", descriptorsMap);
         schemaBooking = messageParser.getSchema("org.raystack.depot.TestBookingLogMessage", descriptorsMap);

@@ -1,16 +1,16 @@
 package org.raystack.depot.redis;
 
+import org.raystack.depot.redis.client.RedisClient;
+import org.raystack.depot.redis.client.entry.RedisListEntry;
+import org.raystack.depot.redis.client.response.RedisResponse;
+import org.raystack.depot.redis.parsers.RedisParser;
+import org.raystack.depot.redis.record.RedisRecord;
 import org.raystack.depot.SinkResponse;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.message.Message;
 import org.raystack.depot.metrics.Instrumentation;
-import org.raystack.depot.redis.client.RedisClient;
-import org.raystack.depot.redis.client.entry.RedisListEntry;
-import org.raystack.depot.redis.client.response.RedisResponse;
-import org.raystack.depot.redis.parsers.RedisParser;
-import org.raystack.depot.redis.record.RedisRecord;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,8 +52,8 @@ public class RedisSinkTest {
         when(redisParser.convert(messages)).thenReturn(records);
         when(redisClient.send(records)).thenReturn(responses);
         RedisSink redisSink = new RedisSink(redisClient, redisParser, instrumentation);
-        SinkResponse raystackSinkResponse = redisSink.pushToSink(messages);
-        Assert.assertFalse(raystackSinkResponse.hasErrors());
+        SinkResponse sinkResponse = redisSink.pushToSink(messages);
+        Assert.assertFalse(sinkResponse.hasErrors());
     }
 
     @Test
@@ -75,11 +75,11 @@ public class RedisSinkTest {
         List<RedisRecord> validRecords = records.stream().filter(RedisRecord::isValid).collect(Collectors.toList());
         when(redisClient.send(validRecords)).thenReturn(responses);
         RedisSink redisSink = new RedisSink(redisClient, redisParser, instrumentation);
-        SinkResponse raystackSinkResponse = redisSink.pushToSink(messages);
-        Assert.assertTrue(raystackSinkResponse.hasErrors());
-        Assert.assertEquals(2, raystackSinkResponse.getErrors().size());
-        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, raystackSinkResponse.getErrorsFor(0).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, raystackSinkResponse.getErrorsFor(2).getErrorType());
+        SinkResponse sinkResponse = redisSink.pushToSink(messages);
+        Assert.assertTrue(sinkResponse.hasErrors());
+        Assert.assertEquals(2, sinkResponse.getErrors().size());
+        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, sinkResponse.getErrorsFor(0).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, sinkResponse.getErrorsFor(2).getErrorType());
     }
 
     @Test
@@ -108,15 +108,15 @@ public class RedisSinkTest {
         when(redisClient.send(validRecords)).thenReturn(responses);
         when(redisClient.send(records)).thenReturn(responses);
         RedisSink redisSink = new RedisSink(redisClient, redisParser, instrumentation);
-        SinkResponse raystackSinkResponse = redisSink.pushToSink(messages);
-        Assert.assertTrue(raystackSinkResponse.hasErrors());
-        Assert.assertEquals(3, raystackSinkResponse.getErrors().size());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, raystackSinkResponse.getErrorsFor(2).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, raystackSinkResponse.getErrorsFor(3).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, raystackSinkResponse.getErrorsFor(4).getErrorType());
-        Assert.assertEquals("failed at 2", raystackSinkResponse.getErrorsFor(2).getException().getMessage());
-        Assert.assertEquals("failed at 3", raystackSinkResponse.getErrorsFor(3).getException().getMessage());
-        Assert.assertEquals("failed at 4", raystackSinkResponse.getErrorsFor(4).getException().getMessage());
+        SinkResponse sinkResponse = redisSink.pushToSink(messages);
+        Assert.assertTrue(sinkResponse.hasErrors());
+        Assert.assertEquals(3, sinkResponse.getErrors().size());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, sinkResponse.getErrorsFor(2).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, sinkResponse.getErrorsFor(3).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, sinkResponse.getErrorsFor(4).getErrorType());
+        Assert.assertEquals("failed at 2", sinkResponse.getErrorsFor(2).getException().getMessage());
+        Assert.assertEquals("failed at 3", sinkResponse.getErrorsFor(3).getException().getMessage());
+        Assert.assertEquals("failed at 4", sinkResponse.getErrorsFor(4).getException().getMessage());
     }
 
     @Test
@@ -142,11 +142,11 @@ public class RedisSinkTest {
         List<RedisRecord> validRecords = records.stream().filter(RedisRecord::isValid).collect(Collectors.toList());
         when(redisClient.send(validRecords)).thenReturn(responses);
         RedisSink redisSink = new RedisSink(redisClient, redisParser, instrumentation);
-        SinkResponse raystackSinkResponse = redisSink.pushToSink(messages);
-        Assert.assertEquals(4, raystackSinkResponse.getErrors().size());
-        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, raystackSinkResponse.getErrorsFor(0).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, raystackSinkResponse.getErrorsFor(2).getErrorType());
-        Assert.assertEquals("failed at 3", raystackSinkResponse.getErrorsFor(3).getException().getMessage());
-        Assert.assertEquals("failed at 4", raystackSinkResponse.getErrorsFor(4).getException().getMessage());
+        SinkResponse sinkResponse = redisSink.pushToSink(messages);
+        Assert.assertEquals(4, sinkResponse.getErrors().size());
+        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, sinkResponse.getErrorsFor(0).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, sinkResponse.getErrorsFor(2).getErrorType());
+        Assert.assertEquals("failed at 3", sinkResponse.getErrorsFor(3).getException().getMessage());
+        Assert.assertEquals("failed at 4", sinkResponse.getErrorsFor(4).getException().getMessage());
     }
 }

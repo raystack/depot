@@ -2,11 +2,11 @@ package org.raystack.depot.bigtable.parser;
 
 import com.google.cloud.bigtable.data.v2.models.MutateRowsException;
 import org.raystack.depot.bigtable.model.BigTableRecord;
-import org.raystack.depot.bigtable.response.BigTableResponse;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
 import org.raystack.depot.metrics.BigTableMetrics;
 import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.bigtable.response.BigTableResponse;
 
 import java.util.HashMap;
 import java.util.List;

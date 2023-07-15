@@ -8,10 +8,10 @@ import lombok.Setter;
 
 import java.util.Map;
 
-public abstract class StencilUpdateListener implements SchemaUpdateListener {
+public abstract class DepotStencilUpdateListener implements SchemaUpdateListener {
     @Getter
     @Setter
-    private MessageParser raystackMessageParser;
+    private MessageParser messageParser;
 
     public void onSchemaUpdate(final Map<String, Descriptors.Descriptor> newDescriptor) {
         // default implementation is empty

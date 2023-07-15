@@ -1,13 +1,13 @@
 package org.raystack.depot.redis.parsers;
 
-import org.raystack.depot.common.Template;
 import org.raystack.depot.message.field.GenericFieldFactory;
+import org.raystack.depot.redis.client.entry.RedisEntry;
+import org.raystack.depot.redis.client.entry.RedisHashSetFieldEntry;
+import org.raystack.depot.common.Template;
 import org.raystack.depot.message.MessageSchema;
 import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.StatsDReporter;
-import org.raystack.depot.redis.client.entry.RedisEntry;
-import org.raystack.depot.redis.client.entry.RedisHashSetFieldEntry;
 import lombok.AllArgsConstructor;
 
 import java.util.List;

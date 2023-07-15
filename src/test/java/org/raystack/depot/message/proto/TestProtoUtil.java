@@ -1,5 +1,6 @@
 package org.raystack.depot.message.proto;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
@@ -27,6 +28,7 @@ public class TestProtoUtil {
                 .setOrderDetails("order-details-" + call)
                 .setCreatedAt(createdAt)
                 .setPrice(PRICE)
+                .setUserToken(ByteString.copyFrom("test-token".getBytes()))
                 .setStatus(StatusBQ.COMPLETED)
                 .setTripDuration(Duration.newBuilder().setSeconds(1).setNanos(TRIP_DURATION_NANOS).build())
                 .addUpdatedAt(createdAt)

@@ -3,9 +3,9 @@ package org.raystack.depot.bigquery.proto;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
+import org.raystack.depot.bigquery.models.BQField;
 import org.raystack.depot.common.TupleString;
 import org.raystack.depot.message.proto.ProtoField;
-import org.raystack.depot.bigquery.models.BQField;
 
 import java.util.ArrayList;
 import java.util.List;

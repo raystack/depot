@@ -4,9 +4,9 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.protobuf.DescriptorProtos;
+import org.raystack.depot.bigquery.exception.BQSchemaMappingException;
 import org.raystack.depot.message.proto.Constants;
 import org.raystack.depot.message.proto.ProtoField;
-import org.raystack.depot.bigquery.exception.BQSchemaMappingException;
 import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;

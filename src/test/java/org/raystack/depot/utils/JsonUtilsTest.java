@@ -14,10 +14,10 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class JsonUtilsTest {
     @Mock
-    private SinkConfig raystackSinkConfig;
+    private SinkConfig sinkConfig;
 
     void setSinkConfigs(boolean stringModeEnabled) {
-        when(raystackSinkConfig.getSinkConnectorSchemaJsonParserStringModeEnabled()).thenReturn(stringModeEnabled);
+        when(sinkConfig.getSinkConnectorSchemaJsonParserStringModeEnabled()).thenReturn(stringModeEnabled);
     }
 
     @Test
@@ -29,7 +29,7 @@ public class JsonUtilsTest {
         expectedJson.put("balance", "100");
         expectedJson.put("is_vip", "YES");
         byte[] payload = expectedJson.toString().getBytes();
-        JSONObject parsedJson = JsonUtils.getJsonObject(raystackSinkConfig, payload);
+        JSONObject parsedJson = JsonUtils.getJsonObject(sinkConfig, payload);
         Assert.assertTrue(parsedJson.similar(expectedJson));
     }
 
@@ -42,7 +42,7 @@ public class JsonUtilsTest {
         originalJson.put("balance", new Double(1000.21));
         originalJson.put("is_vip", Boolean.TRUE);
         byte[] payload = originalJson.toString().getBytes();
-        JSONObject parsedJson = JsonUtils.getJsonObject(raystackSinkConfig, payload);
+        JSONObject parsedJson = JsonUtils.getJsonObject(sinkConfig, payload);
         JSONObject stringJson = new JSONObject();
         stringJson.put("name", "foo");
         stringJson.put("num", "100");
@@ -64,7 +64,7 @@ public class JsonUtilsTest {
         nestedJson.put("nestedField", nestedJsonField);
         byte[] payload = nestedJson.toString().getBytes();
         UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
-                () -> JsonUtils.getJsonObject(raystackSinkConfig, payload));
+                () -> JsonUtils.getJsonObject(sinkConfig, payload));
         assertEquals("nested json structure not supported yet", exception.getMessage());
     }
 
@@ -77,7 +77,7 @@ public class JsonUtilsTest {
         expectedJson.put("balance", new Double(1000.21));
         expectedJson.put("is_vip", Boolean.TRUE);
         byte[] payload = expectedJson.toString().getBytes();
-        JSONObject parsedJson = JsonUtils.getJsonObject(raystackSinkConfig, payload);
+        JSONObject parsedJson = JsonUtils.getJsonObject(sinkConfig, payload);
         Assert.assertTrue(parsedJson.similar(expectedJson));
     }
 
@@ -93,7 +93,7 @@ public class JsonUtilsTest {
         nestedJson.put("ID", 1);
         nestedJson.put("nestedField", nestedJsonField);
         byte[] payload = nestedJson.toString().getBytes();
-        JSONObject parsedJson = JsonUtils.getJsonObject(raystackSinkConfig, payload);
+        JSONObject parsedJson = JsonUtils.getJsonObject(sinkConfig, payload);
         Assert.assertTrue(parsedJson.similar(nestedJson));
     }
 }

@@ -5,11 +5,11 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
-import org.raystack.depot.bigquery.client.BigQueryClient;
 import org.raystack.depot.bigquery.models.Record;
 import org.raystack.depot.common.TupleString;
 import org.raystack.depot.config.BigQuerySinkConfig;
 import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.bigquery.client.BigQueryClient;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,9 +1,9 @@
 package org.raystack.depot.config;
 
-import org.raystack.depot.common.TupleString;
 import org.raystack.depot.config.converter.ConfToListConverter;
 import org.raystack.depot.config.converter.ConverterUtils;
 import org.raystack.depot.config.converter.LabelMapConverter;
+import org.raystack.depot.common.TupleString;
 
 import java.util.List;
 import java.util.Map;
@@ -99,4 +99,8 @@ public interface BigQuerySinkConfig extends SinkConfig {
     @DefaultValue("true")
     @Key("SINK_BIGQUERY_DYNAMIC_SCHEMA_ENABLE")
     boolean getSinkBigqueryDynamicSchemaEnable();
+
+    @DefaultValue("false")
+    @Key("SINK_BIGQUERY_STORAGE_API_ENABLE")
+    boolean getSinkBigqueryStorageAPIEnable();
 }

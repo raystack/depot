@@ -163,12 +163,14 @@ public class BigQueryClient {
                 bigqueryMetrics.getBigqueryOperationTotalMetric(),
                 String.format(BigQueryMetrics.BIGQUERY_TABLE_TAG, tableID.getTable()),
                 String.format(BigQueryMetrics.BIGQUERY_DATASET_TAG, tableID.getDataset()),
+                String.format(BigQueryMetrics.BIGQUERY_PROJECT_TAG, tableID.getProject()),
                 String.format(BigQueryMetrics.BIGQUERY_API_TAG, type));
         instrumentation.captureDurationSince(
                 bigqueryMetrics.getBigqueryOperationLatencyMetric(),
                 startTime,
                 String.format(BigQueryMetrics.BIGQUERY_TABLE_TAG, tableID.getTable()),
                 String.format(BigQueryMetrics.BIGQUERY_DATASET_TAG, tableID.getDataset()),
+                String.format(BigQueryMetrics.BIGQUERY_PROJECT_TAG, tableID.getProject()),
                 String.format(BigQueryMetrics.BIGQUERY_API_TAG, type));
     }
 

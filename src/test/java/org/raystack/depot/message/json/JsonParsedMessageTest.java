@@ -49,7 +49,7 @@ public class JsonParsedMessageTest {
     public void shouldReturnValueFromFlatJson() {
         JSONObject personDetails = new JSONObject("{\"first_name\": \"john doe\", \"address\": \"planet earth\"}");
         JsonParsedMessage parsedMessage = new JsonParsedMessage(personDetails, configuration);
-        Assert.assertEquals("john doe", parsedMessage.getFieldByName("first_name", null));
+        assertEquals("john doe", parsedMessage.getFieldByName("first_name", null));
     }
 
     @Test
@@ -60,7 +60,7 @@ public class JsonParsedMessageTest {
                 + "\"family\" : {\"brother\" : \"david doe\"}"
                 + "}");
         JsonParsedMessage parsedMessage = new JsonParsedMessage(personDetails, configuration);
-        Assert.assertEquals("david doe", parsedMessage.getFieldByName("family.brother", null));
+        assertEquals("david doe", parsedMessage.getFieldByName("family.brother", null));
     }
 
     @Test

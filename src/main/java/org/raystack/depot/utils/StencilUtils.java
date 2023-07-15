@@ -1,9 +1,9 @@
 package org.raystack.depot.utils;
 
-import com.timgroup.statsd.StatsDClient;
 import org.raystack.depot.config.SinkConfig;
 import org.raystack.stencil.SchemaUpdateListener;
 import org.raystack.stencil.config.StencilConfig;
+import com.timgroup.statsd.StatsDClient;
 
 public class StencilUtils {
     public static StencilConfig getStencilConfig(

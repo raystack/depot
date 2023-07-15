@@ -1,16 +1,16 @@
 package org.raystack.depot.bigtable;
 
-import com.timgroup.statsd.NoOpStatsDClient;
-import org.raystack.depot.Sink;
 import org.raystack.depot.bigtable.client.BigTableClient;
 import org.raystack.depot.bigtable.model.BigTableSchema;
 import org.raystack.depot.bigtable.parser.BigTableRecordParser;
 import org.raystack.depot.bigtable.parser.BigTableRowKeyParser;
+import org.raystack.depot.exception.ConfigurationException;
+import org.raystack.depot.exception.InvalidTemplateException;
+import com.timgroup.statsd.NoOpStatsDClient;
+import org.raystack.depot.Sink;
 import org.raystack.depot.common.Template;
 import org.raystack.depot.common.Tuple;
 import org.raystack.depot.config.BigTableSinkConfig;
-import org.raystack.depot.exception.ConfigurationException;
-import org.raystack.depot.exception.InvalidTemplateException;
 import org.raystack.depot.message.MessageParser;
 import org.raystack.depot.message.MessageParserFactory;
 import org.raystack.depot.message.MessageSchema;
@@ -60,14 +60,13 @@ public class BigTableSinkFactory {
 
             Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils
                     .getModeAndSchema(sinkConfig);
-            MessageParser raystackMessageParser = MessageParserFactory.getParser(sinkConfig,
-                    statsDReporter);
-            MessageSchema schema = raystackMessageParser.getSchema(modeAndSchema.getSecond());
+            MessageParser messageParser = MessageParserFactory.getParser(sinkConfig, statsDReporter);
+            MessageSchema schema = messageParser.getSchema(modeAndSchema.getSecond());
 
             Template keyTemplate = new Template(sinkConfig.getRowKeyTemplate());
             BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(keyTemplate, schema);
             bigTableRecordParser = new BigTableRecordParser(
-                    raystackMessageParser,
+                    messageParser,
                     bigTableRowKeyParser,
                     modeAndSchema,
                     schema,

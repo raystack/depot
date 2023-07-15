@@ -165,7 +165,7 @@ public class ProtoFieldParserTest {
         }
 
         private void assertTestMessage(List<ProtoField> fields) {
-                assertEquals(17, fields.size());
+                assertEquals(19, fields.size());
                 assertField(fields.get(0), "order_number", DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING,
                                 DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL, 1);
                 assertField(fields.get(1), "order_url", DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING,
@@ -200,6 +200,10 @@ public class ProtoFieldParserTest {
                                 DescriptorProtos.FieldDescriptorProto.Label.LABEL_REPEATED, 16);
                 assertField(fields.get(16), "intervals", DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE,
                                 DescriptorProtos.FieldDescriptorProto.Label.LABEL_REPEATED, 17);
+                assertField(fields.get(17), "counter", DescriptorProtos.FieldDescriptorProto.Type.TYPE_INT32,
+                                DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL, 18);
+                assertField(fields.get(18), "camelCase", DescriptorProtos.FieldDescriptorProto.Type.TYPE_STRING,
+                                DescriptorProtos.FieldDescriptorProto.Label.LABEL_OPTIONAL, 19);
 
                 assertEquals(String.format(".%s", Duration.getDescriptor().getFullName()),
                                 fields.get(10).getTypeName());

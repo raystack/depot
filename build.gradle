@@ -22,7 +22,7 @@ plugins {
 }
 
 group 'org.raystack'
-version '0.4.0'
+version '0.4.9'
 
 repositories {
     mavenCentral()
@@ -35,11 +35,12 @@ dependencies {
     implementation group: 'com.google.protobuf', name: 'protobuf-java-util', version: '3.1.0'
     implementation group: 'org.raystack', name: 'stencil', version: '0.4.0' exclude group: 'org.slf4j'
     implementation group: 'org.aeonbits.owner', name: 'owner', version: '1.0.9'
-    implementation 'com.google.cloud:google-cloud-bigquery:1.115.0'
+    implementation 'com.google.cloud:google-cloud-bigquerystorage:2.34.2'
+    implementation 'com.google.cloud:google-cloud-bigquery:2.23.2'
     implementation (group: 'com.google.cloud', name:'google-cloud-bigtable', version:'2.11.2') {
         exclude group: "io.grpc"
     }
-    implementation "io.grpc:grpc-all:1.38.0"
+    implementation 'io.grpc:grpc-all:1.53.0'
     implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.35'
     implementation group: 'redis.clients', name: 'jedis', version: '3.0.1'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
@@ -93,6 +94,8 @@ idea {
         testSourceDirs += file("$projectDir/src/generated/test/java")
     }
 }
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 protobuf {
     generatedFilesBaseDir = "$projectDir/src/generated"

@@ -1,10 +1,10 @@
 package org.raystack.depot.redis.client;
 
-import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.redis.client.response.RedisResponse;
 import org.raystack.depot.redis.client.response.RedisStandaloneResponse;
 import org.raystack.depot.redis.record.RedisRecord;
 import org.raystack.depot.redis.ttl.RedisTtl;
+import org.raystack.depot.metrics.Instrumentation;
 import lombok.AllArgsConstructor;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;

@@ -11,6 +11,7 @@ import org.raystack.depot.message.MessageParser;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.JsonParserMetrics;
 import org.aeonbits.owner.ConfigFactory;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -33,14 +34,14 @@ import static org.mockito.Mockito.verify;
 public class LogSinkTest {
     private final String template = "\n================= DATA =======================\n{}\n================= METADATA =======================\n{}\n";
     private SinkConfig config;
-    private MessageParser raystackMessageParser;
+    private MessageParser messageParser;
     private Instrumentation instrumentation;
     private JsonParserMetrics jsonParserMetrics;
 
     @Before
     public void setUp() throws Exception {
         config = mock(SinkConfig.class);
-        raystackMessageParser = mock(MessageParser.class);
+        messageParser = mock(MessageParser.class);
         instrumentation = mock(Instrumentation.class);
         jsonParserMetrics = new JsonParserMetrics(config);
 
@@ -48,13 +49,13 @@ public class LogSinkTest {
 
     @Test
     public void shouldProcessEmptyMessageWithNoError() throws IOException {
-        LogSink logSink = new LogSink(config, raystackMessageParser, instrumentation);
+        LogSink logSink = new LogSink(config, messageParser, instrumentation);
         ArrayList<Message> messages = new ArrayList<>();
-        SinkResponse raystackSinkResponse = logSink.pushToSink(messages);
-        Map<Long, ErrorInfo> errors = raystackSinkResponse.getErrors();
+        SinkResponse sinkResponse = logSink.pushToSink(messages);
+        Map<Long, ErrorInfo> errors = sinkResponse.getErrors();
 
         assertEquals(Collections.emptyMap(), errors);
-        verify(raystackMessageParser, never()).parse(any(), any(), any());
+        verify(messageParser, never()).parse(any(), any(), any());
         verify(instrumentation, never()).logInfo(any(), any(), any());
     }
 
@@ -65,10 +66,9 @@ public class LogSinkTest {
                 put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "log_message");
             }
         };
-        SinkConfig raystackSinkConfig = ConfigFactory.create(SinkConfig.class, configMap);
-        MessageParser messageParser = new JsonMessageParser(raystackSinkConfig, instrumentation,
-                jsonParserMetrics);
-        LogSink logSink = new LogSink(raystackSinkConfig, messageParser, instrumentation);
+        SinkConfig sinkConfig = ConfigFactory.create(SinkConfig.class, configMap);
+        messageParser = new JsonMessageParser(sinkConfig, instrumentation, jsonParserMetrics);
+        LogSink logSink = new LogSink(sinkConfig, messageParser, instrumentation);
         ArrayList<Message> messages = new ArrayList<>();
         String validJsonFirstName = "{\"first_name\":\"john\"}";
         byte[] logMessage1 = validJsonFirstName.getBytes();
@@ -76,10 +76,10 @@ public class LogSinkTest {
         byte[] logMessage2 = validJsonLastName.getBytes();
         messages.add(new Message(null, logMessage1));
         messages.add(new Message(null, logMessage2));
-        SinkResponse raystackSinkResponse = logSink.pushToSink(messages);
+        SinkResponse sinkResponse = logSink.pushToSink(messages);
 
         // assert no error
-        Map<Long, ErrorInfo> errors = raystackSinkResponse.getErrors();
+        Map<Long, ErrorInfo> errors = sinkResponse.getErrors();
         assertEquals(Collections.emptyMap(), errors);
 
         // assert processed message
@@ -96,11 +96,10 @@ public class LogSinkTest {
                 put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "log_message");
             }
         };
-        SinkConfig raystackSinkConfig = ConfigFactory.create(SinkConfig.class, configMap);
+        SinkConfig sinkConfig = ConfigFactory.create(SinkConfig.class, configMap);
 
-        MessageParser messageParser = new JsonMessageParser(raystackSinkConfig, instrumentation,
-                jsonParserMetrics);
-        LogSink logSink = new LogSink(raystackSinkConfig, messageParser, instrumentation);
+        messageParser = new JsonMessageParser(sinkConfig, instrumentation, jsonParserMetrics);
+        LogSink logSink = new LogSink(sinkConfig, messageParser, instrumentation);
         ArrayList<Message> messages = new ArrayList<>();
         String validJsonFirstName = "{\"first_name\":\"john\"}";
         byte[] logMessage1 = validJsonFirstName.getBytes();
@@ -108,11 +107,11 @@ public class LogSinkTest {
         byte[] invalidLogMessage = invalidJson.getBytes();
         messages.add(new Message(null, logMessage1));
         messages.add(new Message(null, invalidLogMessage));
-        SinkResponse raystackSinkResponse = logSink.pushToSink(messages);
+        SinkResponse sinkResponse = logSink.pushToSink(messages);
 
         // assert error
-        ErrorInfo error = raystackSinkResponse.getErrorsFor(1L);
-        assertEquals(ErrorType.DESERIALIZATION_ERROR, error.getErrorType());
+        ErrorInfo error = sinkResponse.getErrorsFor(1L);
+        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, error.getErrorType());
 
         // assert valid message processed
         ArgumentCaptor<String> jsonStrCaptor = ArgumentCaptor.forClass(String.class);

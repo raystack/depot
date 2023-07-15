@@ -3,6 +3,7 @@ package org.raystack.depot.message.proto;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import org.raystack.depot.config.SinkConfig;
+import org.raystack.depot.utils.StencilUtils;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.exception.EmptyMessageException;
 import org.raystack.depot.message.MessageUtils;
@@ -12,8 +13,7 @@ import org.raystack.depot.message.MessageSchema;
 import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.metrics.StatsDReporter;
-import org.raystack.depot.stencil.StencilUpdateListener;
-import org.raystack.depot.utils.StencilUtils;
+import org.raystack.depot.stencil.DepotStencilUpdateListener;
 import org.raystack.stencil.StencilClientFactory;
 import org.raystack.stencil.client.StencilClient;
 import org.raystack.stencil.config.StencilConfig;
@@ -34,7 +34,7 @@ public class ProtoMessageParser implements MessageParser {
     private final ProtoFieldParser protoMappingParser = new ProtoFieldParser();
 
     public ProtoMessageParser(SinkConfig sinkConfig, StatsDReporter reporter,
-            StencilUpdateListener protoUpdateListener) {
+            DepotStencilUpdateListener protoUpdateListener) {
         StencilConfig stencilConfig = StencilUtils.getStencilConfig(sinkConfig, reporter.getClient(),
                 protoUpdateListener);
         if (sinkConfig.isSchemaRegistryStencilEnable()) {

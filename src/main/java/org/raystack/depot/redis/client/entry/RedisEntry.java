@@ -1,7 +1,7 @@
 package org.raystack.depot.redis.client.entry;
 
-import org.raystack.depot.redis.client.response.RedisClusterResponse;
 import org.raystack.depot.redis.client.response.RedisStandaloneResponse;
+import org.raystack.depot.redis.client.response.RedisClusterResponse;
 import org.raystack.depot.redis.ttl.RedisTtl;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;

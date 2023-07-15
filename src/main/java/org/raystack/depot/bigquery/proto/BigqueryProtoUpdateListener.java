@@ -3,11 +3,11 @@ package org.raystack.depot.bigquery.proto;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import com.google.protobuf.Descriptors.Descriptor;
-import org.raystack.depot.bigquery.exception.BQSchemaMappingException;
-import org.raystack.depot.bigquery.exception.BQTableUpdateFailure;
 import org.raystack.depot.bigquery.client.BigQueryClient;
 import org.raystack.depot.bigquery.converter.MessageRecordConverter;
 import org.raystack.depot.bigquery.converter.MessageRecordConverterCache;
+import org.raystack.depot.bigquery.exception.BQSchemaMappingException;
+import org.raystack.depot.bigquery.exception.BQTableUpdateFailure;
 import org.raystack.depot.common.TupleString;
 import org.raystack.depot.config.BigQuerySinkConfig;
 import org.raystack.depot.message.MessageSchema;
@@ -15,7 +15,7 @@ import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.message.proto.ProtoField;
 import org.raystack.depot.message.proto.ProtoMessageParser;
 import org.raystack.depot.message.proto.ProtoMessageSchema;
-import org.raystack.depot.stencil.StencilUpdateListener;
+import org.raystack.depot.stencil.DepotStencilUpdateListener;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class BigqueryProtoUpdateListener extends StencilUpdateListener {
+public class BigqueryProtoUpdateListener extends DepotStencilUpdateListener {
     private final BigQuerySinkConfig config;
     private final BigQueryClient bqClient;
     @Getter
@@ -47,18 +47,18 @@ public class BigqueryProtoUpdateListener extends StencilUpdateListener {
             String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
                     ? config.getSinkConnectorSchemaProtoMessageClass()
                     : config.getSinkConnectorSchemaProtoKeyClass();
-            ProtoMessageParser raystackMessageParser = (ProtoMessageParser) getMessageParser();
+            ProtoMessageParser messageParser = (ProtoMessageParser) getMessageParser();
             MessageSchema schema;
             if (newDescriptors == null) {
-                schema = raystackMessageParser.getSchema(schemaClass);
+                schema = messageParser.getSchema(schemaClass);
             } else {
-                schema = raystackMessageParser.getSchema(schemaClass, newDescriptors);
+                schema = messageParser.getSchema(schemaClass, newDescriptors);
             }
             ProtoField protoField = ((ProtoMessageSchema) schema).getProtoField();
             List<Field> bqSchemaFields = BigqueryFields.generateBigquerySchema(protoField);
             addMetadataFields(bqSchemaFields);
             bqClient.upsertTable(bqSchemaFields);
-            converterCache.setMessageRecordConverter(new MessageRecordConverter(raystackMessageParser, config, schema));
+            converterCache.setMessageRecordConverter(new MessageRecordConverter(messageParser, config, schema));
         } catch (BigQueryException | IOException e) {
             String errMsg = "Error while updating bigquery table on callback:" + e.getMessage();
             log.error(errMsg);

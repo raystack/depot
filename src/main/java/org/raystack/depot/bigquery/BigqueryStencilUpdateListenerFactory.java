@@ -4,14 +4,14 @@ import org.raystack.depot.bigquery.client.BigQueryClient;
 import org.raystack.depot.bigquery.converter.MessageRecordConverterCache;
 import org.raystack.depot.bigquery.json.BigqueryJsonUpdateListener;
 import org.raystack.depot.bigquery.proto.BigqueryProtoUpdateListener;
-import org.raystack.depot.config.BigQuerySinkConfig;
 import org.raystack.depot.exception.ConfigurationException;
+import org.raystack.depot.config.BigQuerySinkConfig;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.StatsDReporter;
-import org.raystack.depot.stencil.StencilUpdateListener;
+import org.raystack.depot.stencil.DepotStencilUpdateListener;
 
 public class BigqueryStencilUpdateListenerFactory {
-    public static StencilUpdateListener create(BigQuerySinkConfig config, BigQueryClient bqClient,
+    public static DepotStencilUpdateListener create(BigQuerySinkConfig config, BigQueryClient bqClient,
             MessageRecordConverterCache converterCache, StatsDReporter statsDReporter) {
         switch (config.getSinkConnectorSchemaDataType()) {
             case JSON:

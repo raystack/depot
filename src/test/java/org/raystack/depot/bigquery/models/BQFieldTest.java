@@ -16,7 +16,8 @@ import static org.junit.Assert.assertEquals;
 
 public class BQFieldTest {
 
-    private Descriptors.Descriptor testMessageDescriptor = TestTypesMessage.newBuilder().build().getDescriptorForType();
+    private final Descriptors.Descriptor testMessageDescriptor = TestTypesMessage.newBuilder().build()
+            .getDescriptorForType();
 
     @Test
     public void shouldReturnBigqueryField() {

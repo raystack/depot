@@ -1,13 +1,13 @@
 package org.raystack.depot.message.proto;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import org.raystack.depot.TestMessage;
+import org.raystack.depot.config.SinkConfig;
+import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.metrics.StatsDReporter;
-import org.raystack.depot.stencil.StencilUpdateListener;
-import org.raystack.depot.TestMessage;
-import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.depot.stencil.DepotStencilUpdateListener;
 import org.raystack.depot.message.Message;
-import org.raystack.depot.config.SinkConfig;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Test;
 
@@ -30,14 +30,12 @@ public class ProtoMessageParserTest {
     public void shouldParseLogMessage() throws IOException {
         SinkConfig sinkConfig = ConfigFactory.create(SinkConfig.class, configMap);
         StatsDReporter statsdReporter = mock(StatsDReporter.class);
-        StencilUpdateListener protoUpdateListener = mock(StencilUpdateListener.class);
-        ProtoMessageParser protoMessageParser = new ProtoMessageParser(sinkConfig,
-                statsdReporter,
-                protoUpdateListener);
+        DepotStencilUpdateListener protoUpdateListener = mock(DepotStencilUpdateListener.class);
+        ProtoMessageParser protoMessageParser = new ProtoMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("order-1").build();
         Message message = new Message(null, testMessage.toByteArray());
-        ParsedMessage parsedMessage = protoMessageParser.parse(message,
-                SinkConnectorSchemaMessageMode.LOG_MESSAGE, "org.raystack.depot.TestMessage");
+        ParsedMessage parsedMessage = protoMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE,
+                "org.raystack.depot.TestMessage");
         assertEquals(testMessage, parsedMessage.getRaw());
 
     }
@@ -46,10 +44,8 @@ public class ProtoMessageParserTest {
     public void shouldThrowErrorOnInvalidMessage() {
         SinkConfig sinkConfig = ConfigFactory.create(SinkConfig.class, configMap);
         StatsDReporter statsdReporter = mock(StatsDReporter.class);
-        StencilUpdateListener protoUpdateListener = mock(StencilUpdateListener.class);
-        ProtoMessageParser protoMessageParser = new ProtoMessageParser(sinkConfig,
-                statsdReporter,
-                protoUpdateListener);
+        DepotStencilUpdateListener protoUpdateListener = mock(DepotStencilUpdateListener.class);
+        ProtoMessageParser protoMessageParser = new ProtoMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         byte[] invalidMessageBytes = "invalid message".getBytes();
         Message message = new Message(null, invalidMessageBytes);
         assertThrows(InvalidProtocolBufferException.class, () -> {
@@ -62,14 +58,12 @@ public class ProtoMessageParserTest {
     public void shouldParseLogKey() throws IOException {
         SinkConfig sinkConfig = ConfigFactory.create(SinkConfig.class, configMap);
         StatsDReporter statsdReporter = mock(StatsDReporter.class);
-        StencilUpdateListener protoUpdateListener = mock(StencilUpdateListener.class);
-        ProtoMessageParser protoMessageParser = new ProtoMessageParser(sinkConfig,
-                statsdReporter,
-                protoUpdateListener);
+        DepotStencilUpdateListener protoUpdateListener = mock(DepotStencilUpdateListener.class);
+        ProtoMessageParser protoMessageParser = new ProtoMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         TestMessage testKey = TestMessage.newBuilder().setOrderNumber("order-1").build();
         Message message = new Message(testKey.toByteArray(), null);
-        ParsedMessage parsedMessage = protoMessageParser.parse(message,
-                SinkConnectorSchemaMessageMode.LOG_KEY, "org.raystack.depot.TestMessage");
+        ParsedMessage parsedMessage = protoMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_KEY,
+                "org.raystack.depot.TestMessage");
         assertEquals(testKey, parsedMessage.getRaw());
 
     }
@@ -78,15 +72,12 @@ public class ProtoMessageParserTest {
     public void shouldThrowErrorOnInvalidKey() {
         SinkConfig sinkConfig = ConfigFactory.create(SinkConfig.class, configMap);
         StatsDReporter statsdReporter = mock(StatsDReporter.class);
-        StencilUpdateListener protoUpdateListener = mock(StencilUpdateListener.class);
-        ProtoMessageParser protoMessageParser = new ProtoMessageParser(sinkConfig,
-                statsdReporter,
-                protoUpdateListener);
+        DepotStencilUpdateListener protoUpdateListener = mock(DepotStencilUpdateListener.class);
+        ProtoMessageParser protoMessageParser = new ProtoMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         byte[] invalidKeyBytes = "invalid message".getBytes();
         Message message = new Message(invalidKeyBytes, null);
         assertThrows(InvalidProtocolBufferException.class, () -> {
-            protoMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_KEY,
-                    "org.raystack.depot.TestMessage");
+            protoMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_KEY, "org.raystack.depot.TestMessage");
         });
     }
 
@@ -94,10 +85,8 @@ public class ProtoMessageParserTest {
     public void shouldThrowErrorWhenModeNotDefined() {
         SinkConfig sinkConfig = ConfigFactory.create(SinkConfig.class, configMap);
         StatsDReporter statsdReporter = mock(StatsDReporter.class);
-        StencilUpdateListener protoUpdateListener = mock(StencilUpdateListener.class);
-        ProtoMessageParser protoMessageParser = new ProtoMessageParser(sinkConfig,
-                statsdReporter,
-                protoUpdateListener);
+        DepotStencilUpdateListener protoUpdateListener = mock(DepotStencilUpdateListener.class);
+        ProtoMessageParser protoMessageParser = new ProtoMessageParser(sinkConfig, statsdReporter, protoUpdateListener);
         byte[] validKeyBytes = TestMessage.newBuilder().setOrderNumber("order-1").build().toByteArray();
         Message message = new Message(validKeyBytes, null);
         IOException ioException = assertThrows(IOException.class, () -> {

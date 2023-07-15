@@ -1,8 +1,6 @@
 package org.raystack.depot.bigquery.converter;
 
 import com.google.common.collect.ImmutableMap;
-import org.raystack.depot.bigquery.models.Record;
-import org.raystack.depot.bigquery.models.Records;
 import org.raystack.depot.config.BigQuerySinkConfig;
 import org.raystack.depot.config.SinkConfig;
 import org.raystack.depot.error.ErrorInfo;
@@ -13,6 +11,8 @@ import org.raystack.depot.message.MessageSchema;
 import org.raystack.depot.message.json.JsonMessageParser;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.JsonParserMetrics;
+import org.raystack.depot.bigquery.models.Record;
+import org.raystack.depot.bigquery.models.Records;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Test;
 
@@ -35,8 +35,7 @@ import static org.mockito.Mockito.mock;
 
 public class MessageRecordConverterForJsonTest {
 
-        private final SinkConfig defaultConfig = ConfigFactory.create(SinkConfig.class,
-                        Collections.emptyMap());
+        private final SinkConfig defaultConfig = ConfigFactory.create(SinkConfig.class, Collections.emptyMap());
         private final Record.RecordBuilder recordBuilder = Record.builder();
         private final Map<String, Object> emptyMetadata = Collections.emptyMap();
         private final Map<String, Object> emptyColumnsMap = Collections.emptyMap();
@@ -51,8 +50,7 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldReturnEmptyRecordsforEmptyList() {
-                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation,
-                                jsonParserMetrics);
+                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
                 MessageSchema schema = null;
                 BigQuerySinkConfig bigQuerySinkConfig = null;
                 MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
@@ -66,8 +64,7 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldConvertJsonMessagesToRecordForLogMessage() {
-                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation,
-                                jsonParserMetrics);
+                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
                 MessageSchema schema = null;
                 HashMap<String, String> configMap = new HashMap<>();
                 configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE");
@@ -104,8 +101,7 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldConvertJsonMessagesToRecordForLogKey() {
-                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation,
-                                jsonParserMetrics);
+                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
                 MessageSchema schema = null;
                 HashMap<String, String> configMap = new HashMap<>();
                 configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_KEY");
@@ -142,8 +138,7 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldHandleBothInvalidAndValidJsonMessages() {
-                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation,
-                                jsonParserMetrics);
+                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
                 MessageSchema schema = null;
                 HashMap<String, String> configMap = new HashMap<>();
                 configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE");
@@ -221,8 +216,7 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldInjectEventTimestamp() throws ParseException {
-                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation,
-                                jsonParserMetrics);
+                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
                 MessageSchema schema = null;
                 Map<String, String> configMap = ImmutableMap.of(
                                 "SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE",

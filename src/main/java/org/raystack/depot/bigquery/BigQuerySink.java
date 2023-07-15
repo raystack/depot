@@ -5,16 +5,16 @@ import com.google.cloud.bigquery.InsertAllResponse;
 import org.raystack.depot.bigquery.client.BigQueryClient;
 import org.raystack.depot.bigquery.client.BigQueryResponseParser;
 import org.raystack.depot.bigquery.client.BigQueryRow;
+import org.raystack.depot.bigquery.converter.MessageRecordConverterCache;
 import org.raystack.depot.bigquery.handler.ErrorHandler;
 import org.raystack.depot.bigquery.models.Record;
-import org.raystack.depot.error.ErrorInfo;
-import org.raystack.depot.metrics.BigQueryMetrics;
-import org.raystack.depot.metrics.Instrumentation;
-import org.raystack.depot.bigquery.converter.MessageRecordConverterCache;
-import org.raystack.depot.message.Message;
+import org.raystack.depot.bigquery.models.Records;
 import org.raystack.depot.Sink;
 import org.raystack.depot.SinkResponse;
-import org.raystack.depot.bigquery.models.Records;
+import org.raystack.depot.error.ErrorInfo;
+import org.raystack.depot.message.Message;
+import org.raystack.depot.metrics.BigQueryMetrics;
+import org.raystack.depot.metrics.Instrumentation;
 
 import java.io.IOException;
 import java.util.List;
@@ -56,10 +56,9 @@ public class BigQuerySink implements Sink {
     @Override
     public SinkResponse pushToSink(List<Message> messageList) {
         Records records = messageRecordConverterCache.getMessageRecordConverter().convert(messageList);
-        SinkResponse raystackSinkResponse = new SinkResponse();
+        SinkResponse sinkResponse = new SinkResponse();
         records.getInvalidRecords().forEach(
-                invalidRecord -> raystackSinkResponse.addErrors(invalidRecord.getIndex(),
-                        invalidRecord.getErrorInfo()));
+                invalidRecord -> sinkResponse.addErrors(invalidRecord.getIndex(), invalidRecord.getErrorInfo()));
         if (records.getValidRecords().size() > 0) {
             InsertAllResponse response = insertIntoBQ(records.getValidRecords());
             instrumentation.logInfo("Pushed a batch of {} records to BQ. Insert success?: {}",
@@ -67,10 +66,10 @@ public class BigQuerySink implements Sink {
             if (response.hasErrors()) {
                 Map<Long, ErrorInfo> errorInfoMap = BigQueryResponseParser
                         .getErrorsFromBQResponse(records.getValidRecords(), response, bigQueryMetrics, instrumentation);
-                errorInfoMap.forEach(raystackSinkResponse::addErrors);
+                errorInfoMap.forEach(sinkResponse::addErrors);
                 errorHandler.handle(response.getInsertErrors(), records.getValidRecords());
             }
         }
-        return raystackSinkResponse;
+        return sinkResponse;
     }
 }

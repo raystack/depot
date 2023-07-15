@@ -1,9 +1,9 @@
 package org.raystack.depot.redis.record;
 
-import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.redis.client.entry.RedisEntry;
 import org.raystack.depot.redis.client.response.RedisClusterResponse;
 import org.raystack.depot.redis.client.response.RedisStandaloneResponse;
+import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.redis.ttl.RedisTtl;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

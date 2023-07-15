@@ -1,8 +1,8 @@
 package org.raystack.depot.utils;
 
-import org.raystack.depot.common.Tuple;
 import org.raystack.depot.config.SinkConfig;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.depot.common.Tuple;
 
 public class MessageConfigUtils {
 

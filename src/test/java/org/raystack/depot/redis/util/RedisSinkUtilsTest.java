@@ -1,12 +1,12 @@
 package org.raystack.depot.redis.util;
 
+import org.raystack.depot.redis.client.entry.RedisListEntry;
+import org.raystack.depot.redis.client.response.RedisClusterResponse;
+import org.raystack.depot.redis.client.response.RedisResponse;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.StatsDReporter;
-import org.raystack.depot.redis.client.entry.RedisListEntry;
-import org.raystack.depot.redis.client.response.RedisClusterResponse;
-import org.raystack.depot.redis.client.response.RedisResponse;
 import org.raystack.depot.redis.record.RedisRecord;
 import org.junit.Assert;
 import org.junit.Test;

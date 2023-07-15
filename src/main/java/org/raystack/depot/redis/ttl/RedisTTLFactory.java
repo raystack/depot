@@ -1,8 +1,8 @@
 package org.raystack.depot.redis.ttl;
 
+import org.raystack.depot.redis.enums.RedisSinkTtlType;
 import org.raystack.depot.config.RedisSinkConfig;
 import org.raystack.depot.exception.ConfigurationException;
-import org.raystack.depot.redis.enums.RedisSinkTtlType;
 
 public class RedisTTLFactory {
 

@@ -1,10 +1,10 @@
 package org.raystack.depot.redis.client;
 
 import org.raystack.depot.config.RedisSinkConfig;
-import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.metrics.StatsDReporter;
 import org.raystack.depot.redis.enums.RedisSinkDeploymentType;
 import org.raystack.depot.redis.enums.RedisSinkTtlType;
+import org.raystack.depot.exception.ConfigurationException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

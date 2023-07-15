@@ -1,6 +1,8 @@
 package org.raystack.depot.redis.parsers;
 
 import com.google.protobuf.Descriptors;
+import org.raystack.depot.redis.client.entry.RedisEntry;
+import org.raystack.depot.redis.client.entry.RedisKeyValueEntry;
 import org.raystack.depot.TestKey;
 import org.raystack.depot.TestMessage;
 import org.raystack.depot.TestNestedMessage;
@@ -12,8 +14,6 @@ import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.message.proto.ProtoMessageParser;
 import org.raystack.depot.metrics.StatsDReporter;
-import org.raystack.depot.redis.client.entry.RedisEntry;
-import org.raystack.depot.redis.client.entry.RedisKeyValueEntry;
 import org.raystack.depot.redis.enums.RedisSinkDataType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,16 +53,16 @@ public class RedisKeyValueEntryParserTest {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.KEYVALUE);
         when(redisSinkConfig.getSinkRedisKeyValueDataFieldName()).thenReturn(field);
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn(template);
-        ProtoMessageParser raystackMessageParser = new ProtoMessageParser(redisSinkConfig, statsDReporter, null);
+        ProtoMessageParser messageParser = new ProtoMessageParser(redisSinkConfig, statsDReporter, null);
         String schemaClass = "org.raystack.depot.TestMessage";
-        schema = raystackMessageParser.getSchema(schemaClass, descriptorsMap);
+        schema = messageParser.getSchema(schemaClass, descriptorsMap);
         byte[] logMessage = TestMessage.newBuilder()
                 .setOrderNumber("xyz-order")
                 .setOrderDetails("new-eureka-order")
                 .build()
                 .toByteArray();
         Message message = new Message(null, logMessage);
-        parsedMessage = raystackMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass);
+        parsedMessage = messageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass);
         redisKeyValueEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema);
     }
 

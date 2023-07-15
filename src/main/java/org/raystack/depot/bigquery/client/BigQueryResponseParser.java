@@ -2,18 +2,18 @@ package org.raystack.depot.bigquery.client;
 
 import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.InsertAllResponse;
-import org.raystack.depot.bigquery.error.ErrorDescriptor;
-import org.raystack.depot.bigquery.error.ErrorParser;
-import org.raystack.depot.bigquery.error.InvalidSchemaError;
-import org.raystack.depot.bigquery.error.OOBError;
-import org.raystack.depot.bigquery.error.StoppedError;
-import org.raystack.depot.bigquery.error.UnknownError;
 import org.raystack.depot.bigquery.exception.BigQuerySinkException;
 import org.raystack.depot.bigquery.models.Record;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
 import org.raystack.depot.metrics.BigQueryMetrics;
 import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.bigquery.error.ErrorDescriptor;
+import org.raystack.depot.bigquery.error.ErrorParser;
+import org.raystack.depot.bigquery.error.InvalidSchemaError;
+import org.raystack.depot.bigquery.error.OOBError;
+import org.raystack.depot.bigquery.error.StoppedError;
+import org.raystack.depot.bigquery.error.UnknownError;
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +44,8 @@ public class BigQueryResponseParser {
             Record record = records.get(errorEntry.getKey().intValue());
             long messageIndex = record.getIndex();
             List<ErrorDescriptor> errors = ErrorParser.parseError(errorEntry.getValue());
-            instrumentation.logError("Error while bigquery insert for message. Record: {}, Error: {}, MetaData: {}",
+            instrumentation.logError(
+                    "Error while bigquery insert for message. \nRecord: {}, \nError: {}, \nMetaData: {}",
                     record.getColumns(), errors, record.getMetadata());
 
             if (errorMatch(errors, UnknownError.class)) {
