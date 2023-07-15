@@ -75,7 +75,7 @@ public class BQField {
      * Map fully qualified type name or protobuf type to bigquery types.
      * Fully qualified name will be used as mapping key before protobuf type being
      * used
-     * 
+     *
      * @param protoField
      * @return
      */
