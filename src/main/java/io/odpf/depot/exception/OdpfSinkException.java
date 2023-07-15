@@ -1,4 +1,4 @@
-package io.odpf.depot.exception;
+package org.raystack.depot.exception;
 
 import java.io.IOException;
 

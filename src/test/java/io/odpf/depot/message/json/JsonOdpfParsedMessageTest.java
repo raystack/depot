@@ -1,4 +1,4 @@
-package io.odpf.depot.message.json;
+package org.raystack.depot.message.json;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
@@ -20,7 +20,7 @@ public class JsonOdpfParsedMessageTest {
 
     @Test
     public void shouldGetEmptyMappingKeysForEmptyJsonObject() {
-        //for empty json object
+        // for empty json object
         JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(new JSONObject(), configuration);
         Map<String, Object> parsedMessageMapping = parsedMessage.getMapping(null);
         assertEquals(Collections.emptyMap(), parsedMessageMapping);
@@ -71,7 +71,8 @@ public class JsonOdpfParsedMessageTest {
                 + "\"family\" : {\"brother\" : \"david doe\"}"
                 + "}");
         JsonOdpfParsedMessage parsedMessage = new JsonOdpfParsedMessage(personDetails, configuration);
-        java.lang.IllegalArgumentException illegalArgumentException = Assert.assertThrows(java.lang.IllegalArgumentException.class, () -> parsedMessage.getFieldByName("family.sister", null));
+        java.lang.IllegalArgumentException illegalArgumentException = Assert.assertThrows(
+                java.lang.IllegalArgumentException.class, () -> parsedMessage.getFieldByName("family.sister", null));
         Assert.assertEquals("Invalid field config : family.sister", illegalArgumentException.getMessage());
     }
 

@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery.converter;
+package org.raystack.depot.bigquery.converter;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package io.odpf.depot.metrics;
+package org.raystack.depot.metrics;
 
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.time.Instant;
-
 
 /**
  * Instrumentation.
@@ -64,7 +63,6 @@ public class Instrumentation implements Closeable {
         return logger.isDebugEnabled();
     }
 
-
     // ===================== CountTelemetry =================
 
     public void captureCount(String metric, Long count, String... tags) {
@@ -90,7 +88,6 @@ public class Instrumentation implements Closeable {
     public void captureDuration(String metric, long duration, String... tags) {
         statsDReporter.captureDuration(metric, duration, tags);
     }
-
 
     // =================== ERROR ===================
 

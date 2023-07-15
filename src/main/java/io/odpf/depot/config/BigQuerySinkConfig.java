@@ -1,9 +1,9 @@
-package io.odpf.depot.config;
+package org.raystack.depot.config;
 
-import io.odpf.depot.common.TupleString;
-import io.odpf.depot.config.converter.ConfToListConverter;
-import io.odpf.depot.config.converter.ConverterUtils;
-import io.odpf.depot.config.converter.LabelMapConverter;
+import org.raystack.depot.common.TupleString;
+import org.raystack.depot.config.converter.ConfToListConverter;
+import org.raystack.depot.config.converter.ConverterUtils;
+import org.raystack.depot.config.converter.LabelMapConverter;
 
 import java.util.List;
 import java.util.Map;
@@ -100,4 +100,3 @@ public interface BigQuerySinkConfig extends OdpfSinkConfig {
     @Key("SINK_BIGQUERY_DYNAMIC_SCHEMA_ENABLE")
     boolean getSinkBigqueryDynamicSchemaEnable();
 }
-

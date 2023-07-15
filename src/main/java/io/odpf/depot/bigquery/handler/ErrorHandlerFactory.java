@@ -1,13 +1,14 @@
-package io.odpf.depot.bigquery.handler;
+package org.raystack.depot.bigquery.handler;
 
-import io.odpf.depot.bigquery.client.BigQueryClient;
-import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
-import io.odpf.depot.config.BigQuerySinkConfig;
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.metrics.StatsDReporter;
+import org.raystack.depot.bigquery.client.BigQueryClient;
+import org.raystack.depot.config.enums.SinkConnectorSchemaDataType;
+import org.raystack.depot.config.BigQuerySinkConfig;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.metrics.StatsDReporter;
 
 public class ErrorHandlerFactory {
-    public static ErrorHandler create(BigQuerySinkConfig sinkConfig, BigQueryClient bigQueryClient, StatsDReporter statsDReprter) {
+    public static ErrorHandler create(BigQuerySinkConfig sinkConfig, BigQueryClient bigQueryClient,
+            StatsDReporter statsDReprter) {
         if (SinkConnectorSchemaDataType.JSON == sinkConfig.getSinkConnectorSchemaDataType()) {
             return new JsonErrorHandler(
                     bigQueryClient,

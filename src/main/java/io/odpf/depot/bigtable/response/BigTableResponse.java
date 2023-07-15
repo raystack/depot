@@ -1,4 +1,4 @@
-package io.odpf.depot.bigtable.response;
+package org.raystack.depot.bigtable.response;
 
 import com.google.cloud.bigtable.data.v2.models.MutateRowsException;
 import lombok.Getter;

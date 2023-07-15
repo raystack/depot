@@ -1,11 +1,11 @@
-package io.odpf.depot.bigquery.converter;
+package org.raystack.depot.bigquery.converter;
 
 import com.google.api.client.util.DateTime;
-import io.odpf.depot.common.TupleString;
-import io.odpf.depot.config.BigQuerySinkConfig;
-import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.utils.DateUtils;
+import org.raystack.depot.common.TupleString;
+import org.raystack.depot.config.BigQuerySinkConfig;
+import org.raystack.depot.config.enums.SinkConnectorSchemaDataType;
+import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.utils.DateUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -19,15 +19,16 @@ public class MessageRecordConverterUtils {
         if (config.shouldAddMetadata()) {
             List<TupleString> metadataColumnsTypes = config.getMetadataColumnsTypes();
             Map<String, Object> metadata = message.getMetadata(metadataColumnsTypes);
-            Map<String, Object> finalMetadata = metadataColumnsTypes.stream().collect(Collectors.toMap(TupleString::getFirst, t -> {
-                String key = t.getFirst();
-                String dataType = t.getSecond();
-                Object value = metadata.get(key);
-                if (value instanceof Long && dataType.equals("timestamp")) {
-                    value = new DateTime((long) value);
-                }
-                return value;
-            }));
+            Map<String, Object> finalMetadata = metadataColumnsTypes.stream()
+                    .collect(Collectors.toMap(TupleString::getFirst, t -> {
+                        String key = t.getFirst();
+                        String dataType = t.getSecond();
+                        Object value = metadata.get(key);
+                        if (value instanceof Long && dataType.equals("timestamp")) {
+                            value = new DateTime((long) value);
+                        }
+                        return value;
+                    }));
             if (config.getBqMetadataNamespace().isEmpty()) {
                 columns.putAll(finalMetadata);
             } else {
@@ -44,4 +45,3 @@ public class MessageRecordConverterUtils {
         }
     }
 }
-

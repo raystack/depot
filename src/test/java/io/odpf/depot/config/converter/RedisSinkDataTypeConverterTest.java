@@ -1,6 +1,6 @@
-package io.odpf.depot.config.converter;
+package org.raystack.depot.config.converter;
 
-import io.odpf.depot.redis.enums.RedisSinkDataType;
+import org.raystack.depot.redis.enums.RedisSinkDataType;
 import org.gradle.internal.impldep.org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

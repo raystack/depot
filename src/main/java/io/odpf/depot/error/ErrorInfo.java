@@ -1,4 +1,4 @@
-package io.odpf.depot.error;
+package org.raystack.depot.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +13,7 @@ public class ErrorInfo {
     private ErrorType errorType;
 
     public String toString() {
-        return String.format("Exception %s, ErrorType: %s", exception != null ? exception.getMessage() : "NULL", errorType.name());
+        return String.format("Exception %s, ErrorType: %s", exception != null ? exception.getMessage() : "NULL",
+                errorType.name());
     }
 }

@@ -1,4 +1,4 @@
-package io.odpf.depot.exception;
+package org.raystack.depot.exception;
 
 public class ConfigurationException extends RuntimeException {
     public ConfigurationException(String message) {

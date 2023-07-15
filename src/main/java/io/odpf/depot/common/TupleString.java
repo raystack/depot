@@ -1,4 +1,4 @@
-package io.odpf.depot.common;
+package org.raystack.depot.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,9 +1,9 @@
-package io.odpf.depot.metrics;
+package org.raystack.depot.metrics;
 
 import com.timgroup.statsd.NoOpStatsDClient;
 import com.timgroup.statsd.NonBlockingStatsDClientBuilder;
 import com.timgroup.statsd.StatsDClient;
-import io.odpf.depot.config.MetricsConfig;
+import org.raystack.depot.config.MetricsConfig;
 import lombok.extern.slf4j.Slf4j;
 
 /**

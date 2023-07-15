@@ -1,12 +1,12 @@
-package io.odpf.depot.bigquery.models;
+package org.raystack.depot.bigquery.models;
 
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.protobuf.Descriptors;
-import io.odpf.depot.TestMessage;
-import io.odpf.depot.TestTypesMessage;
-import io.odpf.depot.message.proto.ProtoField;
+import org.raystack.depot.TestMessage;
+import org.raystack.depot.TestTypesMessage;
+import org.raystack.depot.message.proto.ProtoField;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -46,18 +46,21 @@ public class BQFieldTest {
         bqField.setSubFields(childFields);
         Field field = bqField.getField();
 
-        Field expectedOrderNumberBqField = Field.newBuilder("order_number", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build();
-        Field expectedOrderNumberBqFieldUrl = Field.newBuilder("order_url", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build();
-        Field expectedOrderDetailsBqField1 = Field.newBuilder("order_details", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build();
+        Field expectedOrderNumberBqField = Field.newBuilder("order_number", LegacySQLTypeName.STRING)
+                .setMode(Field.Mode.NULLABLE).build();
+        Field expectedOrderNumberBqFieldUrl = Field.newBuilder("order_url", LegacySQLTypeName.STRING)
+                .setMode(Field.Mode.NULLABLE).build();
+        Field expectedOrderDetailsBqField1 = Field.newBuilder("order_details", LegacySQLTypeName.STRING)
+                .setMode(Field.Mode.NULLABLE).build();
 
         Field expected = Field.newBuilder(fieldName, LegacySQLTypeName.RECORD,
                 FieldList.of(expectedOrderNumberBqField,
                         expectedOrderNumberBqFieldUrl,
-                        expectedOrderDetailsBqField1)).setMode(Field.Mode.NULLABLE).build();
+                        expectedOrderDetailsBqField1))
+                .setMode(Field.Mode.NULLABLE).build();
 
         assertEquals(expected, field);
     }
-
 
     @Test
     public void shouldConvertProtobufTimestampToBigqueryTimestamp() {
@@ -90,7 +93,6 @@ public class BQFieldTest {
 
         assertEquals(LegacySQLTypeName.RECORD, bqFieldType);
     }
-
 
     @Test
     public void shouldConvertProtobufDoubleToBigqueryFloat() {

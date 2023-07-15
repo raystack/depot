@@ -1,4 +1,4 @@
-package io.odpf.depot.redis.client.response;
+package org.raystack.depot.redis.client.response;
 
 public interface RedisResponse {
     String getMessage();

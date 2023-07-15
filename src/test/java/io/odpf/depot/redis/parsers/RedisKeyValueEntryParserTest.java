@@ -1,20 +1,20 @@
-package io.odpf.depot.redis.parsers;
+package org.raystack.depot.redis.parsers;
 
 import com.google.protobuf.Descriptors;
-import io.odpf.depot.TestKey;
-import io.odpf.depot.TestMessage;
-import io.odpf.depot.TestNestedMessage;
-import io.odpf.depot.TestNestedRepeatedMessage;
-import io.odpf.depot.config.RedisSinkConfig;
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
-import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
-import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.client.entry.RedisEntry;
-import io.odpf.depot.redis.client.entry.RedisKeyValueEntry;
-import io.odpf.depot.redis.enums.RedisSinkDataType;
+import org.raystack.depot.TestKey;
+import org.raystack.depot.TestMessage;
+import org.raystack.depot.TestNestedMessage;
+import org.raystack.depot.TestNestedRepeatedMessage;
+import org.raystack.depot.config.RedisSinkConfig;
+import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.depot.message.proto.ProtoOdpfMessageParser;
+import org.raystack.depot.metrics.StatsDReporter;
+import org.raystack.depot.redis.client.entry.RedisEntry;
+import org.raystack.depot.redis.client.entry.RedisKeyValueEntry;
+import org.raystack.depot.redis.enums.RedisSinkDataType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -32,12 +32,15 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisKeyValueEntryParserTest {
-    private final Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
-        put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
-        put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
-        put(String.format("%s", TestNestedMessage.class.getName()), TestNestedMessage.getDescriptor());
-        put(String.format("%s", TestNestedRepeatedMessage.class.getName()), TestNestedRepeatedMessage.getDescriptor());
-    }};
+    private final Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {
+        {
+            put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
+            put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
+            put(String.format("%s", TestNestedMessage.class.getName()), TestNestedMessage.getDescriptor());
+            put(String.format("%s", TestNestedRepeatedMessage.class.getName()),
+                    TestNestedRepeatedMessage.getDescriptor());
+        }
+    };
     @Mock
     private RedisSinkConfig redisSinkConfig;
     @Mock
@@ -50,16 +53,16 @@ public class RedisKeyValueEntryParserTest {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.KEYVALUE);
         when(redisSinkConfig.getSinkRedisKeyValueDataFieldName()).thenReturn(field);
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn(template);
-        ProtoOdpfMessageParser odpfMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
-        String schemaClass = "io.odpf.depot.TestMessage";
-        schema = odpfMessageParser.getSchema(schemaClass, descriptorsMap);
+        ProtoOdpfMessageParser raystackMessageParser = new ProtoOdpfMessageParser(redisSinkConfig, statsDReporter, null);
+        String schemaClass = "org.raystack.depot.TestMessage";
+        schema = raystackMessageParser.getSchema(schemaClass, descriptorsMap);
         byte[] logMessage = TestMessage.newBuilder()
                 .setOrderNumber("xyz-order")
                 .setOrderDetails("new-eureka-order")
                 .build()
                 .toByteArray();
         OdpfMessage message = new OdpfMessage(null, logMessage);
-        parsedOdpfMessage = odpfMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass);
+        parsedOdpfMessage = raystackMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass);
         redisKeyValueEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema);
     }
 
@@ -74,8 +77,8 @@ public class RedisKeyValueEntryParserTest {
     @Test
     public void shouldThrowExceptionForInvalidKeyValueDataFieldName() throws IOException {
         redisSinkSetup("test-key", "random-field");
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> redisKeyValueEntryParser.getRedisEntry(parsedOdpfMessage));
         assertEquals("Invalid field config : random-field", exception.getMessage());
     }
 }

@@ -1,4 +1,4 @@
-package io.odpf.depot.redis.ttl;
+package org.raystack.depot.redis.ttl;
 
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;

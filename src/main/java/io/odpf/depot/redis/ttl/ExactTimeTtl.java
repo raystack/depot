@@ -1,10 +1,9 @@
-package io.odpf.depot.redis.ttl;
+package org.raystack.depot.redis.ttl;
 
 import lombok.AllArgsConstructor;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
-
 
 @AllArgsConstructor
 public class ExactTimeTtl implements RedisTtl {

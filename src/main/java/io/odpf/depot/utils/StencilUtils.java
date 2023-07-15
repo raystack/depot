@@ -1,9 +1,9 @@
-package io.odpf.depot.utils;
+package org.raystack.depot.utils;
 
 import com.timgroup.statsd.StatsDClient;
-import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.stencil.SchemaUpdateListener;
-import io.odpf.stencil.config.StencilConfig;
+import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.stencil.SchemaUpdateListener;
+import org.raystack.stencil.config.StencilConfig;
 
 public class StencilUtils {
     public static StencilConfig getStencilConfig(

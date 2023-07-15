@@ -1,4 +1,4 @@
-package io.odpf.depot.message.proto.converter.fields;
+package org.raystack.depot.message.proto.converter.fields;
 
 import com.google.protobuf.Descriptors;
 
@@ -16,8 +16,7 @@ public class ProtoFieldFactory {
                 new EnumProtoField(descriptor, fieldValue),
                 new ByteProtoField(descriptor, fieldValue),
                 new StructProtoField(descriptor, fieldValue),
-                new MessageProtoField(descriptor, fieldValue)
-        );
+                new MessageProtoField(descriptor, fieldValue));
         Optional<ProtoField> first = protoFields
                 .stream()
                 .filter(ProtoField::matches)

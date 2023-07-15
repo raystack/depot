@@ -1,10 +1,10 @@
-package io.odpf.depot.redis.client;
+package org.raystack.depot.redis.client;
 
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.redis.client.response.RedisClusterResponse;
-import io.odpf.depot.redis.client.response.RedisResponse;
-import io.odpf.depot.redis.record.RedisRecord;
-import io.odpf.depot.redis.ttl.RedisTtl;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.redis.client.response.RedisClusterResponse;
+import org.raystack.depot.redis.client.response.RedisResponse;
+import org.raystack.depot.redis.record.RedisRecord;
+import org.raystack.depot.redis.ttl.RedisTtl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,25 +30,29 @@ public class RedisClusterClientTest {
     @Test
     public void shouldSendToRedisCluster() {
         RedisClient redisClient = new RedisClusterClient(instrumentation, redisTTL, jedisCluster);
-        List<RedisRecord> redisRecords = new ArrayList<RedisRecord>() {{
-            add(Mockito.mock(RedisRecord.class));
-            add(Mockito.mock(RedisRecord.class));
-            add(Mockito.mock(RedisRecord.class));
-            add(Mockito.mock(RedisRecord.class));
-            add(Mockito.mock(RedisRecord.class));
-            add(Mockito.mock(RedisRecord.class));
-        }};
-        List<RedisClusterResponse> responses = new ArrayList<RedisClusterResponse>() {{
-            add(Mockito.mock(RedisClusterResponse.class));
-            add(Mockito.mock(RedisClusterResponse.class));
-            add(Mockito.mock(RedisClusterResponse.class));
-            add(Mockito.mock(RedisClusterResponse.class));
-            add(Mockito.mock(RedisClusterResponse.class));
-            add(Mockito.mock(RedisClusterResponse.class));
-        }};
+        List<RedisRecord> redisRecords = new ArrayList<RedisRecord>() {
+            {
+                add(Mockito.mock(RedisRecord.class));
+                add(Mockito.mock(RedisRecord.class));
+                add(Mockito.mock(RedisRecord.class));
+                add(Mockito.mock(RedisRecord.class));
+                add(Mockito.mock(RedisRecord.class));
+                add(Mockito.mock(RedisRecord.class));
+            }
+        };
+        List<RedisClusterResponse> responses = new ArrayList<RedisClusterResponse>() {
+            {
+                add(Mockito.mock(RedisClusterResponse.class));
+                add(Mockito.mock(RedisClusterResponse.class));
+                add(Mockito.mock(RedisClusterResponse.class));
+                add(Mockito.mock(RedisClusterResponse.class));
+                add(Mockito.mock(RedisClusterResponse.class));
+                add(Mockito.mock(RedisClusterResponse.class));
+            }
+        };
         IntStream.range(0, redisRecords.size()).forEach(
-                index -> Mockito.when(redisRecords.get(index).send(jedisCluster, redisTTL)).thenReturn(responses.get(index))
-        );
+                index -> Mockito.when(redisRecords.get(index).send(jedisCluster, redisTTL))
+                        .thenReturn(responses.get(index)));
         List<RedisResponse> actualResponse = redisClient.send(redisRecords);
         IntStream.range(0, redisRecords.size()).forEach(
                 index -> Assert.assertEquals(responses.get(index), actualResponse.get(index)));

@@ -1,4 +1,4 @@
-package io.odpf.depot.message;
+package org.raystack.depot.message;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;

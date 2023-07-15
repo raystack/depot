@@ -1,11 +1,11 @@
-package io.odpf.depot.redis.record;
+package org.raystack.depot.redis.record;
 
-import io.odpf.depot.error.ErrorInfo;
-import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.redis.client.entry.RedisEntry;
-import io.odpf.depot.redis.client.response.RedisClusterResponse;
-import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
-import io.odpf.depot.redis.ttl.RedisTtl;
+import org.raystack.depot.error.ErrorInfo;
+import org.raystack.depot.error.ErrorType;
+import org.raystack.depot.redis.client.entry.RedisEntry;
+import org.raystack.depot.redis.client.response.RedisClusterResponse;
+import org.raystack.depot.redis.client.response.RedisStandaloneResponse;
+import org.raystack.depot.redis.ttl.RedisTtl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

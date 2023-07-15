@@ -1,4 +1,4 @@
-package io.odpf.depot.metrics;
+package org.raystack.depot.metrics;
 
 public class MetricsTest {
 }

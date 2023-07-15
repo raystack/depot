@@ -1,10 +1,10 @@
-package io.odpf.depot.redis.parsers;
+package org.raystack.depot.redis.parsers;
 
-import io.odpf.depot.common.Template;
-import io.odpf.depot.config.RedisSinkConfig;
-import io.odpf.depot.exception.InvalidTemplateException;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.metrics.StatsDReporter;
+import org.raystack.depot.common.Template;
+import org.raystack.depot.config.RedisSinkConfig;
+import org.raystack.depot.exception.InvalidTemplateException;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.metrics.StatsDReporter;
 
 import java.util.Map;
 import java.util.Properties;
@@ -51,8 +51,7 @@ public class RedisEntryParserFactory {
                             } catch (InvalidTemplateException e) {
                                 throw new IllegalArgumentException(e.getMessage());
                             }
-                        }
-                ));
+                        }));
                 return new RedisHashSetEntryParser(statsDReporter, keyTemplate, fieldTemplates, schema);
         }
     }

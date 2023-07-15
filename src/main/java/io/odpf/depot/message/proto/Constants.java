@@ -1,5 +1,4 @@
-package io.odpf.depot.message.proto;
-
+package org.raystack.depot.message.proto;
 
 public class Constants {
     public static class Config {

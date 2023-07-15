@@ -1,7 +1,7 @@
-package io.odpf.depot.message.proto;
+package org.raystack.depot.message.proto;
 
 import com.google.protobuf.Descriptors;
-import io.odpf.depot.exception.ProtoNotFoundException;
+import org.raystack.depot.exception.ProtoNotFoundException;
 
 import java.util.Map;
 
@@ -13,15 +13,18 @@ public class ProtoFieldParser {
     private static final int MAX_NESTED_SCHEMA_LEVEL = 15;
     private final DescriptorCache descriptorCache = new DescriptorCache();
 
-    public ProtoField parseFields(ProtoField protoField, String protoSchema, Map<String, Descriptors.Descriptor> allDescriptors,
-                                  Map<String, String> typeNameToPackageNameMap) {
+    public ProtoField parseFields(ProtoField protoField, String protoSchema,
+            Map<String, Descriptors.Descriptor> allDescriptors,
+            Map<String, String> typeNameToPackageNameMap) {
         return parseFields(protoField, protoSchema, allDescriptors, typeNameToPackageNameMap, 1);
     }
 
-    private ProtoField parseFields(ProtoField protoField, String protoSchema, Map<String, Descriptors.Descriptor> allDescriptors,
-                                   Map<String, String> typeNameToPackageNameMap, int level) {
+    private ProtoField parseFields(ProtoField protoField, String protoSchema,
+            Map<String, Descriptors.Descriptor> allDescriptors,
+            Map<String, String> typeNameToPackageNameMap, int level) {
 
-        Descriptors.Descriptor currentProto = descriptorCache.fetch(allDescriptors, typeNameToPackageNameMap, protoSchema);
+        Descriptors.Descriptor currentProto = descriptorCache.fetch(allDescriptors, typeNameToPackageNameMap,
+                protoSchema);
         if (currentProto == null) {
             throw new ProtoNotFoundException("No Proto found for class " + protoSchema);
         }
@@ -33,7 +36,8 @@ public class ProtoFieldParser {
                         continue;
                     }
                 }
-                fieldModel = parseFields(fieldModel, field.toProto().getTypeName(), allDescriptors, typeNameToPackageNameMap, level + 1);
+                fieldModel = parseFields(fieldModel, field.toProto().getTypeName(), allDescriptors,
+                        typeNameToPackageNameMap, level + 1);
             }
             protoField.addField(fieldModel);
         }

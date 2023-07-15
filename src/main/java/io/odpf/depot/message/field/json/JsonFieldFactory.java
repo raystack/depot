@@ -1,6 +1,6 @@
-package io.odpf.depot.message.field.json;
+package org.raystack.depot.message.field.json;
 
-import io.odpf.depot.message.field.GenericField;
+import org.raystack.depot.message.field.GenericField;
 
 public class JsonFieldFactory {
     public static GenericField getField(Object field) {

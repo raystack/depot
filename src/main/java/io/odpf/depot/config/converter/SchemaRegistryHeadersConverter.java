@@ -1,4 +1,4 @@
-package io.odpf.depot.config.converter;
+package org.raystack.depot.config.converter;
 
 import org.aeonbits.owner.Converter;
 import org.aeonbits.owner.Tokenizer;

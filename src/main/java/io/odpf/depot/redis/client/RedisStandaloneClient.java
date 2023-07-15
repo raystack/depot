@@ -1,10 +1,10 @@
-package io.odpf.depot.redis.client;
+package org.raystack.depot.redis.client;
 
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.redis.client.response.RedisResponse;
-import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
-import io.odpf.depot.redis.record.RedisRecord;
-import io.odpf.depot.redis.ttl.RedisTtl;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.redis.client.response.RedisResponse;
+import org.raystack.depot.redis.client.response.RedisStandaloneResponse;
+import org.raystack.depot.redis.record.RedisRecord;
+import org.raystack.depot.redis.ttl.RedisTtl;
 import lombok.AllArgsConstructor;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;

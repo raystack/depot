@@ -1,7 +1,7 @@
-package io.odpf.depot.config;
+package org.raystack.depot.config;
 
-import io.odpf.depot.redis.enums.RedisSinkDeploymentType;
-import io.odpf.depot.redis.enums.RedisSinkTtlType;
+import org.raystack.depot.redis.enums.RedisSinkDeploymentType;
+import org.raystack.depot.redis.enums.RedisSinkTtlType;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
 import org.junit.Test;

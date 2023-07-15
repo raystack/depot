@@ -1,4 +1,4 @@
-package io.odpf.depot.redis.enums;
+package org.raystack.depot.redis.enums;
 
 public enum RedisSinkTtlType {
     EXACT_TIME,

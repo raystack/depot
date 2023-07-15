@@ -1,4 +1,4 @@
-package io.odpf.depot.bigtable.exception;
+package org.raystack.depot.bigtable.exception;
 
 public class BigTableInvalidSchemaException extends RuntimeException {
     public BigTableInvalidSchemaException(String message, Throwable cause) {

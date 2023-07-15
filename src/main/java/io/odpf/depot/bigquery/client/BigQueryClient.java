@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery.client;
+package org.raystack.depot.bigquery.client;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.TransportOptions;
@@ -17,10 +17,10 @@ import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
-import io.odpf.depot.bigquery.exception.BQDatasetLocationChangedException;
-import io.odpf.depot.config.BigQuerySinkConfig;
-import io.odpf.depot.metrics.BigQueryMetrics;
-import io.odpf.depot.metrics.Instrumentation;
+import org.raystack.depot.bigquery.exception.BQDatasetLocationChangedException;
+import org.raystack.depot.config.BigQuerySinkConfig;
+import org.raystack.depot.metrics.BigQueryMetrics;
+import org.raystack.depot.metrics.Instrumentation;
 import lombok.Getter;
 
 import java.io.FileInputStream;
@@ -41,11 +41,13 @@ public class BigQueryClient {
     private final Random random = new Random(System.currentTimeMillis());
     private final BigQueryMetrics bigqueryMetrics;
 
-    public BigQueryClient(BigQuerySinkConfig bqConfig, BigQueryMetrics bigQueryMetrics, Instrumentation instrumentation) throws IOException {
+    public BigQueryClient(BigQuerySinkConfig bqConfig, BigQueryMetrics bigQueryMetrics, Instrumentation instrumentation)
+            throws IOException {
         this(getBigQueryInstance(bqConfig), bqConfig, bigQueryMetrics, instrumentation);
     }
 
-    public BigQueryClient(BigQuery bq, BigQuerySinkConfig bqConfig, BigQueryMetrics bigQueryMetrics, Instrumentation instrumentation) {
+    public BigQueryClient(BigQuery bq, BigQuerySinkConfig bqConfig, BigQueryMetrics bigQueryMetrics,
+            Instrumentation instrumentation) {
         this.bigquery = bq;
         this.bqConfig = bqConfig;
         this.tableID = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
@@ -61,7 +63,8 @@ public class BigQueryClient {
                 .build();
         return BigQueryOptions.newBuilder()
                 .setTransportOptions(transportOptions)
-                .setCredentials(GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getBigQueryCredentialPath())))
+                .setCredentials(
+                        GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getBigQueryCredentialPath())))
                 .setProjectId(sinkConfig.getGCloudProjectID())
                 .build().getService();
     }
@@ -103,7 +106,8 @@ public class BigQueryClient {
                         instrumentation.logInfo("Waiting for " + sleepMillis + " milliseconds");
                         Thread.sleep(sleepMillis);
                     } catch (InterruptedException interruptedException) {
-                        instrumentation.captureNonFatalError(bigqueryMetrics.getErrorEventMetric(), interruptedException, "Sleep interrupted");
+                        instrumentation.captureNonFatalError(bigqueryMetrics.getErrorEventMetric(),
+                                interruptedException, "Sleep interrupted");
                     }
                 } else {
                     throw e;
@@ -120,8 +124,7 @@ public class BigQueryClient {
                     Dataset.newBuilder(tableID.getDataset())
                             .setLocation(bqConfig.getBigQueryDatasetLocation())
                             .setLabels(bqConfig.getDatasetLabels())
-                            .build()
-            );
+                            .build());
             instrumentation.logInfo("Successfully CREATED bigquery DATASET: {}", tableID.getDataset());
             instrument(start, BigQueryMetrics.BigQueryAPIType.DATASET_CREATE);
         } else if (shouldUpdateDataset(dataSet)) {
@@ -129,8 +132,7 @@ public class BigQueryClient {
             bigquery.update(
                     Dataset.newBuilder(tableID.getDataset())
                             .setLabels(bqConfig.getDatasetLabels())
-                            .build()
-            );
+                            .build());
             instrumentation.logInfo("Successfully UPDATED bigquery DATASET: {} with labels", tableID.getDataset());
             instrument(start, BigQueryMetrics.BigQueryAPIType.DATASET_UPDATE);
         }
@@ -196,8 +198,11 @@ public class BigQueryClient {
             return false;
         }
         long neverExpireMs = 0L;
-        Long currentExpirationMs = timePartitioning.getExpirationMs() == null ? neverExpireMs : timePartitioning.getExpirationMs();
-        Long newExpirationMs = bqConfig.getBigQueryTablePartitionExpiryMS() > 0 ? bqConfig.getBigQueryTablePartitionExpiryMS() : neverExpireMs;
+        Long currentExpirationMs = timePartitioning.getExpirationMs() == null ? neverExpireMs
+                : timePartitioning.getExpirationMs();
+        Long newExpirationMs = bqConfig.getBigQueryTablePartitionExpiryMS() > 0
+                ? bqConfig.getBigQueryTablePartitionExpiryMS()
+                : neverExpireMs;
         return !currentExpirationMs.equals(newExpirationMs);
     }
 

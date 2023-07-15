@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery.handler;
+package org.raystack.depot.bigquery.handler;
 
 import lombok.extern.slf4j.Slf4j;
 

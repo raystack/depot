@@ -7,24 +7,24 @@ GRPC)
 
 ## Key Features
 
-* Instrumentation support with statsd
-* Log Sink
-* Bigquery Sink
+- Instrumentation support with statsd
+- Log Sink
+- Bigquery Sink
 
 Depot is a sink connector, which acts as a bridge between data processing systems and real sink. The APIs in this
 library can be used to push data to various sinks. Common sinks implementations will be added in this repo.
 
 ## Requirements
 
-* java8 or higher
-* gradle
+- java8 or higher
+- gradle
 
 ## How to use
 
 Explore the following resources to get started
 
-* [Reference](docs/reference) contains details about configurations of metrics and various sinks
-* [Contribute](docs/contribute/contribution.md) contains resources for anyone who wants to contribute.
+- [Reference](docs/reference) contains details about configurations of metrics and various sinks
+- [Contribute](docs/contribute/contribution.md) contains resources for anyone who wants to contribute.
 
 ### Build and run tests
 
@@ -47,14 +47,14 @@ $ ./gradlew clean
 ```xml
 
 <dependency>
-    <groupId>io.odpf</groupId>
+    <groupId>org.raystack</groupId>
     <artifactId>depot</artifactId>
     <version>version</version>
 </dependency>
 ```
 
 ```sh
-implementation group: 'io.odpf', name: 'depot', version: 'version'
+implementation group: 'org.raystack', name: 'depot', version: 'version'
 ```
 
 ### Usage example:
@@ -100,4 +100,5 @@ with error list.
 Please check the docs folder for details.
 
 ## License
+
 Firehose is [Apache 2.0](LICENSE) licensed.

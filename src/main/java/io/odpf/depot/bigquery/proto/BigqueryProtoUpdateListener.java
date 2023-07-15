@@ -1,21 +1,21 @@
-package io.odpf.depot.bigquery.proto;
+package org.raystack.depot.bigquery.proto;
 
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import com.google.protobuf.Descriptors.Descriptor;
-import io.odpf.depot.bigquery.exception.BQSchemaMappingException;
-import io.odpf.depot.bigquery.exception.BQTableUpdateFailure;
-import io.odpf.depot.bigquery.client.BigQueryClient;
-import io.odpf.depot.bigquery.converter.MessageRecordConverter;
-import io.odpf.depot.bigquery.converter.MessageRecordConverterCache;
-import io.odpf.depot.common.TupleString;
-import io.odpf.depot.config.BigQuerySinkConfig;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
-import io.odpf.depot.message.proto.ProtoField;
-import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
-import io.odpf.depot.message.proto.ProtoOdpfMessageSchema;
-import io.odpf.depot.stencil.OdpfStencilUpdateListener;
+import org.raystack.depot.bigquery.exception.BQSchemaMappingException;
+import org.raystack.depot.bigquery.exception.BQTableUpdateFailure;
+import org.raystack.depot.bigquery.client.BigQueryClient;
+import org.raystack.depot.bigquery.converter.MessageRecordConverter;
+import org.raystack.depot.bigquery.converter.MessageRecordConverterCache;
+import org.raystack.depot.common.TupleString;
+import org.raystack.depot.config.BigQuerySinkConfig;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.depot.message.proto.ProtoField;
+import org.raystack.depot.message.proto.ProtoOdpfMessageParser;
+import org.raystack.depot.message.proto.ProtoOdpfMessageSchema;
+import org.raystack.depot.stencil.OdpfStencilUpdateListener;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +32,8 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
     @Getter
     private final MessageRecordConverterCache converterCache;
 
-    public BigqueryProtoUpdateListener(BigQuerySinkConfig config, BigQueryClient bqClient, MessageRecordConverterCache converterCache) {
+    public BigqueryProtoUpdateListener(BigQuerySinkConfig config, BigQueryClient bqClient,
+            MessageRecordConverterCache converterCache) {
         this.config = config;
         this.bqClient = bqClient;
         this.converterCache = converterCache;
@@ -44,19 +45,20 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
         try {
             SinkConnectorSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
             String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
-                    ? config.getSinkConnectorSchemaProtoMessageClass() : config.getSinkConnectorSchemaProtoKeyClass();
-            ProtoOdpfMessageParser odpfMessageParser = (ProtoOdpfMessageParser) getOdpfMessageParser();
+                    ? config.getSinkConnectorSchemaProtoMessageClass()
+                    : config.getSinkConnectorSchemaProtoKeyClass();
+            ProtoOdpfMessageParser raystackMessageParser = (ProtoOdpfMessageParser) getOdpfMessageParser();
             OdpfMessageSchema schema;
             if (newDescriptors == null) {
-                schema = odpfMessageParser.getSchema(schemaClass);
+                schema = raystackMessageParser.getSchema(schemaClass);
             } else {
-                schema = odpfMessageParser.getSchema(schemaClass, newDescriptors);
+                schema = raystackMessageParser.getSchema(schemaClass, newDescriptors);
             }
             ProtoField protoField = ((ProtoOdpfMessageSchema) schema).getProtoField();
             List<Field> bqSchemaFields = BigqueryFields.generateBigquerySchema(protoField);
             addMetadataFields(bqSchemaFields);
             bqClient.upsertTable(bqSchemaFields);
-            converterCache.setMessageRecordConverter(new MessageRecordConverter(odpfMessageParser, config, schema));
+            converterCache.setMessageRecordConverter(new MessageRecordConverter(raystackMessageParser, config, schema));
         } catch (BigQueryException | IOException e) {
             String errMsg = "Error while updating bigquery table on callback:" + e.getMessage();
             log.error(errMsg);
@@ -81,7 +83,8 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
             }
         }
 
-        List<String> duplicateFields = getDuplicateFields(bqSchemaFields, bqMetadataFields).stream().map(Field::getName).collect(Collectors.toList());
+        List<String> duplicateFields = getDuplicateFields(bqSchemaFields, bqMetadataFields).stream().map(Field::getName)
+                .collect(Collectors.toList());
         if (duplicateFields.size() > 0) {
             throw new BQSchemaMappingException(String.format("Metadata field(s) is already present in the schema. "
                     + "fields: %s", duplicateFields));

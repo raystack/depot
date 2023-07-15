@@ -1,10 +1,10 @@
-package io.odpf.depot.message.field.proto;
+package org.raystack.depot.message.field.proto;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
-import io.odpf.depot.message.field.FieldUtils;
-import io.odpf.depot.message.field.GenericField;
+import org.raystack.depot.message.field.FieldUtils;
+import org.raystack.depot.message.field.GenericField;
 
 public class MessageField implements GenericField {
     private static final JsonFormat.Printer JSON_PRINTER = JsonFormat.printer()

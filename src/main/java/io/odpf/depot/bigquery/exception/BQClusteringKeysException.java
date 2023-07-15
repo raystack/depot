@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery.exception;
+package org.raystack.depot.bigquery.exception;
 
 public class BQClusteringKeysException extends RuntimeException {
     public BQClusteringKeysException(String message) {

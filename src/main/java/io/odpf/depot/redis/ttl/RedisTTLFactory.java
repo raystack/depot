@@ -1,9 +1,8 @@
-package io.odpf.depot.redis.ttl;
+package org.raystack.depot.redis.ttl;
 
-
-import io.odpf.depot.config.RedisSinkConfig;
-import io.odpf.depot.exception.ConfigurationException;
-import io.odpf.depot.redis.enums.RedisSinkTtlType;
+import org.raystack.depot.config.RedisSinkConfig;
+import org.raystack.depot.exception.ConfigurationException;
+import org.raystack.depot.redis.enums.RedisSinkTtlType;
 
 public class RedisTTLFactory {
 

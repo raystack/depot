@@ -1,6 +1,6 @@
-package io.odpf.depot.message.field.proto;
+package org.raystack.depot.message.field.proto;
 
-import io.odpf.depot.message.field.GenericField;
+import org.raystack.depot.message.field.GenericField;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -32,7 +32,8 @@ public class DefaultFieldTest {
         tss.add(Instant.ofEpochSecond(1002121010));
         tss.add(Instant.ofEpochSecond(1003121010));
         f = new TimeStampField(tss);
-        Assert.assertEquals("[\"2001-09-10T11:23:30Z\",\"2001-10-03T14:56:50Z\",\"2001-10-15T04:43:30Z\"]", f.getString());
+        Assert.assertEquals("[\"2001-09-10T11:23:30Z\",\"2001-10-03T14:56:50Z\",\"2001-10-15T04:43:30Z\"]",
+                f.getString());
 
         List<Boolean> booleanList = new ArrayList<>();
         booleanList.add(true);

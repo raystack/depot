@@ -1,6 +1,6 @@
-package io.odpf.depot.utils;
+package org.raystack.depot.utils;
 
-import io.odpf.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.OdpfSinkConfig;
 import org.json.JSONObject;
 
 public class JsonUtils {

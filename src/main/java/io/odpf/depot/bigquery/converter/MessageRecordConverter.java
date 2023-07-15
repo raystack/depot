@@ -1,18 +1,18 @@
-package io.odpf.depot.bigquery.converter;
+package org.raystack.depot.bigquery.converter;
 
-import io.odpf.depot.bigquery.models.Record;
-import io.odpf.depot.bigquery.models.Records;
-import io.odpf.depot.config.BigQuerySinkConfig;
-import io.odpf.depot.error.ErrorInfo;
-import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.exception.DeserializerException;
-import io.odpf.depot.exception.EmptyMessageException;
-import io.odpf.depot.exception.UnknownFieldsException;
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.depot.bigquery.models.Record;
+import org.raystack.depot.bigquery.models.Records;
+import org.raystack.depot.config.BigQuerySinkConfig;
+import org.raystack.depot.error.ErrorInfo;
+import org.raystack.depot.error.ErrorType;
+import org.raystack.depot.exception.DeserializerException;
+import org.raystack.depot.exception.EmptyMessageException;
+import org.raystack.depot.exception.UnknownFieldsException;
+import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.message.OdpfMessageParser;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,7 +28,6 @@ public class MessageRecordConverter {
     private final OdpfMessageParser parser;
     private final BigQuerySinkConfig config;
     private final OdpfMessageSchema schema;
-
 
     public Records convert(List<OdpfMessage> messages) {
         ArrayList<Record> validRecords = new ArrayList<>();
@@ -56,7 +55,8 @@ public class MessageRecordConverter {
         try {
             SinkConnectorSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
             String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
-                    ? config.getSinkConnectorSchemaProtoMessageClass() : config.getSinkConnectorSchemaProtoKeyClass();
+                    ? config.getSinkConnectorSchemaProtoMessageClass()
+                    : config.getSinkConnectorSchemaProtoKeyClass();
             ParsedOdpfMessage parsedOdpfMessage = parser.parse(message, mode, schemaClass);
             parsedOdpfMessage.validate(config);
             Map<String, Object> columns = parsedOdpfMessage.getMapping(schema);

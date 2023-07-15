@@ -1,24 +1,24 @@
-package io.odpf.depot.bigtable;
+package org.raystack.depot.bigtable;
 
 import com.timgroup.statsd.NoOpStatsDClient;
-import io.odpf.depot.OdpfSink;
-import io.odpf.depot.bigtable.client.BigTableClient;
-import io.odpf.depot.bigtable.model.BigTableSchema;
-import io.odpf.depot.bigtable.parser.BigTableRecordParser;
-import io.odpf.depot.bigtable.parser.BigTableRowKeyParser;
-import io.odpf.depot.common.Template;
-import io.odpf.depot.common.Tuple;
-import io.odpf.depot.config.BigTableSinkConfig;
-import io.odpf.depot.exception.ConfigurationException;
-import io.odpf.depot.exception.InvalidTemplateException;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.message.OdpfMessageParserFactory;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
-import io.odpf.depot.metrics.BigTableMetrics;
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.utils.MessageConfigUtils;
+import org.raystack.depot.OdpfSink;
+import org.raystack.depot.bigtable.client.BigTableClient;
+import org.raystack.depot.bigtable.model.BigTableSchema;
+import org.raystack.depot.bigtable.parser.BigTableRecordParser;
+import org.raystack.depot.bigtable.parser.BigTableRowKeyParser;
+import org.raystack.depot.common.Template;
+import org.raystack.depot.common.Tuple;
+import org.raystack.depot.config.BigTableSinkConfig;
+import org.raystack.depot.exception.ConfigurationException;
+import org.raystack.depot.exception.InvalidTemplateException;
+import org.raystack.depot.message.OdpfMessageParser;
+import org.raystack.depot.message.OdpfMessageParserFactory;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.depot.metrics.BigTableMetrics;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.metrics.StatsDReporter;
+import org.raystack.depot.utils.MessageConfigUtils;
 
 import java.io.IOException;
 
@@ -38,11 +38,11 @@ public class BigTableSinkFactory {
         this(sinkConfig, new StatsDReporter(new NoOpStatsDClient()));
     }
 
-
     public void init() {
         try {
             Instrumentation instrumentation = new Instrumentation(statsDReporter, BigTableSinkFactory.class);
-            String bigtableConfig = String.format("\n\tbigtable.gcloud.project = %s\n\tbigtable.instance = %s\n\tbigtable.table = %s"
+            String bigtableConfig = String.format(
+                    "\n\tbigtable.gcloud.project = %s\n\tbigtable.instance = %s\n\tbigtable.table = %s"
                             + "\n\tbigtable.credential.path = %s\n\tbigtable.row.key.template = %s\n\tbigtable.column.family.mapping = %s\n\t",
                     sinkConfig.getGCloudProjectID(),
                     sinkConfig.getInstanceId(),
@@ -54,17 +54,19 @@ public class BigTableSinkFactory {
             instrumentation.logInfo(bigtableConfig);
             BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
             bigtableMetrics = new BigTableMetrics(sinkConfig);
-            bigTableClient = new BigTableClient(sinkConfig, bigtableSchema, bigtableMetrics, new Instrumentation(statsDReporter, BigTableClient.class));
+            bigTableClient = new BigTableClient(sinkConfig, bigtableSchema, bigtableMetrics,
+                    new Instrumentation(statsDReporter, BigTableClient.class));
             bigTableClient.validateBigTableSchema();
 
-            Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
-            OdpfMessageParser odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
-            OdpfMessageSchema schema = odpfMessageParser.getSchema(modeAndSchema.getSecond());
+            Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils
+                    .getModeAndSchema(sinkConfig);
+            OdpfMessageParser raystackMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
+            OdpfMessageSchema schema = raystackMessageParser.getSchema(modeAndSchema.getSecond());
 
             Template keyTemplate = new Template(sinkConfig.getRowKeyTemplate());
             BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(keyTemplate, schema);
             bigTableRecordParser = new BigTableRecordParser(
-                    odpfMessageParser,
+                    raystackMessageParser,
                     bigTableRowKeyParser,
                     modeAndSchema,
                     schema,

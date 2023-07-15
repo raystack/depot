@@ -1,6 +1,6 @@
-package io.odpf.depot.bigquery.models;
+package org.raystack.depot.bigquery.models;
 
-import io.odpf.depot.error.ErrorInfo;
+import org.raystack.depot.error.ErrorInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

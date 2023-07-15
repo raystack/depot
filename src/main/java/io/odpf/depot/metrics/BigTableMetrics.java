@@ -1,6 +1,6 @@
-package io.odpf.depot.metrics;
+package org.raystack.depot.metrics;
 
-import io.odpf.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.OdpfSinkConfig;
 
 public class BigTableMetrics extends SinkMetrics {
 
@@ -12,7 +12,6 @@ public class BigTableMetrics extends SinkMetrics {
     public BigTableMetrics(OdpfSinkConfig config) {
         super(config);
     }
-
 
     public enum BigTableErrorType {
         QUOTA_FAILURE, // A quota check failed.

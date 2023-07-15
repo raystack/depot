@@ -1,7 +1,7 @@
-package io.odpf.depot.redis.parsers;
+package org.raystack.depot.redis.parsers;
 
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.redis.client.entry.RedisEntry;
+import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.redis.client.entry.RedisEntry;
 
 import java.util.List;
 

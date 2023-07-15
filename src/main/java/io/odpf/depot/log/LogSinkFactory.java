@@ -1,12 +1,12 @@
-package io.odpf.depot.log;
+package org.raystack.depot.log;
 
 import com.timgroup.statsd.NoOpStatsDClient;
-import io.odpf.depot.message.OdpfMessageParserFactory;
-import io.odpf.depot.OdpfSink;
-import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.metrics.StatsDReporter;
+import org.raystack.depot.message.OdpfMessageParserFactory;
+import org.raystack.depot.OdpfSink;
+import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.message.OdpfMessageParser;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.metrics.StatsDReporter;
 import org.aeonbits.owner.ConfigFactory;
 
 import java.util.Map;
@@ -14,7 +14,7 @@ import java.util.Map;
 public class LogSinkFactory {
 
     private final StatsDReporter statsDReporter;
-    private OdpfMessageParser odpfMessageParser;
+    private OdpfMessageParser raystackMessageParser;
     private final OdpfSinkConfig sinkConfig;
 
     public LogSinkFactory(Map<String, String> env, StatsDReporter statsDReporter) {
@@ -31,10 +31,10 @@ public class LogSinkFactory {
     }
 
     public void init() {
-        this.odpfMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
+        this.raystackMessageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
     }
 
     public OdpfSink create() {
-        return new LogSink(sinkConfig, odpfMessageParser, new Instrumentation(statsDReporter, LogSink.class));
+        return new LogSink(sinkConfig, raystackMessageParser, new Instrumentation(statsDReporter, LogSink.class));
     }
 }

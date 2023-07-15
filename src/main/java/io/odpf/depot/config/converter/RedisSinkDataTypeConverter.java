@@ -1,6 +1,6 @@
-package io.odpf.depot.config.converter;
+package org.raystack.depot.config.converter;
 
-import io.odpf.depot.redis.enums.RedisSinkDataType;
+import org.raystack.depot.redis.enums.RedisSinkDataType;
 import org.aeonbits.owner.Converter;
 
 import java.lang.reflect.Method;

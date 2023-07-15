@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery.error;
+package org.raystack.depot.bigquery.error;
 
 import lombok.AllArgsConstructor;
 
@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
  * or an invalid table schema.
  *
  * https://cloud.google.com/bigquery/docs/error-messages
- * */
+ */
 public class InvalidSchemaError implements ErrorDescriptor {
 
     private final String reason;

@@ -1,10 +1,9 @@
-package io.odpf.depot.config.converter;
+package org.raystack.depot.config.converter;
 
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-
 
 public class SinkConnectorSchemaMessageModeConverterTest {
 
@@ -15,13 +14,13 @@ public class SinkConnectorSchemaMessageModeConverterTest {
         Assert.assertEquals(SinkConnectorSchemaMessageMode.LOG_KEY, mode);
     }
 
-
     @Test
     public void shouldThrowException() {
         SinkConnectorSchemaMessageModeConverter converter = new SinkConnectorSchemaMessageModeConverter();
         Exception exception = Assertions.assertThrows(RuntimeException.class, () -> {
             converter.convert(null, "Invalid");
         });
-        Assert.assertEquals("No enum constant io.odpf.depot.message.SinkConnectorSchemaMessageMode.INVALID", exception.getMessage());
+        Assert.assertEquals("No enum constant org.raystack.depot.message.SinkConnectorSchemaMessageMode.INVALID",
+                exception.getMessage());
     }
 }

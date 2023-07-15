@@ -1,23 +1,23 @@
-package io.odpf.depot.bigquery;
+package org.raystack.depot.bigquery;
 
 import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.TableId;
-import io.odpf.depot.metrics.BigQueryMetrics;
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.OdpfSinkResponse;
-import io.odpf.depot.bigquery.client.BigQueryClient;
-import io.odpf.depot.bigquery.client.BigQueryRow;
-import io.odpf.depot.bigquery.client.BigQueryRowWithInsertId;
-import io.odpf.depot.bigquery.handler.ErrorHandler;
-import io.odpf.depot.bigquery.converter.MessageRecordConverter;
-import io.odpf.depot.bigquery.converter.MessageRecordConverterCache;
-import io.odpf.depot.bigquery.models.Record;
-import io.odpf.depot.bigquery.models.Records;
-import io.odpf.depot.error.ErrorInfo;
-import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.message.OdpfMessage;
+import org.raystack.depot.metrics.BigQueryMetrics;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.OdpfSinkResponse;
+import org.raystack.depot.bigquery.client.BigQueryClient;
+import org.raystack.depot.bigquery.client.BigQueryRow;
+import org.raystack.depot.bigquery.client.BigQueryRowWithInsertId;
+import org.raystack.depot.bigquery.handler.ErrorHandler;
+import org.raystack.depot.bigquery.converter.MessageRecordConverter;
+import org.raystack.depot.bigquery.converter.MessageRecordConverterCache;
+import org.raystack.depot.bigquery.models.Record;
+import org.raystack.depot.bigquery.models.Records;
+import org.raystack.depot.error.ErrorInfo;
+import org.raystack.depot.error.ErrorType;
+import org.raystack.depot.message.OdpfMessage;
 import org.aeonbits.owner.util.Collections;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,13 +31,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class BigQuerySinkTest {
 
     private final TableId tableId = TableId.of("test_dataset", "test_table");
     private final MessageRecordConverterCache converterCache = new MessageRecordConverterCache();
     private final BigQueryRow rowCreator = new BigQueryRowWithInsertId(
-            metadata -> metadata.get("topic") + "_" + metadata.get("partition") + "_" + metadata.get("offset") + "_" + metadata.get("timestamp"));
+            metadata -> metadata.get("topic") + "_" + metadata.get("partition") + "_" + metadata.get("offset") + "_"
+                    + metadata.get("timestamp"));
     @Mock
     private BigQueryClient client;
     @Mock
@@ -63,18 +63,30 @@ public class BigQuerySinkTest {
 
     @Test
     public void shouldPushToBigQuerySink() {
-        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record3Offset = new TestMetadata("topic1", 3, 103, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record4Offset = new TestMetadata("topic1", 4, 104, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record5Offset = new TestMetadata("topic1", 5, 104, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record6Offset = new TestMetadata("topic1", 6, 104, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        OdpfMessage message1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
-        OdpfMessage message2 = TestOdpfMessageBuilder.withMetadata(record2Offset).createConsumerRecord("order-2", "order-url-2", "order-details-2");
-        OdpfMessage message3 = TestOdpfMessageBuilder.withMetadata(record3Offset).createConsumerRecord("order-3", "order-url-3", "order-details-3");
-        OdpfMessage message4 = TestOdpfMessageBuilder.withMetadata(record4Offset).createConsumerRecord("order-4", "order-url-4", "order-details-4");
-        OdpfMessage message5 = TestOdpfMessageBuilder.withMetadata(record5Offset).createConsumerRecord("order-5", "order-url-5", "order-details-5");
-        OdpfMessage message6 = TestOdpfMessageBuilder.withMetadata(record6Offset).createConsumerRecord("order-6", "order-url-6", "order-details-6");
+        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record3Offset = new TestMetadata("topic1", 3, 103, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record4Offset = new TestMetadata("topic1", 4, 104, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record5Offset = new TestMetadata("topic1", 5, 104, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record6Offset = new TestMetadata("topic1", 6, 104, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        OdpfMessage message1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
+                "order-url-1", "order-details-1");
+        OdpfMessage message2 = TestOdpfMessageBuilder.withMetadata(record2Offset).createConsumerRecord("order-2",
+                "order-url-2", "order-details-2");
+        OdpfMessage message3 = TestOdpfMessageBuilder.withMetadata(record3Offset).createConsumerRecord("order-3",
+                "order-url-3", "order-details-3");
+        OdpfMessage message4 = TestOdpfMessageBuilder.withMetadata(record4Offset).createConsumerRecord("order-4",
+                "order-url-4", "order-details-4");
+        OdpfMessage message5 = TestOdpfMessageBuilder.withMetadata(record5Offset).createConsumerRecord("order-5",
+                "order-url-5", "order-details-5");
+        OdpfMessage message6 = TestOdpfMessageBuilder.withMetadata(record6Offset).createConsumerRecord("order-6",
+                "order-url-6", "order-details-6");
         List<OdpfMessage> messages = Collections.list(message1, message2, message3, message4, message5, message6);
         Record record1 = new Record(message1.getMetadata(), new HashMap<>(), 0, null);
         Record record2 = new Record(message2.getMetadata(), new HashMap<>(), 1, null);
@@ -82,7 +94,8 @@ public class BigQuerySinkTest {
         Record record4 = new Record(message4.getMetadata(), new HashMap<>(), 3, null);
         Record record5 = new Record(message5.getMetadata(), new HashMap<>(), 4, null);
         Record record6 = new Record(message6.getMetadata(), new HashMap<>(), 5, null);
-        Records records = new Records(Collections.list(record1, record2, record3, record4, record5, record6), java.util.Collections.emptyList());
+        Records records = new Records(Collections.list(record1, record2, record3, record4, record5, record6),
+                java.util.Collections.emptyList());
 
         InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(client.getTableID());
         records.getValidRecords().forEach((Record m) -> builder.addRow(rowCreator.of(m)));
@@ -97,26 +110,41 @@ public class BigQuerySinkTest {
 
     @Test
     public void shouldReturnInvalidMessages() throws Exception {
-        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record3Offset = new TestMetadata("topic1", 3, 103, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record4Offset = new TestMetadata("topic1", 4, 104, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record5Offset = new TestMetadata("topic1", 5, 104, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record6Offset = new TestMetadata("topic1", 6, 104, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        OdpfMessage message1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
-        OdpfMessage message2 = TestOdpfMessageBuilder.withMetadata(record2Offset).createConsumerRecord("order-2", "order-url-2", "order-details-2");
-        OdpfMessage message3 = TestOdpfMessageBuilder.withMetadata(record3Offset).createConsumerRecord("order-3", "order-url-3", "order-details-3");
-        OdpfMessage message4 = TestOdpfMessageBuilder.withMetadata(record4Offset).createConsumerRecord("order-4", "order-url-4", "order-details-4");
-        OdpfMessage message5 = TestOdpfMessageBuilder.withMetadata(record5Offset).createConsumerRecord("order-5", "order-url-5", "order-details-5");
-        OdpfMessage message6 = TestOdpfMessageBuilder.withMetadata(record6Offset).createConsumerRecord("order-6", "order-url-6", "order-details-6");
+        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record3Offset = new TestMetadata("topic1", 3, 103, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record4Offset = new TestMetadata("topic1", 4, 104, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record5Offset = new TestMetadata("topic1", 5, 104, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record6Offset = new TestMetadata("topic1", 6, 104, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        OdpfMessage message1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
+                "order-url-1", "order-details-1");
+        OdpfMessage message2 = TestOdpfMessageBuilder.withMetadata(record2Offset).createConsumerRecord("order-2",
+                "order-url-2", "order-details-2");
+        OdpfMessage message3 = TestOdpfMessageBuilder.withMetadata(record3Offset).createConsumerRecord("order-3",
+                "order-url-3", "order-details-3");
+        OdpfMessage message4 = TestOdpfMessageBuilder.withMetadata(record4Offset).createConsumerRecord("order-4",
+                "order-url-4", "order-details-4");
+        OdpfMessage message5 = TestOdpfMessageBuilder.withMetadata(record5Offset).createConsumerRecord("order-5",
+                "order-url-5", "order-details-5");
+        OdpfMessage message6 = TestOdpfMessageBuilder.withMetadata(record6Offset).createConsumerRecord("order-6",
+                "order-url-6", "order-details-6");
         List<OdpfMessage> messages = Collections.list(message1, message2, message3, message4, message5, message6);
         Record record1 = new Record(message1.getMetadata(), new HashMap<>(), 0, null);
-        Record record2 = new Record(message2.getMetadata(), new HashMap<>(), 1, new ErrorInfo(new RuntimeException(), ErrorType.DEFAULT_ERROR));
+        Record record2 = new Record(message2.getMetadata(), new HashMap<>(), 1,
+                new ErrorInfo(new RuntimeException(), ErrorType.DEFAULT_ERROR));
         Record record3 = new Record(message3.getMetadata(), new HashMap<>(), 2, null);
-        Record record4 = new Record(message4.getMetadata(), new HashMap<>(), 3, new ErrorInfo(new RuntimeException(), ErrorType.INVALID_MESSAGE_ERROR));
+        Record record4 = new Record(message4.getMetadata(), new HashMap<>(), 3,
+                new ErrorInfo(new RuntimeException(), ErrorType.INVALID_MESSAGE_ERROR));
         Record record5 = new Record(message5.getMetadata(), new HashMap<>(), 4, null);
         Record record6 = new Record(message6.getMetadata(), new HashMap<>(), 5, null);
-        Records records = new Records(Collections.list(record1, record3, record5, record6), Collections.list(record2, record4));
+        Records records = new Records(Collections.list(record1, record3, record5, record6),
+                Collections.list(record2, record4));
 
         InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(client.getTableID());
         records.getValidRecords().forEach((Record m) -> builder.addRow(rowCreator.of(m)));
@@ -134,26 +162,41 @@ public class BigQuerySinkTest {
 
     @Test
     public void shouldReturnInvalidMessagesWithFailedInsertMessages() throws Exception {
-        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record3Offset = new TestMetadata("topic1", 3, 103, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record4Offset = new TestMetadata("topic1", 4, 104, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record5Offset = new TestMetadata("topic1", 5, 104, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        TestMetadata record6Offset = new TestMetadata("topic1", 6, 104, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
-        OdpfMessage message1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
-        OdpfMessage message2 = TestOdpfMessageBuilder.withMetadata(record2Offset).createConsumerRecord("order-2", "order-url-2", "order-details-2");
-        OdpfMessage message3 = TestOdpfMessageBuilder.withMetadata(record3Offset).createConsumerRecord("order-3", "order-url-3", "order-details-3");
-        OdpfMessage message4 = TestOdpfMessageBuilder.withMetadata(record4Offset).createConsumerRecord("order-4", "order-url-4", "order-details-4");
-        OdpfMessage message5 = TestOdpfMessageBuilder.withMetadata(record5Offset).createConsumerRecord("order-5", "order-url-5", "order-details-5");
-        OdpfMessage message6 = TestOdpfMessageBuilder.withMetadata(record6Offset).createConsumerRecord("order-6", "order-url-6", "order-details-6");
+        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record3Offset = new TestMetadata("topic1", 3, 103, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record4Offset = new TestMetadata("topic1", 4, 104, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record5Offset = new TestMetadata("topic1", 5, 104, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        TestMetadata record6Offset = new TestMetadata("topic1", 6, 104, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
+        OdpfMessage message1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
+                "order-url-1", "order-details-1");
+        OdpfMessage message2 = TestOdpfMessageBuilder.withMetadata(record2Offset).createConsumerRecord("order-2",
+                "order-url-2", "order-details-2");
+        OdpfMessage message3 = TestOdpfMessageBuilder.withMetadata(record3Offset).createConsumerRecord("order-3",
+                "order-url-3", "order-details-3");
+        OdpfMessage message4 = TestOdpfMessageBuilder.withMetadata(record4Offset).createConsumerRecord("order-4",
+                "order-url-4", "order-details-4");
+        OdpfMessage message5 = TestOdpfMessageBuilder.withMetadata(record5Offset).createConsumerRecord("order-5",
+                "order-url-5", "order-details-5");
+        OdpfMessage message6 = TestOdpfMessageBuilder.withMetadata(record6Offset).createConsumerRecord("order-6",
+                "order-url-6", "order-details-6");
         List<OdpfMessage> messages = Collections.list(message1, message2, message3, message4, message5, message6);
         Record record1 = new Record(message1.getMetadata(), new HashMap<>(), 0, null);
-        Record record2 = new Record(message2.getMetadata(), new HashMap<>(), 1, new ErrorInfo(new RuntimeException(), ErrorType.DEFAULT_ERROR));
+        Record record2 = new Record(message2.getMetadata(), new HashMap<>(), 1,
+                new ErrorInfo(new RuntimeException(), ErrorType.DEFAULT_ERROR));
         Record record3 = new Record(message3.getMetadata(), new HashMap<>(), 2, null);
-        Record record4 = new Record(message4.getMetadata(), new HashMap<>(), 3, new ErrorInfo(new RuntimeException(), ErrorType.INVALID_MESSAGE_ERROR));
+        Record record4 = new Record(message4.getMetadata(), new HashMap<>(), 3,
+                new ErrorInfo(new RuntimeException(), ErrorType.INVALID_MESSAGE_ERROR));
         Record record5 = new Record(message5.getMetadata(), new HashMap<>(), 4, null);
         Record record6 = new Record(message6.getMetadata(), new HashMap<>(), 5, null);
-        Records records = new Records(Collections.list(record1, record3, record5, record6), Collections.list(record2, record4));
+        Records records = new Records(Collections.list(record1, record3, record5, record6),
+                Collections.list(record2, record4));
 
         InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(client.getTableID());
         records.getValidRecords().forEach((Record m) -> builder.addRow(rowCreator.of(m)));
@@ -163,12 +206,15 @@ public class BigQuerySinkTest {
         Mockito.when(insertAllResponse.hasErrors()).thenReturn(true);
 
         BigQueryError error1 = new BigQueryError("", "US", "");
-        BigQueryError error3 = new BigQueryError("invalid", "", "The destination table's partition tmp$20160101 is outside the allowed bounds. You can only stream to partitions within 1825 days in the past and 366 days in the future relative to the current date");
+        BigQueryError error3 = new BigQueryError("invalid", "",
+                "The destination table's partition tmp$20160101 is outside the allowed bounds. You can only stream to partitions within 1825 days in the past and 366 days in the future relative to the current date");
 
-        Map<Long, List<BigQueryError>> insertErrorsMap = new HashMap<Long, List<BigQueryError>>() {{
-            put(0L, Collections.list(error1));
-            put(2L, Collections.list(error3));
-        }};
+        Map<Long, List<BigQueryError>> insertErrorsMap = new HashMap<Long, List<BigQueryError>>() {
+            {
+                put(0L, Collections.list(error1));
+                put(2L, Collections.list(error3));
+            }
+        };
         Mockito.when(insertAllResponse.getInsertErrors()).thenReturn(insertErrorsMap);
 
         OdpfSinkResponse response = sink.pushToSink(messages);

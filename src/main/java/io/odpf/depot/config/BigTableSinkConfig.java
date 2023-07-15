@@ -1,4 +1,4 @@
-package io.odpf.depot.config;
+package org.raystack.depot.config;
 
 import org.aeonbits.owner.Config;
 

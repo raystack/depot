@@ -1,4 +1,4 @@
-package io.odpf.depot.exception;
+package org.raystack.depot.exception;
 
 /**
  * Empty thrown when the message is contains zero bytes.
@@ -8,4 +8,3 @@ public class EmptyMessageException extends DeserializerException {
         super("log message is empty");
     }
 }
-

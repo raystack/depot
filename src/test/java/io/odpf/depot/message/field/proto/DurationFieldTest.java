@@ -1,4 +1,4 @@
-package io.odpf.depot.message.field.proto;
+package org.raystack.depot.message.field.proto;
 
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;

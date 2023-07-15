@@ -1,9 +1,9 @@
-package io.odpf.depot.redis.client.entry;
+package org.raystack.depot.redis.client.entry;
 
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.redis.client.response.RedisClusterResponse;
-import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
-import io.odpf.depot.redis.ttl.RedisTtl;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.redis.client.response.RedisClusterResponse;
+import org.raystack.depot.redis.client.response.RedisStandaloneResponse;
+import org.raystack.depot.redis.ttl.RedisTtl;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import redis.clients.jedis.JedisCluster;

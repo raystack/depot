@@ -1,6 +1,6 @@
-package io.odpf.depot.config.converter;
+package org.raystack.depot.config.converter;
 
-import io.odpf.depot.common.Tuple;
+import org.raystack.depot.common.Tuple;
 import org.aeonbits.owner.Converter;
 
 import java.lang.reflect.Method;
@@ -15,4 +15,3 @@ public class LabelMapConverter implements Converter<Map<String, String>> {
         return listResult.stream().collect(Collectors.toMap(Tuple::getFirst, Tuple::getSecond));
     }
 }
-

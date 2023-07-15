@@ -1,10 +1,10 @@
-package io.odpf.depot.message.proto.converter.fields;
+package org.raystack.depot.message.proto.converter.fields;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
-import io.odpf.depot.TestDurationMessage;
+import org.raystack.depot.TestDurationMessage;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,7 +27,8 @@ public class TimestampProtoFieldTest {
                         .build())
                 .build();
         DynamicMessage dynamicMessage = DynamicMessage.parseFrom(message.getDescriptorForType(), message.toByteArray());
-        Descriptors.FieldDescriptor fieldDescriptor = dynamicMessage.getDescriptorForType().findFieldByName("event_timestamp");
+        Descriptors.FieldDescriptor fieldDescriptor = dynamicMessage.getDescriptorForType()
+                .findFieldByName("event_timestamp");
         timestampProtoField = new TimestampProtoField(fieldDescriptor, dynamicMessage.getField(fieldDescriptor));
     }
 

@@ -1,6 +1,6 @@
-package io.odpf.depot.message;
+package org.raystack.depot.message;
 
-import io.odpf.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.OdpfSinkConfig;
 
 import java.io.IOException;
 import java.util.Map;
@@ -12,5 +12,5 @@ public interface ParsedOdpfMessage {
 
     Map<String, Object> getMapping(OdpfMessageSchema schema) throws IOException;
 
-    Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema);
+    Object getFieldByName(String name, OdpfMessageSchema raystackMessageSchema);
 }

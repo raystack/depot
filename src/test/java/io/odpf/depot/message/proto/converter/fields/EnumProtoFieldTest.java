@@ -1,10 +1,10 @@
-package io.odpf.depot.message.proto.converter.fields;
+package org.raystack.depot.message.proto.converter.fields;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
-import io.odpf.depot.TestEnumMessage;
-import io.odpf.depot.TestStatus;
+import org.raystack.depot.TestEnumMessage;
+import org.raystack.depot.TestStatus;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,8 +20,10 @@ public class EnumProtoFieldTest {
     @Before
     public void setUp() throws Exception {
         TestEnumMessage testEnumMessage = TestEnumMessage.newBuilder().setLastStatus(TestStatus.Enum.CREATED).build();
-        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(testEnumMessage.getDescriptorForType(), testEnumMessage.toByteArray());
-        Descriptors.FieldDescriptor fieldDescriptor = dynamicMessage.getDescriptorForType().findFieldByName("last_status");
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(testEnumMessage.getDescriptorForType(),
+                testEnumMessage.toByteArray());
+        Descriptors.FieldDescriptor fieldDescriptor = dynamicMessage.getDescriptorForType()
+                .findFieldByName("last_status");
         enumProtoField = new EnumProtoField(fieldDescriptor, dynamicMessage.getField(fieldDescriptor));
     }
 
@@ -37,8 +39,10 @@ public class EnumProtoFieldTest {
                 .addStatusHistory(TestStatus.Enum.CREATED)
                 .addStatusHistory(TestStatus.Enum.IN_PROGRESS)
                 .build();
-        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(testEnumMessage.getDescriptorForType(), testEnumMessage.toByteArray());
-        Descriptors.FieldDescriptor fieldDescriptor = dynamicMessage.getDescriptorForType().findFieldByName("status_history");
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(testEnumMessage.getDescriptorForType(),
+                testEnumMessage.toByteArray());
+        Descriptors.FieldDescriptor fieldDescriptor = dynamicMessage.getDescriptorForType()
+                .findFieldByName("status_history");
         enumProtoField = new EnumProtoField(fieldDescriptor, dynamicMessage.getField(fieldDescriptor));
         Object fieldValue = enumProtoField.getValue();
 

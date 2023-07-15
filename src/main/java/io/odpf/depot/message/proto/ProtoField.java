@@ -1,4 +1,4 @@
-package io.odpf.depot.message.proto;
+package org.raystack.depot.message.proto;
 
 import com.google.protobuf.DescriptorProtos;
 import lombok.EqualsAndHashCode;
@@ -20,7 +20,8 @@ public class ProtoField {
         this.fields = new ArrayList<>();
     }
 
-    public ProtoField(String name, String typeName, DescriptorProtos.FieldDescriptorProto.Type type, DescriptorProtos.FieldDescriptorProto.Label label, List<ProtoField> fields, int index) {
+    public ProtoField(String name, String typeName, DescriptorProtos.FieldDescriptorProto.Type type,
+            DescriptorProtos.FieldDescriptorProto.Label label, List<ProtoField> fields, int index) {
         this.name = name;
         this.typeName = typeName;
         this.type = type;

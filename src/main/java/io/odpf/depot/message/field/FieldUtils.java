@@ -1,4 +1,4 @@
-package io.odpf.depot.message.field;
+package org.raystack.depot.message.field;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -21,7 +21,8 @@ public class FieldUtils {
     }
 
     /**
-     * This method is used to convert default types which string formats are not in json.
+     * This method is used to convert default types which string formats are not in
+     * json.
      * for example: a list of doubles, strings, enum etc.
      */
     public static String convertToString(Object value) {

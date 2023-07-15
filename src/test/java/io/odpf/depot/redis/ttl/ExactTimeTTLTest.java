@@ -1,4 +1,4 @@
-package io.odpf.depot.redis.ttl;
+package org.raystack.depot.redis.ttl;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +10,7 @@ import redis.clients.jedis.Pipeline;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
 @RunWith(MockitoJUnitRunner.class)
 public class ExactTimeTTLTest {
 

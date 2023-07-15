@@ -1,8 +1,8 @@
-package io.odpf.depot.message.field.proto;
+package org.raystack.depot.message.field.proto;
 
 import com.google.protobuf.Message;
-import io.odpf.depot.message.field.FieldUtils;
-import io.odpf.depot.message.field.GenericField;
+import org.raystack.depot.message.field.FieldUtils;
+import org.raystack.depot.message.field.GenericField;
 
 import java.time.Instant;
 

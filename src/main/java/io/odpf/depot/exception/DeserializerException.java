@@ -1,7 +1,8 @@
-package io.odpf.depot.exception;
+package org.raystack.depot.exception;
 
 /**
- * Deserializer exception is thrown when message from proto is not deserializable into the Java object.
+ * Deserializer exception is thrown when message from proto is not
+ * deserializable into the Java object.
  */
 public class DeserializerException extends RuntimeException {
 

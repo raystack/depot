@@ -1,20 +1,20 @@
-package io.odpf.depot.message.proto;
+package org.raystack.depot.message.proto;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.Preconditions;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.depot.common.Tuple;
-import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.exception.ConfigurationException;
-import io.odpf.depot.exception.UnknownFieldsException;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.proto.converter.fields.DurationProtoField;
-import io.odpf.depot.message.proto.converter.fields.MessageProtoField;
-import io.odpf.depot.message.proto.converter.fields.ProtoField;
-import io.odpf.depot.message.proto.converter.fields.ProtoFieldFactory;
-import io.odpf.depot.utils.ProtoUtils;
+import org.raystack.depot.common.Tuple;
+import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.exception.ConfigurationException;
+import org.raystack.depot.exception.UnknownFieldsException;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.proto.converter.fields.DurationProtoField;
+import org.raystack.depot.message.proto.converter.fields.MessageProtoField;
+import org.raystack.depot.message.proto.converter.fields.ProtoField;
+import org.raystack.depot.message.proto.converter.fields.ProtoFieldFactory;
+import org.raystack.depot.utils.ProtoUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
@@ -45,7 +45,8 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
 
     @Override
     public void validate(OdpfSinkConfig config) {
-        if (!config.getSinkConnectorSchemaProtoAllowUnknownFieldsEnable() && ProtoUtils.hasUnknownField(dynamicMessage)) {
+        if (!config.getSinkConnectorSchemaProtoAllowUnknownFieldsEnable()
+                && ProtoUtils.hasUnknownField(dynamicMessage)) {
             log.error("Unknown fields {}", UnknownProtoFields.toString(dynamicMessage.toByteArray()));
             throw new UnknownFieldsException(dynamicMessage);
         }
@@ -149,8 +150,7 @@ public class ProtoOdpfParsedMessage implements ParsedOdpfMessage {
         row.put(columnName, repeatedNestedFields);
     }
 
-
-    public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
+    public Object getFieldByName(String name, OdpfMessageSchema raystackMessageSchema) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }

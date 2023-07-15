@@ -1,19 +1,19 @@
-package io.odpf.depot.message.json;
+package org.raystack.depot.message.json;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
-import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.exception.ConfigurationException;
-import io.odpf.depot.exception.EmptyMessageException;
-import io.odpf.depot.message.MessageUtils;
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.metrics.JsonParserMetrics;
-import io.odpf.depot.utils.JsonUtils;
+import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.exception.ConfigurationException;
+import org.raystack.depot.exception.EmptyMessageException;
+import org.raystack.depot.message.MessageUtils;
+import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.message.OdpfMessageParser;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.metrics.JsonParserMetrics;
+import org.raystack.depot.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +31,8 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
             .jsonProvider(new JsonOrgJsonProvider())
             .build();
 
-    public JsonOdpfMessageParser(OdpfSinkConfig config, Instrumentation instrumentation, JsonParserMetrics jsonParserMetrics) {
+    public JsonOdpfMessageParser(OdpfSinkConfig config, Instrumentation instrumentation,
+            JsonParserMetrics jsonParserMetrics) {
         this.instrumentation = instrumentation;
         this.jsonParserMetrics = jsonParserMetrics;
         this.config = config;
@@ -39,7 +40,8 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
     }
 
     @Override
-    public ParsedOdpfMessage parse(OdpfMessage message, SinkConnectorSchemaMessageMode type, String schemaClass) throws IOException {
+    public ParsedOdpfMessage parse(OdpfMessage message, SinkConnectorSchemaMessageMode type, String schemaClass)
+            throws IOException {
         if (type == null) {
             throw new IOException("message mode not defined");
         }

@@ -1,4 +1,4 @@
-package io.odpf.depot.message.field;
+package org.raystack.depot.message.field;
 
 public interface GenericField {
     String getString();

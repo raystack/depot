@@ -1,7 +1,7 @@
-package io.odpf.depot.message;
+package org.raystack.depot.message;
 
-import io.odpf.depot.common.Tuple;
-import io.odpf.depot.common.TupleString;
+import org.raystack.depot.common.Tuple;
+import org.raystack.depot.common.TupleString;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 
 @Getter
 @EqualsAndHashCode

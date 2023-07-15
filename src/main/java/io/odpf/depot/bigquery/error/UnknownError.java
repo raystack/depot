@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery.error;
+package org.raystack.depot.bigquery.error;
 
 import lombok.AllArgsConstructor;
 
@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 /**
  * UnknownError is used when error factory failed to match any possible
  * known errors
- * */
+ */
 public class UnknownError implements ErrorDescriptor {
 
     private String reason;

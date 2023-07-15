@@ -1,8 +1,8 @@
-package io.odpf.depot.message.proto;
+package org.raystack.depot.message.proto;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.odpf.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.OdpfMessageSchema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 

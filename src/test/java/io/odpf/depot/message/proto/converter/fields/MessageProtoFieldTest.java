@@ -1,9 +1,9 @@
-package io.odpf.depot.message.proto.converter.fields;
+package org.raystack.depot.message.proto.converter.fields;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.depot.TestMessage;
-import io.odpf.depot.TestNestedMessage;
+import org.raystack.depot.TestMessage;
+import org.raystack.depot.TestNestedMessage;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,9 +23,11 @@ public class MessageProtoFieldTest {
         TestNestedMessage nestedMessage = TestNestedMessage.newBuilder()
                 .setSingleMessage(childField)
                 .build();
-        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(nestedMessage.getDescriptorForType(), nestedMessage.toByteArray());
+        DynamicMessage dynamicMessage = DynamicMessage.parseFrom(nestedMessage.getDescriptorForType(),
+                nestedMessage.toByteArray());
 
-        Descriptors.FieldDescriptor fieldDescriptor = nestedMessage.getDescriptorForType().findFieldByName("single_message");
+        Descriptors.FieldDescriptor fieldDescriptor = nestedMessage.getDescriptorForType()
+                .findFieldByName("single_message");
         messageProtoField = new MessageProtoField(fieldDescriptor, dynamicMessage.getField(fieldDescriptor));
 
     }

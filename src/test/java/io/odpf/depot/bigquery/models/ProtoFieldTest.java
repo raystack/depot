@@ -1,9 +1,9 @@
-package io.odpf.depot.bigquery.models;
+package org.raystack.depot.bigquery.models;
 
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;
-import io.odpf.depot.TestTypesMessage;
-import io.odpf.depot.message.proto.ProtoField;
+import org.raystack.depot.TestTypesMessage;
+import org.raystack.depot.message.proto.ProtoField;
 import org.junit.Test;
 
 import java.util.List;
@@ -14,7 +14,8 @@ import static org.junit.Assert.*;
 public class ProtoFieldTest {
     @Test
     public void shouldReturnNestedAsTrueWhenProtobufFieldTypeIsAMessage() {
-        DescriptorProtos.FieldDescriptorProto fieldDescriptorProto = TestTypesMessage.getDescriptor().findFieldByName("duration_value").toProto();
+        DescriptorProtos.FieldDescriptorProto fieldDescriptorProto = TestTypesMessage.getDescriptor()
+                .findFieldByName("duration_value").toProto();
         ProtoField protoField = new ProtoField(fieldDescriptorProto);
 
         assertTrue(protoField.isNested());
@@ -22,7 +23,8 @@ public class ProtoFieldTest {
 
     @Test
     public void shouldReturnNestedAsFalseWhenProtobufFieldTypeIsTimestamp() {
-        DescriptorProtos.FieldDescriptorProto fieldDescriptorProto = TestTypesMessage.getDescriptor().findFieldByName("timestamp_value").toProto();
+        DescriptorProtos.FieldDescriptorProto fieldDescriptorProto = TestTypesMessage.getDescriptor()
+                .findFieldByName("timestamp_value").toProto();
         ProtoField protoField = new ProtoField(fieldDescriptorProto);
 
         assertFalse(protoField.isNested());
@@ -30,7 +32,8 @@ public class ProtoFieldTest {
 
     @Test
     public void shouldReturnNestedAsFalseWhenProtobufFieldTypeIsStruct() {
-        DescriptorProtos.FieldDescriptorProto fieldDescriptorProto = TestTypesMessage.getDescriptor().findFieldByName("struct_value").toProto();
+        DescriptorProtos.FieldDescriptorProto fieldDescriptorProto = TestTypesMessage.getDescriptor()
+                .findFieldByName("struct_value").toProto();
         ProtoField protoField = new ProtoField(fieldDescriptorProto);
 
         assertFalse(protoField.isNested());
@@ -38,7 +41,8 @@ public class ProtoFieldTest {
 
     @Test
     public void shouldReturnNestedAsFalseWhenProtobufFieldIsScalarValueTypes() {
-        DescriptorProtos.FieldDescriptorProto fieldDescriptorProto = TestTypesMessage.getDescriptor().findFieldByName("timestamp_value").toProto();
+        DescriptorProtos.FieldDescriptorProto fieldDescriptorProto = TestTypesMessage.getDescriptor()
+                .findFieldByName("timestamp_value").toProto();
         ProtoField protoField = new ProtoField(fieldDescriptorProto);
 
         assertFalse(protoField.isNested());
@@ -51,9 +55,9 @@ public class ProtoFieldTest {
         ProtoField protoField = new ProtoField(fieldDescriptorProto);
 
         List<Descriptors.FieldDescriptor> childFields = fieldDescriptor.getMessageType().getFields();
-        List<ProtoField> fieldList = childFields.stream().map(fd -> new ProtoField(fd.toProto())).collect(Collectors.toList());
-        fieldList.forEach(pf ->
-                protoField.addField(pf));
+        List<ProtoField> fieldList = childFields.stream().map(fd -> new ProtoField(fd.toProto()))
+                .collect(Collectors.toList());
+        fieldList.forEach(pf -> protoField.addField(pf));
 
         String protoString = protoField.toString();
 
@@ -62,7 +66,6 @@ public class ProtoFieldTest {
                 + "{name='order_url', type=TYPE_STRING, len=0, nested=[]}, "
                 + "{name='order_details', type=TYPE_STRING, len=0, nested=[]}]}", protoString);
     }
-
 
     @Test
     public void shouldReturnEmptyProtoFieldString() {

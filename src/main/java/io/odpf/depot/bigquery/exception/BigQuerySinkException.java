@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery.exception;
+package org.raystack.depot.bigquery.exception;
 
 import lombok.EqualsAndHashCode;
 

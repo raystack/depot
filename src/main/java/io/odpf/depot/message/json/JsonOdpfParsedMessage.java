@@ -1,10 +1,10 @@
-package io.odpf.depot.message.json;
+package org.raystack.depot.message.json;
 
 import com.jayway.jsonpath.Configuration;
-import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.message.MessageUtils;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.message.MessageUtils;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.ParsedOdpfMessage;
 import org.json.JSONObject;
 
 import java.util.Collections;
@@ -41,7 +41,7 @@ public class JsonOdpfParsedMessage implements ParsedOdpfMessage {
         return jsonObject.toMap();
     }
 
-    public Object getFieldByName(String name, OdpfMessageSchema odpfMessageSchema) {
+    public Object getFieldByName(String name, OdpfMessageSchema raystackMessageSchema) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }

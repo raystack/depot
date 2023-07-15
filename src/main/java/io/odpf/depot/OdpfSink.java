@@ -1,7 +1,7 @@
-package io.odpf.depot;
+package org.raystack.depot;
 
-import io.odpf.depot.exception.OdpfSinkException;
-import io.odpf.depot.message.OdpfMessage;
+import org.raystack.depot.exception.OdpfSinkException;
+import org.raystack.depot.message.OdpfMessage;
 
 import java.io.Closeable;
 import java.util.List;
@@ -10,5 +10,3 @@ public interface OdpfSink extends Closeable {
 
     OdpfSinkResponse pushToSink(List<OdpfMessage> messages) throws OdpfSinkException;
 }
-
-

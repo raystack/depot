@@ -1,13 +1,12 @@
-package io.odpf.depot.message.field.proto;
+package org.raystack.depot.message.field.proto;
 
-import io.odpf.depot.message.field.GenericField;
-import io.odpf.depot.message.proto.converter.fields.DurationProtoField;
-import io.odpf.depot.message.proto.converter.fields.MapProtoField;
-import io.odpf.depot.message.proto.converter.fields.MessageProtoField;
-import io.odpf.depot.message.proto.converter.fields.ProtoField;
-import io.odpf.depot.message.proto.converter.fields.StructProtoField;
-import io.odpf.depot.message.proto.converter.fields.TimestampProtoField;
-
+import org.raystack.depot.message.field.GenericField;
+import org.raystack.depot.message.proto.converter.fields.DurationProtoField;
+import org.raystack.depot.message.proto.converter.fields.MapProtoField;
+import org.raystack.depot.message.proto.converter.fields.MessageProtoField;
+import org.raystack.depot.message.proto.converter.fields.ProtoField;
+import org.raystack.depot.message.proto.converter.fields.StructProtoField;
+import org.raystack.depot.message.proto.converter.fields.TimestampProtoField;
 
 public class ProtoFieldFactory {
     public static GenericField getField(ProtoField field) {

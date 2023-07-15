@@ -1,16 +1,15 @@
-package io.odpf.depot.bigquery;
+package org.raystack.depot.bigquery;
 
 import com.google.api.client.util.DateTime;
-import io.odpf.depot.TestKeyBQ;
-import io.odpf.depot.TestMessageBQ;
-import io.odpf.depot.common.Tuple;
-import io.odpf.depot.message.OdpfMessage;
+import org.raystack.depot.TestKeyBQ;
+import org.raystack.depot.TestMessageBQ;
+import org.raystack.depot.common.Tuple;
+import org.raystack.depot.message.OdpfMessage;
 
 import java.sql.Date;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-
 
 public final class TestOdpfMessageBuilder {
     private long timestamp;

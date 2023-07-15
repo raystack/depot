@@ -1,7 +1,6 @@
-package io.odpf.depot.config.converter;
+package org.raystack.depot.config.converter;
 
-
-import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
+import org.raystack.depot.config.enums.SinkConnectorSchemaDataType;
 import org.aeonbits.owner.Converter;
 
 import java.lang.reflect.Method;

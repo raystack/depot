@@ -1,4 +1,4 @@
-package io.odpf.depot.message;
+package org.raystack.depot.message;
 
 public enum SinkConnectorSchemaMessageMode {
     LOG_KEY,

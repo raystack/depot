@@ -1,11 +1,11 @@
-package io.odpf.depot.message.field.proto;
+package org.raystack.depot.message.field.proto;
 
 import com.google.protobuf.Duration;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
-import io.odpf.depot.TestMapMessage;
-import io.odpf.depot.TestMessage;
+import org.raystack.depot.TestMapMessage;
+import org.raystack.depot.TestMessage;
 import org.junit.Assert;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -65,14 +65,14 @@ public class MapFieldTest {
         TestMapMessage message = TestMapMessage.newBuilder()
                 .putStructMap("test1",
                         Struct.newBuilder().putFields(
-                                        "mykey",
-                                        Value.newBuilder().setStructValue(
-                                                        Struct.newBuilder().putFields("another",
-                                                                        Value.newBuilder()
-                                                                                .setStringValue("finally")
-                                                                                .build())
-                                                                .build())
+                                "mykey",
+                                Value.newBuilder().setStructValue(
+                                        Struct.newBuilder().putFields("another",
+                                                Value.newBuilder()
+                                                        .setStringValue("finally")
+                                                        .build())
                                                 .build())
+                                        .build())
                                 .build())
                 .build();
 

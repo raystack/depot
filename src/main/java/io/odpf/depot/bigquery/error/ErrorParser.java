@@ -1,5 +1,4 @@
-package io.odpf.depot.bigquery.error;
-
+package org.raystack.depot.bigquery.error;
 
 import com.google.cloud.bigquery.BigQueryError;
 

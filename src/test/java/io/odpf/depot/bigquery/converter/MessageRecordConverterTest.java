@@ -1,22 +1,22 @@
-package io.odpf.depot.bigquery.converter;
+package org.raystack.depot.bigquery.converter;
 
 import com.google.api.client.util.DateTime;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.UnknownFieldSet;
-import io.odpf.depot.TestMessage;
-import io.odpf.depot.bigquery.TestMetadata;
-import io.odpf.depot.bigquery.TestOdpfMessageBuilder;
-import io.odpf.depot.bigquery.models.Record;
-import io.odpf.depot.bigquery.models.Records;
-import io.odpf.depot.common.Tuple;
-import io.odpf.depot.common.TupleString;
-import io.odpf.depot.config.BigQuerySinkConfig;
-import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.message.*;
-import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
-import io.odpf.depot.message.proto.ProtoOdpfParsedMessage;
-import io.odpf.stencil.client.ClassLoadStencilClient;
+import org.raystack.depot.TestMessage;
+import org.raystack.depot.bigquery.TestMetadata;
+import org.raystack.depot.bigquery.TestOdpfMessageBuilder;
+import org.raystack.depot.bigquery.models.Record;
+import org.raystack.depot.bigquery.models.Records;
+import org.raystack.depot.common.Tuple;
+import org.raystack.depot.common.TupleString;
+import org.raystack.depot.config.BigQuerySinkConfig;
+import org.raystack.depot.error.ErrorType;
+import org.raystack.depot.message.*;
+import org.raystack.depot.message.proto.ProtoOdpfMessageParser;
+import org.raystack.depot.message.proto.ProtoOdpfParsedMessage;
+import org.raystack.stencil.client.ClassLoadStencilClient;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,16 +40,18 @@ public class MessageRecordConverterTest {
 
     @Before
     public void setUp() throws IOException {
-        System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "io.odpf.depot.TestMessage");
+        System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "org.raystack.depot.TestMessage");
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "");
         System.setProperty("SINK_BIGQUERY_METADATA_COLUMNS_TYPES",
                 "message_offset=integer,message_topic=string,load_time=timestamp,message_timestamp=timestamp,message_partition=integer");
         stencilClient = Mockito.mock(ClassLoadStencilClient.class, CALLS_REAL_METHODS);
-        Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
-            put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
-        }};
+        Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {
+            {
+                put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
+            }
+        };
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
-        schema = protoOdpfMessageParser.getSchema("io.odpf.depot.TestMessage", descriptorsMap);
+        schema = protoOdpfMessageParser.getSchema("org.raystack.depot.TestMessage", descriptorsMap);
         recordConverter = new MessageRecordConverter(protoOdpfMessageParser,
                 ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
 
@@ -58,18 +60,20 @@ public class MessageRecordConverterTest {
 
     @Test
     public void shouldGetRecordForBQFromConsumerRecords() {
-        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
-        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(), now.toEpochMilli());
-        OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
-        OdpfMessage record2 = TestOdpfMessageBuilder.withMetadata(record2Offset).createConsumerRecord("order-2", "order-url-2", "order-details-2");
-
+        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
+                now.toEpochMilli());
+        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
+                now.toEpochMilli());
+        OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
+                "order-url-1", "order-details-1");
+        OdpfMessage record2 = TestOdpfMessageBuilder.withMetadata(record2Offset).createConsumerRecord("order-2",
+                "order-url-2", "order-details-2");
 
         Map<String, Object> record1ExpectedColumns = new HashMap<>();
         record1ExpectedColumns.put("order_number", "order-1");
         record1ExpectedColumns.put("order_url", "order-url-1");
         record1ExpectedColumns.put("order_details", "order-details-1");
         record1ExpectedColumns.putAll(TestOdpfMessageBuilder.metadataColumns(record1Offset, now));
-
 
         Map<String, Object> record2ExpectedColumns = new HashMap<>();
         record2ExpectedColumns.put("order_number", "order-2");
@@ -91,11 +95,14 @@ public class MessageRecordConverterTest {
 
     @Test
     public void shouldIgnoreNullRecords() {
-        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
-        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(), now.toEpochMilli());
-        OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
-        OdpfMessage record2 = TestOdpfMessageBuilder.withMetadata(record2Offset).createEmptyValueConsumerRecord("order-2", "order-url-2");
-
+        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
+                now.toEpochMilli());
+        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
+                now.toEpochMilli());
+        OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
+                "order-url-1", "order-details-1");
+        OdpfMessage record2 = TestOdpfMessageBuilder.withMetadata(record2Offset)
+                .createEmptyValueConsumerRecord("order-2", "order-url-2");
 
         Map<Object, Object> record1ExpectedColumns = new HashMap<>();
         record1ExpectedColumns.put("order_number", "order-1");
@@ -114,10 +121,14 @@ public class MessageRecordConverterTest {
 
     @Test
     public void shouldReturnInvalidRecordsWhenGivenNullRecords() {
-        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
-        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(), now.toEpochMilli());
-        OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
-        OdpfMessage record2 = TestOdpfMessageBuilder.withMetadata(record2Offset).createEmptyValueConsumerRecord("order-2", "order-url-2");
+        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
+                now.toEpochMilli());
+        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
+                now.toEpochMilli());
+        OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
+                "order-url-1", "order-details-1");
+        OdpfMessage record2 = TestOdpfMessageBuilder.withMetadata(record2Offset)
+                .createEmptyValueConsumerRecord("order-2", "order-url-2");
 
         Map<String, Object> record1ExpectedColumns = new HashMap<>();
         record1ExpectedColumns.put("order_number", "order-1");
@@ -138,10 +149,13 @@ public class MessageRecordConverterTest {
     public void shouldNotNamespaceMetadataFieldWhenNamespaceIsNotProvided() {
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
-        MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoOdpfMessageParser, sinkConfig, schema);
+        MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoOdpfMessageParser, sinkConfig,
+                schema);
 
-        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
-        OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
+        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
+                now.toEpochMilli());
+        OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
+                "order-url-1", "order-details-1");
 
         Map<String, Object> record1ExpectedColumns = new HashMap<>();
         record1ExpectedColumns.put("order_number", "order-1");
@@ -164,16 +178,20 @@ public class MessageRecordConverterTest {
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "metadata_ns");
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         ProtoOdpfMessageParser protoOdpfMessageParser = new ProtoOdpfMessageParser(stencilClient);
-        MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoOdpfMessageParser, sinkConfig, schema);
+        MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoOdpfMessageParser, sinkConfig,
+                schema);
 
-        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
-        OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1", "order-url-1", "order-details-1");
+        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
+                now.toEpochMilli());
+        OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
+                "order-url-1", "order-details-1");
 
         Map<String, Object> record1ExpectedColumns = new HashMap<>();
         record1ExpectedColumns.put("order_number", "order-1");
         record1ExpectedColumns.put("order_url", "order-url-1");
         record1ExpectedColumns.put("order_details", "order-details-1");
-        record1ExpectedColumns.put(sinkConfig.getBqMetadataNamespace(), TestOdpfMessageBuilder.metadataColumns(record1Offset, now));
+        record1ExpectedColumns.put(sinkConfig.getBqMetadataNamespace(),
+                TestOdpfMessageBuilder.metadataColumns(record1Offset, now));
 
         List<OdpfMessage> messages = Collections.singletonList(record1);
         Records records = recordConverterTest.convert(messages);
@@ -185,11 +203,12 @@ public class MessageRecordConverterTest {
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "");
     }
 
-
     @Test
     public void shouldReturnInvalidRecordsGivenInvalidProtobufMessage() {
-        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
-        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(), now.toEpochMilli());
+        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
+                now.toEpochMilli());
+        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
+                now.toEpochMilli());
         OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
                 "order-url-1", "order-details-1");
         OdpfMessage record2 = new OdpfMessage("invalid-key".getBytes(), "invalid-value".getBytes(),
@@ -202,8 +221,10 @@ public class MessageRecordConverterTest {
 
     @Test
     public void shouldWriteToErrorWriterInvalidRecords() {
-        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
-        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(), now.toEpochMilli());
+        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
+                now.toEpochMilli());
+        TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
+                now.toEpochMilli());
         OdpfMessage record1 = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
                 "order-url-1", "order-details-1");
 
@@ -238,7 +259,8 @@ public class MessageRecordConverterTest {
         System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE", "false");
         OdpfMessageParser mockParser = mock(OdpfMessageParser.class);
 
-        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
+        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
         OdpfMessage consumerRecord = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
                 "order-url-1", "order-details-1");
 
@@ -248,9 +270,11 @@ public class MessageRecordConverterTest {
                         .build())
                 .build();
         ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage);
-        when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage")).thenReturn(parsedOdpfMessage);
+        when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE,
+                "org.raystack.depot.TestMessage")).thenReturn(parsedOdpfMessage);
 
-        recordConverter = new MessageRecordConverter(mockParser, ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
+        recordConverter = new MessageRecordConverter(mockParser,
+                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
 
         List<OdpfMessage> messages = Collections.singletonList(consumerRecord);
         Records records = recordConverter.convert(messages);
@@ -266,7 +290,8 @@ public class MessageRecordConverterTest {
         System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE", "true");
         OdpfMessageParser mockParser = mock(OdpfMessageParser.class);
 
-        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
+        TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
+                Instant.now().toEpochMilli());
         OdpfMessage consumerRecord = TestOdpfMessageBuilder.withMetadata(record1Offset).createConsumerRecord("order-1",
                 "order-url-1", "order-details-1");
 
@@ -276,7 +301,8 @@ public class MessageRecordConverterTest {
                         .build())
                 .build();
         ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(dynamicMessage);
-        when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "io.odpf.depot.TestMessage")).thenReturn(parsedOdpfMessage);
+        when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE,
+                "org.raystack.depot.TestMessage")).thenReturn(parsedOdpfMessage);
 
         recordConverter = new MessageRecordConverter(mockParser,
                 ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
@@ -287,15 +313,16 @@ public class MessageRecordConverterTest {
         BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         List<TupleString> metadataColumnsTypes = config.getMetadataColumnsTypes();
         Map<String, Object> metadata = consumerRecord.getMetadata();
-        Map<String, Object> finalMetadata = metadataColumnsTypes.stream().collect(Collectors.toMap(TupleString::getFirst, t -> {
-            String key = t.getFirst();
-            String dataType = t.getSecond();
-            Object value = metadata.get(key);
-            if (value instanceof Long && dataType.equals("timestamp")) {
-                value = new DateTime((long) value);
-            }
-            return value;
-        }));
+        Map<String, Object> finalMetadata = metadataColumnsTypes.stream()
+                .collect(Collectors.toMap(TupleString::getFirst, t -> {
+                    String key = t.getFirst();
+                    String dataType = t.getSecond();
+                    Object value = metadata.get(key);
+                    if (value instanceof Long && dataType.equals("timestamp")) {
+                        value = new DateTime((long) value);
+                    }
+                    return value;
+                }));
         Record record = new Record(consumerRecord.getMetadata(), finalMetadata, 0, null);
         assertEquals(1, records.getValidRecords().size());
         assertEquals(0, records.getInvalidRecords().size());

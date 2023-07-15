@@ -1,8 +1,8 @@
-package io.odpf.depot.stencil;
+package org.raystack.depot.stencil;
 
 import com.google.protobuf.Descriptors;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.stencil.SchemaUpdateListener;
+import org.raystack.depot.message.OdpfMessageParser;
+import org.raystack.stencil.SchemaUpdateListener;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +11,7 @@ import java.util.Map;
 public abstract class OdpfStencilUpdateListener implements SchemaUpdateListener {
     @Getter
     @Setter
-    private OdpfMessageParser odpfMessageParser;
+    private OdpfMessageParser raystackMessageParser;
 
     public void onSchemaUpdate(final Map<String, Descriptors.Descriptor> newDescriptor) {
         // default implementation is empty

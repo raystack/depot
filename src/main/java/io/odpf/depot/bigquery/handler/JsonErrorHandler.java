@@ -1,15 +1,15 @@
-package io.odpf.depot.bigquery.handler;
+package org.raystack.depot.bigquery.handler;
 
 import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
-import io.odpf.depot.bigquery.client.BigQueryClient;
-import io.odpf.depot.bigquery.models.Record;
-import io.odpf.depot.common.TupleString;
-import io.odpf.depot.config.BigQuerySinkConfig;
-import io.odpf.depot.metrics.Instrumentation;
+import org.raystack.depot.bigquery.client.BigQueryClient;
+import org.raystack.depot.bigquery.models.Record;
+import org.raystack.depot.common.TupleString;
+import org.raystack.depot.config.BigQuerySinkConfig;
+import org.raystack.depot.metrics.Instrumentation;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +33,8 @@ public class JsonErrorHandler implements ErrorHandler {
     private final Instrumentation instrumentation;
     private final Map<String, String> defaultColumnsMap;
 
-    public JsonErrorHandler(BigQueryClient bigQueryClient, BigQuerySinkConfig bigQuerySinkConfig, Instrumentation instrumentation) {
+    public JsonErrorHandler(BigQueryClient bigQueryClient, BigQuerySinkConfig bigQuerySinkConfig,
+            Instrumentation instrumentation) {
 
         this.instrumentation = instrumentation;
         this.bigQueryClient = bigQueryClient;
@@ -73,13 +74,14 @@ public class JsonErrorHandler implements ErrorHandler {
         }
     }
 
-    private Set<String> getColumnNamesForRecordsWhichHadUnknownBqFieldErrors(List<Record> records, Entry<Long, List<BigQueryError>> x) {
+    private Set<String> getColumnNamesForRecordsWhichHadUnknownBqFieldErrors(List<Record> records,
+            Entry<Long, List<BigQueryError>> x) {
         int recordKey = x.getKey().intValue();
         return records.get(recordKey).getColumns().keySet();
     }
 
-
-    private List<Entry<Long, List<BigQueryError>>> getUnknownFieldBqErrors(Map<Long, List<BigQueryError>> insertErrors) {
+    private List<Entry<Long, List<BigQueryError>>> getUnknownFieldBqErrors(
+            Map<Long, List<BigQueryError>> insertErrors) {
         return insertErrors.entrySet().stream()
                 .filter((x) -> {
                     List<BigQueryError> value = x.getValue();
@@ -90,8 +92,9 @@ public class JsonErrorHandler implements ErrorHandler {
 
     private List<BigQueryError> getBqErrorsWithNoSuchFields(List<BigQueryError> value) {
         return value.stream()
-                .filter(bigQueryError -> bigQueryError.getReason().equals("invalid") && bigQueryError.getMessage().contains("no such field")
-                ).collect(Collectors.toList());
+                .filter(bigQueryError -> bigQueryError.getReason().equals("invalid")
+                        && bigQueryError.getMessage().contains("no such field"))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -100,10 +103,12 @@ public class JsonErrorHandler implements ErrorHandler {
 
     private Field getField(String key) {
         if (!bqMetadataNamespace.isEmpty()) {
-            throw new UnsupportedOperationException("metadata namespace is not supported, because nested json structure is not supported");
+            throw new UnsupportedOperationException(
+                    "metadata namespace is not supported, because nested json structure is not supported");
         }
         if (metadataColumnsTypesMap.containsKey(key)) {
-            return Field.newBuilder(key, LegacySQLTypeName.valueOfStrict(metadataColumnsTypesMap.get(key).toUpperCase()))
+            return Field
+                    .newBuilder(key, LegacySQLTypeName.valueOfStrict(metadataColumnsTypesMap.get(key).toUpperCase()))
                     .setMode(Field.Mode.NULLABLE)
                     .build();
         }
@@ -113,7 +118,8 @@ public class JsonErrorHandler implements ErrorHandler {
                     .build();
         }
         if (!castAllColumnsToStringDataType) {
-            throw new UnsupportedOperationException("only string data type is supported for fields other than partition key");
+            throw new UnsupportedOperationException(
+                    "only string data type is supported for fields other than partition key");
         }
         return Field.newBuilder(key, LegacySQLTypeName.STRING)
                 .setMode(Field.Mode.NULLABLE)

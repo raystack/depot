@@ -1,4 +1,4 @@
-package io.odpf.depot.utils;
+package org.raystack.depot.utils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

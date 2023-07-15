@@ -1,4 +1,4 @@
-package io.odpf.depot.message.proto.converter.fields;
+package org.raystack.depot.message.proto.converter.fields;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -41,6 +41,7 @@ public class StructProtoField implements ProtoField {
     @Override
     public boolean matches() {
         return descriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE
-                && descriptor.getMessageType().getFullName().equals(com.google.protobuf.Struct.getDescriptor().getFullName());
+                && descriptor.getMessageType().getFullName()
+                        .equals(com.google.protobuf.Struct.getDescriptor().getFullName());
     }
 }

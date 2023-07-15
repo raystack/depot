@@ -1,6 +1,6 @@
-package io.odpf.depot.config.converter;
+package org.raystack.depot.config.converter;
 
-import io.odpf.depot.common.TupleString;
+import org.raystack.depot.common.TupleString;
 import org.junit.Assert;
 import org.junit.Test;
 

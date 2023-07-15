@@ -1,21 +1,20 @@
-package io.odpf.depot.redis;
-
+package org.raystack.depot.redis;
 
 import com.timgroup.statsd.NoOpStatsDClient;
-import io.odpf.depot.OdpfSink;
-import io.odpf.depot.common.Tuple;
-import io.odpf.depot.config.RedisSinkConfig;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.message.OdpfMessageParserFactory;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.client.RedisClientFactory;
-import io.odpf.depot.redis.parsers.RedisEntryParser;
-import io.odpf.depot.redis.parsers.RedisEntryParserFactory;
-import io.odpf.depot.redis.parsers.RedisParser;
-import io.odpf.depot.utils.MessageConfigUtils;
+import org.raystack.depot.OdpfSink;
+import org.raystack.depot.common.Tuple;
+import org.raystack.depot.config.RedisSinkConfig;
+import org.raystack.depot.message.OdpfMessageParser;
+import org.raystack.depot.message.OdpfMessageParserFactory;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.metrics.StatsDReporter;
+import org.raystack.depot.redis.client.RedisClientFactory;
+import org.raystack.depot.redis.parsers.RedisEntryParser;
+import org.raystack.depot.redis.parsers.RedisEntryParserFactory;
+import org.raystack.depot.redis.parsers.RedisParser;
+import org.raystack.depot.utils.MessageConfigUtils;
 
 import java.io.IOException;
 
@@ -37,7 +36,8 @@ public class RedisSinkFactory {
     public void init() {
         try {
             Instrumentation instrumentation = new Instrumentation(statsDReporter, RedisSinkFactory.class);
-            String redisConfig = String.format("\n\tredis.urls = %s\n\tredis.key.template = %s\n\tredis.sink.data.type = %s"
+            String redisConfig = String.format(
+                    "\n\tredis.urls = %s\n\tredis.key.template = %s\n\tredis.sink.data.type = %s"
                             + "\n\tredis.deployment.type = %s\n\tredis.ttl.type = %s\n\tredis.ttl.value = %d\n\t",
                     sinkConfig.getSinkRedisUrls(),
                     sinkConfig.getSinkRedisKeyTemplate(),
@@ -53,16 +53,19 @@ public class RedisSinkFactory {
                     redisConfig += "redis.keyvalue.data.field.name=" + sinkConfig.getSinkRedisKeyValueDataFieldName();
                     break;
                 case HASHSET:
-                    redisConfig += "redis.hashset.field.to.column.mapping=" + sinkConfig.getSinkRedisHashsetFieldToColumnMapping().toString();
+                    redisConfig += "redis.hashset.field.to.column.mapping="
+                            + sinkConfig.getSinkRedisHashsetFieldToColumnMapping().toString();
                     break;
                 default:
             }
             instrumentation.logInfo(redisConfig);
             instrumentation.logInfo("Redis server type = {}", sinkConfig.getSinkRedisDeploymentType());
             OdpfMessageParser messageParser = OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
-            Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(sinkConfig);
+            Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils
+                    .getModeAndSchema(sinkConfig);
             OdpfMessageSchema schema = messageParser.getSchema(modeAndSchema.getSecond());
-            RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(sinkConfig, statsDReporter, schema);
+            RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(sinkConfig, statsDReporter,
+                    schema);
             this.redisParser = new RedisParser(messageParser, redisEntryParser, modeAndSchema);
             instrumentation.logInfo("Connection to redis established successfully");
         } catch (IOException e) {

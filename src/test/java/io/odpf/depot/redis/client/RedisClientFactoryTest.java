@@ -1,12 +1,10 @@
-package io.odpf.depot.redis.client;
+package org.raystack.depot.redis.client;
 
-
-
-import io.odpf.depot.config.RedisSinkConfig;
-import io.odpf.depot.exception.ConfigurationException;
-import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.enums.RedisSinkDeploymentType;
-import io.odpf.depot.redis.enums.RedisSinkTtlType;
+import org.raystack.depot.config.RedisSinkConfig;
+import org.raystack.depot.exception.ConfigurationException;
+import org.raystack.depot.metrics.StatsDReporter;
+import org.raystack.depot.redis.enums.RedisSinkDeploymentType;
+import org.raystack.depot.redis.enums.RedisSinkTtlType;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

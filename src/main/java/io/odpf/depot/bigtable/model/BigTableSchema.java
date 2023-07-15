@@ -1,6 +1,6 @@
-package io.odpf.depot.bigtable.model;
+package org.raystack.depot.bigtable.model;
 
-import io.odpf.depot.exception.ConfigurationException;
+import org.raystack.depot.exception.ConfigurationException;
 import org.json.JSONObject;
 
 import java.util.HashSet;

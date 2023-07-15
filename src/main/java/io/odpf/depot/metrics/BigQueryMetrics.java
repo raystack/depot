@@ -1,6 +1,6 @@
-package io.odpf.depot.metrics;
+package org.raystack.depot.metrics;
 
-import io.odpf.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.OdpfSinkConfig;
 
 public class BigQueryMetrics extends SinkMetrics {
 

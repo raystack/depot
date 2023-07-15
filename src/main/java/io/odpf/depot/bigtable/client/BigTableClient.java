@@ -1,4 +1,4 @@
-package io.odpf.depot.bigtable.client;
+package org.raystack.depot.bigtable.client;
 
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -9,13 +9,13 @@ import com.google.cloud.bigtable.data.v2.BigtableDataClient;
 import com.google.cloud.bigtable.data.v2.BigtableDataSettings;
 import com.google.cloud.bigtable.data.v2.models.BulkMutation;
 import com.google.cloud.bigtable.data.v2.models.MutateRowsException;
-import io.odpf.depot.bigtable.exception.BigTableInvalidSchemaException;
-import io.odpf.depot.bigtable.model.BigTableRecord;
-import io.odpf.depot.bigtable.model.BigTableSchema;
-import io.odpf.depot.bigtable.response.BigTableResponse;
-import io.odpf.depot.config.BigTableSinkConfig;
-import io.odpf.depot.metrics.BigTableMetrics;
-import io.odpf.depot.metrics.Instrumentation;
+import org.raystack.depot.bigtable.exception.BigTableInvalidSchemaException;
+import org.raystack.depot.bigtable.model.BigTableRecord;
+import org.raystack.depot.bigtable.model.BigTableSchema;
+import org.raystack.depot.bigtable.response.BigTableResponse;
+import org.raystack.depot.config.BigTableSinkConfig;
+import org.raystack.depot.metrics.BigTableMetrics;
+import org.raystack.depot.metrics.Instrumentation;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,11 +32,15 @@ public class BigTableClient {
     private final BigTableMetrics bigtableMetrics;
     private final Instrumentation instrumentation;
 
-    public BigTableClient(BigTableSinkConfig sinkConfig, BigTableSchema bigtableSchema, BigTableMetrics bigtableMetrics, Instrumentation instrumentation) throws IOException {
-        this(sinkConfig, getBigTableDataClient(sinkConfig), getBigTableAdminClient(sinkConfig), bigtableSchema, bigtableMetrics, instrumentation);
+    public BigTableClient(BigTableSinkConfig sinkConfig, BigTableSchema bigtableSchema, BigTableMetrics bigtableMetrics,
+            Instrumentation instrumentation) throws IOException {
+        this(sinkConfig, getBigTableDataClient(sinkConfig), getBigTableAdminClient(sinkConfig), bigtableSchema,
+                bigtableMetrics, instrumentation);
     }
 
-    public BigTableClient(BigTableSinkConfig sinkConfig, BigtableDataClient bigtableDataClient, BigtableTableAdminClient bigtableTableAdminClient, BigTableSchema bigtableSchema, BigTableMetrics bigtableMetrics, Instrumentation instrumentation) {
+    public BigTableClient(BigTableSinkConfig sinkConfig, BigtableDataClient bigtableDataClient,
+            BigtableTableAdminClient bigtableTableAdminClient, BigTableSchema bigtableSchema,
+            BigTableMetrics bigtableMetrics, Instrumentation instrumentation) {
         this.sinkConfig = sinkConfig;
         this.bigtableDataClient = bigtableDataClient;
         this.bigtableTableAdminClient = bigtableTableAdminClient;
@@ -49,7 +53,8 @@ public class BigTableClient {
         BigtableDataSettings settings = BigtableDataSettings.newBuilder()
                 .setProjectId(sinkConfig.getGCloudProjectID())
                 .setInstanceId(sinkConfig.getInstanceId())
-                .setCredentialsProvider(FixedCredentialsProvider.create(GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getCredentialPath()))))
+                .setCredentialsProvider(FixedCredentialsProvider
+                        .create(GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getCredentialPath()))))
                 .build();
         return BigtableDataClient.create(settings);
     }
@@ -58,7 +63,8 @@ public class BigTableClient {
         BigtableTableAdminSettings settings = BigtableTableAdminSettings.newBuilder()
                 .setProjectId(sinkConfig.getGCloudProjectID())
                 .setInstanceId(sinkConfig.getInstanceId())
-                .setCredentialsProvider(FixedCredentialsProvider.create(GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getCredentialPath()))))
+                .setCredentialsProvider(FixedCredentialsProvider
+                        .create(GoogleCredentials.fromStream(new FileInputStream(sinkConfig.getCredentialPath()))))
                 .build();
         return BigtableTableAdminClient.create(settings);
     }
@@ -101,9 +107,10 @@ public class BigTableClient {
 
     private void checkIfTableExists(String tableId) throws BigTableInvalidSchemaException {
         if (!bigtableTableAdminClient.exists(tableId)) {
-                throw new BigTableInvalidSchemaException(String.format("Table not found on the path: projects/%s/instances/%s/tables/%s",
-                        bigtableTableAdminClient.getProjectId(), bigtableTableAdminClient.getInstanceId(), tableId));
-            }
+            throw new BigTableInvalidSchemaException(String.format(
+                    "Table not found on the path: projects/%s/instances/%s/tables/%s",
+                    bigtableTableAdminClient.getProjectId(), bigtableTableAdminClient.getInstanceId(), tableId));
+        }
     }
 
     private void checkIfColumnFamiliesExist(String tableId) throws BigTableInvalidSchemaException {

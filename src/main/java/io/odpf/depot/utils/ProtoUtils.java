@@ -1,4 +1,4 @@
-package io.odpf.depot.utils;
+package org.raystack.depot.utils;
 
 import com.google.protobuf.DynamicMessage;
 
@@ -37,6 +37,7 @@ public class ProtoUtils {
     }
 
     private static List<DynamicMessage> getMessageWithUnknownFields(List<DynamicMessage> messages) {
-        return messages.stream().filter(message -> message.getUnknownFields().asMap().size() > 0).collect(Collectors.toList());
+        return messages.stream().filter(message -> message.getUnknownFields().asMap().size() > 0)
+                .collect(Collectors.toList());
     }
 }

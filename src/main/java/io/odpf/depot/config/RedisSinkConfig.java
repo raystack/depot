@@ -1,16 +1,15 @@
-package io.odpf.depot.config;
+package org.raystack.depot.config;
 
-import io.odpf.depot.config.converter.JsonToPropertiesConverter;
-import io.odpf.depot.config.converter.RedisSinkDataTypeConverter;
-import io.odpf.depot.config.converter.RedisSinkDeploymentTypeConverter;
-import io.odpf.depot.config.converter.RedisSinkTtlTypeConverter;
-import io.odpf.depot.redis.enums.RedisSinkDataType;
-import io.odpf.depot.redis.enums.RedisSinkDeploymentType;
-import io.odpf.depot.redis.enums.RedisSinkTtlType;
+import org.raystack.depot.config.converter.JsonToPropertiesConverter;
+import org.raystack.depot.config.converter.RedisSinkDataTypeConverter;
+import org.raystack.depot.config.converter.RedisSinkDeploymentTypeConverter;
+import org.raystack.depot.config.converter.RedisSinkTtlTypeConverter;
+import org.raystack.depot.redis.enums.RedisSinkDataType;
+import org.raystack.depot.redis.enums.RedisSinkDeploymentType;
+import org.raystack.depot.redis.enums.RedisSinkTtlType;
 import org.aeonbits.owner.Config;
 
 import java.util.Properties;
-
 
 @Config.DisableFeature(Config.DisableableFeature.PARAMETER_FORMATTING)
 public interface RedisSinkConfig extends OdpfSinkConfig {

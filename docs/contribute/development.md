@@ -1,10 +1,10 @@
 # Development Guide
 
-The following guide will help you quickly run an application which uses depot in your local machine. 
+The following guide will help you quickly run an application which uses depot in your local machine.
 The main components of depot sink-connector are:
 
-* Sink: Package which handles sinking data.
-* Metrics: Handles the metrics via StatsD client
+- Sink: Package which handles sinking data.
+- Metrics: Handles the metrics via StatsD client
 
 ## Requirements
 
@@ -21,28 +21,32 @@ export PATH=~/Downloads/jdk1.8.0_291/bin:$PATH
 
 Environment variables can be configured in the following way -
 
-* run  `export SAMPLE_VARIABLE=287` on a UNIX shell, to directly assign the required environment variable.
+- run `export SAMPLE_VARIABLE=287` on a UNIX shell, to directly assign the required environment variable.
 
-### Custom application 
-We need to create an application which has io.odpf.depot as a dependency.
-This application will create any sink that a developer wants to test by using sink-factories. 
-The OdpfSink's APIs can be used to send data to sinks and check the response. 
+### Custom application
+
+We need to create an application which has org.raystack.depot as a dependency.
+This application will create any sink that a developer wants to test by using sink-factories.
+The OdpfSink's APIs can be used to send data to sinks and check the response.
 One can setup monitoring to see metrics emitted too.
+
 #### Maven and gradle dependency
 
 ```xml
 
 <dependency>
-    <groupId>io.odpf</groupId>
+    <groupId>org.raystack</groupId>
     <artifactId>depot</artifactId>
     <version>version</version>
 </dependency>
 ```
 
 ```sh
-implementation group: 'io.odpf', name: 'depot', version: 'version'
+implementation group: 'org.raystack', name: 'depot', version: 'version'
 ```
+
 #### Sample Application
+
 ```java
 class MyClass {
     void createSink() {
@@ -62,8 +66,8 @@ class MyClass {
 
 ### Destination Sink Server
 
-The sink to which the application will send data to, must have its corresponding server set up and configured. 
-The URL and port address of the database server / HTTP/GRPC endpoint , along with other sink - specific parameters 
+The sink to which the application will send data to, must have its corresponding server set up and configured.
+The URL and port address of the database server / HTTP/GRPC endpoint , along with other sink - specific parameters
 must be configured the environment variables corresponding to that particular sink.
 
 Configuration parameter variables of each sink can be found in the [Configurations](../reference/configuration/) section.
@@ -71,31 +75,33 @@ Configuration parameter variables of each sink can be found in the [Configuratio
 ### Schema Registry
 
 Stencil Server is used as a Schema Registry for hosting Protobuf descriptors.
-The environment variable `SCHEMA_REGISTRY_STENCIL_ENABLE` must be set to `true` . 
-Stencil server URL must be specified in the variable `SCHEMA_REGISTRY_STENCIL_URLS` . 
+The environment variable `SCHEMA_REGISTRY_STENCIL_ENABLE` must be set to `true` .
+Stencil server URL must be specified in the variable `SCHEMA_REGISTRY_STENCIL_URLS` .
 The Proto Descriptor Set file of the messages must be uploaded to the Stencil server.
 
-Refer [this guide](https://github.com/odpf/stencil/tree/master/server#readme) on how to set up and configure the Stencil server, and how to generate and upload Proto descriptor set file to the server.
+Refer [this guide](https://github.com/raystack/stencil/tree/master/server#readme) on how to set up and configure the Stencil server, and how to generate and upload Proto descriptor set file to the server.
 
 ### Monitoring
 
-Depot supports sinks specific metrics, and it also provides way to send metrics to statsd reporter. 
+Depot supports sinks specific metrics, and it also provides way to send metrics to statsd reporter.
 You can set up any visualization platform like grafana for monitoring your custom application.
 Following are the typical requirements:
 
-* StatsD host \(e.g. Telegraf\) for aggregation of metrics from StatsD client
-* A time-series database \(e.g. InfluxDB\) to store the metrics 
-* GUI visualization dashboard \(e.g. Grafana\) for detailed visualisation of metrics
-
+- StatsD host \(e.g. Telegraf\) for aggregation of metrics from StatsD client
+- A time-series database \(e.g. InfluxDB\) to store the metrics
+- GUI visualization dashboard \(e.g. Grafana\) for detailed visualisation of metrics
 
 ### Adding a new Sink
-To add a new sink implementation the Sink class has to implement OdpfSink interface 
+
+To add a new sink implementation the Sink class has to implement OdpfSink interface
+
 ```java
 public interface OdpfSink extends Closeable {
     OdpfSinkResponse pushToSink(List<OdpfMessage> messages) throws OdpfSinkException;
 }
 ```
-Sink implementations will normally have a factory class too which will be used to setup and create objects of Impl classes. 
+
+Sink implementations will normally have a factory class too which will be used to setup and create objects of Impl classes.
 
 ## Style Guide
 
@@ -116,8 +122,7 @@ $ git commit -s -m "feat: my first commit"
 
 #### Good practices to keep in mind
 
-* Follow the [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) format for all commit messages.
-* Fill in the description based on the default template configured when you first open the PR
-* Include kind label when opening the PR
-* Avoid force-pushing as it makes reviewing difficult
-
+- Follow the [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) format for all commit messages.
+- Fill in the description based on the default template configured when you first open the PR
+- Include kind label when opening the PR
+- Avoid force-pushing as it makes reviewing difficult

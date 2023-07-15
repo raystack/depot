@@ -1,10 +1,10 @@
-package io.odpf.depot.redis.client.entry;
+package org.raystack.depot.redis.client.entry;
 
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.redis.client.response.RedisClusterResponse;
-import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
-import io.odpf.depot.redis.ttl.DurationTtl;
-import io.odpf.depot.redis.ttl.NoRedisTtl;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.redis.client.response.RedisClusterResponse;
+import org.raystack.depot.redis.client.response.RedisStandaloneResponse;
+import org.raystack.depot.redis.ttl.DurationTtl;
+import org.raystack.depot.redis.ttl.NoRedisTtl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,7 +85,6 @@ public class RedisListEntryTest {
         String expected = "RedisListEntry: Key test-key, Value test-value";
         Assert.assertEquals(expected, redisListEntry.toString());
     }
-
 
     @Test
     public void shouldSentToRedisForStandAlone() {

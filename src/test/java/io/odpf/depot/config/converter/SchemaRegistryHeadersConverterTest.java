@@ -1,6 +1,6 @@
-package io.odpf.depot.config.converter;
+package org.raystack.depot.config.converter;
 
-import io.odpf.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.OdpfSinkConfig;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.message.BasicHeader;
 import org.junit.Assert;
@@ -37,8 +37,10 @@ public class SchemaRegistryHeadersConverterTest {
             }
         };
         OdpfSinkConfig config = ConfigFactory.create(OdpfSinkConfig.class, properties);
-        Assert.assertEquals((new BasicHeader("key1", "value1")).toString(), config.getSchemaRegistryStencilFetchHeaders().get(0).toString());
-        Assert.assertEquals((new BasicHeader("key2", "value2")).toString(), config.getSchemaRegistryStencilFetchHeaders().get(1).toString());
+        Assert.assertEquals((new BasicHeader("key1", "value1")).toString(),
+                config.getSchemaRegistryStencilFetchHeaders().get(0).toString());
+        Assert.assertEquals((new BasicHeader("key2", "value2")).toString(),
+                config.getSchemaRegistryStencilFetchHeaders().get(1).toString());
         Assert.assertEquals(2, config.getSchemaRegistryStencilFetchHeaders().size());
     }
 }

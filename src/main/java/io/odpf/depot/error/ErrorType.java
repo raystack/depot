@@ -1,4 +1,4 @@
-package io.odpf.depot.error;
+package org.raystack.depot.error;
 
 public enum ErrorType {
     DESERIALIZATION_ERROR,
@@ -8,5 +8,5 @@ public enum ErrorType {
     SINK_5XX_ERROR,
     SINK_RETRYABLE_ERROR,
     SINK_UNKNOWN_ERROR,
-    DEFAULT_ERROR //Deprecated
+    DEFAULT_ERROR // Deprecated
 }

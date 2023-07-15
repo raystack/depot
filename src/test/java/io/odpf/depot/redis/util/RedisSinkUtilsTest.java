@@ -1,13 +1,13 @@
-package io.odpf.depot.redis.util;
+package org.raystack.depot.redis.util;
 
-import io.odpf.depot.error.ErrorInfo;
-import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.client.entry.RedisListEntry;
-import io.odpf.depot.redis.client.response.RedisClusterResponse;
-import io.odpf.depot.redis.client.response.RedisResponse;
-import io.odpf.depot.redis.record.RedisRecord;
+import org.raystack.depot.error.ErrorInfo;
+import org.raystack.depot.error.ErrorType;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.metrics.StatsDReporter;
+import org.raystack.depot.redis.client.entry.RedisListEntry;
+import org.raystack.depot.redis.client.response.RedisClusterResponse;
+import org.raystack.depot.redis.client.response.RedisResponse;
+import org.raystack.depot.redis.record.RedisRecord;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +38,8 @@ public class RedisSinkUtilsTest {
         responses.add(new RedisClusterResponse("FAILED AT 7"));
         responses.add(new RedisClusterResponse("FAILED AT 10"));
         responses.add(new RedisClusterResponse("LPUSH", "OK", null));
-        Map<Long, ErrorInfo> errors = RedisSinkUtils.getErrorsFromResponse(records, responses, new Instrumentation(statsDReporter, RedisSinkUtils.class));
+        Map<Long, ErrorInfo> errors = RedisSinkUtils.getErrorsFromResponse(records, responses,
+                new Instrumentation(statsDReporter, RedisSinkUtils.class));
         Assert.assertEquals(3, errors.size());
         Assert.assertEquals("FAILED AT 4", errors.get(4L).getException().getMessage());
         Assert.assertEquals("FAILED AT 7", errors.get(7L).getException().getMessage());
@@ -65,7 +66,8 @@ public class RedisSinkUtilsTest {
         responses.forEach(response -> {
             Mockito.when(response.isFailed()).thenReturn(false);
         });
-        Map<Long, ErrorInfo> errors = RedisSinkUtils.getErrorsFromResponse(records, responses, new Instrumentation(statsDReporter, RedisSinkUtils.class));
+        Map<Long, ErrorInfo> errors = RedisSinkUtils.getErrorsFromResponse(records, responses,
+                new Instrumentation(statsDReporter, RedisSinkUtils.class));
         Assert.assertTrue(errors.isEmpty());
     }
 }

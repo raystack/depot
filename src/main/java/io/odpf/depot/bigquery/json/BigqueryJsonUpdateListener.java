@@ -1,20 +1,20 @@
-package io.odpf.depot.bigquery.json;
+package org.raystack.depot.bigquery.json;
 
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
-import io.odpf.depot.bigquery.exception.BQTableUpdateFailure;
-import io.odpf.depot.bigquery.client.BigQueryClient;
-import io.odpf.depot.bigquery.converter.MessageRecordConverter;
-import io.odpf.depot.bigquery.converter.MessageRecordConverterCache;
-import io.odpf.depot.bigquery.proto.BigqueryFields;
-import io.odpf.depot.common.TupleString;
-import io.odpf.depot.config.BigQuerySinkConfig;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.stencil.OdpfStencilUpdateListener;
+import org.raystack.depot.bigquery.exception.BQTableUpdateFailure;
+import org.raystack.depot.bigquery.client.BigQueryClient;
+import org.raystack.depot.bigquery.converter.MessageRecordConverter;
+import org.raystack.depot.bigquery.converter.MessageRecordConverterCache;
+import org.raystack.depot.bigquery.proto.BigqueryFields;
+import org.raystack.depot.common.TupleString;
+import org.raystack.depot.config.BigQuerySinkConfig;
+import org.raystack.depot.message.OdpfMessageParser;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.stencil.OdpfStencilUpdateListener;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,13 +29,15 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
     private final BigQueryClient bigQueryClient;
     private final Instrumentation instrumentation;
 
-    public BigqueryJsonUpdateListener(BigQuerySinkConfig config, MessageRecordConverterCache converterCache, BigQueryClient bigQueryClient, Instrumentation instrumentation) {
+    public BigqueryJsonUpdateListener(BigQuerySinkConfig config, MessageRecordConverterCache converterCache,
+            BigQueryClient bigQueryClient, Instrumentation instrumentation) {
         this.converterCache = converterCache;
         this.config = config;
         this.bigQueryClient = bigQueryClient;
         this.instrumentation = instrumentation;
         if (!config.getSinkBigqueryDynamicSchemaEnable()) {
-            throw new UnsupportedOperationException("currently only schema inferred from incoming data is supported, stencil schema support for json will be added in future");
+            throw new UnsupportedOperationException(
+                    "currently only schema inferred from incoming data is supported, stencil schema support for json will be added in future");
         }
     }
 
@@ -50,7 +52,8 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
                 .map(this::getField)
                 .collect(Collectors.toCollection(HashSet::new));
         if (config.shouldAddMetadata() && !config.getBqMetadataNamespace().isEmpty()) {
-            throw new UnsupportedOperationException("metadata namespace is not supported, because nested json structure is not supported");
+            throw new UnsupportedOperationException(
+                    "metadata namespace is not supported, because nested json structure is not supported");
         }
         addMetadataFields(fieldsToBeUpdated, defaultColumns);
         try {
@@ -66,7 +69,8 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
     }
 
     /*
-    throws error incase there are duplicate fields between metadata and default columns config
+     * throws error incase there are duplicate fields between metadata and default
+     * columns config
      */
     private void addMetadataFields(HashSet<Field> fieldsToBeUpdated, List<TupleString> defaultColumns) {
         if (config.shouldAddMetadata()) {
@@ -81,7 +85,8 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
                     .filter(m -> defaultColumnNames.contains(m.getName())).findFirst();
             if (duplicateField.isPresent()) {
                 String duplicateFieldName = duplicateField.get().getName();
-                instrumentation.logError("duplicate key found in default columns and metadata config {}", duplicateFieldName);
+                instrumentation.logError("duplicate key found in default columns and metadata config {}",
+                        duplicateFieldName);
                 throw new IllegalArgumentException("duplicate field called "
                         + duplicateFieldName
                         + " is present in both default columns config and metadata config");
@@ -97,7 +102,8 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
     }
 
     /**
-     * Range BigQuery partitioning is not supported, supported partition fields have to be of DATE or TIMESTAMP type..
+     * Range BigQuery partitioning is not supported, supported partition fields have
+     * to be of DATE or TIMESTAMP type..
      */
     private Field checkAndCreateField(String fieldName, LegacySQLTypeName fieldDataType) {
         Boolean isPartitioningEnabled = config.isTablePartitioningEnabled();
@@ -105,9 +111,11 @@ public class BigqueryJsonUpdateListener extends OdpfStencilUpdateListener {
             return Field.newBuilder(fieldName, fieldDataType).setMode(Field.Mode.NULLABLE).build();
         }
         String partitionKey = config.getTablePartitionKey();
-        boolean isValidPartitionDataType = (fieldDataType == LegacySQLTypeName.TIMESTAMP || fieldDataType == LegacySQLTypeName.DATE);
+        boolean isValidPartitionDataType = (fieldDataType == LegacySQLTypeName.TIMESTAMP
+                || fieldDataType == LegacySQLTypeName.DATE);
         if (partitionKey.equals(fieldName) && !isValidPartitionDataType) {
-            throw new UnsupportedOperationException("supported partition fields have to be of DATE or TIMESTAMP type..");
+            throw new UnsupportedOperationException(
+                    "supported partition fields have to be of DATE or TIMESTAMP type..");
         }
         return Field.newBuilder(fieldName, fieldDataType).setMode(Field.Mode.NULLABLE).build();
     }

@@ -1,15 +1,15 @@
-package io.odpf.depot.log;
+package org.raystack.depot.log;
 
-import io.odpf.depot.message.json.JsonOdpfMessageParser;
-import io.odpf.depot.OdpfSinkResponse;
-import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.error.ErrorInfo;
-import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.exception.OdpfSinkException;
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.metrics.JsonParserMetrics;
+import org.raystack.depot.message.json.JsonOdpfMessageParser;
+import org.raystack.depot.OdpfSinkResponse;
+import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.error.ErrorInfo;
+import org.raystack.depot.error.ErrorType;
+import org.raystack.depot.exception.OdpfSinkException;
+import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.message.OdpfMessageParser;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.metrics.JsonParserMetrics;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,14 +33,14 @@ import static org.mockito.Mockito.verify;
 public class LogSinkTest {
     private final String template = "\n================= DATA =======================\n{}\n================= METADATA =======================\n{}\n";
     private OdpfSinkConfig config;
-    private OdpfMessageParser odpfMessageParser;
+    private OdpfMessageParser raystackMessageParser;
     private Instrumentation instrumentation;
     private JsonParserMetrics jsonParserMetrics;
 
     @Before
     public void setUp() throws Exception {
         config = mock(OdpfSinkConfig.class);
-        odpfMessageParser = mock(OdpfMessageParser.class);
+        raystackMessageParser = mock(OdpfMessageParser.class);
         instrumentation = mock(Instrumentation.class);
         jsonParserMetrics = new JsonParserMetrics(config);
 
@@ -48,24 +48,27 @@ public class LogSinkTest {
 
     @Test
     public void shouldProcessEmptyMessageWithNoError() throws IOException {
-        LogSink logSink = new LogSink(config, odpfMessageParser, instrumentation);
+        LogSink logSink = new LogSink(config, raystackMessageParser, instrumentation);
         ArrayList<OdpfMessage> messages = new ArrayList<>();
-        OdpfSinkResponse odpfSinkResponse = logSink.pushToSink(messages);
-        Map<Long, ErrorInfo> errors = odpfSinkResponse.getErrors();
+        OdpfSinkResponse raystackSinkResponse = logSink.pushToSink(messages);
+        Map<Long, ErrorInfo> errors = raystackSinkResponse.getErrors();
 
         assertEquals(Collections.emptyMap(), errors);
-        verify(odpfMessageParser, never()).parse(any(), any(), any());
+        verify(raystackMessageParser, never()).parse(any(), any(), any());
         verify(instrumentation, never()).logInfo(any(), any(), any());
     }
 
     @Test
     public void shouldLogJsonMessages() throws OdpfSinkException {
-        HashMap<String, String> configMap = new HashMap<String, String>() {{
-            put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "log_message");
-        }};
-        OdpfSinkConfig odpfSinkConfig = ConfigFactory.create(OdpfSinkConfig.class, configMap);
-        OdpfMessageParser messageParser = new JsonOdpfMessageParser(odpfSinkConfig, instrumentation, jsonParserMetrics);
-        LogSink logSink = new LogSink(odpfSinkConfig, messageParser, instrumentation);
+        HashMap<String, String> configMap = new HashMap<String, String>() {
+            {
+                put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "log_message");
+            }
+        };
+        OdpfSinkConfig raystackSinkConfig = ConfigFactory.create(OdpfSinkConfig.class, configMap);
+        OdpfMessageParser messageParser = new JsonOdpfMessageParser(raystackSinkConfig, instrumentation,
+                jsonParserMetrics);
+        LogSink logSink = new LogSink(raystackSinkConfig, messageParser, instrumentation);
         ArrayList<OdpfMessage> messages = new ArrayList<>();
         String validJsonFirstName = "{\"first_name\":\"john\"}";
         byte[] logMessage1 = validJsonFirstName.getBytes();
@@ -73,27 +76,31 @@ public class LogSinkTest {
         byte[] logMessage2 = validJsonLastName.getBytes();
         messages.add(new OdpfMessage(null, logMessage1));
         messages.add(new OdpfMessage(null, logMessage2));
-        OdpfSinkResponse odpfSinkResponse = logSink.pushToSink(messages);
+        OdpfSinkResponse raystackSinkResponse = logSink.pushToSink(messages);
 
-        //assert no error
-        Map<Long, ErrorInfo> errors = odpfSinkResponse.getErrors();
+        // assert no error
+        Map<Long, ErrorInfo> errors = raystackSinkResponse.getErrors();
         assertEquals(Collections.emptyMap(), errors);
 
-        //assert processed message
+        // assert processed message
         ArgumentCaptor<String> jsonStrCaptor = ArgumentCaptor.forClass(String.class);
-        verify(instrumentation, times(2)).logInfo(eq(template), jsonStrCaptor.capture(), eq(Collections.emptyMap().toString()));
+        verify(instrumentation, times(2)).logInfo(eq(template), jsonStrCaptor.capture(),
+                eq(Collections.emptyMap().toString()));
         assertThat(jsonStrCaptor.getAllValues(), containsInAnyOrder(validJsonFirstName, validJsonLastName));
     }
 
     @Test
     public void shouldReturnErrorResponseAndProcessValidMessage() throws OdpfSinkException {
-        HashMap<String, String> configMap = new HashMap<String, String>() {{
-            put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "log_message");
-        }};
-        OdpfSinkConfig odpfSinkConfig = ConfigFactory.create(OdpfSinkConfig.class, configMap);
+        HashMap<String, String> configMap = new HashMap<String, String>() {
+            {
+                put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "log_message");
+            }
+        };
+        OdpfSinkConfig raystackSinkConfig = ConfigFactory.create(OdpfSinkConfig.class, configMap);
 
-        OdpfMessageParser messageParser = new JsonOdpfMessageParser(odpfSinkConfig, instrumentation, jsonParserMetrics);
-        LogSink logSink = new LogSink(odpfSinkConfig, messageParser, instrumentation);
+        OdpfMessageParser messageParser = new JsonOdpfMessageParser(raystackSinkConfig, instrumentation,
+                jsonParserMetrics);
+        LogSink logSink = new LogSink(raystackSinkConfig, messageParser, instrumentation);
         ArrayList<OdpfMessage> messages = new ArrayList<>();
         String validJsonFirstName = "{\"first_name\":\"john\"}";
         byte[] logMessage1 = validJsonFirstName.getBytes();
@@ -101,15 +108,16 @@ public class LogSinkTest {
         byte[] invalidLogMessage = invalidJson.getBytes();
         messages.add(new OdpfMessage(null, logMessage1));
         messages.add(new OdpfMessage(null, invalidLogMessage));
-        OdpfSinkResponse odpfSinkResponse = logSink.pushToSink(messages);
+        OdpfSinkResponse raystackSinkResponse = logSink.pushToSink(messages);
 
-        //assert error
-        ErrorInfo error = odpfSinkResponse.getErrorsFor(1L);
+        // assert error
+        ErrorInfo error = raystackSinkResponse.getErrorsFor(1L);
         assertEquals(ErrorType.DESERIALIZATION_ERROR, error.getErrorType());
 
-        //assert valid message processed
+        // assert valid message processed
         ArgumentCaptor<String> jsonStrCaptor = ArgumentCaptor.forClass(String.class);
-        verify(instrumentation, times(1)).logInfo(eq(template), jsonStrCaptor.capture(), eq(Collections.emptyMap().toString()));
+        verify(instrumentation, times(1)).logInfo(eq(template), jsonStrCaptor.capture(),
+                eq(Collections.emptyMap().toString()));
         assertEquals(validJsonFirstName, jsonStrCaptor.getValue().toString());
     }
 }

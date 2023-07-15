@@ -1,22 +1,22 @@
-package io.odpf.depot.message.proto;
+package org.raystack.depot.message.proto;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.exception.ConfigurationException;
-import io.odpf.depot.exception.EmptyMessageException;
-import io.odpf.depot.message.MessageUtils;
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
-import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.stencil.OdpfStencilUpdateListener;
-import io.odpf.depot.utils.StencilUtils;
-import io.odpf.stencil.StencilClientFactory;
-import io.odpf.stencil.client.StencilClient;
-import io.odpf.stencil.config.StencilConfig;
+import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.exception.ConfigurationException;
+import org.raystack.depot.exception.EmptyMessageException;
+import org.raystack.depot.message.MessageUtils;
+import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.message.OdpfMessageParser;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.depot.metrics.StatsDReporter;
+import org.raystack.depot.stencil.OdpfStencilUpdateListener;
+import org.raystack.depot.utils.StencilUtils;
+import org.raystack.stencil.StencilClientFactory;
+import org.raystack.stencil.client.StencilClient;
+import org.raystack.stencil.config.StencilConfig;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -33,8 +33,10 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
     private final StencilClient stencilClient;
     private final ProtoFieldParser protoMappingParser = new ProtoFieldParser();
 
-    public ProtoOdpfMessageParser(OdpfSinkConfig sinkConfig, StatsDReporter reporter, OdpfStencilUpdateListener protoUpdateListener) {
-        StencilConfig stencilConfig = StencilUtils.getStencilConfig(sinkConfig, reporter.getClient(), protoUpdateListener);
+    public ProtoOdpfMessageParser(OdpfSinkConfig sinkConfig, StatsDReporter reporter,
+            OdpfStencilUpdateListener protoUpdateListener) {
+        StencilConfig stencilConfig = StencilUtils.getStencilConfig(sinkConfig, reporter.getClient(),
+                protoUpdateListener);
         if (sinkConfig.isSchemaRegistryStencilEnable()) {
             stencilClient = StencilClientFactory.getClient(sinkConfig.getSchemaRegistryStencilUrls(), stencilConfig);
         } else {
@@ -46,7 +48,8 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
         this.stencilClient = stencilClient;
     }
 
-    public ParsedOdpfMessage parse(OdpfMessage message, SinkConnectorSchemaMessageMode type, String schemaClass) throws IOException {
+    public ParsedOdpfMessage parse(OdpfMessage message, SinkConnectorSchemaMessageMode type, String schemaClass)
+            throws IOException {
         if (type == null) {
             throw new IOException("parser mode not defined");
         }
@@ -95,7 +98,8 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
         return t -> objects.add(keyExtractor.apply(t));
     }
 
-    public OdpfMessageSchema getSchema(String schemaClass, Map<String, Descriptors.Descriptor> newDescriptors) throws IOException {
+    public OdpfMessageSchema getSchema(String schemaClass, Map<String, Descriptors.Descriptor> newDescriptors)
+            throws IOException {
         ProtoField protoField = new ProtoField();
         protoField = protoMappingParser.parseFields(protoField, schemaClass, newDescriptors,
                 getTypeNameToPackageNameMap(newDescriptors));

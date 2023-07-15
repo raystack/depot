@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery;
+package org.raystack.depot.bigquery;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

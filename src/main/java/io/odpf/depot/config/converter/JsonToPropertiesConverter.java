@@ -1,4 +1,4 @@
-package io.odpf.depot.config.converter;
+package org.raystack.depot.config.converter;
 
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
@@ -14,7 +14,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-
 
 public class JsonToPropertiesConverter implements org.aeonbits.owner.Converter<Properties> {
     private static final Gson GSON = new Gson();
@@ -49,7 +48,8 @@ public class JsonToPropertiesConverter implements org.aeonbits.owner.Converter<P
         DuplicateFinder duplicateFinder = flattenValues(properties)
                 .collect(DuplicateFinder::new, DuplicateFinder::accept, DuplicateFinder::combine);
         if (duplicateFinder.duplicates.size() > 0) {
-            throw new IllegalArgumentException("duplicates found in SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING for : " + duplicateFinder.duplicates);
+            throw new IllegalArgumentException("duplicates found in SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING for : "
+                    + duplicateFinder.duplicates);
         }
     }
 

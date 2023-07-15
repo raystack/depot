@@ -1,8 +1,8 @@
-package io.odpf.depot.message.proto.converter.fields;
+package org.raystack.depot.message.proto.converter.fields;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
-import io.odpf.depot.TestBytesMessage;
+import org.raystack.depot.TestBytesMessage;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import static org.junit.Assert.*;
-
 
 public class ByteProtoFieldTest {
 
@@ -43,7 +42,8 @@ public class ByteProtoFieldTest {
     public void shouldNotMatchFieldOtherThanByteProtobufField() {
         TestBytesMessage bytesMessage = TestBytesMessage.newBuilder()
                 .build();
-        Descriptors.FieldDescriptor fieldDescriptor = bytesMessage.getDescriptorForType().findFieldByName("order_number");
+        Descriptors.FieldDescriptor fieldDescriptor = bytesMessage.getDescriptorForType()
+                .findFieldByName("order_number");
         byteProtoField = new ByteProtoField(fieldDescriptor, bytesMessage.getField(fieldDescriptor));
 
         assertFalse(byteProtoField.matches());

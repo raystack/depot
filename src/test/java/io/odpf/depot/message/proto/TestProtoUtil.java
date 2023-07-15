@@ -1,11 +1,11 @@
-package io.odpf.depot.message.proto;
+package org.raystack.depot.message.proto;
 
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
-import io.odpf.depot.StatusBQ;
-import io.odpf.depot.TestMessageBQ;
-import io.odpf.depot.TestNestedMessageBQ;
+import org.raystack.depot.StatusBQ;
+import org.raystack.depot.TestMessageBQ;
+import org.raystack.depot.TestNestedMessageBQ;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -31,8 +31,10 @@ public class TestProtoUtil {
                 .setTripDuration(Duration.newBuilder().setSeconds(1).setNanos(TRIP_DURATION_NANOS).build())
                 .addUpdatedAt(createdAt)
                 .addUpdatedAt(createdAt)
-                .addIntervals(Duration.newBuilder().setSeconds(TRIP_DURATION_SECONDS_1).setNanos(TRIP_DURATION_NANOS).build())
-                .addIntervals(Duration.newBuilder().setSeconds(TRIP_DURATION_SECONDS_2).setNanos(TRIP_DURATION_NANOS).build())
+                .addIntervals(
+                        Duration.newBuilder().setSeconds(TRIP_DURATION_SECONDS_1).setNanos(TRIP_DURATION_NANOS).build())
+                .addIntervals(
+                        Duration.newBuilder().setSeconds(TRIP_DURATION_SECONDS_2).setNanos(TRIP_DURATION_NANOS).build())
                 .build();
 
     }
@@ -44,7 +46,8 @@ public class TestProtoUtil {
                 .build();
     }
 
-    public static ProtoField createProtoField(String name, DescriptorProtos.FieldDescriptorProto.Type type, DescriptorProtos.FieldDescriptorProto.Label label) {
+    public static ProtoField createProtoField(String name, DescriptorProtos.FieldDescriptorProto.Type type,
+            DescriptorProtos.FieldDescriptorProto.Label label) {
         return new ProtoField(name, "", type, label, new ArrayList<>(), 0);
     }
 
@@ -52,11 +55,14 @@ public class TestProtoUtil {
         return new ProtoField("", "", null, null, subFields, 0);
     }
 
-    public static ProtoField createProtoField(String name, String typeName, DescriptorProtos.FieldDescriptorProto.Type type, DescriptorProtos.FieldDescriptorProto.Label label) {
+    public static ProtoField createProtoField(String name, String typeName,
+            DescriptorProtos.FieldDescriptorProto.Type type, DescriptorProtos.FieldDescriptorProto.Label label) {
         return new ProtoField(name, typeName, type, label, new ArrayList<>(), 0);
     }
 
-    public static ProtoField createProtoField(String name, String typeName, DescriptorProtos.FieldDescriptorProto.Type type, DescriptorProtos.FieldDescriptorProto.Label label, List<ProtoField> fields) {
+    public static ProtoField createProtoField(String name, String typeName,
+            DescriptorProtos.FieldDescriptorProto.Type type, DescriptorProtos.FieldDescriptorProto.Label label,
+            List<ProtoField> fields) {
         return new ProtoField(name, typeName, type, label, fields, 0);
     }
 
@@ -64,7 +70,8 @@ public class TestProtoUtil {
         return new ProtoField(name, "", null, null, new ArrayList<>(), index);
     }
 
-    public static ProtoField createProtoField(String name, String typeName, DescriptorProtos.FieldDescriptorProto.Type type, int index, List<ProtoField> fields) {
+    public static ProtoField createProtoField(String name, String typeName,
+            DescriptorProtos.FieldDescriptorProto.Type type, int index, List<ProtoField> fields) {
         return new ProtoField(name, typeName, type, null, fields, index);
     }
 }

@@ -1,11 +1,10 @@
-package io.odpf.depot.message.proto;
+package org.raystack.depot.message.proto;
 
-import io.odpf.depot.TestMessage;
+import org.raystack.depot.TestMessage;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
-
 
 public class UnknownProtoFieldsTest {
 

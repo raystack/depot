@@ -1,22 +1,22 @@
-package io.odpf.depot.common;
+package org.raystack.depot.common;
 
 import com.google.protobuf.Descriptors;
-import io.odpf.depot.TestBookingLogMessage;
-import io.odpf.depot.TestKey;
-import io.odpf.depot.TestLocation;
-import io.odpf.depot.TestMessage;
-import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
-import io.odpf.depot.exception.InvalidTemplateException;
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.OdpfMessageParserFactory;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.proto.ProtoOdpfMessageParser;
-import io.odpf.depot.message.proto.ProtoOdpfParsedMessage;
-import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.stencil.Parser;
-import io.odpf.stencil.StencilClientFactory;
+import org.raystack.depot.TestBookingLogMessage;
+import org.raystack.depot.TestKey;
+import org.raystack.depot.TestLocation;
+import org.raystack.depot.TestMessage;
+import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.enums.SinkConnectorSchemaDataType;
+import org.raystack.depot.exception.InvalidTemplateException;
+import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.message.OdpfMessageParserFactory;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.proto.ProtoOdpfMessageParser;
+import org.raystack.depot.message.proto.ProtoOdpfParsedMessage;
+import org.raystack.depot.metrics.StatsDReporter;
+import org.raystack.stencil.Parser;
+import org.raystack.stencil.StencilClientFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,24 +52,30 @@ public class TemplateTest {
                 .setAmountPaidByCash(12.3F)
                 .setDriverPickupLocation(TestLocation.newBuilder().setLongitude(10.0).setLatitude(23.9).build())
                 .build();
-        TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS").build();
+        TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS")
+                .build();
         OdpfMessage message = new OdpfMessage(testKey.toByteArray(), testMessage.toByteArray());
         OdpfMessage bookingMessage = new OdpfMessage(testKey.toByteArray(), testBookingLogMessage.toByteArray());
-        Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {{
-            put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
-            put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
-            put(String.format("%s", TestBookingLogMessage.class.getName()), TestBookingLogMessage.getDescriptor());
-            put(String.format("%s", TestBookingLogMessage.TopicMetadata.class.getName()), TestBookingLogMessage.TopicMetadata.getDescriptor());
-            put(String.format("%s", TestLocation.class.getName()), TestLocation.getDescriptor());
-        }};
+        Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {
+            {
+                put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
+                put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
+                put(String.format("%s", TestBookingLogMessage.class.getName()), TestBookingLogMessage.getDescriptor());
+                put(String.format("%s", TestBookingLogMessage.TopicMetadata.class.getName()),
+                        TestBookingLogMessage.TopicMetadata.getDescriptor());
+                put(String.format("%s", TestLocation.class.getName()), TestLocation.getDescriptor());
+            }
+        };
         Parser protoParserTest = StencilClientFactory.getClient().getParser(TestMessage.class.getName());
         parsedTestMessage = new ProtoOdpfParsedMessage(protoParserTest.parse((byte[]) message.getLogMessage()));
         Parser protoParserBooking = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
-        parsedBookingMessage = new ProtoOdpfParsedMessage(protoParserBooking.parse((byte[]) bookingMessage.getLogMessage()));
+        parsedBookingMessage = new ProtoOdpfParsedMessage(
+                protoParserBooking.parse((byte[]) bookingMessage.getLogMessage()));
         when(sinkConfig.getSinkConnectorSchemaDataType()).thenReturn(SinkConnectorSchemaDataType.PROTOBUF);
-        ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(sinkConfig, statsDReporter);
-        schemaTest = messageParser.getSchema("io.odpf.depot.TestMessage", descriptorsMap);
-        schemaBooking = messageParser.getSchema("io.odpf.depot.TestBookingLogMessage", descriptorsMap);
+        ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(sinkConfig,
+                statsDReporter);
+        schemaTest = messageParser.getSchema("org.raystack.depot.TestMessage", descriptorsMap);
+        schemaBooking = messageParser.getSchema("org.raystack.depot.TestBookingLogMessage", descriptorsMap);
     }
 
     @Test
@@ -116,7 +122,8 @@ public class TemplateTest {
 
     @Test
     public void shouldNotAcceptStringWithPatternForCollectionKeyWithEmptyVariables() {
-        InvalidTemplateException e = assertThrows(InvalidTemplateException.class, () -> new Template("Test-%s%d%b,t1,t2"));
+        InvalidTemplateException e = assertThrows(InvalidTemplateException.class,
+                () -> new Template("Test-%s%d%b,t1,t2"));
         Assert.assertEquals("Template is not valid, variables=3, validArgs=3, values=2", e.getMessage());
 
         e = assertThrows(InvalidTemplateException.class, () -> new Template("Test-%s%s%y,order_number,order_details"));

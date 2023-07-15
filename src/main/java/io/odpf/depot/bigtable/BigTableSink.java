@@ -1,16 +1,16 @@
-package io.odpf.depot.bigtable;
+package org.raystack.depot.bigtable;
 
-import io.odpf.depot.OdpfSink;
-import io.odpf.depot.OdpfSinkResponse;
-import io.odpf.depot.bigtable.client.BigTableClient;
-import io.odpf.depot.bigtable.model.BigTableRecord;
-import io.odpf.depot.bigtable.parser.BigTableRecordParser;
-import io.odpf.depot.bigtable.parser.BigTableResponseParser;
-import io.odpf.depot.bigtable.response.BigTableResponse;
-import io.odpf.depot.error.ErrorInfo;
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.metrics.BigTableMetrics;
-import io.odpf.depot.metrics.Instrumentation;
+import org.raystack.depot.OdpfSink;
+import org.raystack.depot.OdpfSinkResponse;
+import org.raystack.depot.bigtable.client.BigTableClient;
+import org.raystack.depot.bigtable.model.BigTableRecord;
+import org.raystack.depot.bigtable.parser.BigTableRecordParser;
+import org.raystack.depot.bigtable.parser.BigTableResponseParser;
+import org.raystack.depot.bigtable.response.BigTableResponse;
+import org.raystack.depot.error.ErrorInfo;
+import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.metrics.BigTableMetrics;
+import org.raystack.depot.metrics.Instrumentation;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,7 +23,8 @@ public class BigTableSink implements OdpfSink {
     private final BigTableMetrics bigtableMetrics;
     private final Instrumentation instrumentation;
 
-    public BigTableSink(BigTableClient bigTableClient, BigTableRecordParser bigTableRecordParser, BigTableMetrics bigtableMetrics, Instrumentation instrumentation) {
+    public BigTableSink(BigTableClient bigTableClient, BigTableRecordParser bigTableRecordParser,
+            BigTableMetrics bigtableMetrics, Instrumentation instrumentation) {
         this.bigTableClient = bigTableClient;
         this.bigTableRecordParser = bigTableRecordParser;
         this.bigtableMetrics = bigtableMetrics;
@@ -33,23 +34,27 @@ public class BigTableSink implements OdpfSink {
     @Override
     public OdpfSinkResponse pushToSink(List<OdpfMessage> messages) {
         List<BigTableRecord> records = bigTableRecordParser.convert(messages);
-        Map<Boolean, List<BigTableRecord>> splitterRecords = records.stream().collect(Collectors.partitioningBy(BigTableRecord::isValid));
+        Map<Boolean, List<BigTableRecord>> splitterRecords = records.stream()
+                .collect(Collectors.partitioningBy(BigTableRecord::isValid));
         List<BigTableRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
         List<BigTableRecord> validRecords = splitterRecords.get(Boolean.TRUE);
 
-        OdpfSinkResponse odpfSinkResponse = new OdpfSinkResponse();
-        invalidRecords.forEach(invalidRecord -> odpfSinkResponse.addErrors(invalidRecord.getIndex(), invalidRecord.getErrorInfo()));
+        OdpfSinkResponse raystackSinkResponse = new OdpfSinkResponse();
+        invalidRecords.forEach(
+                invalidRecord -> raystackSinkResponse.addErrors(invalidRecord.getIndex(),
+                        invalidRecord.getErrorInfo()));
 
         if (validRecords.size() > 0) {
             BigTableResponse bigTableResponse = bigTableClient.send(validRecords);
             if (bigTableResponse != null && bigTableResponse.hasErrors()) {
                 instrumentation.logInfo("Found {} Error records in response", bigTableResponse.getErrorCount());
-                Map<Long, ErrorInfo> errorInfoMap = BigTableResponseParser.getErrorsFromSinkResponse(validRecords, bigTableResponse, bigtableMetrics, instrumentation);
-                errorInfoMap.forEach(odpfSinkResponse::addErrors);
+                Map<Long, ErrorInfo> errorInfoMap = BigTableResponseParser.getErrorsFromSinkResponse(validRecords,
+                        bigTableResponse, bigtableMetrics, instrumentation);
+                errorInfoMap.forEach(raystackSinkResponse::addErrors);
             }
         }
 
-        return odpfSinkResponse;
+        return raystackSinkResponse;
     }
 
     @Override

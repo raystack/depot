@@ -1,11 +1,10 @@
-package io.odpf.depot.config.converter;
+package org.raystack.depot.config.converter;
 
-import io.odpf.depot.common.Tuple;
+import org.raystack.depot.common.Tuple;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
-
 
 public class ConverterUtilsTest {
 

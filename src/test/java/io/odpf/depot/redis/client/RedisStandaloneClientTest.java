@@ -1,10 +1,10 @@
-package io.odpf.depot.redis.client;
+package org.raystack.depot.redis.client;
 
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.redis.client.response.RedisResponse;
-import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
-import io.odpf.depot.redis.record.RedisRecord;
-import io.odpf.depot.redis.ttl.RedisTtl;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.redis.client.response.RedisResponse;
+import org.raystack.depot.redis.client.response.RedisStandaloneResponse;
+import org.raystack.depot.redis.record.RedisRecord;
+import org.raystack.depot.redis.ttl.RedisTtl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisStandaloneClientTest {
@@ -48,28 +47,31 @@ public class RedisStandaloneClientTest {
         Mockito.when(pipeline.exec()).thenReturn(response);
         Object ob = new Object();
         Mockito.when(response.get()).thenReturn(ob);
-        List<RedisRecord> redisRecords = new ArrayList<RedisRecord>() {{
-            add(Mockito.mock(RedisRecord.class));
-            add(Mockito.mock(RedisRecord.class));
-            add(Mockito.mock(RedisRecord.class));
-            add(Mockito.mock(RedisRecord.class));
-            add(Mockito.mock(RedisRecord.class));
-            add(Mockito.mock(RedisRecord.class));
-        }};
-        List<RedisStandaloneResponse> responses = new ArrayList<RedisStandaloneResponse>() {{
-            add(Mockito.mock(RedisStandaloneResponse.class));
-            add(Mockito.mock(RedisStandaloneResponse.class));
-            add(Mockito.mock(RedisStandaloneResponse.class));
-            add(Mockito.mock(RedisStandaloneResponse.class));
-            add(Mockito.mock(RedisStandaloneResponse.class));
-            add(Mockito.mock(RedisStandaloneResponse.class));
-        }};
+        List<RedisRecord> redisRecords = new ArrayList<RedisRecord>() {
+            {
+                add(Mockito.mock(RedisRecord.class));
+                add(Mockito.mock(RedisRecord.class));
+                add(Mockito.mock(RedisRecord.class));
+                add(Mockito.mock(RedisRecord.class));
+                add(Mockito.mock(RedisRecord.class));
+                add(Mockito.mock(RedisRecord.class));
+            }
+        };
+        List<RedisStandaloneResponse> responses = new ArrayList<RedisStandaloneResponse>() {
+            {
+                add(Mockito.mock(RedisStandaloneResponse.class));
+                add(Mockito.mock(RedisStandaloneResponse.class));
+                add(Mockito.mock(RedisStandaloneResponse.class));
+                add(Mockito.mock(RedisStandaloneResponse.class));
+                add(Mockito.mock(RedisStandaloneResponse.class));
+                add(Mockito.mock(RedisStandaloneResponse.class));
+            }
+        };
         IntStream.range(0, redisRecords.size()).forEach(
                 index -> {
                     Mockito.when(redisRecords.get(index).send(pipeline, redisTTL)).thenReturn(responses.get(index));
                     Mockito.when(responses.get(index).process()).thenReturn(responses.get(index));
-                }
-        );
+                });
         List<RedisResponse> actualResponses = redisClient.send(redisRecords);
         Mockito.verify(pipeline, Mockito.times(1)).multi();
         Mockito.verify(pipeline, Mockito.times(1)).sync();
@@ -77,7 +79,6 @@ public class RedisStandaloneClientTest {
         IntStream.range(0, actualResponses.size()).forEach(
                 index -> {
                     Assert.assertEquals(responses.get(index), actualResponses.get(index));
-                }
-        );
+                });
     }
 }

@@ -1,12 +1,12 @@
-package io.odpf.depot.common;
+package org.raystack.depot.common;
 
 import com.google.common.base.Splitter;
-import io.odpf.depot.exception.InvalidTemplateException;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.field.GenericFieldFactory;
-import io.odpf.depot.message.proto.converter.fields.ProtoField;
-import io.odpf.depot.utils.StringUtils;
+import org.raystack.depot.exception.InvalidTemplateException;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.field.GenericFieldFactory;
+import org.raystack.depot.message.proto.converter.fields.ProtoField;
+import org.raystack.depot.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,8 @@ public class Template {
         int values = patternVariableFieldNames.size();
         int variables = StringUtils.count(templatePattern, '%');
         if (validArgs != values || variables != values) {
-            throw new InvalidTemplateException(String.format("Template is not valid, variables=%d, validArgs=%d, values=%d", variables, validArgs, values));
+            throw new InvalidTemplateException(String.format(
+                    "Template is not valid, variables=%d, validArgs=%d, values=%d", variables, validArgs, values));
         }
     }
 

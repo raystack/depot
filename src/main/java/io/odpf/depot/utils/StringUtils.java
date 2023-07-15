@@ -1,4 +1,4 @@
-package io.odpf.depot.utils;
+package org.raystack.depot.utils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,7 +31,6 @@ public class StringUtils {
     }
 
     public static int count(String in, char c) {
-        return IntStream.range(0, in.length()).
-                reduce(0, (x, y) -> x + (in.charAt(y) == c ? 1 : 0));
+        return IntStream.range(0, in.length()).reduce(0, (x, y) -> x + (in.charAt(y) == c ? 1 : 0));
     }
 }

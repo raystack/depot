@@ -1,8 +1,8 @@
-package io.odpf.depot.bigtable.parser;
+package org.raystack.depot.bigtable.parser;
 
-import io.odpf.depot.common.Template;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.common.Template;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.ParsedOdpfMessage;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor

@@ -1,4 +1,4 @@
-package io.odpf.depot.metrics;
+package org.raystack.depot.metrics;
 
 import com.timgroup.statsd.StatsDClient;
 import org.slf4j.Logger;

@@ -1,11 +1,11 @@
-package io.odpf.depot.message.json;
+package org.raystack.depot.message.json;
 
-import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.exception.EmptyMessageException;
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.metrics.JsonParserMetrics;
+import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.exception.EmptyMessageException;
+import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.metrics.JsonParserMetrics;
 import org.aeonbits.owner.ConfigFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,8 +17,8 @@ import java.util.Collections;
 import java.util.Map;
 
 import static com.google.common.collect.ImmutableMap.of;
-import static io.odpf.depot.message.SinkConnectorSchemaMessageMode.LOG_KEY;
-import static io.odpf.depot.message.SinkConnectorSchemaMessageMode.LOG_MESSAGE;
+import static org.raystack.depot.message.SinkConnectorSchemaMessageMode.LOG_KEY;
+import static org.raystack.depot.message.SinkConnectorSchemaMessageMode.LOG_MESSAGE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -28,7 +28,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-
 public class JsonOdpfMessageParserTest {
 
     private final OdpfSinkConfig defaultConfig = ConfigFactory.create(OdpfSinkConfig.class, Collections.emptyMap());
@@ -36,12 +35,16 @@ public class JsonOdpfMessageParserTest {
     private final JsonParserMetrics jsonParserMetrics = new JsonParserMetrics(defaultConfig);
 
     /*
-            JSONObject.equals does reference check, so cant use assertEquals instead we use expectedJson.similar(actualJson)
-            reference https://github.com/stleary/JSON-java/blob/master/src/test/java/org/json/junit/JSONObjectTest.java#L132
-         */
+     * JSONObject.equals does reference check, so cant use assertEquals instead we
+     * use expectedJson.similar(actualJson)
+     * reference
+     * https://github.com/stleary/JSON-java/blob/master/src/test/java/org/json/junit
+     * /JSONObjectTest.java#L132
+     */
     @Test
     public void shouldParseJsonLogMessage() throws IOException {
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation,
+                jsonParserMetrics);
         String validJsonStr = "{\"first_name\":\"john\"}";
         OdpfMessage jsonOdpfMessage = new OdpfMessage(null, validJsonStr.getBytes());
 
@@ -53,7 +56,8 @@ public class JsonOdpfMessageParserTest {
 
     @Test
     public void shouldPublishTimeTakenToCastJsonValuesToString() throws IOException {
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation,
+                jsonParserMetrics);
         String validJsonStr = "{\"first_name\":\"john\"}";
         OdpfMessage jsonOdpfMessage = new OdpfMessage(null, validJsonStr.getBytes());
 
@@ -69,7 +73,8 @@ public class JsonOdpfMessageParserTest {
     public void shouldCastTheJSONValuesToString() throws IOException {
         Map<String, String> configMap = of("SINK_BIGQUERY_DEFAULT_DATATYPE_STRING_ENABLE", "true");
         OdpfSinkConfig config = ConfigFactory.create(OdpfSinkConfig.class, configMap);
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(config, instrumentation, jsonParserMetrics);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(config, instrumentation,
+                jsonParserMetrics);
         String validJsonStr = "{\n"
                 + "  \"idfv\": \"FE533F4A-F776-4BEF-98B7-6BD1DFC2972C\",\n"
                 + "  \"is_lat\": true,\n"
@@ -82,18 +87,18 @@ public class JsonOdpfMessageParserTest {
         ParsedOdpfMessage parsedOdpfMessage = jsonOdpfMessageParser.parse(jsonOdpfMessage, LOG_MESSAGE, null);
         JSONObject actualJson = (JSONObject) parsedOdpfMessage.getRaw();
         String stringifiedJsonStr = "{\n"
-                //normal string should remain as is
+                // normal string should remain as is
                 + "  \"idfv\": \"FE533F4A-F776-4BEF-98B7-6BD1DFC2972C\",\n"
 
-                //boolean should be converted to string
+                // boolean should be converted to string
                 + "  \"is_lat\": \"true\",\n"
-                //null will not be there entirely
-                //"  \"contributor_2_af_prt\": null,\n"
+                // null will not be there entirely
+                // " \"contributor_2_af_prt\": null,\n"
 
-                //float should be converted to string
+                // float should be converted to string
                 + "  \"sdk_version\": \"6.310932397154218\",\n"
 
-                //integer should be converted to string
+                // integer should be converted to string
                 + "  \"whole_number\": \"2\"\n"
                 + "}";
         JSONObject expectedJsonObject = new JSONObject(stringifiedJsonStr);
@@ -102,7 +107,8 @@ public class JsonOdpfMessageParserTest {
 
     @Test
     public void shouldThrowExceptionForNestedJsonNotSupported() {
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation,
+                jsonParserMetrics);
         String nestedJsonStr = "{\n"
                 + "  \"event_value\": {\n"
                 + "    \"CustomerLatitude\": \"-6.166895595817224\",\n"
@@ -122,10 +128,10 @@ public class JsonOdpfMessageParserTest {
 
     }
 
-
     @Test
     public void shouldThrowErrorForInvalidLogMessage() {
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation,
+                jsonParserMetrics);
         String invalidJsonStr = "{\"first_";
         OdpfMessage jsonOdpfMessage = new OdpfMessage(null, invalidJsonStr.getBytes());
         IOException ioException = assertThrows(IOException.class,
@@ -136,7 +142,8 @@ public class JsonOdpfMessageParserTest {
 
     @Test
     public void shouldThrowEmptyMessageException() {
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation,
+                jsonParserMetrics);
         OdpfMessage jsonOdpfMessage = new OdpfMessage(null, null);
         EmptyMessageException emptyMessageException = assertThrows(EmptyMessageException.class,
                 () -> jsonOdpfMessageParser.parse(jsonOdpfMessage, LOG_MESSAGE, null));
@@ -145,7 +152,8 @@ public class JsonOdpfMessageParserTest {
 
     @Test
     public void shouldParseJsonKeyMessage() throws IOException {
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation,
+                jsonParserMetrics);
         String validJsonStr = "{\"first_name\":\"john\"}";
         OdpfMessage jsonOdpfMessage = new OdpfMessage(validJsonStr.getBytes(), null);
 
@@ -157,7 +165,8 @@ public class JsonOdpfMessageParserTest {
 
     @Test
     public void shouldThrowErrorForInvalidKeyMessage() {
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation,
+                jsonParserMetrics);
         String invalidJsonStr = "{\"first_";
         OdpfMessage jsonOdpfMessage = new OdpfMessage(invalidJsonStr.getBytes(), null);
         IOException ioException = assertThrows(IOException.class,
@@ -168,7 +177,8 @@ public class JsonOdpfMessageParserTest {
 
     @Test
     public void shouldThrowErrorWhenModeNotDefined() {
-        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
+        JsonOdpfMessageParser jsonOdpfMessageParser = new JsonOdpfMessageParser(defaultConfig, instrumentation,
+                jsonParserMetrics);
         String invalidJsonStr = "{\"first_";
         OdpfMessage jsonOdpfMessage = new OdpfMessage(invalidJsonStr.getBytes(), null);
         IOException ioException = assertThrows(IOException.class,

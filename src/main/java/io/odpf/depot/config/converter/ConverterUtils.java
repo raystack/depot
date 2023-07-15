@@ -1,6 +1,6 @@
-package io.odpf.depot.config.converter;
+package org.raystack.depot.config.converter;
 
-import io.odpf.depot.common.Tuple;
+import org.raystack.depot.common.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;

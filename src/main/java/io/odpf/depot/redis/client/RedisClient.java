@@ -1,7 +1,7 @@
-package io.odpf.depot.redis.client;
+package org.raystack.depot.redis.client;
 
-import io.odpf.depot.redis.client.response.RedisResponse;
-import io.odpf.depot.redis.record.RedisRecord;
+import org.raystack.depot.redis.client.response.RedisResponse;
+import org.raystack.depot.redis.record.RedisRecord;
 
 import java.io.Closeable;
 import java.util.List;

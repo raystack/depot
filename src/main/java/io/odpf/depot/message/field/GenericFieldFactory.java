@@ -1,8 +1,8 @@
-package io.odpf.depot.message.field;
+package org.raystack.depot.message.field;
 
-import io.odpf.depot.message.field.json.JsonFieldFactory;
-import io.odpf.depot.message.field.proto.ProtoFieldFactory;
-import io.odpf.depot.message.proto.converter.fields.ProtoField;
+import org.raystack.depot.message.field.json.JsonFieldFactory;
+import org.raystack.depot.message.field.proto.ProtoFieldFactory;
+import org.raystack.depot.message.proto.converter.fields.ProtoField;
 
 public class GenericFieldFactory {
 

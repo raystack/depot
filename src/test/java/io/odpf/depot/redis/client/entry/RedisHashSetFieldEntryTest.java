@@ -1,10 +1,10 @@
-package io.odpf.depot.redis.client.entry;
+package org.raystack.depot.redis.client.entry;
 
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.redis.client.response.RedisClusterResponse;
-import io.odpf.depot.redis.client.response.RedisStandaloneResponse;
-import io.odpf.depot.redis.ttl.DurationTtl;
-import io.odpf.depot.redis.ttl.NoRedisTtl;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.redis.client.response.RedisClusterResponse;
+import org.raystack.depot.redis.client.response.RedisStandaloneResponse;
+import org.raystack.depot.redis.ttl.DurationTtl;
+import org.raystack.depot.redis.ttl.NoRedisTtl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,7 +86,6 @@ public class RedisHashSetFieldEntryTest {
         Assert.assertEquals(expected, redisHashSetFieldEntry.toString());
     }
 
-
     @Test
     public void shouldSentToRedisForStandAlone() {
         Response r = Mockito.mock(Response.class);
@@ -95,7 +94,8 @@ public class RedisHashSetFieldEntryTest {
         RedisStandaloneResponse standaloneResponse = redisHashSetFieldEntry.send(pipeline, new NoRedisTtl());
         standaloneResponse.process();
         Assert.assertFalse(standaloneResponse.isFailed());
-        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
+        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field",
+                "test-value");
         Assert.assertEquals("HSET: 9, TTL: NoOp", standaloneResponse.getMessage());
     }
 
@@ -110,7 +110,8 @@ public class RedisHashSetFieldEntryTest {
         RedisStandaloneResponse standaloneResponse = redisHashSetFieldEntry.send(pipeline, new DurationTtl(1000));
         standaloneResponse.process();
         Assert.assertFalse(standaloneResponse.isFailed());
-        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
+        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field",
+                "test-value");
         Assert.assertEquals("HSET: 9, TTL: UPDATED", standaloneResponse.getMessage());
     }
 
@@ -125,7 +126,8 @@ public class RedisHashSetFieldEntryTest {
         RedisStandaloneResponse standaloneResponse = redisHashSetFieldEntry.send(pipeline, new DurationTtl(1000));
         standaloneResponse.process();
         Assert.assertFalse(standaloneResponse.isFailed());
-        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field", "test-value");
+        verify(instrumentation, times(1)).logDebug("key: {}, field: {}, value: {}", "test-key", "test-field",
+                "test-value");
         Assert.assertEquals("HSET: 9, TTL: NOT UPDATED", standaloneResponse.getMessage());
     }
 

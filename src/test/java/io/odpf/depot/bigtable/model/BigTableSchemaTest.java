@@ -1,7 +1,7 @@
-package io.odpf.depot.bigtable.model;
+package org.raystack.depot.bigtable.model;
 
-import io.odpf.depot.config.BigTableSinkConfig;
-import io.odpf.depot.exception.ConfigurationException;
+import org.raystack.depot.config.BigTableSinkConfig;
+import org.raystack.depot.exception.ConfigurationException;
 import org.aeonbits.owner.ConfigFactory;
 import org.json.JSONException;
 import org.junit.Assert;
@@ -64,7 +64,8 @@ public class BigTableSchemaTest {
     public void shouldThrowConfigurationExceptionWhenColumnMappingIsEmpty() {
         System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING", "");
         BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
-        ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> new BigTableSchema(sinkConfig.getColumnFamilyMapping()));
+        ConfigurationException configurationException = assertThrows(ConfigurationException.class,
+                () -> new BigTableSchema(sinkConfig.getColumnFamilyMapping()));
         Assert.assertEquals("Column Mapping should not be empty or null", configurationException.getMessage());
     }
 
@@ -107,31 +108,39 @@ public class BigTableSchemaTest {
         bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
         Set<String> columnFamilies = bigtableSchema.getColumnFamilies();
         Assert.assertEquals(2, columnFamilies.size());
-        JSONException jsonException = assertThrows(JSONException.class, () -> bigtableSchema.getColumns("family_name3"));
+        JSONException jsonException = assertThrows(JSONException.class,
+                () -> bigtableSchema.getColumns("family_name3"));
         Assert.assertEquals("JSONObject[\"family_name3\"] not found.", jsonException.getMessage());
 
-        jsonException = assertThrows(JSONException.class, () -> bigtableSchema.getField("family_name1", "qualifier_name3"));
+        jsonException = assertThrows(JSONException.class,
+                () -> bigtableSchema.getField("family_name1", "qualifier_name3"));
         Assert.assertEquals("JSONObject[\"qualifier_name3\"] not found.", jsonException.getMessage());
     }
 
     @Test
     public void shouldReturnEmptySetOfMissingColumnFamilies() {
-        Set<String> missingColumnFamilies = bigtableSchema.getMissingColumnFamilies(new HashSet<String>() {{
-            add("family_name1");
-            add("family_name2");
-        }});
+        Set<String> missingColumnFamilies = bigtableSchema.getMissingColumnFamilies(new HashSet<String>() {
+            {
+                add("family_name1");
+                add("family_name2");
+            }
+        });
         Assert.assertEquals(0, missingColumnFamilies.size());
     }
 
     @Test
     public void shouldReturnMissingColumnFamilies() {
-        Set<String> missingColumnFamilies = bigtableSchema.getMissingColumnFamilies(new HashSet<String>() {{
-            add("family_name3");
-            add("family_name2");
-            add("family_name4");
-        }});
-        Assert.assertEquals(new HashSet<String>() {{
-            add("family_name1");
-        }}, missingColumnFamilies);
+        Set<String> missingColumnFamilies = bigtableSchema.getMissingColumnFamilies(new HashSet<String>() {
+            {
+                add("family_name3");
+                add("family_name2");
+                add("family_name4");
+            }
+        });
+        Assert.assertEquals(new HashSet<String>() {
+            {
+                add("family_name1");
+            }
+        }, missingColumnFamilies);
     }
 }

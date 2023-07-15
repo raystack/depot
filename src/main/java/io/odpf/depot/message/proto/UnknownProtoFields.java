@@ -1,11 +1,12 @@
-package io.odpf.depot.message.proto;
+package org.raystack.depot.message.proto;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.UnknownFieldSet;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Try to convert raw proto bytes to some meaningful representation that is good enough for debug.
+ * Try to convert raw proto bytes to some meaningful representation that is good
+ * enough for debug.
  */
 @Slf4j
 public class UnknownProtoFields {

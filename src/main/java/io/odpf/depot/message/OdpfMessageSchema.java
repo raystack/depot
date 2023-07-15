@@ -1,4 +1,5 @@
-package io.odpf.depot.message;
+package org.raystack.depot.message;
+
 public interface OdpfMessageSchema {
 
     Object getSchema();

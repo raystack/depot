@@ -1,7 +1,7 @@
-package io.odpf.depot.bigquery.client;
+package org.raystack.depot.bigquery.client;
 
 import com.google.cloud.bigquery.InsertAllRequest;
-import io.odpf.depot.bigquery.models.Record;
+import org.raystack.depot.bigquery.models.Record;
 
 public class BigQueryRowWithoutInsertId implements BigQueryRow {
 

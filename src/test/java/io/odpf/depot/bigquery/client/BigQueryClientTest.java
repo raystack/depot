@@ -1,9 +1,9 @@
-package io.odpf.depot.bigquery.client;
+package org.raystack.depot.bigquery.client;
 
 import com.google.cloud.bigquery.*;
-import io.odpf.depot.config.BigQuerySinkConfig;
-import io.odpf.depot.metrics.BigQueryMetrics;
-import io.odpf.depot.metrics.Instrumentation;
+import org.raystack.depot.config.BigQuerySinkConfig;
+import org.raystack.depot.metrics.BigQueryMetrics;
+import org.raystack.depot.metrics.Instrumentation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -209,18 +209,22 @@ public class BigQueryClientTest {
         when(bqConfig.getBigQueryDatasetLocation()).thenReturn("US");
         bqClient = new BigQueryClient(bigquery, bqConfig, metrics, instrumentation);
 
-        ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {{
-            add(Field.newBuilder("test-1", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
-            add(Field.newBuilder("partition_column", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
-            add(Field.newBuilder("offset", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
-            add(Field.newBuilder("topic", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
-            add(Field.newBuilder("load_time", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
-            add(Field.newBuilder("timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
-            add(Field.newBuilder("partition", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
-        }};
+        ArrayList<Field> bqSchemaFields = new ArrayList<Field>() {
+            {
+                add(Field.newBuilder("test-1", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+                add(Field.newBuilder("partition_column", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE)
+                        .build());
+                add(Field.newBuilder("offset", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+                add(Field.newBuilder("topic", LegacySQLTypeName.STRING).setMode(Field.Mode.NULLABLE).build());
+                add(Field.newBuilder("load_time", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
+                add(Field.newBuilder("timestamp", LegacySQLTypeName.TIMESTAMP).setMode(Field.Mode.NULLABLE).build());
+                add(Field.newBuilder("partition", LegacySQLTypeName.INTEGER).setMode(Field.Mode.NULLABLE).build());
+            }
+        };
 
         Schema bqSchema = Schema.of(bqSchemaFields);
-        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig).getTableDefinition(bqSchema);
+        StandardTableDefinition standardTableDefinition = new BigQueryTableDefinition(bqConfig)
+                .getTableDefinition(bqSchema);
 
         TableId tableId = TableId.of(bqConfig.getDatasetName(), bqConfig.getTableName());
         TableInfo tableInfo = TableInfo.newBuilder(tableId, standardTableDefinition).build();

@@ -1,12 +1,12 @@
-package io.odpf.depot.config;
+package org.raystack.depot.config;
 
-import io.odpf.depot.config.converter.SchemaRegistryHeadersConverter;
-import io.odpf.depot.config.converter.SchemaRegistryRefreshConverter;
-import io.odpf.depot.config.converter.SinkConnectorSchemaDataTypeConverter;
-import io.odpf.depot.config.converter.SinkConnectorSchemaMessageModeConverter;
-import io.odpf.depot.config.enums.SinkConnectorSchemaDataType;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
-import io.odpf.stencil.cache.SchemaRefreshStrategy;
+import org.raystack.depot.config.converter.SchemaRegistryHeadersConverter;
+import org.raystack.depot.config.converter.SchemaRegistryRefreshConverter;
+import org.raystack.depot.config.converter.SinkConnectorSchemaDataTypeConverter;
+import org.raystack.depot.config.converter.SinkConnectorSchemaMessageModeConverter;
+import org.raystack.depot.config.enums.SinkConnectorSchemaDataType;
+import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.stencil.cache.SchemaRefreshStrategy;
 import org.aeonbits.owner.Config;
 import org.apache.http.Header;
 

@@ -1,4 +1,4 @@
-package io.odpf.depot.config.enums;
+package org.raystack.depot.config.enums;
 
 public enum SinkConnectorSchemaDataType {
     PROTOBUF,

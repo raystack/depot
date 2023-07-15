@@ -1,8 +1,8 @@
-package io.odpf.depot.message.field.proto;
+package org.raystack.depot.message.field.proto;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
-import io.odpf.depot.message.field.GenericField;
+import org.raystack.depot.message.field.GenericField;
 import org.json.JSONObject;
 
 import java.util.Collection;
@@ -23,10 +23,12 @@ public class MapField implements GenericField {
             Descriptors.FieldDescriptor vDescriptor = mapEntry.getDescriptorForType().findFieldByName("value");
             Object v = mapEntry.getField(vDescriptor);
             if (vDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE
-                    && vDescriptor.getMessageType().getFullName().equals(com.google.protobuf.Timestamp.getDescriptor().getFullName())) {
+                    && vDescriptor.getMessageType().getFullName()
+                            .equals(com.google.protobuf.Timestamp.getDescriptor().getFullName())) {
                 json.put(k, new TimeStampField(TimeStampField.getInstant(v)).getString());
             } else if (vDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE
-                    && vDescriptor.getMessageType().getFullName().equals(com.google.protobuf.Duration.getDescriptor().getFullName())) {
+                    && vDescriptor.getMessageType().getFullName()
+                            .equals(com.google.protobuf.Duration.getDescriptor().getFullName())) {
                 json.put(k, new DurationField(v).getString());
             } else if (vDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
                 json.put(k, new JSONObject(new MessageField(v).getString()));

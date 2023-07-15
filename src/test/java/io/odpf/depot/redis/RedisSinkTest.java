@@ -1,16 +1,16 @@
-package io.odpf.depot.redis;
+package org.raystack.depot.redis;
 
-import io.odpf.depot.OdpfSinkResponse;
-import io.odpf.depot.error.ErrorInfo;
-import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.exception.ConfigurationException;
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.metrics.Instrumentation;
-import io.odpf.depot.redis.client.RedisClient;
-import io.odpf.depot.redis.client.entry.RedisListEntry;
-import io.odpf.depot.redis.client.response.RedisResponse;
-import io.odpf.depot.redis.parsers.RedisParser;
-import io.odpf.depot.redis.record.RedisRecord;
+import org.raystack.depot.OdpfSinkResponse;
+import org.raystack.depot.error.ErrorInfo;
+import org.raystack.depot.error.ErrorType;
+import org.raystack.depot.exception.ConfigurationException;
+import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.metrics.Instrumentation;
+import org.raystack.depot.redis.client.RedisClient;
+import org.raystack.depot.redis.client.entry.RedisListEntry;
+import org.raystack.depot.redis.client.response.RedisResponse;
+import org.raystack.depot.redis.parsers.RedisParser;
+import org.raystack.depot.redis.record.RedisRecord;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,17 +52,19 @@ public class RedisSinkTest {
         when(redisParser.convert(messages)).thenReturn(records);
         when(redisClient.send(records)).thenReturn(responses);
         RedisSink redisSink = new RedisSink(redisClient, redisParser, instrumentation);
-        OdpfSinkResponse odpfSinkResponse = redisSink.pushToSink(messages);
-        Assert.assertFalse(odpfSinkResponse.hasErrors());
+        OdpfSinkResponse raystackSinkResponse = redisSink.pushToSink(messages);
+        Assert.assertFalse(raystackSinkResponse.hasErrors());
     }
 
     @Test
     public void shouldReportParsingErrors() {
         List<OdpfMessage> messages = new ArrayList<>();
         List<RedisRecord> records = new ArrayList<>();
-        records.add(new RedisRecord(null, 0L, new ErrorInfo(new IOException(""), ErrorType.DESERIALIZATION_ERROR), null, false));
+        records.add(new RedisRecord(null, 0L, new ErrorInfo(new IOException(""), ErrorType.DESERIALIZATION_ERROR), null,
+                false));
         records.add(new RedisRecord(new RedisListEntry("key1", "val1", null), 1L, null, null, true));
-        records.add(new RedisRecord(null, 2L, new ErrorInfo(new ConfigurationException(""), ErrorType.DEFAULT_ERROR), null, false));
+        records.add(new RedisRecord(null, 2L, new ErrorInfo(new ConfigurationException(""), ErrorType.DEFAULT_ERROR),
+                null, false));
         records.add(new RedisRecord(new RedisListEntry("key1", "val1", null), 3L, null, null, true));
         records.add(new RedisRecord(new RedisListEntry("key1", "val1", null), 4L, null, null, true));
         List<RedisResponse> responses = new ArrayList<>();
@@ -73,11 +75,11 @@ public class RedisSinkTest {
         List<RedisRecord> validRecords = records.stream().filter(RedisRecord::isValid).collect(Collectors.toList());
         when(redisClient.send(validRecords)).thenReturn(responses);
         RedisSink redisSink = new RedisSink(redisClient, redisParser, instrumentation);
-        OdpfSinkResponse odpfSinkResponse = redisSink.pushToSink(messages);
-        Assert.assertTrue(odpfSinkResponse.hasErrors());
-        Assert.assertEquals(2, odpfSinkResponse.getErrors().size());
-        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, odpfSinkResponse.getErrorsFor(0).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, odpfSinkResponse.getErrorsFor(2).getErrorType());
+        OdpfSinkResponse raystackSinkResponse = redisSink.pushToSink(messages);
+        Assert.assertTrue(raystackSinkResponse.hasErrors());
+        Assert.assertEquals(2, raystackSinkResponse.getErrors().size());
+        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, raystackSinkResponse.getErrorsFor(0).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, raystackSinkResponse.getErrorsFor(2).getErrorType());
     }
 
     @Test
@@ -106,24 +108,26 @@ public class RedisSinkTest {
         when(redisClient.send(validRecords)).thenReturn(responses);
         when(redisClient.send(records)).thenReturn(responses);
         RedisSink redisSink = new RedisSink(redisClient, redisParser, instrumentation);
-        OdpfSinkResponse odpfSinkResponse = redisSink.pushToSink(messages);
-        Assert.assertTrue(odpfSinkResponse.hasErrors());
-        Assert.assertEquals(3, odpfSinkResponse.getErrors().size());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, odpfSinkResponse.getErrorsFor(2).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, odpfSinkResponse.getErrorsFor(3).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, odpfSinkResponse.getErrorsFor(4).getErrorType());
-        Assert.assertEquals("failed at 2", odpfSinkResponse.getErrorsFor(2).getException().getMessage());
-        Assert.assertEquals("failed at 3", odpfSinkResponse.getErrorsFor(3).getException().getMessage());
-        Assert.assertEquals("failed at 4", odpfSinkResponse.getErrorsFor(4).getException().getMessage());
+        OdpfSinkResponse raystackSinkResponse = redisSink.pushToSink(messages);
+        Assert.assertTrue(raystackSinkResponse.hasErrors());
+        Assert.assertEquals(3, raystackSinkResponse.getErrors().size());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, raystackSinkResponse.getErrorsFor(2).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, raystackSinkResponse.getErrorsFor(3).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, raystackSinkResponse.getErrorsFor(4).getErrorType());
+        Assert.assertEquals("failed at 2", raystackSinkResponse.getErrorsFor(2).getException().getMessage());
+        Assert.assertEquals("failed at 3", raystackSinkResponse.getErrorsFor(3).getException().getMessage());
+        Assert.assertEquals("failed at 4", raystackSinkResponse.getErrorsFor(4).getException().getMessage());
     }
 
     @Test
     public void shouldReportNetErrors() {
         List<OdpfMessage> messages = new ArrayList<>();
         List<RedisRecord> records = new ArrayList<>();
-        records.add(new RedisRecord(null, 0L, new ErrorInfo(new IOException(""), ErrorType.DESERIALIZATION_ERROR), null, false));
+        records.add(new RedisRecord(null, 0L, new ErrorInfo(new IOException(""), ErrorType.DESERIALIZATION_ERROR), null,
+                false));
         records.add(new RedisRecord(new RedisListEntry("key1", "val1", null), 1L, null, null, true));
-        records.add(new RedisRecord(null, 2L, new ErrorInfo(new ConfigurationException(""), ErrorType.DEFAULT_ERROR), null, false));
+        records.add(new RedisRecord(null, 2L, new ErrorInfo(new ConfigurationException(""), ErrorType.DEFAULT_ERROR),
+                null, false));
         records.add(new RedisRecord(new RedisListEntry("key1", "val1", null), 3L, null, null, true));
         records.add(new RedisRecord(new RedisListEntry("key1", "val1", null), 4L, null, null, true));
         List<RedisResponse> responses = new ArrayList<>();
@@ -138,11 +142,11 @@ public class RedisSinkTest {
         List<RedisRecord> validRecords = records.stream().filter(RedisRecord::isValid).collect(Collectors.toList());
         when(redisClient.send(validRecords)).thenReturn(responses);
         RedisSink redisSink = new RedisSink(redisClient, redisParser, instrumentation);
-        OdpfSinkResponse odpfSinkResponse = redisSink.pushToSink(messages);
-        Assert.assertEquals(4, odpfSinkResponse.getErrors().size());
-        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, odpfSinkResponse.getErrorsFor(0).getErrorType());
-        Assert.assertEquals(ErrorType.DEFAULT_ERROR, odpfSinkResponse.getErrorsFor(2).getErrorType());
-        Assert.assertEquals("failed at 3", odpfSinkResponse.getErrorsFor(3).getException().getMessage());
-        Assert.assertEquals("failed at 4", odpfSinkResponse.getErrorsFor(4).getException().getMessage());
+        OdpfSinkResponse raystackSinkResponse = redisSink.pushToSink(messages);
+        Assert.assertEquals(4, raystackSinkResponse.getErrors().size());
+        Assert.assertEquals(ErrorType.DESERIALIZATION_ERROR, raystackSinkResponse.getErrorsFor(0).getErrorType());
+        Assert.assertEquals(ErrorType.DEFAULT_ERROR, raystackSinkResponse.getErrorsFor(2).getErrorType());
+        Assert.assertEquals("failed at 3", raystackSinkResponse.getErrorsFor(3).getException().getMessage());
+        Assert.assertEquals("failed at 4", raystackSinkResponse.getErrorsFor(4).getException().getMessage());
     }
 }

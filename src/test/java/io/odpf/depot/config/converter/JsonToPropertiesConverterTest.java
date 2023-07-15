@@ -1,4 +1,4 @@
-package io.odpf.depot.config.converter;
+package org.raystack.depot.config.converter;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -29,18 +29,22 @@ public class JsonToPropertiesConverterTest {
     @Test
     public void shouldValidateJsonConfigForDuplicates() {
         String json = "{\"order_number\":\"ORDER_NUMBER\",\"event_timestamp\":\"TIMESTAMP\",\"driver_id\":\"TIMESTAMP\"}";
-        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class, () -> new JsonToPropertiesConverter().convert(null, json));
-        Assert.assertEquals("duplicates found in SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING for : [TIMESTAMP]", e.getMessage());
+        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class,
+                () -> new JsonToPropertiesConverter().convert(null, json));
+        Assert.assertEquals("duplicates found in SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING for : [TIMESTAMP]",
+                e.getMessage());
     }
 
     @Test
     public void shouldValidateJsonConfigForDuplicatesInNestedJsons() {
         String json = "{\"order_number\":\"ORDER_NUMBER\",\"event_timestamp\":\"TIMESTAMP\",\"nested\":{\"1\":\"TIMESTAMP\",\"2\":\"ORDER_NUMBER\"}}";
-        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class, () -> new JsonToPropertiesConverter().convert(null, json));
+        IllegalArgumentException e = Assert.assertThrows(IllegalArgumentException.class,
+                () -> new JsonToPropertiesConverter().convert(null, json));
         String message = e.getMessage();
         String[] actualMessage = (message.split(" : "));
         Assert.assertEquals("duplicates found in SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING for", actualMessage[0]);
-        Assert.assertTrue("[ORDER_NUMBER, TIMESTAMP]" .equals(actualMessage[1]) || "[TIMESTAMP, ORDER_NUMBER]" .equals(actualMessage[1]));
+        Assert.assertTrue("[ORDER_NUMBER, TIMESTAMP]".equals(actualMessage[1])
+                || "[TIMESTAMP, ORDER_NUMBER]".equals(actualMessage[1]));
     }
 
     @Test

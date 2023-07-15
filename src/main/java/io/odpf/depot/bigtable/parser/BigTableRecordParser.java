@@ -1,20 +1,20 @@
-package io.odpf.depot.bigtable.parser;
+package org.raystack.depot.bigtable.parser;
 
 import com.google.cloud.bigtable.data.v2.models.RowMutationEntry;
-import io.odpf.depot.bigtable.model.BigTableRecord;
-import io.odpf.depot.bigtable.model.BigTableSchema;
-import io.odpf.depot.common.Tuple;
-import io.odpf.depot.error.ErrorInfo;
-import io.odpf.depot.error.ErrorType;
-import io.odpf.depot.exception.ConfigurationException;
-import io.odpf.depot.exception.DeserializerException;
-import io.odpf.depot.exception.EmptyMessageException;
-import io.odpf.depot.message.OdpfMessage;
-import io.odpf.depot.message.OdpfMessageParser;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.message.ParsedOdpfMessage;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
-import io.odpf.depot.message.field.GenericFieldFactory;
+import org.raystack.depot.bigtable.model.BigTableRecord;
+import org.raystack.depot.bigtable.model.BigTableSchema;
+import org.raystack.depot.common.Tuple;
+import org.raystack.depot.error.ErrorInfo;
+import org.raystack.depot.error.ErrorType;
+import org.raystack.depot.exception.ConfigurationException;
+import org.raystack.depot.exception.DeserializerException;
+import org.raystack.depot.exception.EmptyMessageException;
+import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.message.OdpfMessageParser;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.depot.message.field.GenericFieldFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -24,18 +24,18 @@ import java.util.Map;
 
 @Slf4j
 public class BigTableRecordParser {
-    private final OdpfMessageParser odpfMessageParser;
+    private final OdpfMessageParser raystackMessageParser;
     private final BigTableRowKeyParser bigTableRowKeyParser;
     private final BigTableSchema bigTableSchema;
     private final OdpfMessageSchema schema;
     private final Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema;
 
-    public BigTableRecordParser(OdpfMessageParser odpfMessageParser,
-                                BigTableRowKeyParser bigTableRowKeyParser,
-                                Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema,
-                                OdpfMessageSchema schema,
-                                BigTableSchema bigTableSchema) {
-        this.odpfMessageParser = odpfMessageParser;
+    public BigTableRecordParser(OdpfMessageParser raystackMessageParser,
+            BigTableRowKeyParser bigTableRowKeyParser,
+            Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema,
+            OdpfMessageSchema schema,
+            BigTableSchema bigTableSchema) {
+        this.raystackMessageParser = raystackMessageParser;
         this.bigTableRowKeyParser = bigTableRowKeyParser;
         this.modeAndSchema = modeAndSchema;
         this.schema = schema;
@@ -54,7 +54,8 @@ public class BigTableRecordParser {
 
     private BigTableRecord createRecord(OdpfMessage message, long index) {
         try {
-            ParsedOdpfMessage parsedOdpfMessage = odpfMessageParser.parse(message, modeAndSchema.getFirst(), modeAndSchema.getSecond());
+            ParsedOdpfMessage parsedOdpfMessage = raystackMessageParser.parse(message, modeAndSchema.getFirst(),
+                    modeAndSchema.getSecond());
             String rowKey = bigTableRowKeyParser.parse(parsedOdpfMessage);
             RowMutationEntry rowMutationEntry = RowMutationEntry.create(rowKey);
             bigTableSchema.getColumnFamilies().forEach(
@@ -62,7 +63,8 @@ public class BigTableRecordParser {
                             .getColumns(columnFamily)
                             .forEach(column -> {
                                 String fieldName = bigTableSchema.getField(columnFamily, column);
-                                String value = GenericFieldFactory.getField(parsedOdpfMessage.getFieldByName(fieldName, schema)).getString();
+                                String value = GenericFieldFactory
+                                        .getField(parsedOdpfMessage.getFieldByName(fieldName, schema)).getString();
                                 rowMutationEntry.setCell(columnFamily, column, value);
                             }));
             BigTableRecord bigTableRecord = new BigTableRecord(rowMutationEntry, index, null, message.getMetadata());

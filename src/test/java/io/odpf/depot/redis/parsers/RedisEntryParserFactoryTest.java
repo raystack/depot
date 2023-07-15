@@ -1,10 +1,10 @@
-package io.odpf.depot.redis.parsers;
+package org.raystack.depot.redis.parsers;
 
-import io.odpf.depot.config.RedisSinkConfig;
-import io.odpf.depot.config.converter.JsonToPropertiesConverter;
-import io.odpf.depot.message.OdpfMessageSchema;
-import io.odpf.depot.metrics.StatsDReporter;
-import io.odpf.depot.redis.enums.RedisSinkDataType;
+import org.raystack.depot.config.RedisSinkConfig;
+import org.raystack.depot.config.converter.JsonToPropertiesConverter;
+import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.metrics.StatsDReporter;
+import org.raystack.depot.redis.enums.RedisSinkDataType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

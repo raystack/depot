@@ -1,4 +1,4 @@
-package io.odpf.depot.bigquery.client;
+package org.raystack.depot.bigquery.client;
 
 import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Field;
@@ -6,8 +6,8 @@ import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TimePartitioning;
-import io.odpf.depot.bigquery.exception.BQClusteringKeysException;
-import io.odpf.depot.config.BigQuerySinkConfig;
+import org.raystack.depot.bigquery.exception.BQClusteringKeysException;
+import org.raystack.depot.config.BigQuerySinkConfig;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,15 +26,15 @@ import static org.mockito.Mockito.when;
 
 public class BigQueryTableDefinitionTest {
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
-    @Mock
-    private BigQuerySinkConfig bqConfig;
+        @Rule
+        public ExpectedException expectedEx = ExpectedException.none();
+        @Mock
+        private BigQuerySinkConfig bqConfig;
 
-    @Before
-    public void setup() {
-        bqConfig = Mockito.mock(BigQuerySinkConfig.class);
-    }
+        @Before
+        public void setup() {
+                bqConfig = Mockito.mock(BigQuerySinkConfig.class);
+        }
 
     @Test(expected = NullPointerException.class)
     public void shouldThrowExceptionWhenSchemaIsNull() {
@@ -71,22 +71,21 @@ public class BigQueryTableDefinitionTest {
         bigQueryTableDefinition.getTableDefinition(bqSchema);
     }
 
-    @Test
-    public void shouldReturnTimePartitioningWithPartitionExpiry() {
-        long partitionExpiry = 5184000000L;
-        when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(partitionExpiry);
-        when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
-        when(bqConfig.getTablePartitionKey()).thenReturn("timestamp_field");
-        Schema bqSchema = Schema.of(
-                Field.newBuilder("timestamp_field", LegacySQLTypeName.TIMESTAMP).build()
-        );
+        @Test
+        public void shouldReturnTimePartitioningWithPartitionExpiry() {
+                long partitionExpiry = 5184000000L;
+                when(bqConfig.getBigQueryTablePartitionExpiryMS()).thenReturn(partitionExpiry);
+                when(bqConfig.isTablePartitioningEnabled()).thenReturn(true);
+                when(bqConfig.getTablePartitionKey()).thenReturn("timestamp_field");
+                Schema bqSchema = Schema.of(
+                                Field.newBuilder("timestamp_field", LegacySQLTypeName.TIMESTAMP).build());
 
-        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
-        StandardTableDefinition tableDefinition = bigQueryTableDefinition.getTableDefinition(bqSchema);
+                BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+                StandardTableDefinition tableDefinition = bigQueryTableDefinition.getTableDefinition(bqSchema);
 
-        assertEquals("timestamp_field", tableDefinition.getTimePartitioning().getField());
-        assertEquals(partitionExpiry, tableDefinition.getTimePartitioning().getExpirationMs().longValue());
-    }
+                assertEquals("timestamp_field", tableDefinition.getTimePartitioning().getField());
+                assertEquals(partitionExpiry, tableDefinition.getTimePartitioning().getExpirationMs().longValue());
+        }
 
     @Test
     public void shouldReturnClusteringWithSingleColumns() {
@@ -123,58 +122,57 @@ public class BigQueryTableDefinitionTest {
         assertEquals(expectedColumns, tableDefinition.getClustering().getFields());
     }
 
-    @Test
-    public void shouldThrowExceptionIfClusteringKeyIsNotSet() {
-        expectedEx.expect(BQClusteringKeysException.class);
-        expectedEx.expectMessage("Clustering key not specified for the table: table_name");
+        @Test
+        public void shouldThrowExceptionIfClusteringKeyIsNotSet() {
+                expectedEx.expect(BQClusteringKeysException.class);
+                expectedEx.expectMessage("Clustering key not specified for the table: table_name");
 
-        when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
-        when(bqConfig.getTableName()).thenReturn("table_name");
+                when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
+                when(bqConfig.getTableName()).thenReturn("table_name");
 
-        Schema bqSchema = Schema.of(
-                Field.of("string_field", LegacySQLTypeName.STRING)
-        );
+                Schema bqSchema = Schema.of(
+                                Field.of("string_field", LegacySQLTypeName.STRING));
 
-        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
-        bigQueryTableDefinition.getTableDefinition(bqSchema);
-    }
+                BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+                bigQueryTableDefinition.getTableDefinition(bqSchema);
+        }
 
-    @Test
-    public void shouldThrowExceptionIfClusteringKeyIsSetMoreThanFour() {
-        expectedEx.expect(BQClusteringKeysException.class);
-        expectedEx.expectMessage("Max number of columns for clustering is 4");
+        @Test
+        public void shouldThrowExceptionIfClusteringKeyIsSetMoreThanFour() {
+                expectedEx.expect(BQClusteringKeysException.class);
+                expectedEx.expectMessage("Max number of columns for clustering is 4");
 
-        when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
-        when(bqConfig.getTableClusteringKeys()).thenReturn(Arrays.asList("string_field", "int_field", "bool_field", "timestamp_field", "another_field"));
+                when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
+                when(bqConfig.getTableClusteringKeys()).thenReturn(Arrays.asList("string_field", "int_field",
+                                "bool_field", "timestamp_field", "another_field"));
 
-        Schema bqSchema = Schema.of(
-                Field.of("string_field", LegacySQLTypeName.STRING),
-                Field.of("int_field", LegacySQLTypeName.INTEGER),
-                Field.of("bool_field", LegacySQLTypeName.BOOLEAN),
-                Field.of("timestamp_field", LegacySQLTypeName.TIMESTAMP),
-                Field.of("another_field", LegacySQLTypeName.STRING)
-        );
+                Schema bqSchema = Schema.of(
+                                Field.of("string_field", LegacySQLTypeName.STRING),
+                                Field.of("int_field", LegacySQLTypeName.INTEGER),
+                                Field.of("bool_field", LegacySQLTypeName.BOOLEAN),
+                                Field.of("timestamp_field", LegacySQLTypeName.TIMESTAMP),
+                                Field.of("another_field", LegacySQLTypeName.STRING));
 
-        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
-        bigQueryTableDefinition.getTableDefinition(bqSchema);
-    }
+                BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+                bigQueryTableDefinition.getTableDefinition(bqSchema);
+        }
 
-    @Test
-    public void shouldThrowExceptionIfClusteringKeyNotExistInSchema() {
-        expectedEx.expect(BQClusteringKeysException.class);
-        expectedEx.expectMessage("One or more column names specified [string_field] not exist on the schema or a nested type which is not supported for clustering");
+        @Test
+        public void shouldThrowExceptionIfClusteringKeyNotExistInSchema() {
+                expectedEx.expect(BQClusteringKeysException.class);
+                expectedEx.expectMessage(
+                                "One or more column names specified [string_field] not exist on the schema or a nested type which is not supported for clustering");
 
-        when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
-        when(bqConfig.getTableClusteringKeys()).thenReturn(Collections.singletonList("string_field"));
+                when(bqConfig.isTableClusteringEnabled()).thenReturn(true);
+                when(bqConfig.getTableClusteringKeys()).thenReturn(Collections.singletonList("string_field"));
 
-        Schema bqSchema = Schema.of(
-                Field.of("string_field2", LegacySQLTypeName.STRING),
-                Field.of("int_field2", LegacySQLTypeName.STRING)
-        );
+                Schema bqSchema = Schema.of(
+                                Field.of("string_field2", LegacySQLTypeName.STRING),
+                                Field.of("int_field2", LegacySQLTypeName.STRING));
 
-        BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
-        bigQueryTableDefinition.getTableDefinition(bqSchema);
-    }
+                BigQueryTableDefinition bigQueryTableDefinition = new BigQueryTableDefinition(bqConfig);
+                bigQueryTableDefinition.getTableDefinition(bqSchema);
+        }
 
     @Test
     public void shouldReturnPartitionedAndClusteredTableDefinition() {

@@ -1,15 +1,16 @@
-package io.odpf.depot.utils;
+package org.raystack.depot.utils;
 
-import io.odpf.depot.common.Tuple;
-import io.odpf.depot.config.OdpfSinkConfig;
-import io.odpf.depot.message.SinkConnectorSchemaMessageMode;
+import org.raystack.depot.common.Tuple;
+import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 
 public class MessageConfigUtils {
 
     public static Tuple<SinkConnectorSchemaMessageMode, String> getModeAndSchema(OdpfSinkConfig sinkConfig) {
         SinkConnectorSchemaMessageMode mode = sinkConfig.getSinkConnectorSchemaMessageMode();
         String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
-                ? sinkConfig.getSinkConnectorSchemaProtoMessageClass() : sinkConfig.getSinkConnectorSchemaProtoKeyClass();
+                ? sinkConfig.getSinkConnectorSchemaProtoMessageClass()
+                : sinkConfig.getSinkConnectorSchemaProtoKeyClass();
         return new Tuple<>(mode, schemaClass);
     }
 }

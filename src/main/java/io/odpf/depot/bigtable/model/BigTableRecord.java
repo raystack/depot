@@ -1,7 +1,7 @@
-package io.odpf.depot.bigtable.model;
+package org.raystack.depot.bigtable.model;
 
 import com.google.cloud.bigtable.data.v2.models.RowMutationEntry;
-import io.odpf.depot.error.ErrorInfo;
+import org.raystack.depot.error.ErrorInfo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
