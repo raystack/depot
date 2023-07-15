@@ -5,15 +5,15 @@ import org.raystack.depot.TestBookingLogMessage;
 import org.raystack.depot.TestKey;
 import org.raystack.depot.TestLocation;
 import org.raystack.depot.TestMessage;
-import org.raystack.depot.config.RaystackSinkConfig;
+import org.raystack.depot.config.SinkConfig;
 import org.raystack.depot.config.enums.SinkConnectorSchemaDataType;
 import org.raystack.depot.exception.InvalidTemplateException;
-import org.raystack.depot.message.RaystackMessage;
-import org.raystack.depot.message.RaystackMessageParserFactory;
-import org.raystack.depot.message.RaystackMessageSchema;
-import org.raystack.depot.message.ParsedRaystackMessage;
-import org.raystack.depot.message.proto.ProtoRaystackMessageParser;
-import org.raystack.depot.message.proto.ProtoRaystackParsedMessage;
+import org.raystack.depot.message.Message;
+import org.raystack.depot.message.MessageParserFactory;
+import org.raystack.depot.message.MessageSchema;
+import org.raystack.depot.message.ParsedMessage;
+import org.raystack.depot.message.proto.ProtoMessageParser;
+import org.raystack.depot.message.proto.ProtoParsedMessage;
 import org.raystack.depot.metrics.StatsDReporter;
 import org.raystack.stencil.Parser;
 import org.raystack.stencil.StencilClientFactory;
@@ -35,13 +35,13 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class TemplateTest {
     @Mock
-    private RaystackSinkConfig sinkConfig;
+    private SinkConfig sinkConfig;
     @Mock
     private StatsDReporter statsDReporter;
-    private ParsedRaystackMessage parsedTestMessage;
-    private ParsedRaystackMessage parsedBookingMessage;
-    private RaystackMessageSchema schemaTest;
-    private RaystackMessageSchema schemaBooking;
+    private ParsedMessage parsedTestMessage;
+    private ParsedMessage parsedBookingMessage;
+    private MessageSchema schemaTest;
+    private MessageSchema schemaBooking;
 
     @Before
     public void setUp() throws Exception {
@@ -54,8 +54,8 @@ public class TemplateTest {
                 .build();
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS")
                 .build();
-        RaystackMessage message = new RaystackMessage(testKey.toByteArray(), testMessage.toByteArray());
-        RaystackMessage bookingMessage = new RaystackMessage(testKey.toByteArray(),
+        Message message = new Message(testKey.toByteArray(), testMessage.toByteArray());
+        Message bookingMessage = new Message(testKey.toByteArray(),
                 testBookingLogMessage.toByteArray());
         Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {
             {
@@ -68,12 +68,12 @@ public class TemplateTest {
             }
         };
         Parser protoParserTest = StencilClientFactory.getClient().getParser(TestMessage.class.getName());
-        parsedTestMessage = new ProtoRaystackParsedMessage(protoParserTest.parse((byte[]) message.getLogMessage()));
+        parsedTestMessage = new ProtoParsedMessage(protoParserTest.parse((byte[]) message.getLogMessage()));
         Parser protoParserBooking = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
-        parsedBookingMessage = new ProtoRaystackParsedMessage(
+        parsedBookingMessage = new ProtoParsedMessage(
                 protoParserBooking.parse((byte[]) bookingMessage.getLogMessage()));
         when(sinkConfig.getSinkConnectorSchemaDataType()).thenReturn(SinkConnectorSchemaDataType.PROTOBUF);
-        ProtoRaystackMessageParser messageParser = (ProtoRaystackMessageParser) RaystackMessageParserFactory.getParser(
+        ProtoMessageParser messageParser = (ProtoMessageParser) MessageParserFactory.getParser(
                 sinkConfig,
                 statsDReporter);
         schemaTest = messageParser.getSchema("org.raystack.depot.TestMessage", descriptorsMap);

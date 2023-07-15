@@ -5,7 +5,7 @@ import org.raystack.depot.error.ErrorInfo;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RaystackSinkResponse {
+public class SinkResponse {
     private final Map<Long, ErrorInfo> errors = new HashMap<>();
 
     /**

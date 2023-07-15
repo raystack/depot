@@ -81,14 +81,14 @@ public class MessageUtilsTest {
 
         @Test
         public void shouldNotThrowExceptionIfValid() throws IOException {
-                RaystackMessage message = new RaystackMessage("test", "test");
+                Message message = new Message("test", "test");
                 MessageUtils.validate(message, String.class);
 
         }
 
         @Test
         public void shouldThrowExceptionIfNotValid() {
-                RaystackMessage message = new RaystackMessage("test", "test");
+                Message message = new Message("test", "test");
                 IOException ioException = Assertions.assertThrows(IOException.class,
                                 () -> MessageUtils.validate(message, Integer.class));
                 Assert.assertEquals(

@@ -5,11 +5,11 @@ import com.google.api.client.util.Preconditions;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import org.raystack.depot.common.Tuple;
-import org.raystack.depot.config.RaystackSinkConfig;
+import org.raystack.depot.config.SinkConfig;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.exception.UnknownFieldsException;
-import org.raystack.depot.message.RaystackMessageSchema;
-import org.raystack.depot.message.ParsedRaystackMessage;
+import org.raystack.depot.message.MessageSchema;
+import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.message.proto.converter.fields.DurationProtoField;
 import org.raystack.depot.message.proto.converter.fields.MessageProtoField;
 import org.raystack.depot.message.proto.converter.fields.ProtoField;
@@ -25,12 +25,12 @@ import java.util.Map;
 import java.util.Properties;
 
 @Slf4j
-public class ProtoRaystackParsedMessage implements ParsedRaystackMessage {
+public class ProtoParsedMessage implements ParsedMessage {
     private final DynamicMessage dynamicMessage;
 
-    private final Map<RaystackMessageSchema, Map<String, Object>> cachedMapping = new HashMap<>();
+    private final Map<MessageSchema, Map<String, Object>> cachedMapping = new HashMap<>();
 
-    public ProtoRaystackParsedMessage(DynamicMessage dynamicMessage) {
+    public ProtoParsedMessage(DynamicMessage dynamicMessage) {
         this.dynamicMessage = dynamicMessage;
     }
 
@@ -44,7 +44,7 @@ public class ProtoRaystackParsedMessage implements ParsedRaystackMessage {
     }
 
     @Override
-    public void validate(RaystackSinkConfig config) {
+    public void validate(SinkConfig config) {
         if (!config.getSinkConnectorSchemaProtoAllowUnknownFieldsEnable()
                 && ProtoUtils.hasUnknownField(dynamicMessage)) {
             log.error("Unknown fields {}", UnknownProtoFields.toString(dynamicMessage.toByteArray()));
@@ -53,7 +53,7 @@ public class ProtoRaystackParsedMessage implements ParsedRaystackMessage {
     }
 
     @Override
-    public Map<String, Object> getMapping(RaystackMessageSchema schema) {
+    public Map<String, Object> getMapping(MessageSchema schema) {
         if (schema.getSchema() == null) {
             throw new ConfigurationException("Schema is not configured");
         }
@@ -150,7 +150,7 @@ public class ProtoRaystackParsedMessage implements ParsedRaystackMessage {
         row.put(columnName, repeatedNestedFields);
     }
 
-    public Object getFieldByName(String name, RaystackMessageSchema raystackMessageSchema) {
+    public Object getFieldByName(String name, MessageSchema raystackMessageSchema) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }

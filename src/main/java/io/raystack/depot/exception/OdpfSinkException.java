@@ -2,8 +2,8 @@ package org.raystack.depot.exception;
 
 import java.io.IOException;
 
-public class RaystackSinkException extends IOException {
-    public RaystackSinkException(String message, Throwable th) {
+public class SinkException extends IOException {
+    public SinkException(String message, Throwable th) {
         super(message, th);
     }
 }

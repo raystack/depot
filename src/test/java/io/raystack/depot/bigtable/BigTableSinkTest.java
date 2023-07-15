@@ -1,7 +1,7 @@
 package org.raystack.depot.bigtable;
 
 import com.google.cloud.bigtable.data.v2.models.RowMutationEntry;
-import org.raystack.depot.RaystackSinkResponse;
+import org.raystack.depot.SinkResponse;
 import org.raystack.depot.TestBookingLogKey;
 import org.raystack.depot.TestBookingLogMessage;
 import org.raystack.depot.TestServiceType;
@@ -10,7 +10,7 @@ import org.raystack.depot.bigtable.model.BigTableRecord;
 import org.raystack.depot.bigtable.parser.BigTableRecordParser;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
-import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.Message;
 import org.raystack.depot.metrics.BigTableMetrics;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.StatsDReporter;
@@ -36,7 +36,7 @@ public class BigTableSinkTest {
         private BigTableMetrics bigtableMetrics;
 
         private BigTableSink bigTableSink;
-        private List<RaystackMessage> messages;
+        private List<Message> messages;
         private List<BigTableRecord> validRecords;
         private List<BigTableRecord> invalidRecords;
         private ErrorInfo errorInfo;
@@ -53,9 +53,9 @@ public class BigTableSinkTest {
                 TestBookingLogMessage bookingLogMessage2 = TestBookingLogMessage.newBuilder().setOrderNumber("order#2")
                                 .setOrderUrl("order-url#2").setServiceType(TestServiceType.Enum.GO_SHOP).build();
 
-                RaystackMessage message1 = new RaystackMessage(bookingLogKey1.toByteArray(),
+                Message message1 = new Message(bookingLogKey1.toByteArray(),
                                 bookingLogMessage1.toByteArray());
-                RaystackMessage message2 = new RaystackMessage(bookingLogKey2.toByteArray(),
+                Message message2 = new Message(bookingLogKey2.toByteArray(),
                                 bookingLogMessage2.toByteArray());
                 messages = Collections.list(message1, message2);
 
@@ -79,17 +79,17 @@ public class BigTableSinkTest {
                 Mockito.when(bigTableRecordParser.convert(messages)).thenReturn(validRecords);
                 Mockito.when(bigTableClient.send(validRecords)).thenReturn(null);
 
-                RaystackSinkResponse response = bigTableSink.pushToSink(messages);
+                SinkResponse response = bigTableSink.pushToSink(messages);
 
                 Mockito.verify(bigTableClient, Mockito.times(1)).send(validRecords);
                 Assert.assertEquals(0, response.getErrors().size());
         }
 
         @Test
-        public void shouldAddErrorsFromInvalidRecordsToRaystackResponse() {
+        public void shouldAddErrorsFromInvalidRecordsToResponse() {
                 Mockito.when(bigTableRecordParser.convert(messages)).thenReturn(invalidRecords);
 
-                RaystackSinkResponse response = bigTableSink.pushToSink(messages);
+                SinkResponse response = bigTableSink.pushToSink(messages);
 
                 Mockito.verify(bigTableClient, Mockito.times(0)).send(validRecords);
                 Assert.assertTrue(response.hasErrors());

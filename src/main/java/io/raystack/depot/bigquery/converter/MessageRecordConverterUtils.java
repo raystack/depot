@@ -4,7 +4,7 @@ import com.google.api.client.util.DateTime;
 import org.raystack.depot.common.TupleString;
 import org.raystack.depot.config.BigQuerySinkConfig;
 import org.raystack.depot.config.enums.SinkConnectorSchemaDataType;
-import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.Message;
 import org.raystack.depot.utils.DateUtils;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public class MessageRecordConverterUtils {
 
     public static final String JSON_TIME_STAMP_COLUMN = "event_timestamp";
 
-    public static void addMetadata(Map<String, Object> columns, RaystackMessage message, BigQuerySinkConfig config) {
+    public static void addMetadata(Map<String, Object> columns, Message message, BigQuerySinkConfig config) {
         if (config.shouldAddMetadata()) {
             List<TupleString> metadataColumnsTypes = config.getMetadataColumnsTypes();
             Map<String, Object> metadata = message.getMetadata(metadataColumnsTypes);

@@ -11,11 +11,11 @@ import org.raystack.depot.TestLocation;
 import org.raystack.depot.TestMessageBQ;
 import org.raystack.depot.config.RedisSinkConfig;
 import org.raystack.depot.config.converter.JsonToPropertiesConverter;
-import org.raystack.depot.message.RaystackMessage;
-import org.raystack.depot.message.RaystackMessageSchema;
-import org.raystack.depot.message.ParsedRaystackMessage;
+import org.raystack.depot.message.Message;
+import org.raystack.depot.message.MessageSchema;
+import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
-import org.raystack.depot.message.proto.ProtoRaystackMessageParser;
+import org.raystack.depot.message.proto.ProtoMessageParser;
 import org.raystack.depot.metrics.StatsDReporter;
 import org.raystack.depot.redis.client.entry.RedisEntry;
 import org.raystack.depot.redis.client.entry.RedisHashSetFieldEntry;
@@ -56,10 +56,10 @@ public class RedisHashSetEntryParserTest {
         private RedisSinkConfig redisSinkConfig;
         @Mock
         private StatsDReporter statsDReporter;
-        private ParsedRaystackMessage parsedBookingMessage;
-        private ParsedRaystackMessage parsedRaystackKey;
-        private RaystackMessageSchema schemaBooking;
-        private RaystackMessageSchema schemaKey;
+        private ParsedMessage parsedBookingMessage;
+        private ParsedMessage parsedKey;
+        private MessageSchema schemaBooking;
+        private MessageSchema schemaKey;
 
     private void redisSinkSetup(String field) throws IOException {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.HASHSET);
@@ -69,10 +69,10 @@ public class RedisHashSetEntryParserTest {
         String schemaKeyClass = "org.raystack.depot.TestKey";
         TestKey testKey = TestKey.newBuilder().setOrderNumber("ORDER-1-FROM-KEY").build();
         TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder().setOrderNumber("booking-order-1").setCustomerTotalFareWithoutSurge(2000L).setAmountPaidByCash(12.3F).build();
-        RaystackMessage bookingMessage = new RaystackMessage(testKey.toByteArray(), testBookingLogMessage.toByteArray());
-        ProtoRaystackMessageParser raystackMessageParser = new ProtoRaystackMessageParser(redisSinkConfig, statsDReporter, null);
+        Message bookingMessage = new Message(testKey.toByteArray(), testBookingLogMessage.toByteArray());
+        ProtoMessageParser raystackMessageParser = new ProtoMessageParser(redisSinkConfig, statsDReporter, null);
         parsedBookingMessage = raystackMessageParser.parse(bookingMessage, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaBookingClass);
-        parsedRaystackKey = raystackMessageParser.parse(bookingMessage, SinkConnectorSchemaMessageMode.LOG_KEY, schemaKeyClass);
+        parsedKey = raystackMessageParser.parse(bookingMessage, SinkConnectorSchemaMessageMode.LOG_KEY, schemaKeyClass);
         schemaBooking = raystackMessageParser.getSchema(schemaBookingClass, descriptorsMap);
         schemaKey = raystackMessageParser.getSchema(schemaKeyClass, descriptorsMap);
     }
@@ -84,7 +84,7 @@ public class RedisHashSetEntryParserTest {
                                 "SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING",
                                 "{\"topics\":\"topics_%s,customer_name\"}",
                                 "SINK_REDIS_KEY_TEMPLATE", "subscription:driver:%s,customer_name"));
-                ProtoRaystackMessageParser raystackMessageParser = new ProtoRaystackMessageParser(config,
+                ProtoMessageParser raystackMessageParser = new ProtoMessageParser(config,
                                 statsDReporter, null);
                 TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder()
                                 .setCustomerName("johndoe")
@@ -95,9 +95,9 @@ public class RedisHashSetEntryParserTest {
                                                 .setQos(123)
                                                 .setTopic("topic2").build())
                                 .build();
-                RaystackMessage bookingMessage = new RaystackMessage(null, testBookingLogMessage.toByteArray());
+                Message bookingMessage = new Message(null, testBookingLogMessage.toByteArray());
                 String schemaMessageClass = "org.raystack.depot.TestBookingLogMessage";
-                RaystackMessageSchema schema = raystackMessageParser.getSchema(schemaMessageClass, descriptorsMap);
+                MessageSchema schema = raystackMessageParser.getSchema(schemaMessageClass, descriptorsMap);
 
                 parsedBookingMessage = raystackMessageParser.parse(bookingMessage,
                                 SinkConnectorSchemaMessageMode.LOG_MESSAGE,
@@ -125,7 +125,7 @@ public class RedisHashSetEntryParserTest {
                                 "SINK_REDIS_HASHSET_FIELD_TO_COLUMN_MAPPING",
                                 "{\"attributes\":\"test_order_%s,created_at\"}",
                                 "SINK_REDIS_KEY_TEMPLATE", "subscription:order:%s,order_number"));
-                ProtoRaystackMessageParser raystackMessageParser = new ProtoRaystackMessageParser(config,
+                ProtoMessageParser raystackMessageParser = new ProtoMessageParser(config,
                                 statsDReporter, null);
                 TestMessageBQ message = TestMessageBQ.newBuilder()
                                 .addAttributes(Struct.newBuilder()
@@ -145,11 +145,11 @@ public class RedisHashSetEntryParserTest {
                                 .setOrderNumber("test_order")
                                 .build();
 
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                RaystackMessage raystackMessage = new RaystackMessage(null, message.toByteArray());
-                ParsedRaystackMessage parsedMessage = raystackMessageParser.parse(raystackMessage,
+                Message raystackMessage = new Message(null, message.toByteArray());
+                ParsedMessage parsedMessage = raystackMessageParser.parse(raystackMessage,
                                 SinkConnectorSchemaMessageMode.LOG_MESSAGE, "org.raystack.depot.TestMessageBQ");
 
                 RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(config,
@@ -173,14 +173,14 @@ public class RedisHashSetEntryParserTest {
                                 "{\"does_not_exist\":\"test_order_%s,order_number\"}",
                                 "SINK_REDIS_KEY_TEMPLATE", "subscription:order:%s,order_number"));
 
-                ProtoRaystackMessageParser raystackMessageParser = new ProtoRaystackMessageParser(config,
+                ProtoMessageParser raystackMessageParser = new ProtoMessageParser(config,
                                 statsDReporter, null);
                 TestMessageBQ message = TestMessageBQ.newBuilder().setOrderNumber("test").build();
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                RaystackMessage raystackMessage = new RaystackMessage(null, message.toByteArray());
-                ParsedRaystackMessage parsedMessage = raystackMessageParser.parse(raystackMessage,
+                Message raystackMessage = new Message(null, message.toByteArray());
+                ParsedMessage parsedMessage = raystackMessageParser.parse(raystackMessage,
                                 SinkConnectorSchemaMessageMode.LOG_MESSAGE, "org.raystack.depot.TestMessageBQ");
 
                 RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(config,
@@ -261,7 +261,7 @@ public class RedisHashSetEntryParserTest {
                 redisSinkSetup("{\"order_number\":\"ORDER_NUMBER\"}");
                 RedisEntryParser redisHashSetEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig,
                                 statsDReporter, schemaKey);
-                List<RedisEntry> redisEntries = redisHashSetEntryParser.getRedisEntry(parsedRaystackKey);
+                List<RedisEntry> redisEntries = redisHashSetEntryParser.getRedisEntry(parsedKey);
                 RedisHashSetFieldEntry expectedEntry = new RedisHashSetFieldEntry("test-key", "ORDER_NUMBER",
                                 "ORDER-1-FROM-KEY", null);
                 assertEquals(Collections.singletonList(expectedEntry), redisEntries);

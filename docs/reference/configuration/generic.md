@@ -11,21 +11,21 @@ Application prefix for sink metrics.
 
 ## `SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS`
 
-RaystackMessage log-message schema class
+Message log-message schema class
 
 - Example value: `org.raystack.schema.MessageClass`
 - Type: `required`
 
 ## `SINK_CONNECTOR_SCHEMA_PROTO_KEY_CLASS`
 
-RaystackMessage log-key schema class
+Message log-key schema class
 
 - Example value: `org.raystack.schema.KeyClass`
 - Type: `required`
 
 ## `SINK_CONNECTOR_SCHEMA_DATA_TYPE`
 
-RaystackMessage raw data type
+Message raw data type
 
 - Example value: `JSON`
 - Type: `required`

@@ -1,13 +1,13 @@
 package org.raystack.depot.utils;
 
 import com.timgroup.statsd.StatsDClient;
-import org.raystack.depot.config.RaystackSinkConfig;
+import org.raystack.depot.config.SinkConfig;
 import org.raystack.stencil.SchemaUpdateListener;
 import org.raystack.stencil.config.StencilConfig;
 
 public class StencilUtils {
     public static StencilConfig getStencilConfig(
-            RaystackSinkConfig sinkConfig,
+            SinkConfig sinkConfig,
             StatsDClient statsDClient,
             SchemaUpdateListener schemaUpdateListener) {
         return StencilConfig.builder()
@@ -23,7 +23,7 @@ public class StencilUtils {
                 .build();
     }
 
-    public static StencilConfig getStencilConfig(RaystackSinkConfig config, StatsDClient statsDClient) {
+    public static StencilConfig getStencilConfig(SinkConfig config, StatsDClient statsDClient) {
         return getStencilConfig(config, statsDClient, null);
     }
 }

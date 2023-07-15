@@ -3,7 +3,7 @@ package org.raystack.depot.redis.parsers;
 import org.raystack.depot.common.Template;
 import org.raystack.depot.config.RedisSinkConfig;
 import org.raystack.depot.exception.InvalidTemplateException;
-import org.raystack.depot.message.RaystackMessageSchema;
+import org.raystack.depot.message.MessageSchema;
 import org.raystack.depot.metrics.StatsDReporter;
 
 import java.util.Map;
@@ -18,7 +18,7 @@ public class RedisEntryParserFactory {
     public static RedisEntryParser getRedisEntryParser(
             RedisSinkConfig redisSinkConfig,
             StatsDReporter statsDReporter,
-            RaystackMessageSchema schema) {
+            MessageSchema schema) {
         Template keyTemplate;
         try {
             keyTemplate = new Template(redisSinkConfig.getSinkRedisKeyTemplate());

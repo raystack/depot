@@ -9,11 +9,11 @@ import org.raystack.depot.TestNestedRepeatedMessage;
 import org.raystack.depot.common.Template;
 import org.raystack.depot.config.BigTableSinkConfig;
 import org.raystack.depot.exception.InvalidTemplateException;
-import org.raystack.depot.message.RaystackMessage;
-import org.raystack.depot.message.RaystackMessageSchema;
-import org.raystack.depot.message.ParsedRaystackMessage;
+import org.raystack.depot.message.Message;
+import org.raystack.depot.message.MessageSchema;
+import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
-import org.raystack.depot.message.proto.ProtoRaystackMessageParser;
+import org.raystack.depot.message.proto.ProtoMessageParser;
 import org.raystack.depot.metrics.StatsDReporter;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Test;
@@ -44,9 +44,9 @@ public class BigTableRowKeyParserTest {
                 System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "org.raystack.depot.TestMessage");
                 BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
 
-                ProtoRaystackMessageParser raystackMessageParser = new ProtoRaystackMessageParser(sinkConfig,
+                ProtoMessageParser raystackMessageParser = new ProtoMessageParser(sinkConfig,
                                 new StatsDReporter(new NoOpStatsDClient()), null);
-                RaystackMessageSchema schema = raystackMessageParser.getSchema(
+                MessageSchema schema = raystackMessageParser.getSchema(
                                 sinkConfig.getSinkConnectorSchemaProtoMessageClass(),
                                 descriptorsMap);
 
@@ -55,14 +55,14 @@ public class BigTableRowKeyParserTest {
                                 .setOrderDetails("eureka")
                                 .build()
                                 .toByteArray();
-                RaystackMessage message = new RaystackMessage(null, logMessage);
-                ParsedRaystackMessage parsedRaystackMessage = raystackMessageParser.parse(message,
+                Message message = new Message(null, logMessage);
+                ParsedMessage parsedMessage = raystackMessageParser.parse(message,
                                 SinkConnectorSchemaMessageMode.LOG_MESSAGE,
                                 sinkConfig.getSinkConnectorSchemaProtoMessageClass());
 
                 BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(
                                 new Template(sinkConfig.getRowKeyTemplate()), schema);
-                String parsedRowKey = bigTableRowKeyParser.parse(parsedRaystackMessage);
+                String parsedRowKey = bigTableRowKeyParser.parse(parsedMessage);
                 assertEquals("row-xyz-order$key#eureka*test", parsedRowKey);
         }
 
@@ -73,9 +73,9 @@ public class BigTableRowKeyParserTest {
                 System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "org.raystack.depot.TestMessage");
                 BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
 
-                ProtoRaystackMessageParser raystackMessageParser = new ProtoRaystackMessageParser(sinkConfig,
+                ProtoMessageParser raystackMessageParser = new ProtoMessageParser(sinkConfig,
                                 new StatsDReporter(new NoOpStatsDClient()), null);
-                RaystackMessageSchema schema = raystackMessageParser.getSchema(
+                MessageSchema schema = raystackMessageParser.getSchema(
                                 sinkConfig.getSinkConnectorSchemaProtoMessageClass(),
                                 descriptorsMap);
 
@@ -84,14 +84,14 @@ public class BigTableRowKeyParserTest {
                                 .setOrderDetails("eureka")
                                 .build()
                                 .toByteArray();
-                RaystackMessage message = new RaystackMessage(null, logMessage);
-                ParsedRaystackMessage parsedRaystackMessage = raystackMessageParser.parse(message,
+                Message message = new Message(null, logMessage);
+                ParsedMessage parsedMessage = raystackMessageParser.parse(message,
                                 SinkConnectorSchemaMessageMode.LOG_MESSAGE,
                                 sinkConfig.getSinkConnectorSchemaProtoMessageClass());
 
                 BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(
                                 new Template(sinkConfig.getRowKeyTemplate()), schema);
-                String parsedRowKey = bigTableRowKeyParser.parse(parsedRaystackMessage);
+                String parsedRowKey = bigTableRowKeyParser.parse(parsedMessage);
                 assertEquals("row-key#constant$String", parsedRowKey);
         }
 
@@ -101,9 +101,9 @@ public class BigTableRowKeyParserTest {
                 System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "org.raystack.depot.TestMessage");
                 BigTableSinkConfig sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
 
-                ProtoRaystackMessageParser raystackMessageParser = new ProtoRaystackMessageParser(sinkConfig,
+                ProtoMessageParser raystackMessageParser = new ProtoMessageParser(sinkConfig,
                                 new StatsDReporter(new NoOpStatsDClient()), null);
-                RaystackMessageSchema schema = raystackMessageParser.getSchema(
+                MessageSchema schema = raystackMessageParser.getSchema(
                                 sinkConfig.getSinkConnectorSchemaProtoMessageClass(),
                                 descriptorsMap);
 

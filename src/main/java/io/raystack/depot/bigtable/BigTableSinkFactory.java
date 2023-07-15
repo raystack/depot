@@ -1,7 +1,7 @@
 package org.raystack.depot.bigtable;
 
 import com.timgroup.statsd.NoOpStatsDClient;
-import org.raystack.depot.RaystackSink;
+import org.raystack.depot.Sink;
 import org.raystack.depot.bigtable.client.BigTableClient;
 import org.raystack.depot.bigtable.model.BigTableSchema;
 import org.raystack.depot.bigtable.parser.BigTableRecordParser;
@@ -11,9 +11,9 @@ import org.raystack.depot.common.Tuple;
 import org.raystack.depot.config.BigTableSinkConfig;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.exception.InvalidTemplateException;
-import org.raystack.depot.message.RaystackMessageParser;
-import org.raystack.depot.message.RaystackMessageParserFactory;
-import org.raystack.depot.message.RaystackMessageSchema;
+import org.raystack.depot.message.MessageParser;
+import org.raystack.depot.message.MessageParserFactory;
+import org.raystack.depot.message.MessageSchema;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.metrics.BigTableMetrics;
 import org.raystack.depot.metrics.Instrumentation;
@@ -60,9 +60,9 @@ public class BigTableSinkFactory {
 
             Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils
                     .getModeAndSchema(sinkConfig);
-            RaystackMessageParser raystackMessageParser = RaystackMessageParserFactory.getParser(sinkConfig,
+            MessageParser raystackMessageParser = MessageParserFactory.getParser(sinkConfig,
                     statsDReporter);
-            RaystackMessageSchema schema = raystackMessageParser.getSchema(modeAndSchema.getSecond());
+            MessageSchema schema = raystackMessageParser.getSchema(modeAndSchema.getSecond());
 
             Template keyTemplate = new Template(sinkConfig.getRowKeyTemplate());
             BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(keyTemplate, schema);
@@ -78,7 +78,7 @@ public class BigTableSinkFactory {
         }
     }
 
-    public RaystackSink create() {
+    public Sink create() {
         return new BigTableSink(
                 bigTableClient,
                 bigTableRecordParser,

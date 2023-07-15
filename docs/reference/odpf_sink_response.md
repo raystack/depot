@@ -1,7 +1,7 @@
-# RaystackSinkResponse
+# SinkResponse
 
 ```java
-public class RaystackSinkResponse {
+public class SinkResponse {
   private final Map<Long, ErrorInfo> errors = new HashMap<>();
   ...
 }
@@ -13,7 +13,7 @@ The response contains error map indexed by message in the input list.
 
 ## Errors
 
-These errors are returned by sinks in the RaystackSinkResponse object. The error type are:
+These errors are returned by sinks in the SinkResponse object. The error type are:
 
 - DESERIALIZATION_ERROR
 - INVALID_MESSAGE_ERROR

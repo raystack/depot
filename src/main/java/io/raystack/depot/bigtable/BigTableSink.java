@@ -1,14 +1,14 @@
 package org.raystack.depot.bigtable;
 
-import org.raystack.depot.RaystackSink;
-import org.raystack.depot.RaystackSinkResponse;
+import org.raystack.depot.Sink;
+import org.raystack.depot.SinkResponse;
 import org.raystack.depot.bigtable.client.BigTableClient;
 import org.raystack.depot.bigtable.model.BigTableRecord;
 import org.raystack.depot.bigtable.parser.BigTableRecordParser;
 import org.raystack.depot.bigtable.parser.BigTableResponseParser;
 import org.raystack.depot.bigtable.response.BigTableResponse;
 import org.raystack.depot.error.ErrorInfo;
-import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.Message;
 import org.raystack.depot.metrics.BigTableMetrics;
 import org.raystack.depot.metrics.Instrumentation;
 
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class BigTableSink implements RaystackSink {
+public class BigTableSink implements Sink {
     private final BigTableClient bigTableClient;
     private final BigTableRecordParser bigTableRecordParser;
     private final BigTableMetrics bigtableMetrics;
@@ -32,14 +32,14 @@ public class BigTableSink implements RaystackSink {
     }
 
     @Override
-    public RaystackSinkResponse pushToSink(List<RaystackMessage> messages) {
+    public SinkResponse pushToSink(List<Message> messages) {
         List<BigTableRecord> records = bigTableRecordParser.convert(messages);
         Map<Boolean, List<BigTableRecord>> splitterRecords = records.stream()
                 .collect(Collectors.partitioningBy(BigTableRecord::isValid));
         List<BigTableRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
         List<BigTableRecord> validRecords = splitterRecords.get(Boolean.TRUE);
 
-        RaystackSinkResponse raystackSinkResponse = new RaystackSinkResponse();
+        SinkResponse raystackSinkResponse = new SinkResponse();
         invalidRecords.forEach(
                 invalidRecord -> raystackSinkResponse.addErrors(invalidRecord.getIndex(),
                         invalidRecord.getErrorInfo()));

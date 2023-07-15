@@ -1,20 +1,20 @@
 package org.raystack.depot.message.json;
 
 import com.jayway.jsonpath.Configuration;
-import org.raystack.depot.config.RaystackSinkConfig;
+import org.raystack.depot.config.SinkConfig;
 import org.raystack.depot.message.MessageUtils;
-import org.raystack.depot.message.RaystackMessageSchema;
-import org.raystack.depot.message.ParsedRaystackMessage;
+import org.raystack.depot.message.MessageSchema;
+import org.raystack.depot.message.ParsedMessage;
 import org.json.JSONObject;
 
 import java.util.Collections;
 import java.util.Map;
 
-public class JsonRaystackParsedMessage implements ParsedRaystackMessage {
+public class JsonParsedMessage implements ParsedMessage {
     private final JSONObject jsonObject;
     private final Configuration jsonPathConfig;
 
-    public JsonRaystackParsedMessage(JSONObject jsonObject, Configuration jsonPathConfig) {
+    public JsonParsedMessage(JSONObject jsonObject, Configuration jsonPathConfig) {
         this.jsonObject = jsonObject;
         this.jsonPathConfig = jsonPathConfig;
     }
@@ -29,19 +29,19 @@ public class JsonRaystackParsedMessage implements ParsedRaystackMessage {
     }
 
     @Override
-    public void validate(RaystackSinkConfig config) {
+    public void validate(SinkConfig config) {
 
     }
 
     @Override
-    public Map<String, Object> getMapping(RaystackMessageSchema schema) {
+    public Map<String, Object> getMapping(MessageSchema schema) {
         if (jsonObject == null || jsonObject.isEmpty()) {
             return Collections.emptyMap();
         }
         return jsonObject.toMap();
     }
 
-    public Object getFieldByName(String name, RaystackMessageSchema raystackMessageSchema) {
+    public Object getFieldByName(String name, MessageSchema raystackMessageSchema) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }

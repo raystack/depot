@@ -9,10 +9,10 @@ import org.raystack.depot.error.ErrorType;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.exception.DeserializerException;
 import org.raystack.depot.exception.EmptyMessageException;
-import org.raystack.depot.message.RaystackMessage;
-import org.raystack.depot.message.RaystackMessageParser;
-import org.raystack.depot.message.RaystackMessageSchema;
-import org.raystack.depot.message.ParsedRaystackMessage;
+import org.raystack.depot.message.Message;
+import org.raystack.depot.message.MessageParser;
+import org.raystack.depot.message.MessageSchema;
+import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.message.field.GenericFieldFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -24,16 +24,16 @@ import java.util.Map;
 
 @Slf4j
 public class BigTableRecordParser {
-    private final RaystackMessageParser raystackMessageParser;
+    private final MessageParser raystackMessageParser;
     private final BigTableRowKeyParser bigTableRowKeyParser;
     private final BigTableSchema bigTableSchema;
-    private final RaystackMessageSchema schema;
+    private final MessageSchema schema;
     private final Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema;
 
-    public BigTableRecordParser(RaystackMessageParser raystackMessageParser,
+    public BigTableRecordParser(MessageParser raystackMessageParser,
             BigTableRowKeyParser bigTableRowKeyParser,
             Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema,
-            RaystackMessageSchema schema,
+            MessageSchema schema,
             BigTableSchema bigTableSchema) {
         this.raystackMessageParser = raystackMessageParser;
         this.bigTableRowKeyParser = bigTableRowKeyParser;
@@ -42,21 +42,21 @@ public class BigTableRecordParser {
         this.bigTableSchema = bigTableSchema;
     }
 
-    public List<BigTableRecord> convert(List<RaystackMessage> messages) {
+    public List<BigTableRecord> convert(List<Message> messages) {
         ArrayList<BigTableRecord> records = new ArrayList<>();
         for (int index = 0; index < messages.size(); index++) {
-            RaystackMessage message = messages.get(index);
+            Message message = messages.get(index);
             BigTableRecord record = createRecord(message, index);
             records.add(record);
         }
         return records;
     }
 
-    private BigTableRecord createRecord(RaystackMessage message, long index) {
+    private BigTableRecord createRecord(Message message, long index) {
         try {
-            ParsedRaystackMessage parsedRaystackMessage = raystackMessageParser.parse(message, modeAndSchema.getFirst(),
+            ParsedMessage parsedMessage = raystackMessageParser.parse(message, modeAndSchema.getFirst(),
                     modeAndSchema.getSecond());
-            String rowKey = bigTableRowKeyParser.parse(parsedRaystackMessage);
+            String rowKey = bigTableRowKeyParser.parse(parsedMessage);
             RowMutationEntry rowMutationEntry = RowMutationEntry.create(rowKey);
             bigTableSchema.getColumnFamilies().forEach(
                     columnFamily -> bigTableSchema
@@ -64,7 +64,7 @@ public class BigTableRecordParser {
                             .forEach(column -> {
                                 String fieldName = bigTableSchema.getField(columnFamily, column);
                                 String value = GenericFieldFactory
-                                        .getField(parsedRaystackMessage.getFieldByName(fieldName, schema)).getString();
+                                        .getField(parsedMessage.getFieldByName(fieldName, schema)).getString();
                                 rowMutationEntry.setCell(columnFamily, column, value);
                             }));
             BigTableRecord bigTableRecord = new BigTableRecord(rowMutationEntry, index, null, message.getMetadata());

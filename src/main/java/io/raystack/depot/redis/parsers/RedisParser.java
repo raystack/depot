@@ -5,9 +5,9 @@ import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.exception.DeserializerException;
-import org.raystack.depot.message.RaystackMessage;
-import org.raystack.depot.message.RaystackMessageParser;
-import org.raystack.depot.message.ParsedRaystackMessage;
+import org.raystack.depot.message.Message;
+import org.raystack.depot.message.MessageParser;
+import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.redis.client.entry.RedisEntry;
 import org.raystack.depot.redis.record.RedisRecord;
@@ -20,23 +20,23 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 /**
- * Convert Raystack messages to RedisRecords.
+ * Convert messages to RedisRecords.
  */
 
 @AllArgsConstructor
 @Slf4j
 public class RedisParser {
-    private final RaystackMessageParser raystackMessageParser;
+    private final MessageParser raystackMessageParser;
     private final RedisEntryParser redisEntryParser;
     private final Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema;
 
-    public List<RedisRecord> convert(List<RaystackMessage> messages) {
+    public List<RedisRecord> convert(List<Message> messages) {
         List<RedisRecord> records = new ArrayList<>();
         IntStream.range(0, messages.size()).forEach(index -> {
             try {
-                ParsedRaystackMessage parsedRaystackMessage = raystackMessageParser.parse(messages.get(index),
+                ParsedMessage parsedMessage = raystackMessageParser.parse(messages.get(index),
                         modeAndSchema.getFirst(), modeAndSchema.getSecond());
-                List<RedisEntry> redisDataEntries = redisEntryParser.getRedisEntry(parsedRaystackMessage);
+                List<RedisEntry> redisDataEntries = redisEntryParser.getRedisEntry(parsedMessage);
                 for (RedisEntry redisEntry : redisDataEntries) {
                     records.add(new RedisRecord(redisEntry, (long) index, null, messages.get(index).getMetadataString(),
                             true));
@@ -55,7 +55,7 @@ public class RedisParser {
     }
 
     private RedisRecord createAndLogErrorRecord(Exception e, ErrorType type, int index,
-            List<RaystackMessage> messages) {
+            List<Message> messages) {
         ErrorInfo errorInfo = new ErrorInfo(e, type);
         RedisRecord record = new RedisRecord(null, (long) index, errorInfo, messages.get(index).getMetadataString(),
                 false);

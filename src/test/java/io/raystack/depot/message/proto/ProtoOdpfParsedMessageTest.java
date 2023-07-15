@@ -4,8 +4,8 @@ import com.google.api.client.util.DateTime;
 import com.google.protobuf.*;
 import com.google.protobuf.util.JsonFormat;
 import org.raystack.depot.*;
-import org.raystack.depot.message.RaystackMessageSchema;
-import org.raystack.depot.message.ParsedRaystackMessage;
+import org.raystack.depot.message.MessageSchema;
+import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.message.proto.converter.fields.MessageProtoField;
 import org.raystack.depot.message.proto.converter.fields.ProtoField;
 import org.raystack.stencil.Parser;
@@ -30,7 +30,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class ProtoRaystackParsedMessageTest {
+public class ProtoParsedMessageTest {
 
         private static final JsonFormat.Printer PRINTER = JsonFormat.printer()
                         .preservingProtoFieldNames()
@@ -39,7 +39,7 @@ public class ProtoRaystackParsedMessageTest {
         private DynamicMessage dynamicMessage;
         private Instant now;
         private long nowMillis;
-        private ProtoRaystackMessageParser raystackMessageParser;
+        private ProtoMessageParser raystackMessageParser;
         private Parser parser;
         @Mock
         private StencilClient stencilClient;
@@ -90,15 +90,15 @@ public class ProtoRaystackParsedMessageTest {
                                 put("google.protobuf.BoolValue", com.google.protobuf.BoolValue.getDescriptor());
                         }
                 };
-                raystackMessageParser = new ProtoRaystackMessageParser(stencilClient);
+                raystackMessageParser = new ProtoMessageParser(stencilClient);
         }
 
         @Test
         public void shouldReturnFieldsInProperties() throws IOException {
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoRaystackParsedMessage(dynamicMessage)
+                Map<String, Object> fields = new ProtoParsedMessage(dynamicMessage)
                                 .getMapping(raystackMessageSchema);
                 assertEquals("order-1", fields.get("order_number"));
                 assertEquals("order-url", fields.get("order_url"));
@@ -116,21 +116,21 @@ public class ProtoRaystackParsedMessageTest {
                 String data = "ogQFJQAAwH8=";
                 byte[] decode = Base64.decode(data);
                 DynamicMessage message = DynamicMessage.parseFrom(FloatTest.getDescriptor(), decode);
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.FloatTest",
                                 descriptorsMap);
                 Assertions.assertThrows(IllegalArgumentException.class,
-                                () -> new ProtoRaystackParsedMessage(message).getMapping(raystackMessageSchema));
+                                () -> new ProtoParsedMessage(message).getMapping(raystackMessageSchema));
         }
 
         @Test
         public void shouldParseDurationMessageSuccessfully() throws IOException {
                 TestMessageBQ message = TestProtoUtil.generateTestMessage(now);
                 Parser messageProtoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoRaystackParsedMessage(
+                Map<String, Object> fields = new ProtoParsedMessage(
                                 messageProtoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
                 Map durationFields = (Map) fields.get("trip_duration");
@@ -152,7 +152,7 @@ public class ProtoRaystackParsedMessageTest {
                 Arrays.asList(nestedMessage1, nestedMessage2).forEach(msg -> {
                         Map<String, Object> fields = null;
                         try {
-                                fields = new ProtoRaystackParsedMessage(protoParser.parse(msg.toByteArray()))
+                                fields = new ProtoParsedMessage(protoParser.parse(msg.toByteArray()))
                                                 .getMapping(
                                                                 raystackMessageParser.getSchema(
                                                                                 "org.raystack.depot.TestNestedMessageBQ",
@@ -174,10 +174,10 @@ public class ProtoRaystackParsedMessageTest {
                                 .build();
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
 
                 assertEquals(orderNumber, fields.get("order_number"));
@@ -197,9 +197,9 @@ public class ProtoRaystackParsedMessageTest {
 
                 Parser protoParser = StencilClientFactory.getClient()
                                 .getParser(TestNestedRepeatedMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser
+                MessageSchema raystackMessageSchema = raystackMessageParser
                                 .getSchema("org.raystack.depot.TestNestedRepeatedMessageBQ", descriptorsMap);
-                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
 
                 assertEquals(number, fields.get("number_field"));
@@ -217,9 +217,9 @@ public class ProtoRaystackParsedMessageTest {
 
                 Parser protoParser = StencilClientFactory.getClient()
                                 .getParser(TestNestedRepeatedMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser
+                MessageSchema raystackMessageSchema = raystackMessageParser
                                 .getSchema("org.raystack.depot.TestNestedRepeatedMessageBQ", descriptorsMap);
-                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
 
                 assertEquals(number, fields.get("number_field"));
@@ -237,10 +237,10 @@ public class ProtoRaystackParsedMessageTest {
                                 .build();
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
 
                 assertEquals(message.getOrderNumber(), fields.get("order_number"));
@@ -273,10 +273,10 @@ public class ProtoRaystackParsedMessageTest {
                                 .build();
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
 
                 assertEquals(message.getOrderNumber(), fields.get("order_number"));
@@ -302,9 +302,9 @@ public class ProtoRaystackParsedMessageTest {
 
         @Test()
         public void shouldReturnNullWhenIndexNotPresent() throws IOException {
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser
+                MessageSchema raystackMessageSchema = raystackMessageParser
                                 .getSchema("org.raystack.depot.TestNestedRepeatedMessageBQ", descriptorsMap);
-                Map<String, Object> fields = new ProtoRaystackParsedMessage(dynamicMessage)
+                Map<String, Object> fields = new ProtoParsedMessage(dynamicMessage)
                                 .getMapping(raystackMessageSchema);
 
                 assertNull(fields.get("single_message"));
@@ -317,10 +317,10 @@ public class ProtoRaystackParsedMessageTest {
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
                 dynamicMessage = protoParser.parse(testMessage.toByteArray());
 
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoRaystackParsedMessage(dynamicMessage)
+                Map<String, Object> fields = new ProtoParsedMessage(dynamicMessage)
                                 .getMapping(raystackMessageSchema);
 
                 assertNull(fields.get("order_date"));
@@ -337,12 +337,12 @@ public class ProtoRaystackParsedMessageTest {
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
 
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 protoParser.parse(message.toByteArray()));
-                Map<String, Object> fields = protoRaystackParsedMessage.getMapping(raystackMessageSchema);
+                Map<String, Object> fields = protoParsedMessage.getMapping(raystackMessageSchema);
 
                 assertEquals(Arrays.asList(new DateTime(now.toEpochMilli()), new DateTime(now.toEpochMilli())),
                                 fields.get("updated_at"));
@@ -359,10 +359,10 @@ public class ProtoRaystackParsedMessageTest {
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
 
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
 
                 assertEquals("{\"name\":\"John\",\"age\":\"50\"}", fields.get("properties"));
@@ -382,10 +382,10 @@ public class ProtoRaystackParsedMessageTest {
                                 .build();
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
                 assertEquals(Arrays.asList("{\"name\":\"John\",\"age\":\"50\"}", "{\"name\":\"John\",\"age\":\"60\"}"),
                                 fields.get("attributes"));
@@ -404,26 +404,26 @@ public class ProtoRaystackParsedMessageTest {
                                                 .putFields("age", Value.newBuilder().setStringValue("60").build())
                                                 .build())
                                 .build();
-                RaystackMessageSchema raystackMessageSchema1 = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema1 = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                RaystackMessageSchema raystackMessageSchema2 = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema2 = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ParsedRaystackMessage parsedRaystackMessage = new ProtoRaystackParsedMessage(
+                ParsedMessage parsedMessage = new ProtoParsedMessage(
                                 protoParser.parse(message.toByteArray()));
-                Map<String, Object> map1 = parsedRaystackMessage.getMapping(raystackMessageSchema1);
-                Map<String, Object> map2 = parsedRaystackMessage.getMapping(raystackMessageSchema2);
+                Map<String, Object> map1 = parsedMessage.getMapping(raystackMessageSchema1);
+                Map<String, Object> map2 = parsedMessage.getMapping(raystackMessageSchema2);
                 assertEquals(map1, map2);
         }
 
         @Test
         public void shouldGetFieldByName() throws IOException {
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(dynamicMessage);
-                Object orderNumber = ((ProtoField) protoRaystackParsedMessage.getFieldByName("order_number",
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(dynamicMessage);
+                Object orderNumber = ((ProtoField) protoParsedMessage.getFieldByName("order_number",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals("order-1", orderNumber);
@@ -431,7 +431,7 @@ public class ProtoRaystackParsedMessageTest {
 
         @Test
         public void shouldGetComplexFieldByName() throws IOException {
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestBookingLogMessage",
                                 descriptorsMap);
                 TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder()
@@ -445,9 +445,9 @@ public class ProtoRaystackParsedMessageTest {
                                 .build();
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
                 DynamicMessage bookingLogDynamicMessage = protoParser.parse(testBookingLogMessage.toByteArray());
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 bookingLogDynamicMessage);
-                ProtoField f = (ProtoField) protoRaystackParsedMessage.getFieldByName("topics", raystackMessageSchema);
+                ProtoField f = (ProtoField) protoParsedMessage.getFieldByName("topics", raystackMessageSchema);
                 Assert.assertTrue(f instanceof MessageProtoField);
                 Assert.assertTrue(f.getValue() instanceof Collection<?>);
                 List<?> list = (List<?>) f.getValue();
@@ -463,7 +463,7 @@ public class ProtoRaystackParsedMessageTest {
 
         @Test
         public void shouldGetStructFromProto() throws IOException {
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestBookingLogMessage",
                                 descriptorsMap);
                 TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder()
@@ -476,9 +476,9 @@ public class ProtoRaystackParsedMessageTest {
                                 .build();
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
                 DynamicMessage bookingLogDynamicMessage = protoParser.parse(testBookingLogMessage.toByteArray());
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 bookingLogDynamicMessage);
-                Object driverPickupLocation = ((ProtoField) protoRaystackParsedMessage.getFieldByName(
+                Object driverPickupLocation = ((ProtoField) protoParsedMessage.getFieldByName(
                                 "driver_pickup_location",
                                 raystackMessageSchema)).getValue();
                 Assert.assertEquals(TestLocation.newBuilder().setLatitude(10.0).setLongitude(12.0).build(),
@@ -504,14 +504,14 @@ public class ProtoRaystackParsedMessageTest {
                                 .build();
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 protoParser.parse(message.toByteArray()));
-                List<?> attributes = (List<?>) ((ProtoField) (protoRaystackParsedMessage.getFieldByName("attributes",
+                List<?> attributes = (List<?>) ((ProtoField) (protoParsedMessage.getFieldByName("attributes",
                                 raystackMessageSchema))).getValue();
-                protoRaystackParsedMessage.getMapping(raystackMessageSchema);
+                protoParsedMessage.getMapping(raystackMessageSchema);
                 JSONArray expectedArray = new JSONArray();
                 JSONArray actualArray = new JSONArray();
                 for (int ii = 0; ii < message.getAttributesCount(); ii++) {
@@ -532,16 +532,16 @@ public class ProtoRaystackParsedMessageTest {
                                 .setPrice(10.2f)
                                 .build();
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 protoParser.parse(message.toByteArray()));
-                Object discount = ((ProtoField) protoRaystackParsedMessage.getFieldByName("discount",
+                Object discount = ((ProtoField) protoParsedMessage.getFieldByName("discount",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals(10000012010L, discount);
-                float price = (float) ((ProtoField) protoRaystackParsedMessage.getFieldByName("price",
+                float price = (float) ((ProtoField) protoParsedMessage.getFieldByName("price",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals(10.2f, price, 0.00000000001);
@@ -551,12 +551,12 @@ public class ProtoRaystackParsedMessageTest {
         public void shouldGetRepeatedTimeStamps() throws IOException {
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 protoParser.parse(message1.toByteArray()));
-                Object updatedTimeStamps = ((ProtoField) protoRaystackParsedMessage.getFieldByName("updated_at",
+                Object updatedTimeStamps = ((ProtoField) protoParsedMessage.getFieldByName("updated_at",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals(2, ((List<?>) updatedTimeStamps).size());
@@ -568,18 +568,18 @@ public class ProtoRaystackParsedMessageTest {
         public void shouldGetFieldByNameFromNested() throws IOException {
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestNestedMessageBQ",
                                 descriptorsMap);
                 TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test")
                                 .setSingleMessage(message1).build();
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 protoParser.parse(nestedMessage.toByteArray()));
-                Object nestedId = ((ProtoField) protoRaystackParsedMessage.getFieldByName("nested_id",
+                Object nestedId = ((ProtoField) protoParsedMessage.getFieldByName("nested_id",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals("test", nestedId);
-                Object orderNumber = ((ProtoField) protoRaystackParsedMessage.getFieldByName(
+                Object orderNumber = ((ProtoField) protoParsedMessage.getFieldByName(
                                 "single_message.order_number",
                                 raystackMessageSchema)).getValue();
                 Assert.assertEquals(message1.getOrderNumber(), orderNumber);
@@ -589,25 +589,25 @@ public class ProtoRaystackParsedMessageTest {
         public void shouldReturnInstantField() throws IOException {
                 Instant time = Instant.ofEpochSecond(1669160207, 600000000);
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(time);
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 parser.parse(message1.toByteArray()));
                 Assert.assertEquals(time,
-                                ((ProtoField) protoRaystackParsedMessage.getFieldByName("created_at",
+                                ((ProtoField) protoParsedMessage.getFieldByName("created_at",
                                                 raystackMessageSchema)).getValue());
         }
 
         @Test
         public void shouldReturnDurationFieldInStringFormat() throws IOException {
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 parser.parse(message1.toByteArray()));
-                Object tripDuration = ((ProtoField) protoRaystackParsedMessage.getFieldByName("trip_duration",
+                Object tripDuration = ((ProtoField) protoParsedMessage.getFieldByName("trip_duration",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals(
@@ -618,12 +618,12 @@ public class ProtoRaystackParsedMessageTest {
         @Test
         public void shouldReturnMapFieldAsJSONObject() throws IOException {
                 TestMessageBQ message1 = TestMessageBQ.newBuilder().putCurrentState("running", "active").build();
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 parser.parse(message1.toByteArray()));
-                Object currentState = ((ProtoField) protoRaystackParsedMessage.getFieldByName("current_state",
+                Object currentState = ((ProtoField) protoParsedMessage.getFieldByName("current_state",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertTrue(currentState instanceof List<?>);
@@ -637,12 +637,12 @@ public class ProtoRaystackParsedMessageTest {
         @Test
         public void shouldReturnDefaultValueForFieldIfValueIsNotSet() throws IOException {
                 TestMessageBQ emptyMessage = TestMessageBQ.newBuilder().build();
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 parser.parse(emptyMessage.toByteArray()));
-                String orderNumber = (String) ((ProtoField) protoRaystackParsedMessage.getFieldByName("order_number",
+                String orderNumber = (String) ((ProtoField) protoParsedMessage.getFieldByName("order_number",
                                 raystackMessageSchema)).getValue();
                 Assert.assertEquals("", orderNumber);
         }
@@ -651,19 +651,19 @@ public class ProtoRaystackParsedMessageTest {
         public void shouldThrowExceptionIfColumnIsNotPresentInProto() throws IOException {
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestNestedMessageBQ",
                                 descriptorsMap);
                 TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test")
                                 .setSingleMessage(message1).build();
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 protoParser.parse(nestedMessage.toByteArray()));
-                String nestedId = (String) ((ProtoField) protoRaystackParsedMessage.getFieldByName("nested_id",
+                String nestedId = (String) ((ProtoField) protoParsedMessage.getFieldByName("nested_id",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals("test", nestedId);
                 IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                () -> protoRaystackParsedMessage.getFieldByName("single_message.order_id",
+                                () -> protoParsedMessage.getFieldByName("single_message.order_id",
                                                 raystackMessageSchema));
                 Assert.assertEquals("Invalid field config : single_message.order_id", exception.getMessage());
         }
@@ -672,31 +672,31 @@ public class ProtoRaystackParsedMessageTest {
         public void shouldThrowExceptionIfColumnIsNotNested() throws IOException {
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestNestedMessageBQ",
                                 descriptorsMap);
                 TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test")
                                 .setSingleMessage(message1).build();
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 protoParser.parse(nestedMessage.toByteArray()));
-                String nestedId = (String) ((ProtoField) protoRaystackParsedMessage.getFieldByName("nested_id",
+                String nestedId = (String) ((ProtoField) protoParsedMessage.getFieldByName("nested_id",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals("test", nestedId);
                 IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                () -> protoRaystackParsedMessage.getFieldByName("nested_id.order_id",
+                                () -> protoParsedMessage.getFieldByName("nested_id.order_id",
                                                 raystackMessageSchema));
                 Assert.assertEquals("Invalid field config : nested_id.order_id", exception.getMessage());
         }
 
         @Test
         public void shouldThrowExceptionIfFieldIsEmpty() throws IOException {
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(dynamicMessage);
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(dynamicMessage);
                 IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                () -> protoRaystackParsedMessage.getFieldByName("", raystackMessageSchema));
+                                () -> protoParsedMessage.getFieldByName("", raystackMessageSchema));
                 Assert.assertEquals("Invalid field config : name can not be empty", exception.getMessage());
         }
 
@@ -704,13 +704,13 @@ public class ProtoRaystackParsedMessageTest {
         public void shouldReturnRepeatedDurations() throws IOException {
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 protoParser.parse(message1.toByteArray()));
-                protoRaystackParsedMessage.getMapping(raystackMessageSchema);
-                Object intervals = ((ProtoField) protoRaystackParsedMessage.getFieldByName("intervals",
+                protoParsedMessage.getMapping(raystackMessageSchema);
+                Object intervals = ((ProtoField) protoParsedMessage.getFieldByName("intervals",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals(Duration.newBuilder().setSeconds(12).setNanos(1000).build(),
@@ -728,12 +728,12 @@ public class ProtoRaystackParsedMessageTest {
                                 .addListValues("test3")
                                 .build();
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
-                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                MessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestTypesMessage",
                                 descriptorsMap);
-                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(
                                 protoParser.parse(message.toByteArray()));
-                List<?> listValues = (List<?>) ((ProtoField) protoRaystackParsedMessage.getFieldByName("list_values",
+                List<?> listValues = (List<?>) ((ProtoField) protoParsedMessage.getFieldByName("list_values",
                                 raystackMessageSchema)).getValue();
                 Assert.assertEquals("test1", listValues.get(0));
                 Assert.assertEquals("test2", listValues.get(1));

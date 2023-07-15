@@ -6,7 +6,7 @@ import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.TableId;
 import org.raystack.depot.metrics.BigQueryMetrics;
 import org.raystack.depot.metrics.Instrumentation;
-import org.raystack.depot.RaystackSinkResponse;
+import org.raystack.depot.SinkResponse;
 import org.raystack.depot.bigquery.client.BigQueryClient;
 import org.raystack.depot.bigquery.client.BigQueryRow;
 import org.raystack.depot.bigquery.client.BigQueryRowWithInsertId;
@@ -17,7 +17,7 @@ import org.raystack.depot.bigquery.models.Record;
 import org.raystack.depot.bigquery.models.Records;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
-import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.Message;
 import org.aeonbits.owner.util.Collections;
 import org.junit.Assert;
 import org.junit.Before;
@@ -77,25 +77,25 @@ public class BigQuerySinkTest {
                                 Instant.now().toEpochMilli());
                 TestMetadata record6Offset = new TestMetadata("topic1", 6, 104, Instant.now().toEpochMilli(),
                                 Instant.now().toEpochMilli());
-                RaystackMessage message1 = TestRaystackMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
+                Message message1 = TestMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
                                 "order-1",
                                 "order-url-1", "order-details-1");
-                RaystackMessage message2 = TestRaystackMessageBuilder.withMetadata(record2Offset).createConsumerRecord(
+                Message message2 = TestMessageBuilder.withMetadata(record2Offset).createConsumerRecord(
                                 "order-2",
                                 "order-url-2", "order-details-2");
-                RaystackMessage message3 = TestRaystackMessageBuilder.withMetadata(record3Offset).createConsumerRecord(
+                Message message3 = TestMessageBuilder.withMetadata(record3Offset).createConsumerRecord(
                                 "order-3",
                                 "order-url-3", "order-details-3");
-                RaystackMessage message4 = TestRaystackMessageBuilder.withMetadata(record4Offset).createConsumerRecord(
+                Message message4 = TestMessageBuilder.withMetadata(record4Offset).createConsumerRecord(
                                 "order-4",
                                 "order-url-4", "order-details-4");
-                RaystackMessage message5 = TestRaystackMessageBuilder.withMetadata(record5Offset).createConsumerRecord(
+                Message message5 = TestMessageBuilder.withMetadata(record5Offset).createConsumerRecord(
                                 "order-5",
                                 "order-url-5", "order-details-5");
-                RaystackMessage message6 = TestRaystackMessageBuilder.withMetadata(record6Offset).createConsumerRecord(
+                Message message6 = TestMessageBuilder.withMetadata(record6Offset).createConsumerRecord(
                                 "order-6",
                                 "order-url-6", "order-details-6");
-                List<RaystackMessage> messages = Collections.list(message1, message2, message3, message4, message5,
+                List<Message> messages = Collections.list(message1, message2, message3, message4, message5,
                                 message6);
                 Record record1 = new Record(message1.getMetadata(), new HashMap<>(), 0, null);
                 Record record2 = new Record(message2.getMetadata(), new HashMap<>(), 1, null);
@@ -112,7 +112,7 @@ public class BigQuerySinkTest {
                 Mockito.when(converter.convert(Mockito.eq(messages))).thenReturn(records);
                 Mockito.when(client.insertAll(rows)).thenReturn(insertAllResponse);
                 Mockito.when(insertAllResponse.hasErrors()).thenReturn(false);
-                RaystackSinkResponse response = sink.pushToSink(messages);
+                SinkResponse response = sink.pushToSink(messages);
                 Assert.assertEquals(0, response.getErrors().size());
                 Mockito.verify(client, Mockito.times(1)).insertAll(rows);
         }
@@ -131,25 +131,25 @@ public class BigQuerySinkTest {
                                 Instant.now().toEpochMilli());
                 TestMetadata record6Offset = new TestMetadata("topic1", 6, 104, Instant.now().toEpochMilli(),
                                 Instant.now().toEpochMilli());
-                RaystackMessage message1 = TestRaystackMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
+                Message message1 = TestMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
                                 "order-1",
                                 "order-url-1", "order-details-1");
-                RaystackMessage message2 = TestRaystackMessageBuilder.withMetadata(record2Offset).createConsumerRecord(
+                Message message2 = TestMessageBuilder.withMetadata(record2Offset).createConsumerRecord(
                                 "order-2",
                                 "order-url-2", "order-details-2");
-                RaystackMessage message3 = TestRaystackMessageBuilder.withMetadata(record3Offset).createConsumerRecord(
+                Message message3 = TestMessageBuilder.withMetadata(record3Offset).createConsumerRecord(
                                 "order-3",
                                 "order-url-3", "order-details-3");
-                RaystackMessage message4 = TestRaystackMessageBuilder.withMetadata(record4Offset).createConsumerRecord(
+                Message message4 = TestMessageBuilder.withMetadata(record4Offset).createConsumerRecord(
                                 "order-4",
                                 "order-url-4", "order-details-4");
-                RaystackMessage message5 = TestRaystackMessageBuilder.withMetadata(record5Offset).createConsumerRecord(
+                Message message5 = TestMessageBuilder.withMetadata(record5Offset).createConsumerRecord(
                                 "order-5",
                                 "order-url-5", "order-details-5");
-                RaystackMessage message6 = TestRaystackMessageBuilder.withMetadata(record6Offset).createConsumerRecord(
+                Message message6 = TestMessageBuilder.withMetadata(record6Offset).createConsumerRecord(
                                 "order-6",
                                 "order-url-6", "order-details-6");
-                List<RaystackMessage> messages = Collections.list(message1, message2, message3, message4, message5,
+                List<Message> messages = Collections.list(message1, message2, message3, message4, message5,
                                 message6);
                 Record record1 = new Record(message1.getMetadata(), new HashMap<>(), 0, null);
                 Record record2 = new Record(message2.getMetadata(), new HashMap<>(), 1,
@@ -168,7 +168,7 @@ public class BigQuerySinkTest {
                 Mockito.when(converter.convert(Mockito.eq(messages))).thenReturn(records);
                 Mockito.when(client.insertAll(rows)).thenReturn(insertAllResponse);
                 Mockito.when(insertAllResponse.hasErrors()).thenReturn(false);
-                RaystackSinkResponse response = sink.pushToSink(messages);
+                SinkResponse response = sink.pushToSink(messages);
                 Assert.assertEquals(2, response.getErrors().size());
                 Mockito.verify(client, Mockito.times(1)).insertAll(rows);
 
@@ -190,25 +190,25 @@ public class BigQuerySinkTest {
                                 Instant.now().toEpochMilli());
                 TestMetadata record6Offset = new TestMetadata("topic1", 6, 104, Instant.now().toEpochMilli(),
                                 Instant.now().toEpochMilli());
-                RaystackMessage message1 = TestRaystackMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
+                Message message1 = TestMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
                                 "order-1",
                                 "order-url-1", "order-details-1");
-                RaystackMessage message2 = TestRaystackMessageBuilder.withMetadata(record2Offset).createConsumerRecord(
+                Message message2 = TestMessageBuilder.withMetadata(record2Offset).createConsumerRecord(
                                 "order-2",
                                 "order-url-2", "order-details-2");
-                RaystackMessage message3 = TestRaystackMessageBuilder.withMetadata(record3Offset).createConsumerRecord(
+                Message message3 = TestMessageBuilder.withMetadata(record3Offset).createConsumerRecord(
                                 "order-3",
                                 "order-url-3", "order-details-3");
-                RaystackMessage message4 = TestRaystackMessageBuilder.withMetadata(record4Offset).createConsumerRecord(
+                Message message4 = TestMessageBuilder.withMetadata(record4Offset).createConsumerRecord(
                                 "order-4",
                                 "order-url-4", "order-details-4");
-                RaystackMessage message5 = TestRaystackMessageBuilder.withMetadata(record5Offset).createConsumerRecord(
+                Message message5 = TestMessageBuilder.withMetadata(record5Offset).createConsumerRecord(
                                 "order-5",
                                 "order-url-5", "order-details-5");
-                RaystackMessage message6 = TestRaystackMessageBuilder.withMetadata(record6Offset).createConsumerRecord(
+                Message message6 = TestMessageBuilder.withMetadata(record6Offset).createConsumerRecord(
                                 "order-6",
                                 "order-url-6", "order-details-6");
-                List<RaystackMessage> messages = Collections.list(message1, message2, message3, message4, message5,
+                List<Message> messages = Collections.list(message1, message2, message3, message4, message5,
                                 message6);
                 Record record1 = new Record(message1.getMetadata(), new HashMap<>(), 0, null);
                 Record record2 = new Record(message2.getMetadata(), new HashMap<>(), 1,
@@ -240,7 +240,7 @@ public class BigQuerySinkTest {
                 };
                 Mockito.when(insertAllResponse.getInsertErrors()).thenReturn(insertErrorsMap);
 
-                RaystackSinkResponse response = sink.pushToSink(messages);
+                SinkResponse response = sink.pushToSink(messages);
                 Mockito.verify(client, Mockito.times(1)).insertAll(rows);
                 Mockito.verify(errorHandler, Mockito.times(1)).handle(Mockito.eq(insertErrorsMap), Mockito.any());
                 Assert.assertEquals(4, response.getErrors().size());

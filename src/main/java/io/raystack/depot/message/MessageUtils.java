@@ -19,7 +19,7 @@ public class MessageUtils {
         }
     }
 
-    public static void validate(RaystackMessage message, Class validClass) throws IOException {
+    public static void validate(Message message, Class validClass) throws IOException {
         if ((message.getLogKey() != null && !(validClass.isInstance(message.getLogKey())))
                 || (message.getLogMessage() != null && !(validClass.isInstance(message.getLogMessage())))) {
             throw new IOException(

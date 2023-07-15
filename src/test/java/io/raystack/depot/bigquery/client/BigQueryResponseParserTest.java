@@ -3,7 +3,7 @@ package org.raystack.depot.bigquery.client;
 import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.InsertAllResponse;
 import org.raystack.depot.bigquery.TestMetadata;
-import org.raystack.depot.bigquery.TestRaystackMessageBuilder;
+import org.raystack.depot.bigquery.TestMessageBuilder;
 import org.raystack.depot.metrics.BigQueryMetrics;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.bigquery.exception.BigQuerySinkException;
@@ -54,32 +54,32 @@ public class BigQueryResponseParserTest {
                 TestMetadata record6Offset = new TestMetadata("topic1", 6, 104, Instant.now().toEpochMilli(),
                                 Instant.now().toEpochMilli());
                 Record record1 = new Record(
-                                TestRaystackMessageBuilder.withMetadata(record1Offset)
+                                TestMessageBuilder.withMetadata(record1Offset)
                                                 .createConsumerRecord("order-1", "order-url-1", "order-details-1")
                                                 .getMetadata(),
                                 new HashMap<>(), 0, null);
                 Record record2 = new Record(
-                                TestRaystackMessageBuilder.withMetadata(record2Offset)
+                                TestMessageBuilder.withMetadata(record2Offset)
                                                 .createConsumerRecord("order-2", "order-url-2", "order-details-2")
                                                 .getMetadata(),
                                 new HashMap<>(), 1, null);
                 Record record3 = new Record(
-                                TestRaystackMessageBuilder.withMetadata(record3Offset)
+                                TestMessageBuilder.withMetadata(record3Offset)
                                                 .createConsumerRecord("order-3", "order-url-3", "order-details-3")
                                                 .getMetadata(),
                                 new HashMap<>(), 2, null);
                 Record record4 = new Record(
-                                TestRaystackMessageBuilder.withMetadata(record4Offset)
+                                TestMessageBuilder.withMetadata(record4Offset)
                                                 .createConsumerRecord("order-4", "order-url-4", "order-details-4")
                                                 .getMetadata(),
                                 new HashMap<>(), 3, null);
                 Record record5 = new Record(
-                                TestRaystackMessageBuilder.withMetadata(record5Offset)
+                                TestMessageBuilder.withMetadata(record5Offset)
                                                 .createConsumerRecord("order-5", "order-url-5", "order-details-5")
                                                 .getMetadata(),
                                 new HashMap<>(), 4, null);
                 Record record6 = new Record(
-                                TestRaystackMessageBuilder.withMetadata(record6Offset)
+                                TestMessageBuilder.withMetadata(record6Offset)
                                                 .createConsumerRecord("order-6", "order-url-6", "order-details-6")
                                                 .getMetadata(),
                                 new HashMap<>(), 5, null);

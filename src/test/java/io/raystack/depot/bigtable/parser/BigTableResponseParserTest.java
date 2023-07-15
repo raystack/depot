@@ -15,7 +15,7 @@ import org.raystack.depot.bigtable.model.BigTableRecord;
 import org.raystack.depot.bigtable.response.BigTableResponse;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
-import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.Message;
 import org.raystack.depot.metrics.BigTableMetrics;
 import org.raystack.depot.metrics.Instrumentation;
 import org.aeonbits.owner.util.Collections;
@@ -67,9 +67,9 @@ public class BigTableResponseParserTest {
                 TestBookingLogMessage bookingLogMessage2 = TestBookingLogMessage.newBuilder().setOrderNumber("order#2")
                                 .setOrderUrl("order-url#2").setServiceType(TestServiceType.Enum.GO_SHOP).build();
 
-                RaystackMessage message1 = new RaystackMessage(bookingLogKey1.toByteArray(),
+                Message message1 = new Message(bookingLogKey1.toByteArray(),
                                 bookingLogMessage1.toByteArray());
-                RaystackMessage message2 = new RaystackMessage(bookingLogKey2.toByteArray(),
+                Message message2 = new Message(bookingLogKey2.toByteArray(),
                                 bookingLogMessage2.toByteArray());
 
                 RowMutationEntry rowMutationEntry1 = RowMutationEntry.create("rowKey1").setCell("family1", "qualifier1",

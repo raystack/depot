@@ -4,25 +4,25 @@ import com.google.api.client.util.DateTime;
 import org.raystack.depot.TestKeyBQ;
 import org.raystack.depot.TestMessageBQ;
 import org.raystack.depot.common.Tuple;
-import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.Message;
 
 import java.sql.Date;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class TestRaystackMessageBuilder {
+public final class TestMessageBuilder {
     private long timestamp;
     private String topic;
     private int partition;
     private long offset;
     private long loadTime;
 
-    private TestRaystackMessageBuilder() {
+    private TestMessageBuilder() {
     }
 
-    public static TestRaystackMessageBuilder withMetadata(TestMetadata testMetadata) {
-        TestRaystackMessageBuilder builder = new TestRaystackMessageBuilder();
+    public static TestMessageBuilder withMetadata(TestMetadata testMetadata) {
+        TestMessageBuilder builder = new TestMessageBuilder();
         builder.topic = testMetadata.getTopic();
         builder.partition = testMetadata.getPartition();
         builder.offset = testMetadata.getOffset();
@@ -31,7 +31,7 @@ public final class TestRaystackMessageBuilder {
         return builder;
     }
 
-    public RaystackMessage createConsumerRecord(String orderNumber, String orderUrl, String orderDetails) {
+    public Message createConsumerRecord(String orderNumber, String orderUrl, String orderDetails) {
         TestKeyBQ key = TestKeyBQ.newBuilder()
                 .setOrderNumber(orderNumber)
                 .setOrderUrl(orderUrl)
@@ -41,7 +41,7 @@ public final class TestRaystackMessageBuilder {
                 .setOrderUrl(orderUrl)
                 .setOrderDetails(orderDetails)
                 .build();
-        return new RaystackMessage(
+        return new Message(
                 key.toByteArray(),
                 message.toByteArray(),
                 new Tuple<>("message_topic", topic),
@@ -52,12 +52,12 @@ public final class TestRaystackMessageBuilder {
                 new Tuple<>("should_be_ignored", timestamp));
     }
 
-    public RaystackMessage createEmptyValueConsumerRecord(String orderNumber, String orderUrl) {
+    public Message createEmptyValueConsumerRecord(String orderNumber, String orderUrl) {
         TestKeyBQ key = TestKeyBQ.newBuilder()
                 .setOrderNumber(orderNumber)
                 .setOrderUrl(orderUrl)
                 .build();
-        return new RaystackMessage(
+        return new Message(
                 key.toByteArray(),
                 null,
                 new Tuple<>("message_topic", topic),

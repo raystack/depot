@@ -12,7 +12,7 @@ import org.apache.http.Header;
 
 import java.util.List;
 
-public interface RaystackSinkConfig extends Config {
+public interface SinkConfig extends Config {
 
     @Key("SCHEMA_REGISTRY_STENCIL_ENABLE")
     @DefaultValue("false")

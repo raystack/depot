@@ -1,9 +1,9 @@
 package org.raystack.depot.message.json;
 
-import org.raystack.depot.config.RaystackSinkConfig;
+import org.raystack.depot.config.SinkConfig;
 import org.raystack.depot.exception.EmptyMessageException;
-import org.raystack.depot.message.RaystackMessage;
-import org.raystack.depot.message.ParsedRaystackMessage;
+import org.raystack.depot.message.Message;
+import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.JsonParserMetrics;
 import org.aeonbits.owner.ConfigFactory;
@@ -28,9 +28,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class JsonRaystackMessageParserTest {
+public class JsonMessageParserTest {
 
-        private final RaystackSinkConfig defaultConfig = ConfigFactory.create(RaystackSinkConfig.class,
+        private final SinkConfig defaultConfig = ConfigFactory.create(SinkConfig.class,
                         Collections.emptyMap());
         private final Instrumentation instrumentation = mock(Instrumentation.class);
         private final JsonParserMetrics jsonParserMetrics = new JsonParserMetrics(defaultConfig);
@@ -44,30 +44,30 @@ public class JsonRaystackMessageParserTest {
          */
         @Test
         public void shouldParseJsonLogMessage() throws IOException {
-                JsonRaystackMessageParser jsonRaystackMessageParser = new JsonRaystackMessageParser(defaultConfig,
+                JsonMessageParser jsonMessageParser = new JsonMessageParser(defaultConfig,
                                 instrumentation,
                                 jsonParserMetrics);
                 String validJsonStr = "{\"first_name\":\"john\"}";
-                RaystackMessage jsonRaystackMessage = new RaystackMessage(null, validJsonStr.getBytes());
+                Message jsonMessage = new Message(null, validJsonStr.getBytes());
 
-                ParsedRaystackMessage parsedRaystackMessage = jsonRaystackMessageParser.parse(jsonRaystackMessage,
+                ParsedMessage parsedMessage = jsonMessageParser.parse(jsonMessage,
                                 LOG_MESSAGE, null);
-                JSONObject actualJson = (JSONObject) parsedRaystackMessage.getRaw();
+                JSONObject actualJson = (JSONObject) parsedMessage.getRaw();
                 JSONObject expectedJsonObject = new JSONObject(validJsonStr);
                 assertTrue(expectedJsonObject.similar(actualJson));
         }
 
         @Test
         public void shouldPublishTimeTakenToCastJsonValuesToString() throws IOException {
-                JsonRaystackMessageParser jsonRaystackMessageParser = new JsonRaystackMessageParser(defaultConfig,
+                JsonMessageParser jsonMessageParser = new JsonMessageParser(defaultConfig,
                                 instrumentation,
                                 jsonParserMetrics);
                 String validJsonStr = "{\"first_name\":\"john\"}";
-                RaystackMessage jsonRaystackMessage = new RaystackMessage(null, validJsonStr.getBytes());
+                Message jsonMessage = new Message(null, validJsonStr.getBytes());
 
-                ParsedRaystackMessage parsedRaystackMessage = jsonRaystackMessageParser.parse(jsonRaystackMessage,
+                ParsedMessage parsedMessage = jsonMessageParser.parse(jsonMessage,
                                 LOG_MESSAGE, null);
-                JSONObject actualJson = (JSONObject) parsedRaystackMessage.getRaw();
+                JSONObject actualJson = (JSONObject) parsedMessage.getRaw();
                 JSONObject expectedJsonObject = new JSONObject(validJsonStr);
                 assertTrue(expectedJsonObject.similar(actualJson));
                 verify(instrumentation, times(1)).captureDurationSince(
@@ -77,8 +77,8 @@ public class JsonRaystackMessageParserTest {
         @Test
         public void shouldCastTheJSONValuesToString() throws IOException {
                 Map<String, String> configMap = of("SINK_BIGQUERY_DEFAULT_DATATYPE_STRING_ENABLE", "true");
-                RaystackSinkConfig config = ConfigFactory.create(RaystackSinkConfig.class, configMap);
-                JsonRaystackMessageParser jsonRaystackMessageParser = new JsonRaystackMessageParser(config,
+                SinkConfig config = ConfigFactory.create(SinkConfig.class, configMap);
+                JsonMessageParser jsonMessageParser = new JsonMessageParser(config,
                                 instrumentation,
                                 jsonParserMetrics);
                 String validJsonStr = "{\n"
@@ -88,11 +88,11 @@ public class JsonRaystackMessageParserTest {
                                 + "  \"sdk_version\": 6.310932397154218,\n"
                                 + "  \"whole_number\": 2\n"
                                 + "}";
-                RaystackMessage jsonRaystackMessage = new RaystackMessage(null, validJsonStr.getBytes());
+                Message jsonMessage = new Message(null, validJsonStr.getBytes());
 
-                ParsedRaystackMessage parsedRaystackMessage = jsonRaystackMessageParser.parse(jsonRaystackMessage,
+                ParsedMessage parsedMessage = jsonMessageParser.parse(jsonMessage,
                                 LOG_MESSAGE, null);
-                JSONObject actualJson = (JSONObject) parsedRaystackMessage.getRaw();
+                JSONObject actualJson = (JSONObject) parsedMessage.getRaw();
                 String stringifiedJsonStr = "{\n"
                                 // normal string should remain as is
                                 + "  \"idfv\": \"FE533F4A-F776-4BEF-98B7-6BD1DFC2972C\",\n"
@@ -114,7 +114,7 @@ public class JsonRaystackMessageParserTest {
 
         @Test
         public void shouldThrowExceptionForNestedJsonNotSupported() {
-                JsonRaystackMessageParser jsonRaystackMessageParser = new JsonRaystackMessageParser(defaultConfig,
+                JsonMessageParser jsonMessageParser = new JsonMessageParser(defaultConfig,
                                 instrumentation,
                                 jsonParserMetrics);
                 String nestedJsonStr = "{\n"
@@ -128,75 +128,75 @@ public class JsonRaystackMessageParserTest {
                                 + "  \"is_receipt_validated\": null,\n"
                                 + "  \"contributor_1_campaign\": null\n"
                                 + "}";
-                RaystackMessage jsonRaystackMessage = new RaystackMessage(null, nestedJsonStr.getBytes());
+                Message jsonMessage = new Message(null, nestedJsonStr.getBytes());
 
                 UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class,
-                                () -> jsonRaystackMessageParser.parse(jsonRaystackMessage, LOG_MESSAGE, null));
+                                () -> jsonMessageParser.parse(jsonMessage, LOG_MESSAGE, null));
                 assertEquals("nested json structure not supported yet", exception.getMessage());
 
         }
 
         @Test
         public void shouldThrowErrorForInvalidLogMessage() {
-                JsonRaystackMessageParser jsonRaystackMessageParser = new JsonRaystackMessageParser(defaultConfig,
+                JsonMessageParser jsonMessageParser = new JsonMessageParser(defaultConfig,
                                 instrumentation,
                                 jsonParserMetrics);
                 String invalidJsonStr = "{\"first_";
-                RaystackMessage jsonRaystackMessage = new RaystackMessage(null, invalidJsonStr.getBytes());
+                Message jsonMessage = new Message(null, invalidJsonStr.getBytes());
                 IOException ioException = assertThrows(IOException.class,
-                                () -> jsonRaystackMessageParser.parse(jsonRaystackMessage, LOG_MESSAGE, null));
+                                () -> jsonMessageParser.parse(jsonMessage, LOG_MESSAGE, null));
                 assertEquals("invalid json error", ioException.getMessage());
                 assertTrue(ioException.getCause() instanceof JSONException);
         }
 
         @Test
         public void shouldThrowEmptyMessageException() {
-                JsonRaystackMessageParser jsonRaystackMessageParser = new JsonRaystackMessageParser(defaultConfig,
+                JsonMessageParser jsonMessageParser = new JsonMessageParser(defaultConfig,
                                 instrumentation,
                                 jsonParserMetrics);
-                RaystackMessage jsonRaystackMessage = new RaystackMessage(null, null);
+                Message jsonMessage = new Message(null, null);
                 EmptyMessageException emptyMessageException = assertThrows(EmptyMessageException.class,
-                                () -> jsonRaystackMessageParser.parse(jsonRaystackMessage, LOG_MESSAGE, null));
+                                () -> jsonMessageParser.parse(jsonMessage, LOG_MESSAGE, null));
                 assertEquals("log message is empty", emptyMessageException.getMessage());
         }
 
         @Test
         public void shouldParseJsonKeyMessage() throws IOException {
-                JsonRaystackMessageParser jsonRaystackMessageParser = new JsonRaystackMessageParser(defaultConfig,
+                JsonMessageParser jsonMessageParser = new JsonMessageParser(defaultConfig,
                                 instrumentation,
                                 jsonParserMetrics);
                 String validJsonStr = "{\"first_name\":\"john\"}";
-                RaystackMessage jsonRaystackMessage = new RaystackMessage(validJsonStr.getBytes(), null);
+                Message jsonMessage = new Message(validJsonStr.getBytes(), null);
 
-                ParsedRaystackMessage parsedRaystackMessage = jsonRaystackMessageParser.parse(jsonRaystackMessage,
+                ParsedMessage parsedMessage = jsonMessageParser.parse(jsonMessage,
                                 LOG_KEY, null);
-                JSONObject actualJson = (JSONObject) parsedRaystackMessage.getRaw();
+                JSONObject actualJson = (JSONObject) parsedMessage.getRaw();
                 JSONObject expectedJsonObject = new JSONObject(validJsonStr);
                 assertTrue(expectedJsonObject.similar(actualJson));
         }
 
         @Test
         public void shouldThrowErrorForInvalidKeyMessage() {
-                JsonRaystackMessageParser jsonRaystackMessageParser = new JsonRaystackMessageParser(defaultConfig,
+                JsonMessageParser jsonMessageParser = new JsonMessageParser(defaultConfig,
                                 instrumentation,
                                 jsonParserMetrics);
                 String invalidJsonStr = "{\"first_";
-                RaystackMessage jsonRaystackMessage = new RaystackMessage(invalidJsonStr.getBytes(), null);
+                Message jsonMessage = new Message(invalidJsonStr.getBytes(), null);
                 IOException ioException = assertThrows(IOException.class,
-                                () -> jsonRaystackMessageParser.parse(jsonRaystackMessage, LOG_KEY, null));
+                                () -> jsonMessageParser.parse(jsonMessage, LOG_KEY, null));
                 assertEquals("invalid json error", ioException.getMessage());
                 assertTrue(ioException.getCause() instanceof JSONException);
         }
 
         @Test
         public void shouldThrowErrorWhenModeNotDefined() {
-                JsonRaystackMessageParser jsonRaystackMessageParser = new JsonRaystackMessageParser(defaultConfig,
+                JsonMessageParser jsonMessageParser = new JsonMessageParser(defaultConfig,
                                 instrumentation,
                                 jsonParserMetrics);
                 String invalidJsonStr = "{\"first_";
-                RaystackMessage jsonRaystackMessage = new RaystackMessage(invalidJsonStr.getBytes(), null);
+                Message jsonMessage = new Message(invalidJsonStr.getBytes(), null);
                 IOException ioException = assertThrows(IOException.class,
-                                () -> jsonRaystackMessageParser.parse(jsonRaystackMessage, null, null));
+                                () -> jsonMessageParser.parse(jsonMessage, null, null));
                 assertEquals("message mode not defined", ioException.getMessage());
         }
 }

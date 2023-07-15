@@ -6,11 +6,11 @@ import org.raystack.depot.TestMessage;
 import org.raystack.depot.TestNestedMessage;
 import org.raystack.depot.TestNestedRepeatedMessage;
 import org.raystack.depot.config.RedisSinkConfig;
-import org.raystack.depot.message.RaystackMessage;
-import org.raystack.depot.message.RaystackMessageSchema;
-import org.raystack.depot.message.ParsedRaystackMessage;
+import org.raystack.depot.message.Message;
+import org.raystack.depot.message.MessageSchema;
+import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
-import org.raystack.depot.message.proto.ProtoRaystackMessageParser;
+import org.raystack.depot.message.proto.ProtoMessageParser;
 import org.raystack.depot.metrics.StatsDReporter;
 import org.raystack.depot.redis.client.entry.RedisEntry;
 import org.raystack.depot.redis.client.entry.RedisListEntry;
@@ -46,14 +46,14 @@ public class RedisListEntryParserTest {
     @Mock
     private StatsDReporter statsDReporter;
     private RedisEntryParser redisListEntryParser;
-    private RaystackMessageSchema schema;
-    private ParsedRaystackMessage parsedRaystackMessage;
+    private MessageSchema schema;
+    private ParsedMessage parsedMessage;
 
     private void redisSinkSetup(String template, String field) throws IOException {
         when(redisSinkConfig.getSinkRedisDataType()).thenReturn(RedisSinkDataType.LIST);
         when(redisSinkConfig.getSinkRedisListDataFieldName()).thenReturn(field);
         when(redisSinkConfig.getSinkRedisKeyTemplate()).thenReturn(template);
-        ProtoRaystackMessageParser raystackMessageParser = new ProtoRaystackMessageParser(redisSinkConfig, statsDReporter, null);
+        ProtoMessageParser raystackMessageParser = new ProtoMessageParser(redisSinkConfig, statsDReporter, null);
         String schemaClass = "org.raystack.depot.TestMessage";
         schema = raystackMessageParser.getSchema(schemaClass, descriptorsMap);
         byte[] logMessage = TestMessage.newBuilder()
@@ -61,15 +61,15 @@ public class RedisListEntryParserTest {
                 .setOrderDetails("new-eureka-order")
                 .build()
                 .toByteArray();
-        RaystackMessage message = new RaystackMessage(null, logMessage);
-        parsedRaystackMessage = raystackMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass);
+        Message message = new Message(null, logMessage);
+        parsedMessage = raystackMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass);
         redisListEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig, statsDReporter, schema);
     }
 
     @Test
-    public void shouldConvertParsedRaystackMessageToRedisListEntry() throws IOException {
+    public void shouldConvertParsedMessageToRedisListEntry() throws IOException {
         redisSinkSetup("test-key", "order_details");
-        List<RedisEntry> redisDataEntries = redisListEntryParser.getRedisEntry(parsedRaystackMessage);
+        List<RedisEntry> redisDataEntries = redisListEntryParser.getRedisEntry(parsedMessage);
         RedisListEntry expectedEntry = new RedisListEntry("test-key", "new-eureka-order", null);
         assertEquals(Collections.singletonList(expectedEntry), redisDataEntries);
     }
@@ -78,7 +78,7 @@ public class RedisListEntryParserTest {
     public void shouldThrowExceptionForInvalidKeyValueDataFieldName() throws IOException {
         redisSinkSetup("test-key", "random-field");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> redisListEntryParser.getRedisEntry(parsedRaystackMessage));
+                () -> redisListEntryParser.getRedisEntry(parsedMessage));
         assertEquals("Invalid field config : random-field", exception.getMessage());
     }
 }

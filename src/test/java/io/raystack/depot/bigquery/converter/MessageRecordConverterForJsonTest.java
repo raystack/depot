@@ -4,13 +4,13 @@ import com.google.common.collect.ImmutableMap;
 import org.raystack.depot.bigquery.models.Record;
 import org.raystack.depot.bigquery.models.Records;
 import org.raystack.depot.config.BigQuerySinkConfig;
-import org.raystack.depot.config.RaystackSinkConfig;
+import org.raystack.depot.config.SinkConfig;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
-import org.raystack.depot.message.RaystackMessage;
-import org.raystack.depot.message.RaystackMessageParser;
-import org.raystack.depot.message.RaystackMessageSchema;
-import org.raystack.depot.message.json.JsonRaystackMessageParser;
+import org.raystack.depot.message.Message;
+import org.raystack.depot.message.MessageParser;
+import org.raystack.depot.message.MessageSchema;
+import org.raystack.depot.message.json.JsonMessageParser;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.JsonParserMetrics;
 import org.aeonbits.owner.ConfigFactory;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.mock;
 
 public class MessageRecordConverterForJsonTest {
 
-        private final RaystackSinkConfig defaultConfig = ConfigFactory.create(RaystackSinkConfig.class,
+        private final SinkConfig defaultConfig = ConfigFactory.create(SinkConfig.class,
                         Collections.emptyMap());
         private final Record.RecordBuilder recordBuilder = Record.builder();
         private final Map<String, Object> emptyMetadata = Collections.emptyMap();
@@ -51,14 +51,14 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldReturnEmptyRecordsforEmptyList() {
-                RaystackMessageParser parser = new JsonRaystackMessageParser(defaultConfig, instrumentation,
+                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation,
                                 jsonParserMetrics);
-                RaystackMessageSchema schema = null;
+                MessageSchema schema = null;
                 BigQuerySinkConfig bigQuerySinkConfig = null;
                 MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
-                List<RaystackMessage> emptyRaystackMessageList = Collections.emptyList();
+                List<Message> emptyMessageList = Collections.emptyList();
 
-                Records records = converter.convert(emptyRaystackMessageList);
+                Records records = converter.convert(emptyMessageList);
                 List<Record> emptyRecordList = Collections.emptyList();
                 Records expectedRecords = new Records(emptyRecordList, emptyRecordList);
                 assertEquals(expectedRecords, records);
@@ -66,16 +66,16 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldConvertJsonMessagesToRecordForLogMessage() {
-                RaystackMessageParser parser = new JsonRaystackMessageParser(defaultConfig, instrumentation,
+                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation,
                                 jsonParserMetrics);
-                RaystackMessageSchema schema = null;
+                MessageSchema schema = null;
                 HashMap<String, String> configMap = new HashMap<>();
                 configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE");
                 BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
                 MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
-                List<RaystackMessage> messages = new ArrayList<>();
-                messages.add(getRaystackMessageForString("{ \"first_name\": \"john doe\"}"));
-                messages.add(getRaystackMessageForString("{ \"last_name\": \"walker\"}"));
+                List<Message> messages = new ArrayList<>();
+                messages.add(getMessageForString("{ \"first_name\": \"john doe\"}"));
+                messages.add(getMessageForString("{ \"last_name\": \"walker\"}"));
 
                 Records records = converter.convert(messages);
 
@@ -104,16 +104,16 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldConvertJsonMessagesToRecordForLogKey() {
-                RaystackMessageParser parser = new JsonRaystackMessageParser(defaultConfig, instrumentation,
+                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation,
                                 jsonParserMetrics);
-                RaystackMessageSchema schema = null;
+                MessageSchema schema = null;
                 HashMap<String, String> configMap = new HashMap<>();
                 configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_KEY");
                 BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
                 MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
-                List<RaystackMessage> messages = new ArrayList<>();
-                messages.add(new RaystackMessage("{ \"first_name\": \"john doe\"}".getBytes(), null));
-                messages.add(new RaystackMessage("{ \"last_name\": \"walker\"}".getBytes(), null));
+                List<Message> messages = new ArrayList<>();
+                messages.add(new Message("{ \"first_name\": \"john doe\"}".getBytes(), null));
+                messages.add(new Message("{ \"last_name\": \"walker\"}".getBytes(), null));
 
                 Records records = converter.convert(messages);
 
@@ -142,18 +142,18 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldHandleBothInvalidAndValidJsonMessages() {
-                RaystackMessageParser parser = new JsonRaystackMessageParser(defaultConfig, instrumentation,
+                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation,
                                 jsonParserMetrics);
-                RaystackMessageSchema schema = null;
+                MessageSchema schema = null;
                 HashMap<String, String> configMap = new HashMap<>();
                 configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE");
                 BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
                 MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
-                List<RaystackMessage> messages = new ArrayList<>();
-                messages.add(getRaystackMessageForString("{ \"first_name\": \"john doe\"}"));
-                messages.add(getRaystackMessageForString("{ invalid json str"));
-                messages.add(getRaystackMessageForString("{ \"last_name\": \"walker\"}"));
-                messages.add(getRaystackMessageForString("another invalid message"));
+                List<Message> messages = new ArrayList<>();
+                messages.add(getMessageForString("{ \"first_name\": \"john doe\"}"));
+                messages.add(getMessageForString("{ invalid json str"));
+                messages.add(getMessageForString("{ \"last_name\": \"walker\"}"));
+                messages.add(getMessageForString("another invalid message"));
                 String nestedJsonStr = "{\n"
                                 + "  \"event_value\": {\n"
                                 + "    \"CustomerLatitude\": \"-6.166895595817224\",\n"
@@ -166,7 +166,7 @@ public class MessageRecordConverterForJsonTest {
                                 + "  \"contributor_1_campaign\": null\n"
                                 + "}";
 
-                messages.add(getRaystackMessageForString(nestedJsonStr));
+                messages.add(getMessageForString(nestedJsonStr));
 
                 Records records = converter.convert(messages);
 
@@ -221,9 +221,9 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldInjectEventTimestamp() throws ParseException {
-                RaystackMessageParser parser = new JsonRaystackMessageParser(defaultConfig, instrumentation,
+                MessageParser parser = new JsonMessageParser(defaultConfig, instrumentation,
                                 jsonParserMetrics);
-                RaystackMessageSchema schema = null;
+                MessageSchema schema = null;
                 Map<String, String> configMap = ImmutableMap.of(
                                 "SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE",
                                 "SINK_CONNECTOR_SCHEMA_DATA_TYPE", "json",
@@ -231,9 +231,9 @@ public class MessageRecordConverterForJsonTest {
 
                 BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
                 MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
-                List<RaystackMessage> messages = new ArrayList<>();
-                messages.add(getRaystackMessageForString("{ \"first_name\": \"john doe\"}"));
-                messages.add(getRaystackMessageForString("{ \"last_name\": \"walker\"}"));
+                List<Message> messages = new ArrayList<>();
+                messages.add(getMessageForString("{ \"first_name\": \"john doe\"}"));
+                messages.add(getMessageForString("{ \"last_name\": \"walker\"}"));
 
                 Records actualRecords = converter.convert(messages);
 
@@ -265,8 +265,8 @@ public class MessageRecordConverterForJsonTest {
                 assertTrue("the difference is " + timeDifferenceForSecondDate, timeDifferenceForSecondDate < 60000);
         }
 
-        private RaystackMessage getRaystackMessageForString(String jsonStr) {
+        private Message getMessageForString(String jsonStr) {
                 byte[] logMessage = jsonStr.getBytes();
-                return new RaystackMessage(null, logMessage);
+                return new Message(null, logMessage);
         }
 }

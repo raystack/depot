@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @EqualsAndHashCode
-public class RaystackMessage {
+public class Message {
     private final Object logKey;
     private final Object logMessage;
     private final Map<String, Object> metadata = new HashMap<>();
@@ -25,7 +25,7 @@ public class RaystackMessage {
     }
 
     @SafeVarargs
-    public RaystackMessage(Object logKey, Object logMessage, Tuple<String, Object>... tuples) {
+    public Message(Object logKey, Object logMessage, Tuple<String, Object>... tuples) {
         this.logKey = logKey;
         this.logMessage = logMessage;
         Arrays.stream(tuples).forEach(t -> metadata.put(t.getFirst(), t.getSecond()));

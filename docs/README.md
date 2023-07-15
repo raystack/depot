@@ -62,8 +62,8 @@ implementation group: 'org.raystack', name: 'depot', version: 'version'
 ### Usage example:
 
 ```java
-public interface RaystackSink extends Closeable {
-    RaystackSinkResponse pushToSink(List<RaystackMessage> messages) throws RaystackSinkException;
+public interface Sink extends Closeable {
+    SinkResponse pushToSink(List<Message> messages) throws SinkException;
 }
 ```
 
@@ -89,12 +89,12 @@ class MyClass {
 
 ### Data types
 
-Currently, sink connector library is supporting protobuf and Json format. We can set the datatype of `RaystackMessage` by
+Currently, sink connector library is supporting protobuf and Json format. We can set the datatype of `Message` by
 setting `SINK_CONNECTOR_SCHEMA_DATA_TYPE`. Each datatype has parsers which takes care of deserialization.
 
 ### Adding a new Sink
 
-Each sink will have to implement `RaystackSink` interface. The pushToSink take a batch of messages and return a response
+Each sink will have to implement `Sink` interface. The pushToSink take a batch of messages and return a response
 with error list.
 
 ### Configurations

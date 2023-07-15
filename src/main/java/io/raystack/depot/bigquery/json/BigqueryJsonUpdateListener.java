@@ -12,9 +12,9 @@ import org.raystack.depot.bigquery.converter.MessageRecordConverterCache;
 import org.raystack.depot.bigquery.proto.BigqueryFields;
 import org.raystack.depot.common.TupleString;
 import org.raystack.depot.config.BigQuerySinkConfig;
-import org.raystack.depot.message.RaystackMessageParser;
+import org.raystack.depot.message.MessageParser;
 import org.raystack.depot.metrics.Instrumentation;
-import org.raystack.depot.stencil.RaystackStencilUpdateListener;
+import org.raystack.depot.stencil.StencilUpdateListener;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class BigqueryJsonUpdateListener extends RaystackStencilUpdateListener {
+public class BigqueryJsonUpdateListener extends StencilUpdateListener {
     private final MessageRecordConverterCache converterCache;
     private final BigQuerySinkConfig config;
     private final BigQueryClient bigQueryClient;
@@ -43,7 +43,7 @@ public class BigqueryJsonUpdateListener extends RaystackStencilUpdateListener {
 
     @Override
     public void updateSchema() {
-        RaystackMessageParser parser = getRaystackMessageParser();
+        MessageParser parser = getMessageParser();
         MessageRecordConverter messageRecordConverter = new MessageRecordConverter(parser, config, null);
         converterCache.setMessageRecordConverter(messageRecordConverter);
         List<TupleString> defaultColumns = config.getSinkBigqueryDefaultColumns();

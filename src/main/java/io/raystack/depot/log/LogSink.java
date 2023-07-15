@@ -1,26 +1,26 @@
 package org.raystack.depot.log;
 
-import org.raystack.depot.RaystackSink;
-import org.raystack.depot.RaystackSinkResponse;
-import org.raystack.depot.config.RaystackSinkConfig;
+import org.raystack.depot.Sink;
+import org.raystack.depot.SinkResponse;
+import org.raystack.depot.config.SinkConfig;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
-import org.raystack.depot.exception.RaystackSinkException;
+import org.raystack.depot.exception.SinkException;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
-import org.raystack.depot.message.RaystackMessage;
-import org.raystack.depot.message.RaystackMessageParser;
-import org.raystack.depot.message.ParsedRaystackMessage;
+import org.raystack.depot.message.Message;
+import org.raystack.depot.message.MessageParser;
+import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.metrics.Instrumentation;
 
 import java.io.IOException;
 import java.util.List;
 
-public class LogSink implements RaystackSink {
-    private final RaystackMessageParser raystackMessageParser;
+public class LogSink implements Sink {
+    private final MessageParser raystackMessageParser;
     private final Instrumentation instrumentation;
-    private final RaystackSinkConfig config;
+    private final SinkConfig config;
 
-    public LogSink(RaystackSinkConfig config, RaystackMessageParser raystackMessageParser,
+    public LogSink(SinkConfig config, MessageParser raystackMessageParser,
             Instrumentation instrumentation) {
         this.raystackMessageParser = raystackMessageParser;
         this.instrumentation = instrumentation;
@@ -28,22 +28,22 @@ public class LogSink implements RaystackSink {
     }
 
     @Override
-    public RaystackSinkResponse pushToSink(List<RaystackMessage> messages) throws RaystackSinkException {
-        RaystackSinkResponse response = new RaystackSinkResponse();
+    public SinkResponse pushToSink(List<Message> messages) throws SinkException {
+        SinkResponse response = new SinkResponse();
         SinkConnectorSchemaMessageMode mode = config.getSinkConnectorSchemaMessageMode();
         String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
                 ? config.getSinkConnectorSchemaProtoMessageClass()
                 : config.getSinkConnectorSchemaProtoKeyClass();
         for (int ii = 0; ii < messages.size(); ii++) {
-            RaystackMessage message = messages.get(ii);
+            Message message = messages.get(ii);
             try {
-                ParsedRaystackMessage parsedRaystackMessage = raystackMessageParser.parse(
+                ParsedMessage parsedMessage = raystackMessageParser.parse(
                         message,
                         mode,
                         schemaClass);
                 instrumentation.logInfo("\n================= DATA =======================\n{}"
                         + "\n================= METADATA =======================\n{}\n",
-                        parsedRaystackMessage.toString(), message.getMetadataString());
+                        parsedMessage.toString(), message.getMetadataString());
             } catch (IOException e) {
                 response.addErrors(ii, new ErrorInfo(e, ErrorType.DESERIALIZATION_ERROR));
             }

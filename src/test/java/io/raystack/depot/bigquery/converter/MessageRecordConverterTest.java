@@ -6,7 +6,7 @@ import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.UnknownFieldSet;
 import org.raystack.depot.TestMessage;
 import org.raystack.depot.bigquery.TestMetadata;
-import org.raystack.depot.bigquery.TestRaystackMessageBuilder;
+import org.raystack.depot.bigquery.TestMessageBuilder;
 import org.raystack.depot.bigquery.models.Record;
 import org.raystack.depot.bigquery.models.Records;
 import org.raystack.depot.common.Tuple;
@@ -14,8 +14,8 @@ import org.raystack.depot.common.TupleString;
 import org.raystack.depot.config.BigQuerySinkConfig;
 import org.raystack.depot.error.ErrorType;
 import org.raystack.depot.message.*;
-import org.raystack.depot.message.proto.ProtoRaystackMessageParser;
-import org.raystack.depot.message.proto.ProtoRaystackParsedMessage;
+import org.raystack.depot.message.proto.ProtoMessageParser;
+import org.raystack.depot.message.proto.ProtoParsedMessage;
 import org.raystack.stencil.client.ClassLoadStencilClient;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
@@ -36,7 +36,7 @@ public class MessageRecordConverterTest {
         @Mock
         private ClassLoadStencilClient stencilClient;
         private Instant now;
-        private RaystackMessageSchema schema;
+        private MessageSchema schema;
 
         @Before
         public void setUp() throws IOException {
@@ -50,9 +50,9 @@ public class MessageRecordConverterTest {
                                 put(String.format("%s", TestMessage.class.getName()), TestMessage.getDescriptor());
                         }
                 };
-                ProtoRaystackMessageParser protoRaystackMessageParser = new ProtoRaystackMessageParser(stencilClient);
-                schema = protoRaystackMessageParser.getSchema("org.raystack.depot.TestMessage", descriptorsMap);
-                recordConverter = new MessageRecordConverter(protoRaystackMessageParser,
+                ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
+                schema = protoMessageParser.getSchema("org.raystack.depot.TestMessage", descriptorsMap);
+                recordConverter = new MessageRecordConverter(protoMessageParser,
                                 ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
 
                 now = Instant.now();
@@ -64,10 +64,10 @@ public class MessageRecordConverterTest {
                                 now.toEpochMilli());
                 TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
                                 now.toEpochMilli());
-                RaystackMessage record1 = TestRaystackMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
+                Message record1 = TestMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
                                 "order-1",
                                 "order-url-1", "order-details-1");
-                RaystackMessage record2 = TestRaystackMessageBuilder.withMetadata(record2Offset).createConsumerRecord(
+                Message record2 = TestMessageBuilder.withMetadata(record2Offset).createConsumerRecord(
                                 "order-2",
                                 "order-url-2", "order-details-2");
 
@@ -75,14 +75,14 @@ public class MessageRecordConverterTest {
                 record1ExpectedColumns.put("order_number", "order-1");
                 record1ExpectedColumns.put("order_url", "order-url-1");
                 record1ExpectedColumns.put("order_details", "order-details-1");
-                record1ExpectedColumns.putAll(TestRaystackMessageBuilder.metadataColumns(record1Offset, now));
+                record1ExpectedColumns.putAll(TestMessageBuilder.metadataColumns(record1Offset, now));
 
                 Map<String, Object> record2ExpectedColumns = new HashMap<>();
                 record2ExpectedColumns.put("order_number", "order-2");
                 record2ExpectedColumns.put("order_url", "order-url-2");
                 record2ExpectedColumns.put("order_details", "order-details-2");
-                record2ExpectedColumns.putAll(TestRaystackMessageBuilder.metadataColumns(record2Offset, now));
-                List<RaystackMessage> messages = Arrays.asList(record1, record2);
+                record2ExpectedColumns.putAll(TestMessageBuilder.metadataColumns(record2Offset, now));
+                List<Message> messages = Arrays.asList(record1, record2);
 
                 Records records = recordConverter.convert(messages);
 
@@ -101,19 +101,19 @@ public class MessageRecordConverterTest {
                                 now.toEpochMilli());
                 TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
                                 now.toEpochMilli());
-                RaystackMessage record1 = TestRaystackMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
+                Message record1 = TestMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
                                 "order-1",
                                 "order-url-1", "order-details-1");
-                RaystackMessage record2 = TestRaystackMessageBuilder.withMetadata(record2Offset)
+                Message record2 = TestMessageBuilder.withMetadata(record2Offset)
                                 .createEmptyValueConsumerRecord("order-2", "order-url-2");
 
                 Map<Object, Object> record1ExpectedColumns = new HashMap<>();
                 record1ExpectedColumns.put("order_number", "order-1");
                 record1ExpectedColumns.put("order_url", "order-url-1");
                 record1ExpectedColumns.put("order_details", "order-details-1");
-                record1ExpectedColumns.putAll(TestRaystackMessageBuilder.metadataColumns(record1Offset, now));
+                record1ExpectedColumns.putAll(TestMessageBuilder.metadataColumns(record1Offset, now));
 
-                List<RaystackMessage> messages = Arrays.asList(record1, record2);
+                List<Message> messages = Arrays.asList(record1, record2);
                 Records records = recordConverter.convert(messages);
 
                 assertEquals(1, records.getValidRecords().size());
@@ -128,19 +128,19 @@ public class MessageRecordConverterTest {
                                 now.toEpochMilli());
                 TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
                                 now.toEpochMilli());
-                RaystackMessage record1 = TestRaystackMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
+                Message record1 = TestMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
                                 "order-1",
                                 "order-url-1", "order-details-1");
-                RaystackMessage record2 = TestRaystackMessageBuilder.withMetadata(record2Offset)
+                Message record2 = TestMessageBuilder.withMetadata(record2Offset)
                                 .createEmptyValueConsumerRecord("order-2", "order-url-2");
 
                 Map<String, Object> record1ExpectedColumns = new HashMap<>();
                 record1ExpectedColumns.put("order_number", "order-1");
                 record1ExpectedColumns.put("order_url", "order-url-1");
                 record1ExpectedColumns.put("order_details", "order-details-1");
-                record1ExpectedColumns.putAll(TestRaystackMessageBuilder.metadataColumns(record1Offset, now));
+                record1ExpectedColumns.putAll(TestMessageBuilder.metadataColumns(record1Offset, now));
 
-                List<RaystackMessage> messages = Arrays.asList(record1, record2);
+                List<Message> messages = Arrays.asList(record1, record2);
                 Records records = recordConverter.convert(messages);
 
                 assertEquals(1, records.getValidRecords().size());
@@ -152,14 +152,14 @@ public class MessageRecordConverterTest {
         @Test
         public void shouldNotNamespaceMetadataFieldWhenNamespaceIsNotProvided() {
                 BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
-                ProtoRaystackMessageParser protoRaystackMessageParser = new ProtoRaystackMessageParser(stencilClient);
-                MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoRaystackMessageParser,
+                ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
+                MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoMessageParser,
                                 sinkConfig,
                                 schema);
 
                 TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
                                 now.toEpochMilli());
-                RaystackMessage record1 = TestRaystackMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
+                Message record1 = TestMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
                                 "order-1",
                                 "order-url-1", "order-details-1");
 
@@ -167,9 +167,9 @@ public class MessageRecordConverterTest {
                 record1ExpectedColumns.put("order_number", "order-1");
                 record1ExpectedColumns.put("order_url", "order-url-1");
                 record1ExpectedColumns.put("order_details", "order-details-1");
-                record1ExpectedColumns.putAll(TestRaystackMessageBuilder.metadataColumns(record1Offset, now));
+                record1ExpectedColumns.putAll(TestMessageBuilder.metadataColumns(record1Offset, now));
 
-                List<RaystackMessage> messages = Collections.singletonList(record1);
+                List<Message> messages = Collections.singletonList(record1);
                 Records records = recordConverterTest.convert(messages);
 
                 assertEquals(messages.size(), records.getValidRecords().size());
@@ -183,14 +183,14 @@ public class MessageRecordConverterTest {
         public void shouldNamespaceMetadataFieldWhenNamespaceIsProvided() {
                 System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "metadata_ns");
                 BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
-                ProtoRaystackMessageParser protoRaystackMessageParser = new ProtoRaystackMessageParser(stencilClient);
-                MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoRaystackMessageParser,
+                ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
+                MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoMessageParser,
                                 sinkConfig,
                                 schema);
 
                 TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
                                 now.toEpochMilli());
-                RaystackMessage record1 = TestRaystackMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
+                Message record1 = TestMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
                                 "order-1",
                                 "order-url-1", "order-details-1");
 
@@ -199,9 +199,9 @@ public class MessageRecordConverterTest {
                 record1ExpectedColumns.put("order_url", "order-url-1");
                 record1ExpectedColumns.put("order_details", "order-details-1");
                 record1ExpectedColumns.put(sinkConfig.getBqMetadataNamespace(),
-                                TestRaystackMessageBuilder.metadataColumns(record1Offset, now));
+                                TestMessageBuilder.metadataColumns(record1Offset, now));
 
-                List<RaystackMessage> messages = Collections.singletonList(record1);
+                List<Message> messages = Collections.singletonList(record1);
                 Records records = recordConverterTest.convert(messages);
 
                 assertEquals(messages.size(), records.getValidRecords().size());
@@ -217,13 +217,13 @@ public class MessageRecordConverterTest {
                                 now.toEpochMilli());
                 TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
                                 now.toEpochMilli());
-                RaystackMessage record1 = TestRaystackMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
+                Message record1 = TestMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
                                 "order-1",
                                 "order-url-1", "order-details-1");
-                RaystackMessage record2 = new RaystackMessage("invalid-key".getBytes(), "invalid-value".getBytes(),
+                Message record2 = new Message("invalid-key".getBytes(), "invalid-value".getBytes(),
                                 new Tuple<>("topic", record2Offset.getTopic()),
                                 new Tuple<>("partition", record2Offset.getPartition()));
-                List<RaystackMessage> messages = Arrays.asList(record1, record2);
+                List<Message> messages = Arrays.asList(record1, record2);
                 Records records = recordConverter.convert(messages);
                 assertEquals(1, records.getInvalidRecords().size());
         }
@@ -234,11 +234,11 @@ public class MessageRecordConverterTest {
                                 now.toEpochMilli());
                 TestMetadata record2Offset = new TestMetadata("topic1", 2, 102, Instant.now().toEpochMilli(),
                                 now.toEpochMilli());
-                RaystackMessage record1 = TestRaystackMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
+                Message record1 = TestMessageBuilder.withMetadata(record1Offset).createConsumerRecord(
                                 "order-1",
                                 "order-url-1", "order-details-1");
 
-                RaystackMessage record2 = new RaystackMessage("invalid-key".getBytes(), "invalid-value".getBytes(),
+                Message record2 = new Message("invalid-key".getBytes(), "invalid-value".getBytes(),
                                 new Tuple<>("message_topic", record2Offset.getTopic()),
                                 new Tuple<>("message_partition", record2Offset.getPartition()),
                                 new Tuple<>("message_offset", record2Offset.getOffset()),
@@ -249,9 +249,9 @@ public class MessageRecordConverterTest {
                 record1ExpectedColumns.put("order_number", "order-1");
                 record1ExpectedColumns.put("order_url", "order-url-1");
                 record1ExpectedColumns.put("order_details", "order-details-1");
-                record1ExpectedColumns.putAll(TestRaystackMessageBuilder.metadataColumns(record1Offset, now));
+                record1ExpectedColumns.putAll(TestMessageBuilder.metadataColumns(record1Offset, now));
 
-                List<RaystackMessage> messages = Arrays.asList(record1, record2);
+                List<Message> messages = Arrays.asList(record1, record2);
                 Records records = recordConverter.convert(messages);
 
                 assertEquals(1, records.getValidRecords().size());
@@ -268,11 +268,11 @@ public class MessageRecordConverterTest {
         @Test
         public void shouldReturnInvalidRecordsWhenUnknownFieldsFound() throws IOException {
                 System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE", "false");
-                RaystackMessageParser mockParser = mock(RaystackMessageParser.class);
+                MessageParser mockParser = mock(MessageParser.class);
 
                 TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
                                 Instant.now().toEpochMilli());
-                RaystackMessage consumerRecord = TestRaystackMessageBuilder.withMetadata(record1Offset)
+                Message consumerRecord = TestMessageBuilder.withMetadata(record1Offset)
                                 .createConsumerRecord("order-1",
                                                 "order-url-1", "order-details-1");
 
@@ -281,14 +281,14 @@ public class MessageRecordConverterTest {
                                                 .addField(1, UnknownFieldSet.Field.getDefaultInstance())
                                                 .build())
                                 .build();
-                ParsedRaystackMessage parsedRaystackMessage = new ProtoRaystackParsedMessage(dynamicMessage);
+                ParsedMessage parsedMessage = new ProtoParsedMessage(dynamicMessage);
                 when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE,
-                                "org.raystack.depot.TestMessage")).thenReturn(parsedRaystackMessage);
+                                "org.raystack.depot.TestMessage")).thenReturn(parsedMessage);
 
                 recordConverter = new MessageRecordConverter(mockParser,
                                 ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
 
-                List<RaystackMessage> messages = Collections.singletonList(consumerRecord);
+                List<Message> messages = Collections.singletonList(consumerRecord);
                 Records records = recordConverter.convert(messages);
 
                 assertEquals(0, records.getValidRecords().size());
@@ -301,11 +301,11 @@ public class MessageRecordConverterTest {
         @Test
         public void shouldIgnoreUnknownFieldsIfTheConfigIsSet() throws IOException {
                 System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE", "true");
-                RaystackMessageParser mockParser = mock(RaystackMessageParser.class);
+                MessageParser mockParser = mock(MessageParser.class);
 
                 TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(),
                                 Instant.now().toEpochMilli());
-                RaystackMessage consumerRecord = TestRaystackMessageBuilder.withMetadata(record1Offset)
+                Message consumerRecord = TestMessageBuilder.withMetadata(record1Offset)
                                 .createConsumerRecord("order-1",
                                                 "order-url-1", "order-details-1");
 
@@ -314,14 +314,14 @@ public class MessageRecordConverterTest {
                                                 .addField(1, UnknownFieldSet.Field.getDefaultInstance())
                                                 .build())
                                 .build();
-                ParsedRaystackMessage parsedRaystackMessage = new ProtoRaystackParsedMessage(dynamicMessage);
+                ParsedMessage parsedMessage = new ProtoParsedMessage(dynamicMessage);
                 when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE,
-                                "org.raystack.depot.TestMessage")).thenReturn(parsedRaystackMessage);
+                                "org.raystack.depot.TestMessage")).thenReturn(parsedMessage);
 
                 recordConverter = new MessageRecordConverter(mockParser,
                                 ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()), schema);
 
-                List<RaystackMessage> messages = Collections.singletonList(consumerRecord);
+                List<Message> messages = Collections.singletonList(consumerRecord);
                 Records records = recordConverter.convert(messages);
 
                 BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());

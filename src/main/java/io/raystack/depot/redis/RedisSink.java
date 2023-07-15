@@ -1,9 +1,9 @@
 package org.raystack.depot.redis;
 
-import org.raystack.depot.RaystackSink;
-import org.raystack.depot.RaystackSinkResponse;
+import org.raystack.depot.Sink;
+import org.raystack.depot.SinkResponse;
 import org.raystack.depot.error.ErrorInfo;
-import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.Message;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.redis.client.RedisClient;
 import org.raystack.depot.redis.client.response.RedisResponse;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class RedisSink implements RaystackSink {
+public class RedisSink implements Sink {
     private final RedisClient redisClient;
     private final RedisParser redisParser;
     private final Instrumentation instrumentation;
@@ -28,13 +28,13 @@ public class RedisSink implements RaystackSink {
     }
 
     @Override
-    public RaystackSinkResponse pushToSink(List<RaystackMessage> messages) {
+    public SinkResponse pushToSink(List<Message> messages) {
         List<RedisRecord> records = redisParser.convert(messages);
         Map<Boolean, List<RedisRecord>> splitterRecords = records.stream()
                 .collect(Collectors.partitioningBy(RedisRecord::isValid));
         List<RedisRecord> invalidRecords = splitterRecords.get(Boolean.FALSE);
         List<RedisRecord> validRecords = splitterRecords.get(Boolean.TRUE);
-        RaystackSinkResponse raystackSinkResponse = new RaystackSinkResponse();
+        SinkResponse raystackSinkResponse = new SinkResponse();
         invalidRecords.forEach(
                 invalidRecord -> raystackSinkResponse.addErrors(invalidRecord.getIndex(),
                         invalidRecord.getErrorInfo()));

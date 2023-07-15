@@ -13,7 +13,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class JsonRaystackParsedMessageTest {
+public class JsonParsedMessageTest {
     private final Configuration configuration = Configuration.builder()
             .jsonProvider(new JsonOrgJsonProvider())
             .build();
@@ -21,7 +21,7 @@ public class JsonRaystackParsedMessageTest {
     @Test
     public void shouldGetEmptyMappingKeysForEmptyJsonObject() {
         // for empty json object
-        JsonRaystackParsedMessage parsedMessage = new JsonRaystackParsedMessage(new JSONObject(), configuration);
+        JsonParsedMessage parsedMessage = new JsonParsedMessage(new JSONObject(), configuration);
         Map<String, Object> parsedMessageMapping = parsedMessage.getMapping(null);
         assertEquals(Collections.emptyMap(), parsedMessageMapping);
 
@@ -29,7 +29,7 @@ public class JsonRaystackParsedMessageTest {
 
     @Test
     public void shouldGetEmptyMappingKeysForNullJsonObject() {
-        JsonRaystackParsedMessage parsedMessage = new JsonRaystackParsedMessage(null, configuration);
+        JsonParsedMessage parsedMessage = new JsonParsedMessage(null, configuration);
         Map<String, Object> parsedMessageMapping = parsedMessage.getMapping(null);
         assertEquals(Collections.emptyMap(), parsedMessageMapping);
     }
@@ -37,7 +37,7 @@ public class JsonRaystackParsedMessageTest {
     @Test
     public void shouldGetMappings() {
         JSONObject personDetails = new JSONObject("{\"first_name\": \"john doe\", \"address\": \"planet earth\"}");
-        JsonRaystackParsedMessage parsedMessage = new JsonRaystackParsedMessage(personDetails, configuration);
+        JsonParsedMessage parsedMessage = new JsonParsedMessage(personDetails, configuration);
         Map<String, Object> parsedMessageMapping = parsedMessage.getMapping(null);
         Map<String, Object> expectedMap = new HashMap<>();
         expectedMap.put("first_name", "john doe");
@@ -48,7 +48,7 @@ public class JsonRaystackParsedMessageTest {
     @Test
     public void shouldReturnValueFromFlatJson() {
         JSONObject personDetails = new JSONObject("{\"first_name\": \"john doe\", \"address\": \"planet earth\"}");
-        JsonRaystackParsedMessage parsedMessage = new JsonRaystackParsedMessage(personDetails, configuration);
+        JsonParsedMessage parsedMessage = new JsonParsedMessage(personDetails, configuration);
         Assert.assertEquals("john doe", parsedMessage.getFieldByName("first_name", null));
     }
 
@@ -59,7 +59,7 @@ public class JsonRaystackParsedMessageTest {
                 + " \"address\": \"planet earth\", "
                 + "\"family\" : {\"brother\" : \"david doe\"}"
                 + "}");
-        JsonRaystackParsedMessage parsedMessage = new JsonRaystackParsedMessage(personDetails, configuration);
+        JsonParsedMessage parsedMessage = new JsonParsedMessage(personDetails, configuration);
         Assert.assertEquals("david doe", parsedMessage.getFieldByName("family.brother", null));
     }
 
@@ -70,7 +70,7 @@ public class JsonRaystackParsedMessageTest {
                 + " \"address\": \"planet earth\", "
                 + "\"family\" : {\"brother\" : \"david doe\"}"
                 + "}");
-        JsonRaystackParsedMessage parsedMessage = new JsonRaystackParsedMessage(personDetails, configuration);
+        JsonParsedMessage parsedMessage = new JsonParsedMessage(personDetails, configuration);
         java.lang.IllegalArgumentException illegalArgumentException = Assert.assertThrows(
                 java.lang.IllegalArgumentException.class, () -> parsedMessage.getFieldByName("family.sister", null));
         Assert.assertEquals("Invalid field config : family.sister", illegalArgumentException.getMessage());
@@ -83,7 +83,7 @@ public class JsonRaystackParsedMessageTest {
                 + " \"address\": \"planet earth\", "
                 + "\"family\" : [{\"brother\" : \"david doe\"}, {\"brother\" : \"cain doe\"}]"
                 + "}");
-        JsonRaystackParsedMessage parsedMessage = new JsonRaystackParsedMessage(personDetails, configuration);
+        JsonParsedMessage parsedMessage = new JsonParsedMessage(personDetails, configuration);
         JSONArray family = (JSONArray) parsedMessage.getFieldByName("family", null);
         Assert.assertEquals(2, family.length());
         Assert.assertEquals("david doe", ((JSONObject) family.get(0)).get("brother"));

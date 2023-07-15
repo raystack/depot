@@ -14,12 +14,12 @@ import org.raystack.depot.error.ErrorType;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.exception.EmptyMessageException;
 import org.raystack.depot.exception.InvalidTemplateException;
-import org.raystack.depot.message.RaystackMessage;
-import org.raystack.depot.message.RaystackMessageSchema;
-import org.raystack.depot.message.ParsedRaystackMessage;
-import org.raystack.depot.message.RaystackMessageParser;
+import org.raystack.depot.message.Message;
+import org.raystack.depot.message.MessageSchema;
+import org.raystack.depot.message.ParsedMessage;
+import org.raystack.depot.message.MessageParser;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
-import org.raystack.depot.message.proto.ProtoRaystackMessageParser;
+import org.raystack.depot.message.proto.ProtoMessageParser;
 import org.raystack.depot.utils.MessageConfigUtils;
 import org.raystack.stencil.client.ClassLoadStencilClient;
 import org.aeonbits.owner.ConfigFactory;
@@ -46,15 +46,15 @@ public class BigTableRecordParserTest {
         @Mock
         private ClassLoadStencilClient stencilClient;
         @Mock
-        private RaystackMessageSchema schema;
+        private MessageSchema schema;
         @Mock
-        private RaystackMessageParser mockRaystackMessageParser;
+        private MessageParser mockMessageParser;
         @Mock
         private BigTableRowKeyParser mockBigTableRowKeyParser;
         @Mock
-        private ParsedRaystackMessage mockParsedRaystackMessage;
+        private ParsedMessage mockParsedMessage;
         private BigTableRecordParser bigTableRecordParser;
-        private List<RaystackMessage> messages;
+        private List<Message> messages;
         private BigTableSinkConfig sinkConfig;
 
         @Before
@@ -87,14 +87,14 @@ public class BigTableRecordParserTest {
                                                 TestLocation.newBuilder().setLatitude(300D).setLongitude(400D).build())
                                 .build();
 
-                RaystackMessage message1 = new RaystackMessage(bookingLogKey1.toByteArray(),
+                Message message1 = new Message(bookingLogKey1.toByteArray(),
                                 bookingLogMessage1.toByteArray());
-                RaystackMessage message2 = new RaystackMessage(bookingLogKey2.toByteArray(),
+                Message message2 = new Message(bookingLogKey2.toByteArray(),
                                 bookingLogMessage2.toByteArray());
                 messages = Collections.list(message1, message2);
 
                 stencilClient = Mockito.mock(ClassLoadStencilClient.class, CALLS_REAL_METHODS);
-                ProtoRaystackMessageParser protoRaystackMessageParser = new ProtoRaystackMessageParser(stencilClient);
+                ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
                 sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
                 Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils
                                 .getModeAndSchema(sinkConfig);
@@ -102,13 +102,13 @@ public class BigTableRecordParserTest {
                 BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(
                                 new Template(sinkConfig.getRowKeyTemplate()), schema);
 
-                bigTableRecordParser = new BigTableRecordParser(protoRaystackMessageParser, bigTableRowKeyParser,
+                bigTableRecordParser = new BigTableRecordParser(protoMessageParser, bigTableRowKeyParser,
                                 modeAndSchema,
                                 schema, bigtableSchema);
         }
 
         @Test
-        public void shouldReturnValidRecordsForListOfValidRaystackMessages() {
+        public void shouldReturnValidRecordsForListOfValidMessages() {
                 List<BigTableRecord> records = bigTableRecordParser.convert(messages);
                 assertTrue(records.get(0).isValid());
                 assertTrue(records.get(1).isValid());
@@ -117,18 +117,18 @@ public class BigTableRecordParserTest {
         }
 
         @Test
-        public void shouldReturnValidRecordsForListOfValidRaystackMessagesForComplexFieldsInColumnsMapping()
+        public void shouldReturnValidRecordsForListOfValidMessagesForComplexFieldsInColumnsMapping()
                         throws InvalidTemplateException {
                 System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING",
                                 "{ \"cf1\" : { \"q1\" : \"order_number\", \"q2\" : \"service_type\", \"q3\" : \"driver_pickup_location\"} }");
-                ProtoRaystackMessageParser protoRaystackMessageParser = new ProtoRaystackMessageParser(stencilClient);
+                ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
                 sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
                 Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils
                                 .getModeAndSchema(sinkConfig);
                 BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(
                                 new Template(sinkConfig.getRowKeyTemplate()), schema);
                 BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
-                bigTableRecordParser = new BigTableRecordParser(protoRaystackMessageParser, bigTableRowKeyParser,
+                bigTableRecordParser = new BigTableRecordParser(protoMessageParser, bigTableRowKeyParser,
                                 modeAndSchema,
                                 schema, bigtableSchema);
 
@@ -140,18 +140,18 @@ public class BigTableRecordParserTest {
         }
 
         @Test
-        public void shouldReturnValidRecordsForListOfValidRaystackMessagesForNestedTimestampFieldsInColumnsMapping()
+        public void shouldReturnValidRecordsForListOfValidMessagesForNestedTimestampFieldsInColumnsMapping()
                         throws InvalidTemplateException {
                 System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING",
                                 "{ \"cf1\" : { \"q1\" : \"order_number\", \"q2\" : \"service_type\", \"q3\" : \"event_timestamp.nanos\"} }");
-                ProtoRaystackMessageParser protoRaystackMessageParser = new ProtoRaystackMessageParser(stencilClient);
+                ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
                 sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
                 Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils
                                 .getModeAndSchema(sinkConfig);
                 BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(
                                 new Template(sinkConfig.getRowKeyTemplate()), schema);
                 BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
-                bigTableRecordParser = new BigTableRecordParser(protoRaystackMessageParser, bigTableRowKeyParser,
+                bigTableRecordParser = new BigTableRecordParser(protoMessageParser, bigTableRowKeyParser,
                                 modeAndSchema,
                                 schema, bigtableSchema);
 
@@ -163,18 +163,18 @@ public class BigTableRecordParserTest {
         }
 
         @Test
-        public void shouldReturnValidRecordsForListOfValidRaystackMessagesForNestedFieldsInColumnsMapping()
+        public void shouldReturnValidRecordsForListOfValidMessagesForNestedFieldsInColumnsMapping()
                         throws InvalidTemplateException {
                 System.setProperty("SINK_BIGTABLE_COLUMN_FAMILY_MAPPING",
                                 "{ \"cf1\" : { \"q1\" : \"order_number\", \"q2\" : \"service_type\", \"q3\" : \"driver_pickup_location.latitude\"} }");
-                ProtoRaystackMessageParser protoRaystackMessageParser = new ProtoRaystackMessageParser(stencilClient);
+                ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
                 sinkConfig = ConfigFactory.create(BigTableSinkConfig.class, System.getProperties());
                 Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils
                                 .getModeAndSchema(sinkConfig);
                 BigTableRowKeyParser bigTableRowKeyParser = new BigTableRowKeyParser(
                                 new Template(sinkConfig.getRowKeyTemplate()), schema);
                 BigTableSchema bigtableSchema = new BigTableSchema(sinkConfig.getColumnFamilyMapping());
-                bigTableRecordParser = new BigTableRecordParser(protoRaystackMessageParser, bigTableRowKeyParser,
+                bigTableRecordParser = new BigTableRecordParser(protoMessageParser, bigTableRowKeyParser,
                                 modeAndSchema,
                                 schema, bigtableSchema);
 
@@ -186,9 +186,9 @@ public class BigTableRecordParserTest {
         }
 
         @Test
-        public void shouldReturnInvalidRecordForAnyNullRaystackMessage() {
+        public void shouldReturnInvalidRecordForAnyNullMessage() {
                 List<BigTableRecord> records = bigTableRecordParser
-                                .convert(Collections.list(new RaystackMessage(null, null)));
+                                .convert(Collections.list(new Message(null, null)));
                 assertFalse(records.get(0).isValid());
                 assertNotNull(records.get(0).getErrorInfo());
         }
@@ -196,12 +196,12 @@ public class BigTableRecordParserTest {
         @Test
         public void shouldCatchEmptyMessageExceptionAndReturnAnInvalidBigtableRecordWithErrorTypeAsInvalidMessageError()
                         throws IOException {
-                bigTableRecordParser = new BigTableRecordParser(mockRaystackMessageParser,
+                bigTableRecordParser = new BigTableRecordParser(mockMessageParser,
                                 mockBigTableRowKeyParser,
                                 MessageConfigUtils.getModeAndSchema(sinkConfig),
                                 schema,
                                 new BigTableSchema(sinkConfig.getColumnFamilyMapping()));
-                when(mockRaystackMessageParser.parse(any(), any(), any())).thenThrow(EmptyMessageException.class);
+                when(mockMessageParser.parse(any(), any(), any())).thenThrow(EmptyMessageException.class);
 
                 List<BigTableRecord> bigTableRecords = bigTableRecordParser.convert(messages);
 
@@ -214,12 +214,12 @@ public class BigTableRecordParserTest {
         @Test
         public void shouldCatchConfigurationExceptionAndReturnAnInvalidBigtableRecordWithErrorTypeAsUnknownFieldsError()
                         throws IOException {
-                bigTableRecordParser = new BigTableRecordParser(mockRaystackMessageParser,
+                bigTableRecordParser = new BigTableRecordParser(mockMessageParser,
                                 mockBigTableRowKeyParser,
                                 MessageConfigUtils.getModeAndSchema(sinkConfig),
                                 schema,
                                 new BigTableSchema(sinkConfig.getColumnFamilyMapping()));
-                when(mockRaystackMessageParser.parse(any(), any(), any())).thenThrow(ConfigurationException.class);
+                when(mockMessageParser.parse(any(), any(), any())).thenThrow(ConfigurationException.class);
 
                 List<BigTableRecord> bigTableRecords = bigTableRecordParser.convert(messages);
 
@@ -232,12 +232,12 @@ public class BigTableRecordParserTest {
         @Test
         public void shouldCatchIOExceptionAndReturnAnInvalidBigtableRecordWithErrorTypeAsDeserializationError()
                         throws IOException {
-                bigTableRecordParser = new BigTableRecordParser(mockRaystackMessageParser,
+                bigTableRecordParser = new BigTableRecordParser(mockMessageParser,
                                 mockBigTableRowKeyParser,
                                 MessageConfigUtils.getModeAndSchema(sinkConfig),
                                 schema,
                                 new BigTableSchema(sinkConfig.getColumnFamilyMapping()));
-                when(mockRaystackMessageParser.parse(any(), any(), any())).thenThrow(IOException.class);
+                when(mockMessageParser.parse(any(), any(), any())).thenThrow(IOException.class);
 
                 List<BigTableRecord> bigTableRecords = bigTableRecordParser.convert(messages);
 
@@ -250,13 +250,13 @@ public class BigTableRecordParserTest {
         @Test
         public void shouldCatchIllegalArgumentExceptionAndReturnAnInvalidBigtableRecordWithErrorTypeAsUnknownFieldsError()
                         throws IOException {
-                bigTableRecordParser = new BigTableRecordParser(mockRaystackMessageParser,
+                bigTableRecordParser = new BigTableRecordParser(mockMessageParser,
                                 mockBigTableRowKeyParser,
                                 MessageConfigUtils.getModeAndSchema(sinkConfig),
                                 schema,
                                 new BigTableSchema(sinkConfig.getColumnFamilyMapping()));
-                when(mockRaystackMessageParser.parse(any(), any(), any())).thenReturn(mockParsedRaystackMessage);
-                when(mockBigTableRowKeyParser.parse(mockParsedRaystackMessage))
+                when(mockMessageParser.parse(any(), any(), any())).thenReturn(mockParsedMessage);
+                when(mockBigTableRowKeyParser.parse(mockParsedMessage))
                                 .thenThrow(IllegalArgumentException.class);
 
                 List<BigTableRecord> bigTableRecords = bigTableRecordParser.convert(messages);

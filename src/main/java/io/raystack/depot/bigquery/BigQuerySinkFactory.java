@@ -3,13 +3,13 @@ package org.raystack.depot.bigquery;
 import com.timgroup.statsd.NoOpStatsDClient;
 import org.raystack.depot.bigquery.handler.ErrorHandler;
 import org.raystack.depot.bigquery.handler.ErrorHandlerFactory;
-import org.raystack.depot.message.RaystackMessageParser;
-import org.raystack.depot.message.RaystackMessageParserFactory;
+import org.raystack.depot.message.MessageParser;
+import org.raystack.depot.message.MessageParserFactory;
 import org.raystack.depot.metrics.BigQueryMetrics;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.StatsDReporter;
-import org.raystack.depot.stencil.RaystackStencilUpdateListener;
-import org.raystack.depot.RaystackSink;
+import org.raystack.depot.stencil.StencilUpdateListener;
+import org.raystack.depot.Sink;
 import org.raystack.depot.bigquery.client.BigQueryClient;
 import org.raystack.depot.bigquery.client.BigQueryRow;
 import org.raystack.depot.bigquery.client.BigQueryRowWithInsertId;
@@ -64,12 +64,12 @@ public class BigQuerySinkFactory {
                     new Instrumentation(statsDReporter, BigQueryClient.class));
             this.converterCache = new MessageRecordConverterCache();
             this.errorHandler = ErrorHandlerFactory.create(sinkConfig, bigQueryClient, statsDReporter);
-            RaystackStencilUpdateListener raystackStencilUpdateListener = BigqueryStencilUpdateListenerFactory
+            StencilUpdateListener raystackStencilUpdateListener = BigqueryStencilUpdateListenerFactory
                     .create(sinkConfig, bigQueryClient, converterCache, statsDReporter);
-            RaystackMessageParser raystackMessageParser = RaystackMessageParserFactory.getParser(sinkConfig,
+            MessageParser raystackMessageParser = MessageParserFactory.getParser(sinkConfig,
                     statsDReporter,
                     raystackStencilUpdateListener);
-            raystackStencilUpdateListener.setRaystackMessageParser(raystackMessageParser);
+            raystackStencilUpdateListener.setMessageParser(raystackMessageParser);
             raystackStencilUpdateListener.updateSchema();
 
             if (sinkConfig.isRowInsertIdEnabled()) {
@@ -82,7 +82,7 @@ public class BigQuerySinkFactory {
         }
     }
 
-    public RaystackSink create() {
+    public Sink create() {
         return new BigQuerySink(
                 bigQueryClient,
                 converterCache,

@@ -1,10 +1,10 @@
 package org.raystack.depot.metrics;
 
-import org.raystack.depot.config.RaystackSinkConfig;
+import org.raystack.depot.config.SinkConfig;
 
 public class BigQueryMetrics extends SinkMetrics {
 
-    public BigQueryMetrics(RaystackSinkConfig config) {
+    public BigQueryMetrics(SinkConfig config) {
         super(config);
     }
 

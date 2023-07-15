@@ -1,12 +1,12 @@
 package org.raystack.depot.redis;
 
 import com.timgroup.statsd.NoOpStatsDClient;
-import org.raystack.depot.RaystackSink;
+import org.raystack.depot.Sink;
 import org.raystack.depot.common.Tuple;
 import org.raystack.depot.config.RedisSinkConfig;
-import org.raystack.depot.message.RaystackMessageParser;
-import org.raystack.depot.message.RaystackMessageParserFactory;
-import org.raystack.depot.message.RaystackMessageSchema;
+import org.raystack.depot.message.MessageParser;
+import org.raystack.depot.message.MessageParserFactory;
+import org.raystack.depot.message.MessageSchema;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.StatsDReporter;
@@ -60,10 +60,10 @@ public class RedisSinkFactory {
             }
             instrumentation.logInfo(redisConfig);
             instrumentation.logInfo("Redis server type = {}", sinkConfig.getSinkRedisDeploymentType());
-            RaystackMessageParser messageParser = RaystackMessageParserFactory.getParser(sinkConfig, statsDReporter);
+            MessageParser messageParser = MessageParserFactory.getParser(sinkConfig, statsDReporter);
             Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils
                     .getModeAndSchema(sinkConfig);
-            RaystackMessageSchema schema = messageParser.getSchema(modeAndSchema.getSecond());
+            MessageSchema schema = messageParser.getSchema(modeAndSchema.getSecond());
             RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(sinkConfig, statsDReporter,
                     schema);
             this.redisParser = new RedisParser(messageParser, redisEntryParser, modeAndSchema);
@@ -78,7 +78,7 @@ public class RedisSinkFactory {
      *
      * @return RedisSink
      */
-    public RaystackSink create() {
+    public Sink create() {
         return new RedisSink(
                 RedisClientFactory.getClient(sinkConfig, statsDReporter),
                 redisParser,

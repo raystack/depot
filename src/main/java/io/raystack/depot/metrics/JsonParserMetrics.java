@@ -1,9 +1,9 @@
 package org.raystack.depot.metrics;
 
-import org.raystack.depot.config.RaystackSinkConfig;
+import org.raystack.depot.config.SinkConfig;
 
 public class JsonParserMetrics extends SinkMetrics {
-    public JsonParserMetrics(RaystackSinkConfig config) {
+    public JsonParserMetrics(SinkConfig config) {
         super(config);
     }
 

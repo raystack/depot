@@ -1,16 +1,16 @@
 package org.raystack.depot.message;
 
-import org.raystack.depot.config.RaystackSinkConfig;
+import org.raystack.depot.config.SinkConfig;
 
 import java.io.IOException;
 import java.util.Map;
 
-public interface ParsedRaystackMessage {
+public interface ParsedMessage {
     Object getRaw();
 
-    void validate(RaystackSinkConfig config);
+    void validate(SinkConfig config);
 
-    Map<String, Object> getMapping(RaystackMessageSchema schema) throws IOException;
+    Map<String, Object> getMapping(MessageSchema schema) throws IOException;
 
-    Object getFieldByName(String name, RaystackMessageSchema raystackMessageSchema);
+    Object getFieldByName(String name, MessageSchema raystackMessageSchema);
 }

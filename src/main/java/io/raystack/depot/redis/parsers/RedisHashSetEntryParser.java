@@ -2,8 +2,8 @@ package org.raystack.depot.redis.parsers;
 
 import org.raystack.depot.common.Template;
 import org.raystack.depot.message.field.GenericFieldFactory;
-import org.raystack.depot.message.RaystackMessageSchema;
-import org.raystack.depot.message.ParsedRaystackMessage;
+import org.raystack.depot.message.MessageSchema;
+import org.raystack.depot.message.ParsedMessage;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.StatsDReporter;
 import org.raystack.depot.redis.client.entry.RedisEntry;
@@ -22,18 +22,18 @@ public class RedisHashSetEntryParser implements RedisEntryParser {
     private final StatsDReporter statsDReporter;
     private final Template keyTemplate;
     private final Map<String, Template> fieldTemplates;
-    private final RaystackMessageSchema schema;
+    private final MessageSchema schema;
 
     @Override
-    public List<RedisEntry> getRedisEntry(ParsedRaystackMessage parsedRaystackMessage) {
-        String redisKey = keyTemplate.parse(parsedRaystackMessage, schema);
+    public List<RedisEntry> getRedisEntry(ParsedMessage parsedMessage) {
+        String redisKey = keyTemplate.parse(parsedMessage, schema);
         return fieldTemplates
                 .entrySet()
                 .stream()
                 .map(fieldTemplate -> {
-                    String field = fieldTemplate.getValue().parse(parsedRaystackMessage, schema);
+                    String field = fieldTemplate.getValue().parse(parsedMessage, schema);
                     String redisValue = GenericFieldFactory
-                            .getField(parsedRaystackMessage.getFieldByName(fieldTemplate.getKey(), schema)).getString();
+                            .getField(parsedMessage.getFieldByName(fieldTemplate.getKey(), schema)).getString();
                     return new RedisHashSetFieldEntry(redisKey, field, redisValue,
                             new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class));
                 }).collect(Collectors.toList());

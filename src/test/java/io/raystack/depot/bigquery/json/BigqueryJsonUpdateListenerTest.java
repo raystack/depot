@@ -48,7 +48,7 @@ public class BigqueryJsonUpdateListenerTest {
                                 Collections.emptyMap());
                 BigqueryJsonUpdateListener updateListener = new BigqueryJsonUpdateListener(bigQuerySinkConfig,
                                 converterCache, mockBqClient, instrumentation);
-                updateListener.setRaystackMessageParser(null);
+                updateListener.setMessageParser(null);
                 updateListener.updateSchema();
                 verify(converterCache, times(1)).setMessageRecordConverter(any(MessageRecordConverter.class));
                 verify(mockBqClient, times(1)).upsertTable(Collections.emptyList());

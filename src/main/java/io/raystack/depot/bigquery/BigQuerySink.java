@@ -11,16 +11,16 @@ import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.metrics.BigQueryMetrics;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.bigquery.converter.MessageRecordConverterCache;
-import org.raystack.depot.message.RaystackMessage;
-import org.raystack.depot.RaystackSink;
-import org.raystack.depot.RaystackSinkResponse;
+import org.raystack.depot.message.Message;
+import org.raystack.depot.Sink;
+import org.raystack.depot.SinkResponse;
 import org.raystack.depot.bigquery.models.Records;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-public class BigQuerySink implements RaystackSink {
+public class BigQuerySink implements Sink {
 
     private final BigQueryClient bigQueryClient;
     private final BigQueryRow rowCreator;
@@ -54,9 +54,9 @@ public class BigQuerySink implements RaystackSink {
     }
 
     @Override
-    public RaystackSinkResponse pushToSink(List<RaystackMessage> messageList) {
+    public SinkResponse pushToSink(List<Message> messageList) {
         Records records = messageRecordConverterCache.getMessageRecordConverter().convert(messageList);
-        RaystackSinkResponse raystackSinkResponse = new RaystackSinkResponse();
+        SinkResponse raystackSinkResponse = new SinkResponse();
         records.getInvalidRecords().forEach(
                 invalidRecord -> raystackSinkResponse.addErrors(invalidRecord.getIndex(),
                         invalidRecord.getErrorInfo()));
