@@ -11,21 +11,21 @@ Application prefix for sink metrics.
 
 ## `SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS`
 
-OdpfMessage log-message schema class
+RaystackMessage log-message schema class
 
 - Example value: `org.raystack.schema.MessageClass`
 - Type: `required`
 
 ## `SINK_CONNECTOR_SCHEMA_PROTO_KEY_CLASS`
 
-OdpfMessage log-key schema class
+RaystackMessage log-key schema class
 
 - Example value: `org.raystack.schema.KeyClass`
 - Type: `required`
 
 ## `SINK_CONNECTOR_SCHEMA_DATA_TYPE`
 
-OdpfMessage raw data type
+RaystackMessage raw data type
 
 - Example value: `JSON`
 - Type: `required`

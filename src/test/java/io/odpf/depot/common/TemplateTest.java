@@ -5,15 +5,15 @@ import org.raystack.depot.TestBookingLogMessage;
 import org.raystack.depot.TestKey;
 import org.raystack.depot.TestLocation;
 import org.raystack.depot.TestMessage;
-import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.RaystackSinkConfig;
 import org.raystack.depot.config.enums.SinkConnectorSchemaDataType;
 import org.raystack.depot.exception.InvalidTemplateException;
-import org.raystack.depot.message.OdpfMessage;
-import org.raystack.depot.message.OdpfMessageParserFactory;
-import org.raystack.depot.message.OdpfMessageSchema;
-import org.raystack.depot.message.ParsedOdpfMessage;
-import org.raystack.depot.message.proto.ProtoOdpfMessageParser;
-import org.raystack.depot.message.proto.ProtoOdpfParsedMessage;
+import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.RaystackMessageParserFactory;
+import org.raystack.depot.message.RaystackMessageSchema;
+import org.raystack.depot.message.ParsedRaystackMessage;
+import org.raystack.depot.message.proto.ProtoRaystackMessageParser;
+import org.raystack.depot.message.proto.ProtoRaystackParsedMessage;
 import org.raystack.depot.metrics.StatsDReporter;
 import org.raystack.stencil.Parser;
 import org.raystack.stencil.StencilClientFactory;
@@ -35,13 +35,13 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class TemplateTest {
     @Mock
-    private OdpfSinkConfig sinkConfig;
+    private RaystackSinkConfig sinkConfig;
     @Mock
     private StatsDReporter statsDReporter;
-    private ParsedOdpfMessage parsedTestMessage;
-    private ParsedOdpfMessage parsedBookingMessage;
-    private OdpfMessageSchema schemaTest;
-    private OdpfMessageSchema schemaBooking;
+    private ParsedRaystackMessage parsedTestMessage;
+    private ParsedRaystackMessage parsedBookingMessage;
+    private RaystackMessageSchema schemaTest;
+    private RaystackMessageSchema schemaBooking;
 
     @Before
     public void setUp() throws Exception {
@@ -54,8 +54,9 @@ public class TemplateTest {
                 .build();
         TestMessage testMessage = TestMessage.newBuilder().setOrderNumber("test-order").setOrderDetails("ORDER-DETAILS")
                 .build();
-        OdpfMessage message = new OdpfMessage(testKey.toByteArray(), testMessage.toByteArray());
-        OdpfMessage bookingMessage = new OdpfMessage(testKey.toByteArray(), testBookingLogMessage.toByteArray());
+        RaystackMessage message = new RaystackMessage(testKey.toByteArray(), testMessage.toByteArray());
+        RaystackMessage bookingMessage = new RaystackMessage(testKey.toByteArray(),
+                testBookingLogMessage.toByteArray());
         Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {
             {
                 put(String.format("%s", TestKey.class.getName()), TestKey.getDescriptor());
@@ -67,12 +68,13 @@ public class TemplateTest {
             }
         };
         Parser protoParserTest = StencilClientFactory.getClient().getParser(TestMessage.class.getName());
-        parsedTestMessage = new ProtoOdpfParsedMessage(protoParserTest.parse((byte[]) message.getLogMessage()));
+        parsedTestMessage = new ProtoRaystackParsedMessage(protoParserTest.parse((byte[]) message.getLogMessage()));
         Parser protoParserBooking = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
-        parsedBookingMessage = new ProtoOdpfParsedMessage(
+        parsedBookingMessage = new ProtoRaystackParsedMessage(
                 protoParserBooking.parse((byte[]) bookingMessage.getLogMessage()));
         when(sinkConfig.getSinkConnectorSchemaDataType()).thenReturn(SinkConnectorSchemaDataType.PROTOBUF);
-        ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory.getParser(sinkConfig,
+        ProtoRaystackMessageParser messageParser = (ProtoRaystackMessageParser) RaystackMessageParserFactory.getParser(
+                sinkConfig,
                 statsDReporter);
         schemaTest = messageParser.getSchema("org.raystack.depot.TestMessage", descriptorsMap);
         schemaBooking = messageParser.getSchema("org.raystack.depot.TestBookingLogMessage", descriptorsMap);

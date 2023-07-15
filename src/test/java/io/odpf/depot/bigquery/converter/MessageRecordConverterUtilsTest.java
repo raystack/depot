@@ -1,7 +1,7 @@
 package org.raystack.depot.bigquery.converter;
 
 import org.raystack.depot.config.BigQuerySinkConfig;
-import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.message.RaystackMessage;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
 import org.junit.Test;
@@ -19,7 +19,7 @@ public class MessageRecordConverterUtilsTest {
                 put("test", 123);
             }
         };
-        OdpfMessage message = Mockito.mock(OdpfMessage.class);
+        RaystackMessage message = Mockito.mock(RaystackMessage.class);
         Mockito.when(message.getMetadata(Mockito.any())).thenReturn(new HashMap<String, Object>() {
             {
                 put("test2", "value2");

@@ -2,7 +2,7 @@ package org.raystack.depot.redis.parsers;
 
 import org.raystack.depot.config.RedisSinkConfig;
 import org.raystack.depot.config.converter.JsonToPropertiesConverter;
-import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.RaystackMessageSchema;
 import org.raystack.depot.metrics.StatsDReporter;
 import org.raystack.depot.redis.enums.RedisSinkDataType;
 import org.junit.Assert;
@@ -23,7 +23,7 @@ public class RedisEntryParserFactoryTest {
     @Mock
     private StatsDReporter statsDReporter;
     @Mock
-    private OdpfMessageSchema schema;
+    private RaystackMessageSchema schema;
 
     @Before
     public void setup() {

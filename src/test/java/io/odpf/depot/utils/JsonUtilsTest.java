@@ -1,6 +1,6 @@
 package org.raystack.depot.utils;
 
-import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.RaystackSinkConfig;
 import org.junit.Assert;
 import org.junit.Test;
 import org.json.JSONObject;
@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class JsonUtilsTest {
     @Mock
-    private OdpfSinkConfig raystackSinkConfig;
+    private RaystackSinkConfig raystackSinkConfig;
 
     void setSinkConfigs(boolean stringModeEnabled) {
         when(raystackSinkConfig.getSinkConnectorSchemaJsonParserStringModeEnabled()).thenReturn(stringModeEnabled);

@@ -4,25 +4,25 @@ import com.google.api.client.util.DateTime;
 import org.raystack.depot.TestKeyBQ;
 import org.raystack.depot.TestMessageBQ;
 import org.raystack.depot.common.Tuple;
-import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.message.RaystackMessage;
 
 import java.sql.Date;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class TestOdpfMessageBuilder {
+public final class TestRaystackMessageBuilder {
     private long timestamp;
     private String topic;
     private int partition;
     private long offset;
     private long loadTime;
 
-    private TestOdpfMessageBuilder() {
+    private TestRaystackMessageBuilder() {
     }
 
-    public static TestOdpfMessageBuilder withMetadata(TestMetadata testMetadata) {
-        TestOdpfMessageBuilder builder = new TestOdpfMessageBuilder();
+    public static TestRaystackMessageBuilder withMetadata(TestMetadata testMetadata) {
+        TestRaystackMessageBuilder builder = new TestRaystackMessageBuilder();
         builder.topic = testMetadata.getTopic();
         builder.partition = testMetadata.getPartition();
         builder.offset = testMetadata.getOffset();
@@ -31,7 +31,7 @@ public final class TestOdpfMessageBuilder {
         return builder;
     }
 
-    public OdpfMessage createConsumerRecord(String orderNumber, String orderUrl, String orderDetails) {
+    public RaystackMessage createConsumerRecord(String orderNumber, String orderUrl, String orderDetails) {
         TestKeyBQ key = TestKeyBQ.newBuilder()
                 .setOrderNumber(orderNumber)
                 .setOrderUrl(orderUrl)
@@ -41,7 +41,7 @@ public final class TestOdpfMessageBuilder {
                 .setOrderUrl(orderUrl)
                 .setOrderDetails(orderDetails)
                 .build();
-        return new OdpfMessage(
+        return new RaystackMessage(
                 key.toByteArray(),
                 message.toByteArray(),
                 new Tuple<>("message_topic", topic),
@@ -52,12 +52,12 @@ public final class TestOdpfMessageBuilder {
                 new Tuple<>("should_be_ignored", timestamp));
     }
 
-    public OdpfMessage createEmptyValueConsumerRecord(String orderNumber, String orderUrl) {
+    public RaystackMessage createEmptyValueConsumerRecord(String orderNumber, String orderUrl) {
         TestKeyBQ key = TestKeyBQ.newBuilder()
                 .setOrderNumber(orderNumber)
                 .setOrderUrl(orderUrl)
                 .build();
-        return new OdpfMessage(
+        return new RaystackMessage(
                 key.toByteArray(),
                 null,
                 new Tuple<>("message_topic", topic),

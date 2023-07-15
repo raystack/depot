@@ -1,29 +1,29 @@
 package org.raystack.depot.message;
 
-import org.raystack.depot.config.OdpfSinkConfig;
-import org.raystack.depot.message.json.JsonOdpfMessageParser;
-import org.raystack.depot.message.proto.ProtoOdpfMessageParser;
+import org.raystack.depot.config.RaystackSinkConfig;
+import org.raystack.depot.message.json.JsonRaystackMessageParser;
+import org.raystack.depot.message.proto.ProtoRaystackMessageParser;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.JsonParserMetrics;
 import org.raystack.depot.metrics.StatsDReporter;
-import org.raystack.depot.stencil.OdpfStencilUpdateListener;
+import org.raystack.depot.stencil.RaystackStencilUpdateListener;
 
-public class OdpfMessageParserFactory {
-    public static OdpfMessageParser getParser(OdpfSinkConfig config, StatsDReporter statsDReporter,
-            OdpfStencilUpdateListener raystackStencilUpdateListener) {
+public class RaystackMessageParserFactory {
+    public static RaystackMessageParser getParser(RaystackSinkConfig config, StatsDReporter statsDReporter,
+            RaystackStencilUpdateListener raystackStencilUpdateListener) {
         switch (config.getSinkConnectorSchemaDataType()) {
             case JSON:
-                return new JsonOdpfMessageParser(config,
-                        new Instrumentation(statsDReporter, JsonOdpfMessageParser.class),
+                return new JsonRaystackMessageParser(config,
+                        new Instrumentation(statsDReporter, JsonRaystackMessageParser.class),
                         new JsonParserMetrics(config));
             case PROTOBUF:
-                return new ProtoOdpfMessageParser(config, statsDReporter, raystackStencilUpdateListener);
+                return new ProtoRaystackMessageParser(config, statsDReporter, raystackStencilUpdateListener);
             default:
                 throw new IllegalArgumentException("Schema Type is not supported");
         }
     }
 
-    public static OdpfMessageParser getParser(OdpfSinkConfig config, StatsDReporter statsDReporter) {
+    public static RaystackMessageParser getParser(RaystackSinkConfig config, StatsDReporter statsDReporter) {
         return getParser(config, statsDReporter, null);
     }
 }

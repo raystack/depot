@@ -11,8 +11,8 @@ import org.raystack.depot.config.enums.SinkConnectorSchemaDataType;
 import org.raystack.depot.error.ErrorType;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.message.*;
-import org.raystack.depot.message.proto.ProtoOdpfMessageParser;
-import org.raystack.depot.message.proto.ProtoOdpfParsedMessage;
+import org.raystack.depot.message.proto.ProtoRaystackMessageParser;
+import org.raystack.depot.message.proto.ProtoRaystackParsedMessage;
 import org.raystack.depot.metrics.StatsDReporter;
 import org.raystack.depot.redis.client.entry.RedisKeyValueEntry;
 import org.raystack.depot.redis.enums.RedisSinkDataType;
@@ -40,7 +40,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RedisParserTest {
-        private final List<OdpfMessage> messages = new ArrayList<>();
+        private final List<RaystackMessage> messages = new ArrayList<>();
         private final String schemaClass = "org.raystack.depot.TestMessage";
         private final Map<String, Descriptors.Descriptor> descriptorsMap = new HashMap<String, Descriptors.Descriptor>() {
                 {
@@ -54,7 +54,7 @@ public class RedisParserTest {
         @Mock
         private RedisSinkConfig redisSinkConfig;
         @Mock
-        private ProtoOdpfMessageParser raystackMessageParser;
+        private ProtoRaystackMessageParser raystackMessageParser;
         @Mock
         private StatsDReporter statsDReporter;
         private RedisParser redisParser;
@@ -73,28 +73,28 @@ public class RedisParserTest {
         TestMessage message4 = TestMessage.newBuilder().setOrderNumber("test-order-4").setOrderDetails("ORDER-DETAILS-4").build();
         TestMessage message5 = TestMessage.newBuilder().setOrderNumber("test-order-5").setOrderDetails("ORDER-DETAILS-5").build();
         TestMessage message6 = TestMessage.newBuilder().setOrderNumber("test-order-6").setOrderDetails("ORDER-DETAILS-6").build();
-        messages.add(new OdpfMessage(null, message1.toByteArray()));
-        messages.add(new OdpfMessage(null, message2.toByteArray()));
-        messages.add(new OdpfMessage(null, message3.toByteArray()));
-        messages.add(new OdpfMessage(null, message4.toByteArray()));
-        messages.add(new OdpfMessage(null, message5.toByteArray()));
-        messages.add(new OdpfMessage(null, message6.toByteArray()));
+        messages.add(new RaystackMessage(null, message1.toByteArray()));
+        messages.add(new RaystackMessage(null, message2.toByteArray()));
+        messages.add(new RaystackMessage(null, message3.toByteArray()));
+        messages.add(new RaystackMessage(null, message4.toByteArray()));
+        messages.add(new RaystackMessage(null, message5.toByteArray()));
+        messages.add(new RaystackMessage(null, message6.toByteArray()));
     }
 
         public void setupParserResponse() throws IOException {
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessage.class.getName());
-                for (OdpfMessage message : messages) {
-                        ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(
+                for (RaystackMessage message : messages) {
+                        ParsedRaystackMessage parsedRaystackMessage = new ProtoRaystackParsedMessage(
                                         protoParser.parse((byte[]) message.getLogMessage()));
                         when(raystackMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE,
                                         schemaClass))
-                                        .thenReturn(parsedOdpfMessage);
+                                        .thenReturn(parsedRaystackMessage);
                 }
-                ProtoOdpfMessageParser messageParser = (ProtoOdpfMessageParser) OdpfMessageParserFactory
+                ProtoRaystackMessageParser messageParser = (ProtoRaystackMessageParser) RaystackMessageParserFactory
                                 .getParser(redisSinkConfig, statsDReporter);
                 Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils
                                 .getModeAndSchema(redisSinkConfig);
-                OdpfMessageSchema schema = messageParser.getSchema(modeAndSchema.getSecond(), descriptorsMap);
+                RaystackMessageSchema schema = messageParser.getSchema(modeAndSchema.getSecond(), descriptorsMap);
                 RedisEntryParser redisEntryParser = RedisEntryParserFactory.getRedisEntryParser(redisSinkConfig,
                                 statsDReporter,
                                 schema);
@@ -102,7 +102,7 @@ public class RedisParserTest {
         }
 
         @Test
-        public void shouldConvertOdpfMessageToRedisRecords() throws IOException {
+        public void shouldConvertRaystackMessageToRedisRecords() throws IOException {
                 setupParserResponse();
                 List<RedisRecord> parsedRecords = redisParser.convert(messages);
                 Map<Boolean, List<RedisRecord>> splitterRecords = parsedRecords.stream()

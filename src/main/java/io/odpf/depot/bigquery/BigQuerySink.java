@@ -11,16 +11,16 @@ import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.metrics.BigQueryMetrics;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.bigquery.converter.MessageRecordConverterCache;
-import org.raystack.depot.message.OdpfMessage;
-import org.raystack.depot.OdpfSink;
-import org.raystack.depot.OdpfSinkResponse;
+import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.RaystackSink;
+import org.raystack.depot.RaystackSinkResponse;
 import org.raystack.depot.bigquery.models.Records;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-public class BigQuerySink implements OdpfSink {
+public class BigQuerySink implements RaystackSink {
 
     private final BigQueryClient bigQueryClient;
     private final BigQueryRow rowCreator;
@@ -54,9 +54,9 @@ public class BigQuerySink implements OdpfSink {
     }
 
     @Override
-    public OdpfSinkResponse pushToSink(List<OdpfMessage> messageList) {
+    public RaystackSinkResponse pushToSink(List<RaystackMessage> messageList) {
         Records records = messageRecordConverterCache.getMessageRecordConverter().convert(messageList);
-        OdpfSinkResponse raystackSinkResponse = new OdpfSinkResponse();
+        RaystackSinkResponse raystackSinkResponse = new RaystackSinkResponse();
         records.getInvalidRecords().forEach(
                 invalidRecord -> raystackSinkResponse.addErrors(invalidRecord.getIndex(),
                         invalidRecord.getErrorInfo()));

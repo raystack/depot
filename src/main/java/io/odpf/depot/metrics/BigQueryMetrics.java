@@ -1,10 +1,10 @@
 package org.raystack.depot.metrics;
 
-import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.RaystackSinkConfig;
 
 public class BigQueryMetrics extends SinkMetrics {
 
-    public BigQueryMetrics(OdpfSinkConfig config) {
+    public BigQueryMetrics(RaystackSinkConfig config) {
         super(config);
     }
 

@@ -4,8 +4,8 @@ import com.google.api.client.util.DateTime;
 import com.google.protobuf.*;
 import com.google.protobuf.util.JsonFormat;
 import org.raystack.depot.*;
-import org.raystack.depot.message.OdpfMessageSchema;
-import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.RaystackMessageSchema;
+import org.raystack.depot.message.ParsedRaystackMessage;
 import org.raystack.depot.message.proto.converter.fields.MessageProtoField;
 import org.raystack.depot.message.proto.converter.fields.ProtoField;
 import org.raystack.stencil.Parser;
@@ -30,7 +30,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class ProtoOdpfParsedMessageTest {
+public class ProtoRaystackParsedMessageTest {
 
         private static final JsonFormat.Printer PRINTER = JsonFormat.printer()
                         .preservingProtoFieldNames()
@@ -39,7 +39,7 @@ public class ProtoOdpfParsedMessageTest {
         private DynamicMessage dynamicMessage;
         private Instant now;
         private long nowMillis;
-        private ProtoOdpfMessageParser raystackMessageParser;
+        private ProtoRaystackMessageParser raystackMessageParser;
         private Parser parser;
         @Mock
         private StencilClient stencilClient;
@@ -90,15 +90,15 @@ public class ProtoOdpfParsedMessageTest {
                                 put("google.protobuf.BoolValue", com.google.protobuf.BoolValue.getDescriptor());
                         }
                 };
-                raystackMessageParser = new ProtoOdpfMessageParser(stencilClient);
+                raystackMessageParser = new ProtoRaystackMessageParser(stencilClient);
         }
 
         @Test
         public void shouldReturnFieldsInProperties() throws IOException {
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoOdpfParsedMessage(dynamicMessage)
+                Map<String, Object> fields = new ProtoRaystackParsedMessage(dynamicMessage)
                                 .getMapping(raystackMessageSchema);
                 assertEquals("order-1", fields.get("order_number"));
                 assertEquals("order-url", fields.get("order_url"));
@@ -116,21 +116,22 @@ public class ProtoOdpfParsedMessageTest {
                 String data = "ogQFJQAAwH8=";
                 byte[] decode = Base64.decode(data);
                 DynamicMessage message = DynamicMessage.parseFrom(FloatTest.getDescriptor(), decode);
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.FloatTest",
                                 descriptorsMap);
                 Assertions.assertThrows(IllegalArgumentException.class,
-                                () -> new ProtoOdpfParsedMessage(message).getMapping(raystackMessageSchema));
+                                () -> new ProtoRaystackParsedMessage(message).getMapping(raystackMessageSchema));
         }
 
         @Test
         public void shouldParseDurationMessageSuccessfully() throws IOException {
                 TestMessageBQ message = TestProtoUtil.generateTestMessage(now);
                 Parser messageProtoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoOdpfParsedMessage(messageProtoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoRaystackParsedMessage(
+                                messageProtoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
                 Map durationFields = (Map) fields.get("trip_duration");
                 assertEquals("order-1", fields.get("order_number"));
@@ -151,7 +152,7 @@ public class ProtoOdpfParsedMessageTest {
                 Arrays.asList(nestedMessage1, nestedMessage2).forEach(msg -> {
                         Map<String, Object> fields = null;
                         try {
-                                fields = new ProtoOdpfParsedMessage(protoParser.parse(msg.toByteArray()))
+                                fields = new ProtoRaystackParsedMessage(protoParser.parse(msg.toByteArray()))
                                                 .getMapping(
                                                                 raystackMessageParser.getSchema(
                                                                                 "org.raystack.depot.TestNestedMessageBQ",
@@ -173,10 +174,10 @@ public class ProtoOdpfParsedMessageTest {
                                 .build();
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
 
                 assertEquals(orderNumber, fields.get("order_number"));
@@ -196,9 +197,9 @@ public class ProtoOdpfParsedMessageTest {
 
                 Parser protoParser = StencilClientFactory.getClient()
                                 .getParser(TestNestedRepeatedMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser
                                 .getSchema("org.raystack.depot.TestNestedRepeatedMessageBQ", descriptorsMap);
-                Map<String, Object> fields = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
 
                 assertEquals(number, fields.get("number_field"));
@@ -216,9 +217,9 @@ public class ProtoOdpfParsedMessageTest {
 
                 Parser protoParser = StencilClientFactory.getClient()
                                 .getParser(TestNestedRepeatedMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser
                                 .getSchema("org.raystack.depot.TestNestedRepeatedMessageBQ", descriptorsMap);
-                Map<String, Object> fields = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
 
                 assertEquals(number, fields.get("number_field"));
@@ -236,10 +237,10 @@ public class ProtoOdpfParsedMessageTest {
                                 .build();
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
 
                 assertEquals(message.getOrderNumber(), fields.get("order_number"));
@@ -272,10 +273,10 @@ public class ProtoOdpfParsedMessageTest {
                                 .build();
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
 
                 assertEquals(message.getOrderNumber(), fields.get("order_number"));
@@ -301,9 +302,9 @@ public class ProtoOdpfParsedMessageTest {
 
         @Test()
         public void shouldReturnNullWhenIndexNotPresent() throws IOException {
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser
                                 .getSchema("org.raystack.depot.TestNestedRepeatedMessageBQ", descriptorsMap);
-                Map<String, Object> fields = new ProtoOdpfParsedMessage(dynamicMessage)
+                Map<String, Object> fields = new ProtoRaystackParsedMessage(dynamicMessage)
                                 .getMapping(raystackMessageSchema);
 
                 assertNull(fields.get("single_message"));
@@ -316,10 +317,10 @@ public class ProtoOdpfParsedMessageTest {
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
                 dynamicMessage = protoParser.parse(testMessage.toByteArray());
 
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoOdpfParsedMessage(dynamicMessage)
+                Map<String, Object> fields = new ProtoRaystackParsedMessage(dynamicMessage)
                                 .getMapping(raystackMessageSchema);
 
                 assertNull(fields.get("order_date"));
@@ -336,12 +337,12 @@ public class ProtoOdpfParsedMessageTest {
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
 
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 protoParser.parse(message.toByteArray()));
-                Map<String, Object> fields = protoOdpfParsedMessage.getMapping(raystackMessageSchema);
+                Map<String, Object> fields = protoRaystackParsedMessage.getMapping(raystackMessageSchema);
 
                 assertEquals(Arrays.asList(new DateTime(now.toEpochMilli()), new DateTime(now.toEpochMilli())),
                                 fields.get("updated_at"));
@@ -358,10 +359,10 @@ public class ProtoOdpfParsedMessageTest {
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
 
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
 
                 assertEquals("{\"name\":\"John\",\"age\":\"50\"}", fields.get("properties"));
@@ -381,10 +382,10 @@ public class ProtoOdpfParsedMessageTest {
                                 .build();
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                Map<String, Object> fields = new ProtoOdpfParsedMessage(protoParser.parse(message.toByteArray()))
+                Map<String, Object> fields = new ProtoRaystackParsedMessage(protoParser.parse(message.toByteArray()))
                                 .getMapping(raystackMessageSchema);
                 assertEquals(Arrays.asList("{\"name\":\"John\",\"age\":\"50\"}", "{\"name\":\"John\",\"age\":\"60\"}"),
                                 fields.get("attributes"));
@@ -403,26 +404,26 @@ public class ProtoOdpfParsedMessageTest {
                                                 .putFields("age", Value.newBuilder().setStringValue("60").build())
                                                 .build())
                                 .build();
-                OdpfMessageSchema raystackMessageSchema1 = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema1 = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                OdpfMessageSchema raystackMessageSchema2 = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema2 = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ParsedOdpfMessage parsedOdpfMessage = new ProtoOdpfParsedMessage(
+                ParsedRaystackMessage parsedRaystackMessage = new ProtoRaystackParsedMessage(
                                 protoParser.parse(message.toByteArray()));
-                Map<String, Object> map1 = parsedOdpfMessage.getMapping(raystackMessageSchema1);
-                Map<String, Object> map2 = parsedOdpfMessage.getMapping(raystackMessageSchema2);
+                Map<String, Object> map1 = parsedRaystackMessage.getMapping(raystackMessageSchema1);
+                Map<String, Object> map2 = parsedRaystackMessage.getMapping(raystackMessageSchema2);
                 assertEquals(map1, map2);
         }
 
         @Test
         public void shouldGetFieldByName() throws IOException {
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(dynamicMessage);
-                Object orderNumber = ((ProtoField) protoOdpfParsedMessage.getFieldByName("order_number",
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(dynamicMessage);
+                Object orderNumber = ((ProtoField) protoRaystackParsedMessage.getFieldByName("order_number",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals("order-1", orderNumber);
@@ -430,7 +431,7 @@ public class ProtoOdpfParsedMessageTest {
 
         @Test
         public void shouldGetComplexFieldByName() throws IOException {
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestBookingLogMessage",
                                 descriptorsMap);
                 TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder()
@@ -444,8 +445,9 @@ public class ProtoOdpfParsedMessageTest {
                                 .build();
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
                 DynamicMessage bookingLogDynamicMessage = protoParser.parse(testBookingLogMessage.toByteArray());
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(bookingLogDynamicMessage);
-                ProtoField f = (ProtoField) protoOdpfParsedMessage.getFieldByName("topics", raystackMessageSchema);
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                                bookingLogDynamicMessage);
+                ProtoField f = (ProtoField) protoRaystackParsedMessage.getFieldByName("topics", raystackMessageSchema);
                 Assert.assertTrue(f instanceof MessageProtoField);
                 Assert.assertTrue(f.getValue() instanceof Collection<?>);
                 List<?> list = (List<?>) f.getValue();
@@ -461,7 +463,7 @@ public class ProtoOdpfParsedMessageTest {
 
         @Test
         public void shouldGetStructFromProto() throws IOException {
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestBookingLogMessage",
                                 descriptorsMap);
                 TestBookingLogMessage testBookingLogMessage = TestBookingLogMessage.newBuilder()
@@ -474,8 +476,9 @@ public class ProtoOdpfParsedMessageTest {
                                 .build();
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
                 DynamicMessage bookingLogDynamicMessage = protoParser.parse(testBookingLogMessage.toByteArray());
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(bookingLogDynamicMessage);
-                Object driverPickupLocation = ((ProtoField) protoOdpfParsedMessage.getFieldByName(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
+                                bookingLogDynamicMessage);
+                Object driverPickupLocation = ((ProtoField) protoRaystackParsedMessage.getFieldByName(
                                 "driver_pickup_location",
                                 raystackMessageSchema)).getValue();
                 Assert.assertEquals(TestLocation.newBuilder().setLatitude(10.0).setLongitude(12.0).build(),
@@ -501,14 +504,14 @@ public class ProtoOdpfParsedMessageTest {
                                 .build();
 
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 protoParser.parse(message.toByteArray()));
-                List<?> attributes = (List<?>) ((ProtoField) (protoOdpfParsedMessage.getFieldByName("attributes",
+                List<?> attributes = (List<?>) ((ProtoField) (protoRaystackParsedMessage.getFieldByName("attributes",
                                 raystackMessageSchema))).getValue();
-                protoOdpfParsedMessage.getMapping(raystackMessageSchema);
+                protoRaystackParsedMessage.getMapping(raystackMessageSchema);
                 JSONArray expectedArray = new JSONArray();
                 JSONArray actualArray = new JSONArray();
                 for (int ii = 0; ii < message.getAttributesCount(); ii++) {
@@ -529,16 +532,16 @@ public class ProtoOdpfParsedMessageTest {
                                 .setPrice(10.2f)
                                 .build();
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 protoParser.parse(message.toByteArray()));
-                Object discount = ((ProtoField) protoOdpfParsedMessage.getFieldByName("discount",
+                Object discount = ((ProtoField) protoRaystackParsedMessage.getFieldByName("discount",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals(10000012010L, discount);
-                float price = (float) ((ProtoField) protoOdpfParsedMessage.getFieldByName("price",
+                float price = (float) ((ProtoField) protoRaystackParsedMessage.getFieldByName("price",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals(10.2f, price, 0.00000000001);
@@ -548,12 +551,12 @@ public class ProtoOdpfParsedMessageTest {
         public void shouldGetRepeatedTimeStamps() throws IOException {
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 protoParser.parse(message1.toByteArray()));
-                Object updatedTimeStamps = ((ProtoField) protoOdpfParsedMessage.getFieldByName("updated_at",
+                Object updatedTimeStamps = ((ProtoField) protoRaystackParsedMessage.getFieldByName("updated_at",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals(2, ((List<?>) updatedTimeStamps).size());
@@ -565,18 +568,19 @@ public class ProtoOdpfParsedMessageTest {
         public void shouldGetFieldByNameFromNested() throws IOException {
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestNestedMessageBQ",
                                 descriptorsMap);
                 TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test")
                                 .setSingleMessage(message1).build();
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 protoParser.parse(nestedMessage.toByteArray()));
-                Object nestedId = ((ProtoField) protoOdpfParsedMessage.getFieldByName("nested_id",
+                Object nestedId = ((ProtoField) protoRaystackParsedMessage.getFieldByName("nested_id",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals("test", nestedId);
-                Object orderNumber = ((ProtoField) protoOdpfParsedMessage.getFieldByName("single_message.order_number",
+                Object orderNumber = ((ProtoField) protoRaystackParsedMessage.getFieldByName(
+                                "single_message.order_number",
                                 raystackMessageSchema)).getValue();
                 Assert.assertEquals(message1.getOrderNumber(), orderNumber);
         }
@@ -585,25 +589,25 @@ public class ProtoOdpfParsedMessageTest {
         public void shouldReturnInstantField() throws IOException {
                 Instant time = Instant.ofEpochSecond(1669160207, 600000000);
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(time);
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 parser.parse(message1.toByteArray()));
                 Assert.assertEquals(time,
-                                ((ProtoField) protoOdpfParsedMessage.getFieldByName("created_at",
+                                ((ProtoField) protoRaystackParsedMessage.getFieldByName("created_at",
                                                 raystackMessageSchema)).getValue());
         }
 
         @Test
         public void shouldReturnDurationFieldInStringFormat() throws IOException {
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 parser.parse(message1.toByteArray()));
-                Object tripDuration = ((ProtoField) protoOdpfParsedMessage.getFieldByName("trip_duration",
+                Object tripDuration = ((ProtoField) protoRaystackParsedMessage.getFieldByName("trip_duration",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals(
@@ -614,12 +618,12 @@ public class ProtoOdpfParsedMessageTest {
         @Test
         public void shouldReturnMapFieldAsJSONObject() throws IOException {
                 TestMessageBQ message1 = TestMessageBQ.newBuilder().putCurrentState("running", "active").build();
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 parser.parse(message1.toByteArray()));
-                Object currentState = ((ProtoField) protoOdpfParsedMessage.getFieldByName("current_state",
+                Object currentState = ((ProtoField) protoRaystackParsedMessage.getFieldByName("current_state",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertTrue(currentState instanceof List<?>);
@@ -633,12 +637,12 @@ public class ProtoOdpfParsedMessageTest {
         @Test
         public void shouldReturnDefaultValueForFieldIfValueIsNotSet() throws IOException {
                 TestMessageBQ emptyMessage = TestMessageBQ.newBuilder().build();
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 parser.parse(emptyMessage.toByteArray()));
-                String orderNumber = (String) ((ProtoField) protoOdpfParsedMessage.getFieldByName("order_number",
+                String orderNumber = (String) ((ProtoField) protoRaystackParsedMessage.getFieldByName("order_number",
                                 raystackMessageSchema)).getValue();
                 Assert.assertEquals("", orderNumber);
         }
@@ -647,19 +651,19 @@ public class ProtoOdpfParsedMessageTest {
         public void shouldThrowExceptionIfColumnIsNotPresentInProto() throws IOException {
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestNestedMessageBQ",
                                 descriptorsMap);
                 TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test")
                                 .setSingleMessage(message1).build();
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 protoParser.parse(nestedMessage.toByteArray()));
-                String nestedId = (String) ((ProtoField) protoOdpfParsedMessage.getFieldByName("nested_id",
+                String nestedId = (String) ((ProtoField) protoRaystackParsedMessage.getFieldByName("nested_id",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals("test", nestedId);
                 IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                () -> protoOdpfParsedMessage.getFieldByName("single_message.order_id",
+                                () -> protoRaystackParsedMessage.getFieldByName("single_message.order_id",
                                                 raystackMessageSchema));
                 Assert.assertEquals("Invalid field config : single_message.order_id", exception.getMessage());
         }
@@ -668,31 +672,31 @@ public class ProtoOdpfParsedMessageTest {
         public void shouldThrowExceptionIfColumnIsNotNested() throws IOException {
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestNestedMessageBQ",
                                 descriptorsMap);
                 TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test")
                                 .setSingleMessage(message1).build();
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 protoParser.parse(nestedMessage.toByteArray()));
-                String nestedId = (String) ((ProtoField) protoOdpfParsedMessage.getFieldByName("nested_id",
+                String nestedId = (String) ((ProtoField) protoRaystackParsedMessage.getFieldByName("nested_id",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals("test", nestedId);
                 IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                () -> protoOdpfParsedMessage.getFieldByName("nested_id.order_id",
+                                () -> protoRaystackParsedMessage.getFieldByName("nested_id.order_id",
                                                 raystackMessageSchema));
                 Assert.assertEquals("Invalid field config : nested_id.order_id", exception.getMessage());
         }
 
         @Test
         public void shouldThrowExceptionIfFieldIsEmpty() throws IOException {
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(dynamicMessage);
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(dynamicMessage);
                 IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                () -> protoOdpfParsedMessage.getFieldByName("", raystackMessageSchema));
+                                () -> protoRaystackParsedMessage.getFieldByName("", raystackMessageSchema));
                 Assert.assertEquals("Invalid field config : name can not be empty", exception.getMessage());
         }
 
@@ -700,13 +704,13 @@ public class ProtoOdpfParsedMessageTest {
         public void shouldReturnRepeatedDurations() throws IOException {
                 TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestMessageBQ",
                                 descriptorsMap);
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 protoParser.parse(message1.toByteArray()));
-                protoOdpfParsedMessage.getMapping(raystackMessageSchema);
-                Object intervals = ((ProtoField) protoOdpfParsedMessage.getFieldByName("intervals",
+                protoRaystackParsedMessage.getMapping(raystackMessageSchema);
+                Object intervals = ((ProtoField) protoRaystackParsedMessage.getFieldByName("intervals",
                                 raystackMessageSchema))
                                 .getValue();
                 Assert.assertEquals(Duration.newBuilder().setSeconds(12).setNanos(1000).build(),
@@ -724,12 +728,12 @@ public class ProtoOdpfParsedMessageTest {
                                 .addListValues("test3")
                                 .build();
                 Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
-                OdpfMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
+                RaystackMessageSchema raystackMessageSchema = raystackMessageParser.getSchema(
                                 "org.raystack.depot.TestTypesMessage",
                                 descriptorsMap);
-                ProtoOdpfParsedMessage protoOdpfParsedMessage = new ProtoOdpfParsedMessage(
+                ProtoRaystackParsedMessage protoRaystackParsedMessage = new ProtoRaystackParsedMessage(
                                 protoParser.parse(message.toByteArray()));
-                List<?> listValues = (List<?>) ((ProtoField) protoOdpfParsedMessage.getFieldByName("list_values",
+                List<?> listValues = (List<?>) ((ProtoField) protoRaystackParsedMessage.getFieldByName("list_values",
                                 raystackMessageSchema)).getValue();
                 Assert.assertEquals("test1", listValues.get(0));
                 Assert.assertEquals("test2", listValues.get(1));

@@ -9,10 +9,10 @@ import org.raystack.depot.error.ErrorType;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.exception.DeserializerException;
 import org.raystack.depot.exception.EmptyMessageException;
-import org.raystack.depot.message.OdpfMessage;
-import org.raystack.depot.message.OdpfMessageParser;
-import org.raystack.depot.message.OdpfMessageSchema;
-import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.RaystackMessageParser;
+import org.raystack.depot.message.RaystackMessageSchema;
+import org.raystack.depot.message.ParsedRaystackMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.message.field.GenericFieldFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -24,16 +24,16 @@ import java.util.Map;
 
 @Slf4j
 public class BigTableRecordParser {
-    private final OdpfMessageParser raystackMessageParser;
+    private final RaystackMessageParser raystackMessageParser;
     private final BigTableRowKeyParser bigTableRowKeyParser;
     private final BigTableSchema bigTableSchema;
-    private final OdpfMessageSchema schema;
+    private final RaystackMessageSchema schema;
     private final Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema;
 
-    public BigTableRecordParser(OdpfMessageParser raystackMessageParser,
+    public BigTableRecordParser(RaystackMessageParser raystackMessageParser,
             BigTableRowKeyParser bigTableRowKeyParser,
             Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema,
-            OdpfMessageSchema schema,
+            RaystackMessageSchema schema,
             BigTableSchema bigTableSchema) {
         this.raystackMessageParser = raystackMessageParser;
         this.bigTableRowKeyParser = bigTableRowKeyParser;
@@ -42,21 +42,21 @@ public class BigTableRecordParser {
         this.bigTableSchema = bigTableSchema;
     }
 
-    public List<BigTableRecord> convert(List<OdpfMessage> messages) {
+    public List<BigTableRecord> convert(List<RaystackMessage> messages) {
         ArrayList<BigTableRecord> records = new ArrayList<>();
         for (int index = 0; index < messages.size(); index++) {
-            OdpfMessage message = messages.get(index);
+            RaystackMessage message = messages.get(index);
             BigTableRecord record = createRecord(message, index);
             records.add(record);
         }
         return records;
     }
 
-    private BigTableRecord createRecord(OdpfMessage message, long index) {
+    private BigTableRecord createRecord(RaystackMessage message, long index) {
         try {
-            ParsedOdpfMessage parsedOdpfMessage = raystackMessageParser.parse(message, modeAndSchema.getFirst(),
+            ParsedRaystackMessage parsedRaystackMessage = raystackMessageParser.parse(message, modeAndSchema.getFirst(),
                     modeAndSchema.getSecond());
-            String rowKey = bigTableRowKeyParser.parse(parsedOdpfMessage);
+            String rowKey = bigTableRowKeyParser.parse(parsedRaystackMessage);
             RowMutationEntry rowMutationEntry = RowMutationEntry.create(rowKey);
             bigTableSchema.getColumnFamilies().forEach(
                     columnFamily -> bigTableSchema
@@ -64,7 +64,7 @@ public class BigTableRecordParser {
                             .forEach(column -> {
                                 String fieldName = bigTableSchema.getField(columnFamily, column);
                                 String value = GenericFieldFactory
-                                        .getField(parsedOdpfMessage.getFieldByName(fieldName, schema)).getString();
+                                        .getField(parsedRaystackMessage.getFieldByName(fieldName, schema)).getString();
                                 rowMutationEntry.setCell(columnFamily, column, value);
                             }));
             BigTableRecord bigTableRecord = new BigTableRecord(rowMutationEntry, index, null, message.getMetadata());

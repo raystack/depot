@@ -1,6 +1,6 @@
 package org.raystack.depot.metrics;
 
-import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.RaystackSinkConfig;
 
 public class BigTableMetrics extends SinkMetrics {
 
@@ -9,7 +9,7 @@ public class BigTableMetrics extends SinkMetrics {
     public static final String BIGTABLE_TABLE_TAG = "table=%s";
     public static final String BIGTABLE_ERROR_TAG = "error=%s";
 
-    public BigTableMetrics(OdpfSinkConfig config) {
+    public BigTableMetrics(RaystackSinkConfig config) {
         super(config);
     }
 

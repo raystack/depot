@@ -1,6 +1,6 @@
 package org.raystack.depot.config.converter;
 
-import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.RaystackSinkConfig;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.message.BasicHeader;
 import org.junit.Assert;
@@ -17,7 +17,7 @@ public class SchemaRegistryHeadersConverterTest {
                 put("SCHEMA_REGISTRY_STENCIL_FETCH_HEADERS", "");
             }
         };
-        OdpfSinkConfig config = ConfigFactory.create(OdpfSinkConfig.class, properties);
+        RaystackSinkConfig config = ConfigFactory.create(RaystackSinkConfig.class, properties);
         Assert.assertEquals(0, config.getSchemaRegistryStencilFetchHeaders().size());
     }
 
@@ -25,7 +25,7 @@ public class SchemaRegistryHeadersConverterTest {
     public void shouldReturnZeroIfPropertyNotMentioned() {
         Map<String, String> properties = new HashMap<String, String>() {
         };
-        OdpfSinkConfig config = ConfigFactory.create(OdpfSinkConfig.class, properties);
+        RaystackSinkConfig config = ConfigFactory.create(RaystackSinkConfig.class, properties);
         Assert.assertEquals(0, config.getSchemaRegistryStencilFetchHeaders().size());
     }
 
@@ -36,7 +36,7 @@ public class SchemaRegistryHeadersConverterTest {
                 put("SCHEMA_REGISTRY_STENCIL_FETCH_HEADERS", "key1:value1 ,,, key2 : value2,");
             }
         };
-        OdpfSinkConfig config = ConfigFactory.create(OdpfSinkConfig.class, properties);
+        RaystackSinkConfig config = ConfigFactory.create(RaystackSinkConfig.class, properties);
         Assert.assertEquals((new BasicHeader("key1", "value1")).toString(),
                 config.getSchemaRegistryStencilFetchHeaders().get(0).toString());
         Assert.assertEquals((new BasicHeader("key2", "value2")).toString(),

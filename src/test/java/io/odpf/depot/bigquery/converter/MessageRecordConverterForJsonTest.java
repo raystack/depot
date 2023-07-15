@@ -4,13 +4,13 @@ import com.google.common.collect.ImmutableMap;
 import org.raystack.depot.bigquery.models.Record;
 import org.raystack.depot.bigquery.models.Records;
 import org.raystack.depot.config.BigQuerySinkConfig;
-import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.RaystackSinkConfig;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
-import org.raystack.depot.message.OdpfMessage;
-import org.raystack.depot.message.OdpfMessageParser;
-import org.raystack.depot.message.OdpfMessageSchema;
-import org.raystack.depot.message.json.JsonOdpfMessageParser;
+import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.RaystackMessageParser;
+import org.raystack.depot.message.RaystackMessageSchema;
+import org.raystack.depot.message.json.JsonRaystackMessageParser;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.JsonParserMetrics;
 import org.aeonbits.owner.ConfigFactory;
@@ -35,7 +35,8 @@ import static org.mockito.Mockito.mock;
 
 public class MessageRecordConverterForJsonTest {
 
-        private final OdpfSinkConfig defaultConfig = ConfigFactory.create(OdpfSinkConfig.class, Collections.emptyMap());
+        private final RaystackSinkConfig defaultConfig = ConfigFactory.create(RaystackSinkConfig.class,
+                        Collections.emptyMap());
         private final Record.RecordBuilder recordBuilder = Record.builder();
         private final Map<String, Object> emptyMetadata = Collections.emptyMap();
         private final Map<String, Object> emptyColumnsMap = Collections.emptyMap();
@@ -50,13 +51,14 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldReturnEmptyRecordsforEmptyList() {
-                OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
-                OdpfMessageSchema schema = null;
+                RaystackMessageParser parser = new JsonRaystackMessageParser(defaultConfig, instrumentation,
+                                jsonParserMetrics);
+                RaystackMessageSchema schema = null;
                 BigQuerySinkConfig bigQuerySinkConfig = null;
                 MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
-                List<OdpfMessage> emptyOdpfMessageList = Collections.emptyList();
+                List<RaystackMessage> emptyRaystackMessageList = Collections.emptyList();
 
-                Records records = converter.convert(emptyOdpfMessageList);
+                Records records = converter.convert(emptyRaystackMessageList);
                 List<Record> emptyRecordList = Collections.emptyList();
                 Records expectedRecords = new Records(emptyRecordList, emptyRecordList);
                 assertEquals(expectedRecords, records);
@@ -64,15 +66,16 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldConvertJsonMessagesToRecordForLogMessage() {
-                OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
-                OdpfMessageSchema schema = null;
+                RaystackMessageParser parser = new JsonRaystackMessageParser(defaultConfig, instrumentation,
+                                jsonParserMetrics);
+                RaystackMessageSchema schema = null;
                 HashMap<String, String> configMap = new HashMap<>();
                 configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE");
                 BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
                 MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
-                List<OdpfMessage> messages = new ArrayList<>();
-                messages.add(getOdpfMessageForString("{ \"first_name\": \"john doe\"}"));
-                messages.add(getOdpfMessageForString("{ \"last_name\": \"walker\"}"));
+                List<RaystackMessage> messages = new ArrayList<>();
+                messages.add(getRaystackMessageForString("{ \"first_name\": \"john doe\"}"));
+                messages.add(getRaystackMessageForString("{ \"last_name\": \"walker\"}"));
 
                 Records records = converter.convert(messages);
 
@@ -101,15 +104,16 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldConvertJsonMessagesToRecordForLogKey() {
-                OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
-                OdpfMessageSchema schema = null;
+                RaystackMessageParser parser = new JsonRaystackMessageParser(defaultConfig, instrumentation,
+                                jsonParserMetrics);
+                RaystackMessageSchema schema = null;
                 HashMap<String, String> configMap = new HashMap<>();
                 configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_KEY");
                 BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
                 MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
-                List<OdpfMessage> messages = new ArrayList<>();
-                messages.add(new OdpfMessage("{ \"first_name\": \"john doe\"}".getBytes(), null));
-                messages.add(new OdpfMessage("{ \"last_name\": \"walker\"}".getBytes(), null));
+                List<RaystackMessage> messages = new ArrayList<>();
+                messages.add(new RaystackMessage("{ \"first_name\": \"john doe\"}".getBytes(), null));
+                messages.add(new RaystackMessage("{ \"last_name\": \"walker\"}".getBytes(), null));
 
                 Records records = converter.convert(messages);
 
@@ -138,17 +142,18 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldHandleBothInvalidAndValidJsonMessages() {
-                OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
-                OdpfMessageSchema schema = null;
+                RaystackMessageParser parser = new JsonRaystackMessageParser(defaultConfig, instrumentation,
+                                jsonParserMetrics);
+                RaystackMessageSchema schema = null;
                 HashMap<String, String> configMap = new HashMap<>();
                 configMap.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE");
                 BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
                 MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
-                List<OdpfMessage> messages = new ArrayList<>();
-                messages.add(getOdpfMessageForString("{ \"first_name\": \"john doe\"}"));
-                messages.add(getOdpfMessageForString("{ invalid json str"));
-                messages.add(getOdpfMessageForString("{ \"last_name\": \"walker\"}"));
-                messages.add(getOdpfMessageForString("another invalid message"));
+                List<RaystackMessage> messages = new ArrayList<>();
+                messages.add(getRaystackMessageForString("{ \"first_name\": \"john doe\"}"));
+                messages.add(getRaystackMessageForString("{ invalid json str"));
+                messages.add(getRaystackMessageForString("{ \"last_name\": \"walker\"}"));
+                messages.add(getRaystackMessageForString("another invalid message"));
                 String nestedJsonStr = "{\n"
                                 + "  \"event_value\": {\n"
                                 + "    \"CustomerLatitude\": \"-6.166895595817224\",\n"
@@ -161,7 +166,7 @@ public class MessageRecordConverterForJsonTest {
                                 + "  \"contributor_1_campaign\": null\n"
                                 + "}";
 
-                messages.add(getOdpfMessageForString(nestedJsonStr));
+                messages.add(getRaystackMessageForString(nestedJsonStr));
 
                 Records records = converter.convert(messages);
 
@@ -216,8 +221,9 @@ public class MessageRecordConverterForJsonTest {
 
         @Test
         public void shouldInjectEventTimestamp() throws ParseException {
-                OdpfMessageParser parser = new JsonOdpfMessageParser(defaultConfig, instrumentation, jsonParserMetrics);
-                OdpfMessageSchema schema = null;
+                RaystackMessageParser parser = new JsonRaystackMessageParser(defaultConfig, instrumentation,
+                                jsonParserMetrics);
+                RaystackMessageSchema schema = null;
                 Map<String, String> configMap = ImmutableMap.of(
                                 "SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "LOG_MESSAGE",
                                 "SINK_CONNECTOR_SCHEMA_DATA_TYPE", "json",
@@ -225,9 +231,9 @@ public class MessageRecordConverterForJsonTest {
 
                 BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, configMap);
                 MessageRecordConverter converter = new MessageRecordConverter(parser, bigQuerySinkConfig, schema);
-                List<OdpfMessage> messages = new ArrayList<>();
-                messages.add(getOdpfMessageForString("{ \"first_name\": \"john doe\"}"));
-                messages.add(getOdpfMessageForString("{ \"last_name\": \"walker\"}"));
+                List<RaystackMessage> messages = new ArrayList<>();
+                messages.add(getRaystackMessageForString("{ \"first_name\": \"john doe\"}"));
+                messages.add(getRaystackMessageForString("{ \"last_name\": \"walker\"}"));
 
                 Records actualRecords = converter.convert(messages);
 
@@ -259,8 +265,8 @@ public class MessageRecordConverterForJsonTest {
                 assertTrue("the difference is " + timeDifferenceForSecondDate, timeDifferenceForSecondDate < 60000);
         }
 
-        private OdpfMessage getOdpfMessageForString(String jsonStr) {
+        private RaystackMessage getRaystackMessageForString(String jsonStr) {
                 byte[] logMessage = jsonStr.getBytes();
-                return new OdpfMessage(null, logMessage);
+                return new RaystackMessage(null, logMessage);
         }
 }

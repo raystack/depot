@@ -2,8 +2,8 @@ package org.raystack.depot.redis.parsers;
 
 import org.raystack.depot.common.Template;
 import org.raystack.depot.message.field.GenericFieldFactory;
-import org.raystack.depot.message.OdpfMessageSchema;
-import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.RaystackMessageSchema;
+import org.raystack.depot.message.ParsedRaystackMessage;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.StatsDReporter;
 import org.raystack.depot.redis.client.entry.RedisEntry;
@@ -22,18 +22,18 @@ public class RedisHashSetEntryParser implements RedisEntryParser {
     private final StatsDReporter statsDReporter;
     private final Template keyTemplate;
     private final Map<String, Template> fieldTemplates;
-    private final OdpfMessageSchema schema;
+    private final RaystackMessageSchema schema;
 
     @Override
-    public List<RedisEntry> getRedisEntry(ParsedOdpfMessage parsedOdpfMessage) {
-        String redisKey = keyTemplate.parse(parsedOdpfMessage, schema);
+    public List<RedisEntry> getRedisEntry(ParsedRaystackMessage parsedRaystackMessage) {
+        String redisKey = keyTemplate.parse(parsedRaystackMessage, schema);
         return fieldTemplates
                 .entrySet()
                 .stream()
                 .map(fieldTemplate -> {
-                    String field = fieldTemplate.getValue().parse(parsedOdpfMessage, schema);
+                    String field = fieldTemplate.getValue().parse(parsedRaystackMessage, schema);
                     String redisValue = GenericFieldFactory
-                            .getField(parsedOdpfMessage.getFieldByName(fieldTemplate.getKey(), schema)).getString();
+                            .getField(parsedRaystackMessage.getFieldByName(fieldTemplate.getKey(), schema)).getString();
                     return new RedisHashSetFieldEntry(redisKey, field, redisValue,
                             new Instrumentation(statsDReporter, RedisHashSetFieldEntry.class));
                 }).collect(Collectors.toList());

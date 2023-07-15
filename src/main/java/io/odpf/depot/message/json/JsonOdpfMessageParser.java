@@ -2,14 +2,14 @@ package org.raystack.depot.message.json;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.spi.json.JsonOrgJsonProvider;
-import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.RaystackSinkConfig;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.exception.EmptyMessageException;
 import org.raystack.depot.message.MessageUtils;
-import org.raystack.depot.message.OdpfMessage;
-import org.raystack.depot.message.OdpfMessageParser;
-import org.raystack.depot.message.OdpfMessageSchema;
-import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.RaystackMessageParser;
+import org.raystack.depot.message.RaystackMessageSchema;
+import org.raystack.depot.message.ParsedRaystackMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.JsonParserMetrics;
@@ -22,16 +22,16 @@ import java.io.IOException;
 import java.time.Instant;
 
 @Slf4j
-public class JsonOdpfMessageParser implements OdpfMessageParser {
+public class JsonRaystackMessageParser implements RaystackMessageParser {
 
-    private final OdpfSinkConfig config;
+    private final RaystackSinkConfig config;
     private final Instrumentation instrumentation;
     private final JsonParserMetrics jsonParserMetrics;
     private final Configuration jsonPathConfig = Configuration.builder()
             .jsonProvider(new JsonOrgJsonProvider())
             .build();
 
-    public JsonOdpfMessageParser(OdpfSinkConfig config, Instrumentation instrumentation,
+    public JsonRaystackMessageParser(RaystackSinkConfig config, Instrumentation instrumentation,
             JsonParserMetrics jsonParserMetrics) {
         this.instrumentation = instrumentation;
         this.jsonParserMetrics = jsonParserMetrics;
@@ -40,7 +40,7 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
     }
 
     @Override
-    public ParsedOdpfMessage parse(OdpfMessage message, SinkConnectorSchemaMessageMode type, String schemaClass)
+    public ParsedRaystackMessage parse(RaystackMessage message, SinkConnectorSchemaMessageMode type, String schemaClass)
             throws IOException {
         if (type == null) {
             throw new IOException("message mode not defined");
@@ -65,14 +65,14 @@ public class JsonOdpfMessageParser implements OdpfMessageParser {
             Instant instant = Instant.now();
             JSONObject jsonObject = JsonUtils.getJsonObject(config, payload);
             instrumentation.captureDurationSince(jsonParserMetrics.getJsonParseTimeTakenMetric(), instant);
-            return new JsonOdpfParsedMessage(jsonObject, jsonPathConfig);
+            return new JsonRaystackParsedMessage(jsonObject, jsonPathConfig);
         } catch (JSONException ex) {
             throw new IOException("invalid json error", ex);
         }
     }
 
     @Override
-    public OdpfMessageSchema getSchema(String schemaClass) {
+    public RaystackMessageSchema getSchema(String schemaClass) {
         return null;
     }
 }

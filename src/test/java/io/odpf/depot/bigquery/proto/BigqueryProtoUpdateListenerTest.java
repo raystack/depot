@@ -8,12 +8,12 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.raystack.depot.TestKeyBQ;
 import org.raystack.depot.common.TupleString;
-import org.raystack.depot.message.OdpfMessageParser;
-import org.raystack.depot.message.proto.ProtoOdpfMessageParser;
+import org.raystack.depot.message.RaystackMessageParser;
+import org.raystack.depot.message.proto.ProtoRaystackMessageParser;
 import org.raystack.depot.message.proto.TestProtoUtil;
 import org.raystack.depot.bigquery.converter.MessageRecordConverterCache;
 import org.raystack.depot.bigquery.client.BigQueryClient;
-import org.raystack.depot.message.OdpfMessage;
+import org.raystack.depot.message.RaystackMessage;
 import org.raystack.depot.message.proto.ProtoField;
 import org.raystack.depot.bigquery.models.Records;
 import org.raystack.depot.config.BigQuerySinkConfig;
@@ -92,11 +92,11 @@ public class BigqueryProtoUpdateListenerTest {
         };
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
-        OdpfMessageParser parser = new ProtoOdpfMessageParser(stencilClient);
-        bigqueryProtoUpdateListener.setOdpfMessageParser(parser);
+        RaystackMessageParser parser = new ProtoRaystackMessageParser(stencilClient);
+        bigqueryProtoUpdateListener.setRaystackMessageParser(parser);
         bigqueryProtoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
-        OdpfMessage testMessage = new OdpfMessage(
+        RaystackMessage testMessage = new RaystackMessage(
                 "".getBytes(),
                 testKeyBQ.toByteArray(),
                 new Tuple<>("topic", "topic"),
@@ -144,11 +144,11 @@ public class BigqueryProtoUpdateListenerTest {
         };
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
-        OdpfMessageParser parser = new ProtoOdpfMessageParser(stencilClient);
-        bigqueryProtoUpdateListener.setOdpfMessageParser(parser);
+        RaystackMessageParser parser = new ProtoRaystackMessageParser(stencilClient);
+        bigqueryProtoUpdateListener.setRaystackMessageParser(parser);
         bigqueryProtoUpdateListener.onSchemaUpdate(null);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
-        OdpfMessage testMessage = new OdpfMessage(
+        RaystackMessage testMessage = new RaystackMessage(
                 "".getBytes(),
                 testKeyBQ.toByteArray(),
                 new Tuple<>("topic", "topic"),
@@ -252,11 +252,11 @@ public class BigqueryProtoUpdateListenerTest {
             }
         };
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
-        OdpfMessageParser parser = new ProtoOdpfMessageParser(stencilClient);
-        bigqueryProtoUpdateListener.setOdpfMessageParser(parser);
+        RaystackMessageParser parser = new ProtoRaystackMessageParser(stencilClient);
+        bigqueryProtoUpdateListener.setRaystackMessageParser(parser);
         bigqueryProtoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
-        OdpfMessage testMessage = new OdpfMessage(
+        RaystackMessage testMessage = new RaystackMessage(
                 "".getBytes(),
                 testKeyBQ.toByteArray(),
                 new Tuple<>("topic", "topic"),
@@ -307,11 +307,11 @@ public class BigqueryProtoUpdateListenerTest {
         };
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
-        OdpfMessageParser parser = new ProtoOdpfMessageParser(stencilClient);
-        bigqueryProtoUpdateListener.setOdpfMessageParser(parser);
+        RaystackMessageParser parser = new ProtoRaystackMessageParser(stencilClient);
+        bigqueryProtoUpdateListener.setRaystackMessageParser(parser);
         bigqueryProtoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
-        OdpfMessage testMessage = new OdpfMessage(
+        RaystackMessage testMessage = new RaystackMessage(
                 "".getBytes(),
                 testKeyBQ.toByteArray(),
                 new Tuple<>("topic", "topic"),
@@ -363,8 +363,8 @@ public class BigqueryProtoUpdateListenerTest {
                 put(String.format("%s", TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
             }
         };
-        OdpfMessageParser parser = new ProtoOdpfMessageParser(stencilClient);
-        bigqueryProtoUpdateListener.setOdpfMessageParser(parser);
+        RaystackMessageParser parser = new ProtoRaystackMessageParser(stencilClient);
+        bigqueryProtoUpdateListener.setRaystackMessageParser(parser);
 
         Exception exception = Assertions.assertThrows(RuntimeException.class, () -> {
             bigqueryProtoUpdateListener.onSchemaUpdate(descriptorsMap);

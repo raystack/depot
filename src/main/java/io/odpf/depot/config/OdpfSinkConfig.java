@@ -12,7 +12,7 @@ import org.apache.http.Header;
 
 import java.util.List;
 
-public interface OdpfSinkConfig extends Config {
+public interface RaystackSinkConfig extends Config {
 
     @Key("SCHEMA_REGISTRY_STENCIL_ENABLE")
     @DefaultValue("false")

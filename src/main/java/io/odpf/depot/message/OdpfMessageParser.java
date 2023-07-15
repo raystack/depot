@@ -2,9 +2,9 @@ package org.raystack.depot.message;
 
 import java.io.IOException;
 
-public interface OdpfMessageParser {
-    ParsedOdpfMessage parse(OdpfMessage message, SinkConnectorSchemaMessageMode type, String schemaClass)
+public interface RaystackMessageParser {
+    ParsedRaystackMessage parse(RaystackMessage message, SinkConnectorSchemaMessageMode type, String schemaClass)
             throws IOException;
 
-    OdpfMessageSchema getSchema(String schemaClass) throws IOException;
+    RaystackMessageSchema getSchema(String schemaClass) throws IOException;
 }

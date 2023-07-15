@@ -12,7 +12,7 @@ import org.aeonbits.owner.Config;
 import java.util.Properties;
 
 @Config.DisableFeature(Config.DisableableFeature.PARAMETER_FORMATTING)
-public interface RedisSinkConfig extends OdpfSinkConfig {
+public interface RedisSinkConfig extends RaystackSinkConfig {
     @Key("SINK_REDIS_URLS")
     String getSinkRedisUrls();
 

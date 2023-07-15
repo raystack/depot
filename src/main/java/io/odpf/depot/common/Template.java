@@ -2,8 +2,8 @@ package org.raystack.depot.common;
 
 import com.google.common.base.Splitter;
 import org.raystack.depot.exception.InvalidTemplateException;
-import org.raystack.depot.message.OdpfMessageSchema;
-import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.RaystackMessageSchema;
+import org.raystack.depot.message.ParsedRaystackMessage;
 import org.raystack.depot.message.field.GenericFieldFactory;
 import org.raystack.depot.message.proto.converter.fields.ProtoField;
 import org.raystack.depot.utils.StringUtils;
@@ -36,10 +36,10 @@ public class Template {
         }
     }
 
-    public String parse(ParsedOdpfMessage parsedOdpfMessage, OdpfMessageSchema schema) {
+    public String parse(ParsedRaystackMessage parsedRaystackMessage, RaystackMessageSchema schema) {
         Object[] patternVariableData = patternVariableFieldNames
                 .stream()
-                .map(fieldName -> fetchInternalValue(parsedOdpfMessage.getFieldByName(fieldName, schema)))
+                .map(fieldName -> fetchInternalValue(parsedRaystackMessage.getFieldByName(fieldName, schema)))
                 .toArray();
         return String.format(templatePattern, patternVariableData);
     }

@@ -1,13 +1,13 @@
 package org.raystack.depot.log;
 
-import org.raystack.depot.message.json.JsonOdpfMessageParser;
-import org.raystack.depot.OdpfSinkResponse;
-import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.message.json.JsonRaystackMessageParser;
+import org.raystack.depot.RaystackSinkResponse;
+import org.raystack.depot.config.RaystackSinkConfig;
 import org.raystack.depot.error.ErrorInfo;
 import org.raystack.depot.error.ErrorType;
-import org.raystack.depot.exception.OdpfSinkException;
-import org.raystack.depot.message.OdpfMessage;
-import org.raystack.depot.message.OdpfMessageParser;
+import org.raystack.depot.exception.RaystackSinkException;
+import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.RaystackMessageParser;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.JsonParserMetrics;
 import org.aeonbits.owner.ConfigFactory;
@@ -32,15 +32,15 @@ import static org.mockito.Mockito.verify;
 
 public class LogSinkTest {
     private final String template = "\n================= DATA =======================\n{}\n================= METADATA =======================\n{}\n";
-    private OdpfSinkConfig config;
-    private OdpfMessageParser raystackMessageParser;
+    private RaystackSinkConfig config;
+    private RaystackMessageParser raystackMessageParser;
     private Instrumentation instrumentation;
     private JsonParserMetrics jsonParserMetrics;
 
     @Before
     public void setUp() throws Exception {
-        config = mock(OdpfSinkConfig.class);
-        raystackMessageParser = mock(OdpfMessageParser.class);
+        config = mock(RaystackSinkConfig.class);
+        raystackMessageParser = mock(RaystackMessageParser.class);
         instrumentation = mock(Instrumentation.class);
         jsonParserMetrics = new JsonParserMetrics(config);
 
@@ -49,8 +49,8 @@ public class LogSinkTest {
     @Test
     public void shouldProcessEmptyMessageWithNoError() throws IOException {
         LogSink logSink = new LogSink(config, raystackMessageParser, instrumentation);
-        ArrayList<OdpfMessage> messages = new ArrayList<>();
-        OdpfSinkResponse raystackSinkResponse = logSink.pushToSink(messages);
+        ArrayList<RaystackMessage> messages = new ArrayList<>();
+        RaystackSinkResponse raystackSinkResponse = logSink.pushToSink(messages);
         Map<Long, ErrorInfo> errors = raystackSinkResponse.getErrors();
 
         assertEquals(Collections.emptyMap(), errors);
@@ -59,24 +59,24 @@ public class LogSinkTest {
     }
 
     @Test
-    public void shouldLogJsonMessages() throws OdpfSinkException {
+    public void shouldLogJsonMessages() throws RaystackSinkException {
         HashMap<String, String> configMap = new HashMap<String, String>() {
             {
                 put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "log_message");
             }
         };
-        OdpfSinkConfig raystackSinkConfig = ConfigFactory.create(OdpfSinkConfig.class, configMap);
-        OdpfMessageParser messageParser = new JsonOdpfMessageParser(raystackSinkConfig, instrumentation,
+        RaystackSinkConfig raystackSinkConfig = ConfigFactory.create(RaystackSinkConfig.class, configMap);
+        RaystackMessageParser messageParser = new JsonRaystackMessageParser(raystackSinkConfig, instrumentation,
                 jsonParserMetrics);
         LogSink logSink = new LogSink(raystackSinkConfig, messageParser, instrumentation);
-        ArrayList<OdpfMessage> messages = new ArrayList<>();
+        ArrayList<RaystackMessage> messages = new ArrayList<>();
         String validJsonFirstName = "{\"first_name\":\"john\"}";
         byte[] logMessage1 = validJsonFirstName.getBytes();
         String validJsonLastName = "{\"last_name\":\"doe\"}";
         byte[] logMessage2 = validJsonLastName.getBytes();
-        messages.add(new OdpfMessage(null, logMessage1));
-        messages.add(new OdpfMessage(null, logMessage2));
-        OdpfSinkResponse raystackSinkResponse = logSink.pushToSink(messages);
+        messages.add(new RaystackMessage(null, logMessage1));
+        messages.add(new RaystackMessage(null, logMessage2));
+        RaystackSinkResponse raystackSinkResponse = logSink.pushToSink(messages);
 
         // assert no error
         Map<Long, ErrorInfo> errors = raystackSinkResponse.getErrors();
@@ -90,25 +90,25 @@ public class LogSinkTest {
     }
 
     @Test
-    public void shouldReturnErrorResponseAndProcessValidMessage() throws OdpfSinkException {
+    public void shouldReturnErrorResponseAndProcessValidMessage() throws RaystackSinkException {
         HashMap<String, String> configMap = new HashMap<String, String>() {
             {
                 put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", "log_message");
             }
         };
-        OdpfSinkConfig raystackSinkConfig = ConfigFactory.create(OdpfSinkConfig.class, configMap);
+        RaystackSinkConfig raystackSinkConfig = ConfigFactory.create(RaystackSinkConfig.class, configMap);
 
-        OdpfMessageParser messageParser = new JsonOdpfMessageParser(raystackSinkConfig, instrumentation,
+        RaystackMessageParser messageParser = new JsonRaystackMessageParser(raystackSinkConfig, instrumentation,
                 jsonParserMetrics);
         LogSink logSink = new LogSink(raystackSinkConfig, messageParser, instrumentation);
-        ArrayList<OdpfMessage> messages = new ArrayList<>();
+        ArrayList<RaystackMessage> messages = new ArrayList<>();
         String validJsonFirstName = "{\"first_name\":\"john\"}";
         byte[] logMessage1 = validJsonFirstName.getBytes();
         String invalidJson = "{\"last_name";
         byte[] invalidLogMessage = invalidJson.getBytes();
-        messages.add(new OdpfMessage(null, logMessage1));
-        messages.add(new OdpfMessage(null, invalidLogMessage));
-        OdpfSinkResponse raystackSinkResponse = logSink.pushToSink(messages);
+        messages.add(new RaystackMessage(null, logMessage1));
+        messages.add(new RaystackMessage(null, invalidLogMessage));
+        RaystackSinkResponse raystackSinkResponse = logSink.pushToSink(messages);
 
         // assert error
         ErrorInfo error = raystackSinkResponse.getErrorsFor(1L);

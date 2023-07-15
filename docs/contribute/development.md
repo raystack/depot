@@ -27,7 +27,7 @@ Environment variables can be configured in the following way -
 
 We need to create an application which has org.raystack.depot as a dependency.
 This application will create any sink that a developer wants to test by using sink-factories.
-The OdpfSink's APIs can be used to send data to sinks and check the response.
+The RaystackSink's APIs can be used to send data to sinks and check the response.
 One can setup monitoring to see metrics emitted too.
 
 #### Maven and gradle dependency
@@ -93,11 +93,11 @@ Following are the typical requirements:
 
 ### Adding a new Sink
 
-To add a new sink implementation the Sink class has to implement OdpfSink interface
+To add a new sink implementation the Sink class has to implement RaystackSink interface
 
 ```java
-public interface OdpfSink extends Closeable {
-    OdpfSinkResponse pushToSink(List<OdpfMessage> messages) throws OdpfSinkException;
+public interface RaystackSink extends Closeable {
+    RaystackSinkResponse pushToSink(List<RaystackMessage> messages) throws RaystackSinkException;
 }
 ```
 

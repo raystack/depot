@@ -1,6 +1,6 @@
 package org.raystack.depot.utils;
 
-import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.RaystackSinkConfig;
 import org.json.JSONObject;
 
 public class JsonUtils {
@@ -12,7 +12,7 @@ public class JsonUtils {
      * @param payload Json Payload in byyes
      * @return Json object
      */
-    public static JSONObject getJsonObject(OdpfSinkConfig config, byte[] payload) {
+    public static JSONObject getJsonObject(RaystackSinkConfig config, byte[] payload) {
         JSONObject jsonObject = new JSONObject(new String(payload));
         if (!config.getSinkConnectorSchemaJsonParserStringModeEnabled()) {
             return jsonObject;

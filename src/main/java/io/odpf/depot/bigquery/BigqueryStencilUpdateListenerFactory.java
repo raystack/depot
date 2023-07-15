@@ -8,10 +8,10 @@ import org.raystack.depot.config.BigQuerySinkConfig;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.metrics.Instrumentation;
 import org.raystack.depot.metrics.StatsDReporter;
-import org.raystack.depot.stencil.OdpfStencilUpdateListener;
+import org.raystack.depot.stencil.RaystackStencilUpdateListener;
 
 public class BigqueryStencilUpdateListenerFactory {
-    public static OdpfStencilUpdateListener create(BigQuerySinkConfig config, BigQueryClient bqClient,
+    public static RaystackStencilUpdateListener create(BigQuerySinkConfig config, BigQueryClient bqClient,
             MessageRecordConverterCache converterCache, StatsDReporter statsDReporter) {
         switch (config.getSinkConnectorSchemaDataType()) {
             case JSON:

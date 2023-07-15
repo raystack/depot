@@ -10,12 +10,12 @@ import org.raystack.depot.bigquery.converter.MessageRecordConverter;
 import org.raystack.depot.bigquery.converter.MessageRecordConverterCache;
 import org.raystack.depot.common.TupleString;
 import org.raystack.depot.config.BigQuerySinkConfig;
-import org.raystack.depot.message.OdpfMessageSchema;
+import org.raystack.depot.message.RaystackMessageSchema;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.message.proto.ProtoField;
-import org.raystack.depot.message.proto.ProtoOdpfMessageParser;
-import org.raystack.depot.message.proto.ProtoOdpfMessageSchema;
-import org.raystack.depot.stencil.OdpfStencilUpdateListener;
+import org.raystack.depot.message.proto.ProtoRaystackMessageParser;
+import org.raystack.depot.message.proto.ProtoRaystackMessageSchema;
+import org.raystack.depot.stencil.RaystackStencilUpdateListener;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
+public class BigqueryProtoUpdateListener extends RaystackStencilUpdateListener {
     private final BigQuerySinkConfig config;
     private final BigQueryClient bqClient;
     @Getter
@@ -47,14 +47,14 @@ public class BigqueryProtoUpdateListener extends OdpfStencilUpdateListener {
             String schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
                     ? config.getSinkConnectorSchemaProtoMessageClass()
                     : config.getSinkConnectorSchemaProtoKeyClass();
-            ProtoOdpfMessageParser raystackMessageParser = (ProtoOdpfMessageParser) getOdpfMessageParser();
-            OdpfMessageSchema schema;
+            ProtoRaystackMessageParser raystackMessageParser = (ProtoRaystackMessageParser) getRaystackMessageParser();
+            RaystackMessageSchema schema;
             if (newDescriptors == null) {
                 schema = raystackMessageParser.getSchema(schemaClass);
             } else {
                 schema = raystackMessageParser.getSchema(schemaClass, newDescriptors);
             }
-            ProtoField protoField = ((ProtoOdpfMessageSchema) schema).getProtoField();
+            ProtoField protoField = ((ProtoRaystackMessageSchema) schema).getProtoField();
             List<Field> bqSchemaFields = BigqueryFields.generateBigquerySchema(protoField);
             addMetadataFields(bqSchemaFields);
             bqClient.upsertTable(bqSchemaFields);

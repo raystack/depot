@@ -1,6 +1,6 @@
 package org.raystack.depot.metrics;
 
-import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.RaystackSinkConfig;
 import lombok.Getter;
 
 public class SinkMetrics {
@@ -15,7 +15,7 @@ public class SinkMetrics {
     @Getter
     private final String applicationPrefix;
 
-    public SinkMetrics(OdpfSinkConfig config) {
+    public SinkMetrics(RaystackSinkConfig config) {
         this.applicationPrefix = config.getMetricsApplicationPrefix();
     }
 

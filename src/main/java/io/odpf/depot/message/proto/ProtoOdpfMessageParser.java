@@ -2,17 +2,17 @@ package org.raystack.depot.message.proto;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.RaystackSinkConfig;
 import org.raystack.depot.exception.ConfigurationException;
 import org.raystack.depot.exception.EmptyMessageException;
 import org.raystack.depot.message.MessageUtils;
-import org.raystack.depot.message.OdpfMessage;
-import org.raystack.depot.message.OdpfMessageParser;
-import org.raystack.depot.message.OdpfMessageSchema;
-import org.raystack.depot.message.ParsedOdpfMessage;
+import org.raystack.depot.message.RaystackMessage;
+import org.raystack.depot.message.RaystackMessageParser;
+import org.raystack.depot.message.RaystackMessageSchema;
+import org.raystack.depot.message.ParsedRaystackMessage;
 import org.raystack.depot.message.SinkConnectorSchemaMessageMode;
 import org.raystack.depot.metrics.StatsDReporter;
-import org.raystack.depot.stencil.OdpfStencilUpdateListener;
+import org.raystack.depot.stencil.RaystackStencilUpdateListener;
 import org.raystack.depot.utils.StencilUtils;
 import org.raystack.stencil.StencilClientFactory;
 import org.raystack.stencil.client.StencilClient;
@@ -28,13 +28,13 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class ProtoOdpfMessageParser implements OdpfMessageParser {
+public class ProtoRaystackMessageParser implements RaystackMessageParser {
 
     private final StencilClient stencilClient;
     private final ProtoFieldParser protoMappingParser = new ProtoFieldParser();
 
-    public ProtoOdpfMessageParser(OdpfSinkConfig sinkConfig, StatsDReporter reporter,
-            OdpfStencilUpdateListener protoUpdateListener) {
+    public ProtoRaystackMessageParser(RaystackSinkConfig sinkConfig, StatsDReporter reporter,
+            RaystackStencilUpdateListener protoUpdateListener) {
         StencilConfig stencilConfig = StencilUtils.getStencilConfig(sinkConfig, reporter.getClient(),
                 protoUpdateListener);
         if (sinkConfig.isSchemaRegistryStencilEnable()) {
@@ -44,11 +44,11 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
         }
     }
 
-    public ProtoOdpfMessageParser(StencilClient stencilClient) {
+    public ProtoRaystackMessageParser(StencilClient stencilClient) {
         this.stencilClient = stencilClient;
     }
 
-    public ParsedOdpfMessage parse(OdpfMessage message, SinkConnectorSchemaMessageMode type, String schemaClass)
+    public ParsedRaystackMessage parse(RaystackMessage message, SinkConnectorSchemaMessageMode type, String schemaClass)
             throws IOException {
         if (type == null) {
             throw new IOException("parser mode not defined");
@@ -70,7 +70,7 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
             throw new EmptyMessageException();
         }
         DynamicMessage dynamicMessage = stencilClient.parse(schemaClass, payload);
-        return new ProtoOdpfParsedMessage(dynamicMessage);
+        return new ProtoRaystackParsedMessage(dynamicMessage);
     }
 
     public Map<String, Descriptors.Descriptor> getDescriptorMap() {
@@ -78,11 +78,11 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
     }
 
     @Override
-    public OdpfMessageSchema getSchema(String schemaClass) throws IOException {
+    public RaystackMessageSchema getSchema(String schemaClass) throws IOException {
         ProtoField protoField = new ProtoField();
         protoField = protoMappingParser.parseFields(protoField, schemaClass, getDescriptorMap(),
                 getTypeNameToPackageNameMap(getDescriptorMap()));
-        return new ProtoOdpfMessageSchema(protoField);
+        return new ProtoRaystackMessageSchema(protoField);
     }
 
     private Map<String, String> getTypeNameToPackageNameMap(Map<String, Descriptors.Descriptor> descriptors) {
@@ -98,11 +98,11 @@ public class ProtoOdpfMessageParser implements OdpfMessageParser {
         return t -> objects.add(keyExtractor.apply(t));
     }
 
-    public OdpfMessageSchema getSchema(String schemaClass, Map<String, Descriptors.Descriptor> newDescriptors)
+    public RaystackMessageSchema getSchema(String schemaClass, Map<String, Descriptors.Descriptor> newDescriptors)
             throws IOException {
         ProtoField protoField = new ProtoField();
         protoField = protoMappingParser.parseFields(protoField, schemaClass, newDescriptors,
                 getTypeNameToPackageNameMap(newDescriptors));
-        return new ProtoOdpfMessageSchema(protoField);
+        return new ProtoRaystackMessageSchema(protoField);
     }
 }

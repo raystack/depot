@@ -8,7 +8,7 @@ import org.raystack.depot.config.converter.LabelMapConverter;
 import java.util.List;
 import java.util.Map;
 
-public interface BigQuerySinkConfig extends OdpfSinkConfig {
+public interface BigQuerySinkConfig extends RaystackSinkConfig {
 
     @Key("SINK_BIGQUERY_GOOGLE_CLOUD_PROJECT_ID")
     String getGCloudProjectID();

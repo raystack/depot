@@ -1,9 +1,9 @@
 package org.raystack.depot.metrics;
 
-import org.raystack.depot.config.OdpfSinkConfig;
+import org.raystack.depot.config.RaystackSinkConfig;
 
 public class JsonParserMetrics extends SinkMetrics {
-    public JsonParserMetrics(OdpfSinkConfig config) {
+    public JsonParserMetrics(RaystackSinkConfig config) {
         super(config);
     }
 

@@ -1,6 +1,6 @@
 package org.raystack.depot.message;
 
-public interface OdpfMessageSchema {
+public interface RaystackMessageSchema {
 
     Object getSchema();
 }
