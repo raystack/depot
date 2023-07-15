@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package odpf.depot;
+package raystack.depot;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
@@ -8,7 +8,7 @@ import "google/protobuf/struct.proto";
 import "google/type/date.proto";
 
 option java_multiple_files = true;
-option java_package = "io.odpf.depot";
+option java_package = "org.raystack.depot";
 option java_outer_classname = "TestMessageProtoBQ";
 
 message TestKeyBQ {
@@ -34,6 +34,8 @@ message TestMessageBQ {
   repeated google.protobuf.Timestamp updated_at = 15;
   repeated google.protobuf.Struct attributes = 16;
   repeated google.protobuf.Duration intervals = 17;
+  int32 counter = 18;
+  string camelCase = 19;
 }
 
 message TestMessageChildBQ {
