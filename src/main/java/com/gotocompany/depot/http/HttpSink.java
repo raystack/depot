@@ -45,6 +45,9 @@ public class HttpSink implements Sink {
         if (validRecords.size() > 0) {
             instrumentation.logInfo("Processed {} records to Http Service", validRecords.size());
             try {
+                for (HttpRequestRecord validRecord : validRecords) {
+                    instrumentation.logDebug(validRecord.getRequestString());
+                }
                 List<HttpSinkResponse> responses = httpSinkClient.send(validRecords);
                 Map<Long, ErrorInfo> errorInfoMap = HttpResponseParser.getErrorsFromResponse(validRecords, responses, retryStatusCodeRanges, requestLogStatusCodeRanges, instrumentation);
                 errorInfoMap.forEach(sinkResponse::addErrors);
