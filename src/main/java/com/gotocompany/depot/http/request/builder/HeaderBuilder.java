@@ -3,6 +3,7 @@ package com.gotocompany.depot.http.request.builder;
 import com.gotocompany.depot.common.Template;
 import com.gotocompany.depot.common.TemplateUtils;
 import com.gotocompany.depot.config.HttpSinkConfig;
+import com.gotocompany.depot.exception.ConfigurationException;
 import com.gotocompany.depot.http.enums.HttpParameterSourceType;
 import com.gotocompany.depot.message.MessageContainer;
 import lombok.Getter;
@@ -28,6 +29,9 @@ public class HeaderBuilder {
     }
 
     public Map<String, String> build() {
+        if (!headersTemplate.isEmpty()) {
+            throw new ConfigurationException("Header template is not allowed in batch request mode.");
+        }
         return baseHeaders;
     }
 

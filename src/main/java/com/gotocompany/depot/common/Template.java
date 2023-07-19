@@ -56,4 +56,8 @@ public class Template {
     public String getTemplateString() {
         return templatePattern;
     }
+
+    public boolean isConstantString() {
+        return patternVariableFieldNames.isEmpty();
+    }
 }

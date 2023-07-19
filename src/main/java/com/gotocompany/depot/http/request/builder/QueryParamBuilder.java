@@ -3,6 +3,7 @@ package com.gotocompany.depot.http.request.builder;
 import com.gotocompany.depot.common.Template;
 import com.gotocompany.depot.common.TemplateUtils;
 import com.gotocompany.depot.config.HttpSinkConfig;
+import com.gotocompany.depot.exception.ConfigurationException;
 import com.gotocompany.depot.http.enums.HttpParameterSourceType;
 import com.gotocompany.depot.message.MessageContainer;
 
@@ -26,12 +27,23 @@ public class QueryParamBuilder {
     }
 
     public Map<String, String> build() {
+
         return queryParamTemplates
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(
-                        templateKey -> templateKey.getKey().getTemplateString(),
-                        templateValue -> templateValue.getValue().getTemplateString()
+                        templateKey -> {
+                            if (!templateKey.getKey().isConstantString()) {
+                                throw new ConfigurationException("Params in query template are not allowed in batch request mode.");
+                            }
+                            return templateKey.getKey().getTemplateString();
+                        },
+                        templateValue -> {
+                            if (!templateValue.getValue().isConstantString()) {
+                                throw new ConfigurationException("Params in query template are not allowed in batch request mode.");
+                            }
+                            return templateValue.getValue().getTemplateString();
+                        }
                 ));
     }
 

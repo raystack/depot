@@ -40,6 +40,9 @@ public class UriBuilder {
     }
 
     public URI build(Map<String, String> queryParam) {
+        if (!urlTemplate.isConstantString()) {
+            throw new ConfigurationException("Template in Service URL is not allowed in batch request mode.");
+        }
         return build(urlTemplate.getTemplateString(), queryParam);
     }
 
