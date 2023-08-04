@@ -259,7 +259,7 @@ public class OAuth2CredentialTest {
                 .withBody("client_id=clientId&client_secret=clientSecret&scope=order%3Aread&grant_type=client_credentials");
         mockServer.when(oauthRequest)
                 .respond(response().withStatusCode(200)
-                        .withDelay(TimeUnit.SECONDS, 6).applyDelay()
+                        .withDelay(TimeUnit.SECONDS, 6)
                         .withBody("{\"access_token\":\"ACCESSTOKEN\",\"expires_in\":3599,\"scope\":\"order:read order:write\",\"token_type\":\"bearer\"}"));
         HttpRequest getRequest = request().withPath("/api")
                 .withHeader(not("Authorization"), string(".*"))
