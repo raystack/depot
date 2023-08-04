@@ -167,11 +167,7 @@ public class HttpSinkTest {
         httpSink.pushToSink(messages);
         verify(instrumentation, times(1)).logInfo("Processed {} records to Http Service",
                 1);
-        verify(instrumentation, times(1)).logDebug("\n" +
-                "Request Method: PUT\n" +
-                "Request Url: http://dummy.com\n" +
-                "Request Headers: [Accept: text/plain]\n" +
-                "Request Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
+        verify(instrumentation, times(1)).logDebug("\nRequest Method: PUT\nRequest Url: http://dummy.com\nRequest Headers: [Accept: text/plain]\nRequest Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
 
     }
 
