@@ -2,12 +2,11 @@ package com.gotocompany.depot.config.converter;
 
 import org.aeonbits.owner.Converter;
 import org.aeonbits.owner.Tokenizer;
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.message.BasicHeader;
 
 import java.lang.reflect.Method;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class SchemaRegistryHeadersConverter implements Converter<Header>, Tokenizer {
 
@@ -23,9 +22,7 @@ public class SchemaRegistryHeadersConverter implements Converter<Header>, Tokeni
                 .filter(s -> {
                     String[] args = s.split(":");
                     return args.length == 2 && args[0].trim().length() > 0 && args[1].trim().length() > 0;
-                })
-                .collect(Collectors.toList())
-                .toArray(new String[0]);
+                }).toArray(String[]::new);
         if (headers.length == 0) {
             throw new IllegalArgumentException(String.format("provided headers %s is not valid", values));
         }

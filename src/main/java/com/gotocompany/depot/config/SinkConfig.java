@@ -10,7 +10,7 @@ import com.gotocompany.depot.message.SinkConnectorSchemaMessageMode;
 import com.gotocompany.depot.common.TupleString;
 import com.gotocompany.stencil.cache.SchemaRefreshStrategy;
 import org.aeonbits.owner.Config;
-import org.apache.http.Header;
+import org.apache.hc.core5.http.Header;
 
 import java.util.List;
 

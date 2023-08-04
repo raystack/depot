@@ -2,7 +2,7 @@ package com.gotocompany.depot.config.converter;
 
 import com.gotocompany.depot.config.SinkConfig;
 import org.aeonbits.owner.ConfigFactory;
-import org.apache.http.message.BasicHeader;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.junit.Assert;
 import org.junit.Test;
 
