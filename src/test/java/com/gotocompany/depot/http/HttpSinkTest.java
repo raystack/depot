@@ -5,6 +5,7 @@ import com.gotocompany.depot.config.converter.RangeToHashMapConverter;
 import com.gotocompany.depot.error.ErrorInfo;
 import com.gotocompany.depot.error.ErrorType;
 import com.gotocompany.depot.exception.DeserializerException;
+import com.gotocompany.depot.exception.SinkException;
 import com.gotocompany.depot.http.client.HttpSinkClient;
 import com.gotocompany.depot.http.record.HttpRequestRecord;
 import com.gotocompany.depot.http.request.Request;
@@ -32,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HttpSinkTest {
@@ -148,6 +149,32 @@ public class HttpSinkTest {
         Assert.assertEquals(ErrorType.SINK_5XX_ERROR, sinkResponse.getErrorsFor(4).getErrorType());
     }
 
+    @Test
+    public void shouldLogRequestBodyInDebugMode() throws SinkException {
+        List<Message> messages = new ArrayList<>();
+        List<HttpRequestRecord> records = new ArrayList<>();
+        records.add(createRecord(0, null, true));
+
+        when(request.createRecords(messages)).thenReturn(records);
+
+        Map<Integer, Boolean> retryStatusCodeRanges = new HashMap<>();
+
+        retryStatusCodeRanges.put(501, true);
+        HttpSink httpSink = new HttpSink(httpSinkClient, request, retryStatusCodeRanges, createRequestLogStatusCode(), instrumentation);
+
+        when(request.createRecords(messages)).thenReturn(records);
+
+        httpSink.pushToSink(messages);
+        verify(instrumentation, times(1)).logInfo("Processed {} records to Http Service",
+                1);
+        verify(instrumentation, times(1)).logDebug("\n" +
+                "Request Method: PUT\n" +
+                "Request Url: http://dummy.com\n" +
+                "Request Headers: [Accept: text/plain]\n" +
+                "Request Body: [{\"key\":\"value1\"},{\"key\":\"value2\"}]");
+
+    }
+
 
     private HttpRequestRecord createRecord(Integer index, ErrorInfo errorInfo, boolean isValid) {
         HttpEntityEnclosingRequestBase httpRequest = new HttpPut("http://dummy.com");
@@ -161,4 +188,5 @@ public class HttpSinkTest {
     private Map<Integer, Boolean> createRequestLogStatusCode() {
         return new RangeToHashMapConverter().convert(null, "400-600");
     }
+
 }
