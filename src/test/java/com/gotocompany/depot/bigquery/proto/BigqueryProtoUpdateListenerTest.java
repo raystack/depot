@@ -7,6 +7,7 @@ import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.gotocompany.depot.TestKeyBQ;
+import com.gotocompany.depot.message.proto.ProtoJsonProvider;
 import com.gotocompany.depot.message.proto.TestProtoUtil;
 import com.gotocompany.depot.common.Tuple;
 import com.gotocompany.depot.common.TupleString;
@@ -19,6 +20,7 @@ import com.gotocompany.depot.message.Message;
 import com.gotocompany.depot.message.proto.ProtoField;
 import com.gotocompany.depot.bigquery.models.Records;
 import com.gotocompany.stencil.client.StencilClient;
+import com.jayway.jsonpath.Configuration;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,6 +46,7 @@ public class BigqueryProtoUpdateListenerTest {
     private StencilClient stencilClient;
 
     private BigQuerySinkConfig config;
+    private Configuration jsonPathConfig;
 
     private MessageRecordConverterCache converterWrapper;
 
@@ -54,8 +57,12 @@ public class BigqueryProtoUpdateListenerTest {
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "");
         System.setProperty("SINK_BIGQUERY_METADATA_COLUMNS_TYPES", "topic=string,partition=integer,offset=integer");
         config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
+        jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(config))
+                .build();
         converterWrapper = new MessageRecordConverterCache();
         when(stencilClient.parse(Mockito.anyString(), Mockito.any())).thenCallRealMethod();
+
     }
 
     @Test
@@ -85,7 +92,7 @@ public class BigqueryProtoUpdateListenerTest {
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
-        MessageParser parser = new ProtoMessageParser(stencilClient);
+        MessageParser parser = new ProtoMessageParser(stencilClient, jsonPathConfig);
         bigqueryProtoUpdateListener.setMessageParser(parser);
         bigqueryProtoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
@@ -129,7 +136,7 @@ public class BigqueryProtoUpdateListenerTest {
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
-        MessageParser parser = new ProtoMessageParser(stencilClient);
+        MessageParser parser = new ProtoMessageParser(stencilClient, jsonPathConfig);
         bigqueryProtoUpdateListener.setMessageParser(parser);
         bigqueryProtoUpdateListener.onSchemaUpdate(null);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
@@ -144,7 +151,6 @@ public class BigqueryProtoUpdateListenerTest {
         Assert.assertEquals("order", convert.getValidRecords().get(0).getColumns().get("order_number"));
         Assert.assertEquals("test", convert.getValidRecords().get(0).getColumns().get("order_url"));
     }
-
 
 
     @Test(expected = RuntimeException.class)
@@ -222,7 +228,7 @@ public class BigqueryProtoUpdateListenerTest {
             }}));
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
-        MessageParser parser = new ProtoMessageParser(stencilClient);
+        MessageParser parser = new ProtoMessageParser(stencilClient, jsonPathConfig);
         bigqueryProtoUpdateListener.setMessageParser(parser);
         bigqueryProtoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
@@ -268,7 +274,7 @@ public class BigqueryProtoUpdateListenerTest {
         }};
         doNothing().when(bigQueryClient).upsertTable(bqSchemaFields);
 
-        MessageParser parser = new ProtoMessageParser(stencilClient);
+        MessageParser parser = new ProtoMessageParser(stencilClient, jsonPathConfig);
         bigqueryProtoUpdateListener.setMessageParser(parser);
         bigqueryProtoUpdateListener.onSchemaUpdate(descriptorsMap);
         TestKeyBQ testKeyBQ = TestKeyBQ.newBuilder().setOrderNumber("order").setOrderUrl("test").build();
@@ -314,7 +320,10 @@ public class BigqueryProtoUpdateListenerTest {
         HashMap<String, Descriptor> descriptorsMap = new HashMap<String, Descriptor>() {{
             put(String.format("%s", TestKeyBQ.class.getName()), TestKeyBQ.getDescriptor());
         }};
-        MessageParser parser = new ProtoMessageParser(stencilClient);
+        jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(config))
+                .build();
+        MessageParser parser = new ProtoMessageParser(stencilClient, jsonPathConfig);
         bigqueryProtoUpdateListener.setMessageParser(parser);
 
         Exception exception = Assertions.assertThrows(RuntimeException.class, () -> {

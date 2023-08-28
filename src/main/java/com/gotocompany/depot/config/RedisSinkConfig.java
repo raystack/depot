@@ -49,4 +49,8 @@ public interface RedisSinkConfig extends SinkConfig {
     @ConverterClass(JsonToPropertiesConverter.class)
     @DefaultValue("")
     Properties getSinkRedisHashsetFieldToColumnMapping();
+
+    @Key("SINK_REDIS_DEFAULT_FIELD_VALUE_ENABLE")
+    @DefaultValue("true")
+    boolean getSinkDefaultFieldValueEnable();
 }

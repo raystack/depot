@@ -27,17 +27,19 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProtoParsedMessage implements ParsedMessage {
 
-    private static final Configuration JSON_PATH_CONFIG = Configuration.builder()
-            .jsonProvider(new ProtoJsonProvider())
-            .build();
-    private final Message dynamicMessage;
 
-    public ProtoParsedMessage(DynamicMessage dynamicMessage) {
+    private final Message dynamicMessage;
+    private final Configuration jsonPathConfig;
+
+    public ProtoParsedMessage(DynamicMessage dynamicMessage, Configuration jsonPathConfig) {
         this.dynamicMessage = dynamicMessage;
+        this.jsonPathConfig = jsonPathConfig;
     }
 
-    public ProtoParsedMessage(Message dynamicMessage) {
+    public ProtoParsedMessage(Message dynamicMessage, Configuration jsonPathConfig) {
         this.dynamicMessage = dynamicMessage;
+        this.jsonPathConfig = jsonPathConfig;
+
     }
 
     public String toString() {
@@ -73,7 +75,7 @@ public class ProtoParsedMessage implements ParsedMessage {
             case ENUM:
                 return value.toString();
             case MESSAGE:
-                return new ProtoParsedMessage((Message) value);
+                return new ProtoParsedMessage((Message) value, jsonPathConfig);
             default:
                 return value;
         }
@@ -103,7 +105,7 @@ public class ProtoParsedMessage implements ParsedMessage {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid field config : name can not be empty");
         }
-        return MessageUtils.getFieldFromJsonObject(name, dynamicMessage, JSON_PATH_CONFIG);
+        return MessageUtils.getFieldFromJsonObject(name, dynamicMessage, jsonPathConfig);
     }
 
     @Override

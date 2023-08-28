@@ -11,9 +11,11 @@ import com.gotocompany.depot.common.Tuple;
 import com.gotocompany.depot.config.BigQuerySinkConfig;
 import com.gotocompany.depot.error.ErrorType;
 import com.gotocompany.depot.message.Message;
+import com.gotocompany.depot.message.proto.ProtoJsonProvider;
 import com.gotocompany.depot.message.proto.ProtoMessageParser;
 import com.gotocompany.depot.message.proto.TestProtoUtil;
 import com.gotocompany.stencil.client.ClassLoadStencilClient;
+import com.jayway.jsonpath.Configuration;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,7 +51,11 @@ public class BigQueryProtoStorageClientTest {
         System.setProperty("SINK_BIGQUERY_TABLE_PARTITION_KEY", "created_at");
         System.setProperty("SINK_BIGQUERY_TABLE_PARTITIONING_ENABLE", "true");
         ClassLoadStencilClient stencilClient = Mockito.mock(ClassLoadStencilClient.class, CALLS_REAL_METHODS);
-        protoMessageParser = new ProtoMessageParser(stencilClient);
+        BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
+        Configuration jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(config))
+                .build();
+        protoMessageParser = new ProtoMessageParser(stencilClient, jsonPathConfig);
         testMessageBQSchema = TableSchema.newBuilder()
                 .addFields(TableFieldSchema.newBuilder()
                         .setName("message_offset")
@@ -168,7 +174,6 @@ public class BigQueryProtoStorageClientTest {
                         .build())
                 .build();
         testDescriptor = BQTableSchemaToProtoDescriptor.convertBQTableSchemaToProtoDescriptor(testMessageBQSchema);
-        BigQuerySinkConfig config = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         BigQueryProtoWriter writer = Mockito.mock(BigQueryProtoWriter.class);
         converter = new BigQueryProtoStorageClient(writer, config, protoMessageParser);
         Mockito.when(writer.getDescriptor()).thenReturn(testDescriptor);
@@ -648,6 +653,7 @@ public class BigQueryProtoStorageClientTest {
         Assert.assertTrue(metas.get(0).getErrorInfo().getException().getMessage()
                 .contains("is outside the allowed bounds. You can only stream to date range within 1825 days in the past and 366 days in the future relative to the current date."));
     }
+
     @Test
     public void shouldNotConvertIfInvalidTimeStamp() throws IOException {
         Instant now = Instant.now();

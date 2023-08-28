@@ -2,6 +2,7 @@ package com.gotocompany.depot.redis.parsers;
 
 import com.gotocompany.depot.TestMessage;
 import com.gotocompany.depot.message.*;
+import com.gotocompany.depot.message.proto.ProtoJsonProvider;
 import com.gotocompany.depot.redis.client.entry.RedisKeyValueEntry;
 import com.gotocompany.stencil.Parser;
 import com.gotocompany.stencil.StencilClientFactory;
@@ -15,6 +16,7 @@ import com.gotocompany.depot.metrics.StatsDReporter;
 import com.gotocompany.depot.redis.enums.RedisSinkDataType;
 import com.gotocompany.depot.redis.record.RedisRecord;
 import com.gotocompany.depot.utils.MessageConfigUtils;
+import com.jayway.jsonpath.Configuration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +54,7 @@ public class RedisParserTest {
         when(redisSinkConfig.getSinkRedisKeyValueDataFieldName()).thenReturn("order_number");
         when(redisSinkConfig.getSinkConnectorSchemaMessageMode()).thenReturn(SinkConnectorSchemaMessageMode.LOG_MESSAGE);
         when(redisSinkConfig.getSinkConnectorSchemaProtoMessageClass()).thenReturn(schemaClass);
+        when(redisSinkConfig.getSinkDefaultFieldValueEnable()).thenReturn(true);
         TestMessage message1 = TestMessage.newBuilder().setOrderNumber("test-order-1").setOrderDetails("ORDER-DETAILS-1").build();
         TestMessage message2 = TestMessage.newBuilder().setOrderNumber("test-order-2").setOrderDetails("ORDER-DETAILS-2").build();
         TestMessage message3 = TestMessage.newBuilder().setOrderNumber("test-order-3").setOrderDetails("ORDER-DETAILS-3").build();
@@ -68,8 +71,11 @@ public class RedisParserTest {
 
     public void setupParserResponse() throws IOException {
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessage.class.getName());
+        Configuration jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(redisSinkConfig))
+                .build();
         for (Message message : messages) {
-            ParsedMessage parsedMessage = new ProtoParsedMessage(protoParser.parse((byte[]) message.getLogMessage()));
+            ParsedMessage parsedMessage = new ProtoParsedMessage(protoParser.parse((byte[]) message.getLogMessage()), jsonPathConfig);
             when(protoMessageParser.parse(message, SinkConnectorSchemaMessageMode.LOG_MESSAGE, schemaClass)).thenReturn(parsedMessage);
         }
         Tuple<SinkConnectorSchemaMessageMode, String> modeAndSchema = MessageConfigUtils.getModeAndSchema(redisSinkConfig);

@@ -77,6 +77,10 @@ public interface HttpSinkConfig extends HttpClientConfig {
     @DefaultValue("")
     String getSinkHttpJsonBodyTemplate();
 
+    @Key("SINK_HTTPV2_DEFAULT_FIELD_VALUE_ENABLE")
+    @DefaultValue("true")
+    boolean getSinkDefaultFieldValueEnable();
+
     @Key("SINK_HTTPV2_DELETE_BODY_ENABLE")
     @DefaultValue("true")
     Boolean isSinkHttpDeleteBodyEnable();

@@ -28,10 +28,12 @@ import com.gotocompany.depot.message.Message;
 import com.gotocompany.depot.message.MessageParser;
 import com.gotocompany.depot.message.ParsedMessage;
 import com.gotocompany.depot.message.SinkConnectorSchemaMessageMode;
+import com.gotocompany.depot.message.proto.ProtoJsonProvider;
 import com.gotocompany.depot.message.proto.ProtoMessageParser;
 import com.gotocompany.depot.message.proto.ProtoParsedMessage;
 import com.gotocompany.stencil.client.ClassLoadStencilClient;
 import com.gotocompany.stencil.client.StencilClient;
+import com.jayway.jsonpath.Configuration;
 import groovy.lang.Tuple3;
 import org.aeonbits.owner.ConfigFactory;
 import org.json.JSONObject;
@@ -70,9 +72,13 @@ public class MessageRecordConverterTest {
         System.setProperty("SINK_BIGQUERY_METADATA_COLUMNS_TYPES",
                 "message_offset=integer,message_topic=string,load_time=timestamp,message_timestamp=timestamp,message_partition=integer");
         stencilClient = Mockito.mock(ClassLoadStencilClient.class, CALLS_REAL_METHODS);
-        ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
-        recordConverter = new MessageRecordConverter(protoMessageParser,
-                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
+        BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
+        Configuration jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(bigQuerySinkConfig))
+                .build();
+        ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient, jsonPathConfig);
+
+        recordConverter = new MessageRecordConverter(protoMessageParser, bigQuerySinkConfig);
 
         now = Instant.now();
     }
@@ -158,7 +164,10 @@ public class MessageRecordConverterTest {
     @Test
     public void shouldNotNamespaceMetadataFieldWhenNamespaceIsNotProvided() {
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
-        ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
+        Configuration jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(sinkConfig))
+                .build();
+        ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient, jsonPathConfig);
         MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoMessageParser, sinkConfig);
 
         TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
@@ -184,7 +193,10 @@ public class MessageRecordConverterTest {
     public void shouldNamespaceMetadataFieldWhenNamespaceIsProvided() {
         System.setProperty("SINK_BIGQUERY_METADATA_NAMESPACE", "metadata_ns");
         BigQuerySinkConfig sinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
-        ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient);
+        Configuration jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(sinkConfig))
+                .build();
+        ProtoMessageParser protoMessageParser = new ProtoMessageParser(stencilClient, jsonPathConfig);
         MessageRecordConverter recordConverterTest = new MessageRecordConverter(protoMessageParser, sinkConfig);
 
         TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), now.toEpochMilli());
@@ -257,6 +269,7 @@ public class MessageRecordConverterTest {
     @Test
     public void shouldReturnInvalidRecordsWhenUnknownFieldsFound() throws IOException {
         System.setProperty("SINK_CONNECTOR_SCHEMA_PROTO_ALLOW_UNKNOWN_FIELDS_ENABLE", "false");
+        BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
         MessageParser mockParser = mock(MessageParser.class);
 
         TestMetadata record1Offset = new TestMetadata("topic1", 1, 101, Instant.now().toEpochMilli(), Instant.now().toEpochMilli());
@@ -268,10 +281,14 @@ public class MessageRecordConverterTest {
                         .addField(1, UnknownFieldSet.Field.getDefaultInstance())
                         .build())
                 .build();
-        ParsedMessage parsedMessage = new ProtoParsedMessage(dynamicMessage);
+        Configuration jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(bigQuerySinkConfig))
+                .build();
+        ParsedMessage parsedMessage = new ProtoParsedMessage(dynamicMessage, jsonPathConfig);
+
         when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "com.gotocompany.depot.TestMessage")).thenReturn(parsedMessage);
 
-        recordConverter = new MessageRecordConverter(mockParser, ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
+        recordConverter = new MessageRecordConverter(mockParser, bigQuerySinkConfig);
 
         List<Message> messages = Collections.singletonList(consumerRecord);
         Records records = recordConverter.convert(messages);
@@ -296,11 +313,15 @@ public class MessageRecordConverterTest {
                         .addField(10, UnknownFieldSet.Field.getDefaultInstance())
                         .build())
                 .build();
-        ParsedMessage parsedMessage = new ProtoParsedMessage(dynamicMessage);
+        BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
+        Configuration jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(bigQuerySinkConfig))
+                .build();
+        ParsedMessage parsedMessage = new ProtoParsedMessage(dynamicMessage, jsonPathConfig);
         when(mockParser.parse(consumerRecord, SinkConnectorSchemaMessageMode.LOG_MESSAGE, "com.gotocompany.depot.TestMessage")).thenReturn(parsedMessage);
 
-        recordConverter = new MessageRecordConverter(mockParser,
-                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
+        recordConverter = new MessageRecordConverter(mockParser, bigQuerySinkConfig
+        );
 
         List<Message> messages = Collections.singletonList(consumerRecord);
         Records records = recordConverter.convert(messages);
@@ -341,9 +362,13 @@ public class MessageRecordConverterTest {
         List<Message> messages = Collections.singletonList(consumerRecord);
         StencilClient client1 = Mockito.mock(StencilClient.class);
         when(client1.parse(anyString(), any())).thenReturn(d);
-        ProtoMessageParser protoMessageParser = new ProtoMessageParser(client1);
+        BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
+        Configuration jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(bigQuerySinkConfig))
+                .build();
+        ProtoMessageParser protoMessageParser = new ProtoMessageParser(client1, jsonPathConfig);
         MessageRecordConverter messageRecordConverter = new MessageRecordConverter(protoMessageParser,
-                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
+                bigQuerySinkConfig);
         Map<String, Object> metadataColumns = TestMessageBuilder.metadataColumns(record1Offset, now);
         return new Tuple3<>(messageRecordConverter, messages, metadataColumns);
     }
@@ -403,7 +428,11 @@ public class MessageRecordConverterTest {
         List<Message> messages = Collections.singletonList(consumerRecord);
         StencilClient client1 = Mockito.mock(StencilClient.class);
         when(client1.parse(anyString(), any())).thenReturn(message);
-        ProtoMessageParser protoMessageParser = new ProtoMessageParser(client1);
+        BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
+        Configuration jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(bigQuerySinkConfig))
+                .build();
+        ProtoMessageParser protoMessageParser = new ProtoMessageParser(client1, jsonPathConfig);
         MessageRecordConverter messageRecordConverter = new MessageRecordConverter(protoMessageParser,
                 ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
         Records records = messageRecordConverter.convert(messages);
@@ -427,9 +456,13 @@ public class MessageRecordConverterTest {
         List<Message> messages = Collections.singletonList(consumerRecord);
         StencilClient client1 = Mockito.mock(StencilClient.class);
         when(client1.parse(anyString(), any())).thenReturn(message);
-        ProtoMessageParser protoMessageParser = new ProtoMessageParser(client1);
+        BigQuerySinkConfig bigQuerySinkConfig = ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties());
+        Configuration jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(bigQuerySinkConfig))
+                .build();
+        ProtoMessageParser protoMessageParser = new ProtoMessageParser(client1, jsonPathConfig);
         MessageRecordConverter messageRecordConverter = new MessageRecordConverter(protoMessageParser,
-                ConfigFactory.create(BigQuerySinkConfig.class, System.getProperties()));
+                bigQuerySinkConfig);
         Records records = messageRecordConverter.convert(messages);
         assertEquals(IllegalArgumentException.class, records.getInvalidRecords().get(0).getErrorInfo().getException().getClass());
         assertEquals(ErrorType.DESERIALIZATION_ERROR, records.getInvalidRecords().get(0).getErrorInfo().getErrorType());

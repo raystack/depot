@@ -95,4 +95,8 @@ public interface SinkConfig extends Config {
     @Separator(ConfToListConverter.ELEMENT_SEPARATOR)
     List<TupleString> getMetadataColumnsTypes();
 
+    @Key("SINK_DEFAULT_FIELD_VALUE_ENABLE")
+    @DefaultValue("false")
+    boolean getSinkDefaultFieldValueEnable();
+
 }

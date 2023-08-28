@@ -17,16 +17,20 @@ import com.gotocompany.depot.TestMessage;
 import com.gotocompany.depot.TestMessageBQ;
 import com.gotocompany.depot.TestNestedMessageBQ;
 import com.gotocompany.depot.TestTypesMessage;
+import com.gotocompany.depot.config.SinkConfig;
 import com.gotocompany.depot.exception.DeserializerException;
 import com.gotocompany.depot.schema.SchemaField;
 import com.gotocompany.stencil.Parser;
 import com.gotocompany.stencil.StencilClientFactory;
+import com.jayway.jsonpath.Configuration;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONWriter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +42,7 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.when;
 
 public class ProtoParsedMessageTest {
 
@@ -47,11 +52,21 @@ public class ProtoParsedMessageTest {
     private DynamicMessage dynamicMessage;
     private Instant now;
     private Parser parser;
+    @Mock
+    private SinkConfig sinkConfig;
+    private Configuration jsonPathConfig;
+
 
     @Before
     public void setUp() throws IOException, Descriptors.DescriptorValidationException {
         parser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
         now = Instant.now();
+        sinkConfig = Mockito.mock(SinkConfig.class);
+        when(sinkConfig.getSinkDefaultFieldValueEnable()).thenReturn(false);
+        jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(sinkConfig))
+                .build();
+
         Timestamp createdAt = Timestamp.newBuilder().setSeconds(now.getEpochSecond()).setNanos(now.getNano()).build();
         TestMessageBQ testMessage = TestMessageBQ.newBuilder()
                 .setOrderNumber("order-1")
@@ -66,7 +81,8 @@ public class ProtoParsedMessageTest {
 
     @Test
     public void shouldGetFieldByName() {
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(dynamicMessage);
+
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(dynamicMessage, jsonPathConfig);
         Object orderNumber = protoParsedMessage.getFieldByName("order_number");
         Assert.assertEquals("order-1", orderNumber);
     }
@@ -84,7 +100,7 @@ public class ProtoParsedMessageTest {
                 .build();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
         DynamicMessage bookingLogDynamicMessage = protoParser.parse(testBookingLogMessage.toByteArray());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(bookingLogDynamicMessage);
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(bookingLogDynamicMessage, jsonPathConfig);
         JSONArray f = (JSONArray) protoParsedMessage.getFieldByName("topics");
 
         Assert.assertEquals(new JSONObject("{\"qos\": 1, \"topic\": \"hellowo/rl/dcom.world.partner\"}").toString(),
@@ -105,7 +121,7 @@ public class ProtoParsedMessageTest {
                 .build();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestBookingLogMessage.class.getName());
         DynamicMessage bookingLogDynamicMessage = protoParser.parse(testBookingLogMessage.toByteArray());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(bookingLogDynamicMessage);
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(bookingLogDynamicMessage, jsonPathConfig);
         Object driverPickupLocation = protoParsedMessage.getFieldByName("driver_pickup_location");
         Assert.assertEquals(PRINTER.print(TestLocation.newBuilder().setLatitude(10.2).setLongitude(12.01).build()), driverPickupLocation.toString());
     }
@@ -136,7 +152,7 @@ public class ProtoParsedMessageTest {
         expectedValue.put(json1).put(json2).put(json3);
 
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()), jsonPathConfig);
         JSONArray attributes = (JSONArray) protoParsedMessage.getFieldByName("attributes");
         assertEquals(expectedValue.toString(), attributes.toString());
     }
@@ -150,7 +166,7 @@ public class ProtoParsedMessageTest {
                 .setPrice(10.2f)
                 .build();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()), jsonPathConfig);
         Object discount = protoParsedMessage.getFieldByName("discount");
         Assert.assertEquals(10000012010L, discount);
         Object price = protoParsedMessage.getFieldByName("price");
@@ -161,7 +177,7 @@ public class ProtoParsedMessageTest {
     public void shouldGetRepeatedTimeStamps() throws IOException {
         TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message1.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message1.toByteArray()), jsonPathConfig);
         JSONArray updatedTimeStamps = (JSONArray) protoParsedMessage.getFieldByName("updated_at");
         Assert.assertEquals(2, updatedTimeStamps.length());
         Assert.assertEquals(now.toString(), updatedTimeStamps.get(0));
@@ -174,7 +190,7 @@ public class ProtoParsedMessageTest {
         TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
         Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
         TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test").setSingleMessage(message1).build();
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(nestedMessage.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(nestedMessage.toByteArray()), jsonPathConfig);
         Object nestedId = protoParsedMessage.getFieldByName("nested_id");
         Assert.assertEquals("test", nestedId);
         Object orderNumber = protoParsedMessage.getFieldByName("single_message.order_number");
@@ -185,14 +201,14 @@ public class ProtoParsedMessageTest {
     public void shouldReturnInstantField() throws IOException {
         Instant time = Instant.ofEpochSecond(1669160207, 600000000);
         TestMessageBQ message1 = TestProtoUtil.generateTestMessage(time);
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(parser.parse(message1.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(parser.parse(message1.toByteArray()), jsonPathConfig);
         Assert.assertEquals(time.toString(), protoParsedMessage.getFieldByName("created_at"));
     }
 
     @Test
     public void shouldReturnDurationFieldInStringFormat() throws IOException {
         TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(parser.parse(message1.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(parser.parse(message1.toByteArray()), jsonPathConfig);
         Object tripDuration = protoParsedMessage.getFieldByName("trip_duration");
         // ProtoFormat Printer returns valid json Value (String with double quotes).
         // Whereas JSONObject, JSONArray returns java types.
@@ -205,7 +221,7 @@ public class ProtoParsedMessageTest {
     @Test
     public void shouldReturnMapFieldAsJSONObject() throws IOException {
         TestMessageBQ message1 = TestMessageBQ.newBuilder().putCurrentState("running", "active").build();
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(parser.parse(message1.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(parser.parse(message1.toByteArray()), jsonPathConfig);
         Object currentState = protoParsedMessage.getFieldByName("current_state");
         Assert.assertEquals("{\"running\":\"active\"}", currentState.toString());
     }
@@ -213,7 +229,7 @@ public class ProtoParsedMessageTest {
     @Test
     public void shouldReturnDefaultValueForFieldIfValueIsNotSet() throws IOException {
         TestMessageBQ emptyMessage = TestMessageBQ.newBuilder().build();
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(parser.parse(emptyMessage.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(parser.parse(emptyMessage.toByteArray()), jsonPathConfig);
         Object orderNumber = protoParsedMessage.getFieldByName("order_number");
         Assert.assertEquals("", orderNumber);
     }
@@ -223,7 +239,7 @@ public class ProtoParsedMessageTest {
         TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
         Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
         TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test").setSingleMessage(message1).build();
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(nestedMessage.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(nestedMessage.toByteArray()), jsonPathConfig);
         Object nestedId = protoParsedMessage.getFieldByName("nested_id");
         Assert.assertEquals("test", nestedId);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> protoParsedMessage.getFieldByName("single_message.order_id"));
@@ -235,7 +251,7 @@ public class ProtoParsedMessageTest {
         TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
         Parser protoParser = StencilClientFactory.getClient().getParser(TestNestedMessageBQ.class.getName());
         TestNestedMessageBQ nestedMessage = TestNestedMessageBQ.newBuilder().setNestedId("test").setSingleMessage(message1).build();
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(nestedMessage.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(nestedMessage.toByteArray()), jsonPathConfig);
         Object nestedId = protoParsedMessage.getFieldByName("nested_id");
         Assert.assertEquals("test", nestedId);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> protoParsedMessage.getFieldByName("nested_id.order_id"));
@@ -245,7 +261,7 @@ public class ProtoParsedMessageTest {
 
     @Test
     public void shouldThrowExceptionIfFieldIsEmpty() {
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(dynamicMessage);
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(dynamicMessage, jsonPathConfig);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> protoParsedMessage.getFieldByName(""));
         Assert.assertEquals("Invalid field config : name can not be empty", exception.getMessage());
     }
@@ -254,7 +270,7 @@ public class ProtoParsedMessageTest {
     public void shouldReturnRepeatedDurations() throws IOException {
         TestMessageBQ message1 = TestProtoUtil.generateTestMessage(now);
         Parser protoParser = StencilClientFactory.getClient().getParser(TestMessageBQ.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message1.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message1.toByteArray()), jsonPathConfig);
         JSONArray intervals = (JSONArray) protoParsedMessage.getFieldByName("intervals");
         Assert.assertEquals(PRINTER.print(Duration.newBuilder().setSeconds(12).setNanos(1000).build()), JSONWriter.valueToString(intervals.get(0)));
         Assert.assertEquals(PRINTER.print(Duration.newBuilder().setSeconds(15).setNanos(1000).build()), JSONWriter.valueToString(intervals.get(1)));
@@ -269,7 +285,7 @@ public class ProtoParsedMessageTest {
                 .addListValues("test3")
                 .build();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()), jsonPathConfig);
         JSONArray listValues = (JSONArray) protoParsedMessage.getFieldByName("list_values");
         Assert.assertEquals("test1", listValues.get(0));
         Assert.assertEquals("test2", listValues.get(1));
@@ -285,7 +301,7 @@ public class ProtoParsedMessageTest {
                 .addListValues("test3")
                 .build();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()), jsonPathConfig);
         Object value = protoParsedMessage.getFieldByName("list_values[1]");
         Assert.assertEquals("test2", value.toString());
     }
@@ -298,7 +314,7 @@ public class ProtoParsedMessageTest {
                 .addListMessageValues(TestMessage.newBuilder().setOrderNumber("456"))
                 .build();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()), jsonPathConfig);
         Object value = protoParsedMessage.getFieldByName("list_message_values[0]");
         Assert.assertEquals("{\"order_number\":\"123\"}", value.toString());
     }
@@ -307,7 +323,7 @@ public class ProtoParsedMessageTest {
     public void shouldIncludeDefaultEnumFieldsOnGetFields() throws IOException {
         TestTypesMessage message = TestTypesMessage.getDefaultInstance();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()), jsonPathConfig);
         Map<SchemaField, Object> fields = protoParsedMessage.getFields();
         Optional<SchemaField> enumValue = fields.keySet().stream().filter(f -> f.getName().equals("enum_value")).findFirst();
         Assert.assertTrue(enumValue.isPresent());
@@ -324,7 +340,7 @@ public class ProtoParsedMessageTest {
         TestMessage msg = TestMessage.newBuilder().setOrderNumber("order-number").build();
         TestTypesMessage message = TestTypesMessage.newBuilder().setMessageValue(msg).addAllListMessageValues(Arrays.asList(msg, msg)).build();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()), jsonPathConfig);
         Map<SchemaField, Object> fields = protoParsedMessage.getFields();
         Assert.assertTrue(getFieldsValue(fields, "message_value") instanceof ProtoParsedMessage);
         List<?> listValue = (List<?>) getFieldsValue(fields, "list_message_values");
@@ -338,9 +354,9 @@ public class ProtoParsedMessageTest {
 
     @Test
     public void shouldIncludeDefaultValuesForMessage() throws IOException {
-        TestTypesMessage  message = TestTypesMessage.getDefaultInstance();
+        TestTypesMessage message = TestTypesMessage.getDefaultInstance();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()), jsonPathConfig);
         Map<SchemaField, Object> fields = protoParsedMessage.getFields();
         Assert.assertEquals(Float.valueOf("0.0"), getFieldsValue(fields, "float_value"));
         Assert.assertEquals(Double.parseDouble("0.0"), getFieldsValue(fields, "double_value"));
@@ -379,7 +395,7 @@ public class ProtoParsedMessageTest {
                 .setMessageValue(TestMessage.newBuilder().setOrderNumber("order-1").setOrderDetails("order-details-1"))
                 .build();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()), jsonPathConfig);
         assertEquals(jsonObject.toString(), protoParsedMessage.toJson().toString());
     }
 
@@ -392,7 +408,7 @@ public class ProtoParsedMessageTest {
                 .setMessageValue(TestMessage.newBuilder().setOrderNumber("order-1").setOrderDetails("order-details-1"))
                 .build();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()), jsonPathConfig);
         assertThrows(DeserializerException.class, protoParsedMessage::toJson);
     }
 
@@ -405,7 +421,7 @@ public class ProtoParsedMessageTest {
                 .setMessageValue(TestMessage.newBuilder().setOrderNumber("order-1").setOrderDetails("order-details-1"))
                 .build();
         Parser protoParser = StencilClientFactory.getClient().getParser(TestTypesMessage.class.getName());
-        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()));
+        ProtoParsedMessage protoParsedMessage = new ProtoParsedMessage(protoParser.parse(message.toByteArray()), jsonPathConfig);
         assertThrows(DeserializerException.class, protoParsedMessage::toJson);
     }
 }

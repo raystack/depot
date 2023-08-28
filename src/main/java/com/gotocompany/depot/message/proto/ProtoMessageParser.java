@@ -16,6 +16,7 @@ import com.gotocompany.depot.utils.StencilUtils;
 import com.gotocompany.stencil.StencilClientFactory;
 import com.gotocompany.stencil.client.StencilClient;
 import com.gotocompany.stencil.config.StencilConfig;
+import com.jayway.jsonpath.Configuration;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -31,17 +32,24 @@ public class ProtoMessageParser implements MessageParser {
 
     private final StencilClient stencilClient;
     private final ProtoFieldParser protoMappingParser = new ProtoFieldParser();
+    private final Configuration jsonPathConfig;
 
     public ProtoMessageParser(SinkConfig sinkConfig, StatsDReporter reporter, DepotStencilUpdateListener protoUpdateListener) {
+
         StencilConfig stencilConfig = StencilUtils.getStencilConfig(sinkConfig, reporter.getClient(), protoUpdateListener);
         if (sinkConfig.isSchemaRegistryStencilEnable()) {
             stencilClient = StencilClientFactory.getClient(sinkConfig.getSchemaRegistryStencilUrls(), stencilConfig);
         } else {
             stencilClient = StencilClientFactory.getClient();
         }
+
+        jsonPathConfig = Configuration.builder()
+                .jsonProvider(new ProtoJsonProvider(sinkConfig))
+                .build();
     }
 
-    public ProtoMessageParser(StencilClient stencilClient) {
+    public ProtoMessageParser(StencilClient stencilClient, Configuration jsonPathConfig) {
+        this.jsonPathConfig = jsonPathConfig;
         this.stencilClient = stencilClient;
     }
 
@@ -66,7 +74,7 @@ public class ProtoMessageParser implements MessageParser {
             throw new EmptyMessageException();
         }
         DynamicMessage dynamicMessage = stencilClient.parse(schemaClass, payload);
-        return new ProtoParsedMessage(dynamicMessage);
+        return new ProtoParsedMessage(dynamicMessage, jsonPathConfig);
     }
 
     public Map<String, Descriptors.Descriptor> getDescriptorMap() {

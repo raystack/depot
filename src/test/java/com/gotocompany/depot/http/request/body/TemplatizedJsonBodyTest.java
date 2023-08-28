@@ -46,6 +46,7 @@ public class TemplatizedJsonBodyTest {
         configuration.put("SINK_CONNECTOR_SCHEMA_PROTO_MESSAGE_CLASS", "com.gotocompany.depot.TestTypesMessage");
         configuration.put("SINK_CONNECTOR_SCHEMA_PROTO_KEY_CLASS", "com.gotocompany.depot.TestMessage");
         configuration.put("SINK_CONNECTOR_SCHEMA_MESSAGE_MODE", String.valueOf(SinkConnectorSchemaMessageMode.LOG_MESSAGE));
+        configuration.put("SINK_HTTPV2_DEFAULT_FIELD_VALUE_ENABLE", "false");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
 
         ProtoMessageParser protoMessageParser = (ProtoMessageParser) MessageParserFactory.getParser(sinkConfig, statsDReporter);
@@ -85,6 +86,8 @@ public class TemplatizedJsonBodyTest {
                         + "\"test_seconds\" : \"%s,timestamp_value.seconds\""
                         + "}"
         );
+        configuration.put("SINK_HTTPV2_DEFAULT_FIELD_VALUE_ENABLE", "false");
+
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         RequestBody body = new TemplatizedJsonBody(sinkConfig);
         String stringBody = body.build(messageContainer);
