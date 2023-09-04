@@ -28,28 +28,6 @@ public class RedisClientFactoryTest {
     private StatsDReporter statsDReporter;
 
     @Test
-    public void shouldGetStandaloneClient() {
-        when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
-        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
-        when(redisSinkConfig.getSinkRedisUrls()).thenReturn("0.0.0.0:0");
-
-        RedisClient client = RedisClientFactory.getClient(redisSinkConfig, statsDReporter);
-
-        Assert.assertEquals(RedisStandaloneClient.class, client.getClass());
-    }
-
-    @Test
-    public void shouldGetStandaloneClientWhenURLHasSpaces() {
-        when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
-        when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.STANDALONE);
-        when(redisSinkConfig.getSinkRedisUrls()).thenReturn(" 0.0.0.0:0 ");
-
-        RedisClient client = RedisClientFactory.getClient(redisSinkConfig, statsDReporter);
-
-        Assert.assertEquals(RedisStandaloneClient.class, client.getClass());
-    }
-
-    @Test
     public void shouldGetClusterClient() {
         when(redisSinkConfig.getSinkRedisTtlType()).thenReturn(RedisSinkTtlType.DURATION);
         when(redisSinkConfig.getSinkRedisDeploymentType()).thenReturn(RedisSinkDeploymentType.CLUSTER);

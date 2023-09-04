@@ -46,7 +46,7 @@ dependencies {
     }
     implementation 'io.grpc:grpc-all:1.55.1'
     implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.35'
-    implementation group: 'redis.clients', name: 'jedis', version: '3.0.1'
+    implementation group: 'redis.clients', name: 'jedis', version: '3.10.0'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'org.json:json:20230227'

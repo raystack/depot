@@ -9,6 +9,8 @@ import com.gotocompany.depot.redis.enums.RedisSinkDeploymentType;
 import com.gotocompany.depot.redis.ttl.RedisTTLFactory;
 import com.gotocompany.depot.redis.ttl.RedisTtl;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
@@ -37,7 +39,11 @@ public class RedisClientFactory {
         } catch (IllegalArgumentException e) {
             throw new ConfigurationException(String.format("Invalid url for redis standalone: %s", redisSinkConfig.getSinkRedisUrls()));
         }
-        Jedis jedis = new Jedis(hostAndPort);
+        DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
+                .user(redisSinkConfig.getSinkRedisAuthUsername())
+                .password(redisSinkConfig.getSinkRedisAuthPassword())
+                .build();
+        Jedis jedis = new Jedis(hostAndPort, jedisConfig);
         return new RedisStandaloneClient(new Instrumentation(statsDReporter, RedisStandaloneClient.class), redisTTL, jedis);
     }
 
@@ -51,7 +57,11 @@ public class RedisClientFactory {
         } catch (IllegalArgumentException e) {
             throw new ConfigurationException(String.format("Invalid url(s) for redis cluster: %s", redisSinkConfig.getSinkRedisUrls()));
         }
-        JedisCluster jedisCluster = new JedisCluster(nodes);
+        DefaultJedisClientConfig jedisConfig = DefaultJedisClientConfig.builder()
+                .user(redisSinkConfig.getSinkRedisAuthUsername())
+                .password(redisSinkConfig.getSinkRedisAuthPassword())
+                .build();
+        JedisCluster jedisCluster = new JedisCluster(nodes, jedisConfig, redisSinkConfig.getSinkRedisMaxAttempts(), new GenericObjectPoolConfig<>());
         return new RedisClusterClient(new Instrumentation(statsDReporter, RedisClusterClient.class), redisTTL, jedisCluster);
     }
 }
