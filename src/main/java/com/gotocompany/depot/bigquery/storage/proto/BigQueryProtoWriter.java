@@ -28,10 +28,12 @@ import lombok.Getter;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 public class BigQueryProtoWriter implements BigQueryWriter {
 
+    private static final int INTERNAL_CONNECTION_TIMEOUT = 10;
     private final BigQuerySinkConfig config;
     private final Function<BigQuerySinkConfig, BigQueryWriteClient> bqWriterCreator;
     private final Function<BigQuerySinkConfig, CredentialsProvider> credCreator;
@@ -42,7 +44,9 @@ public class BigQueryProtoWriter implements BigQueryWriter {
     private StreamWriter streamWriter;
     @Getter
     private Descriptors.Descriptor descriptor;
+    private ProtoSchema schema;
     private boolean isClosed = false;
+    private long lastAppendTimeStamp;
 
     public BigQueryProtoWriter(BigQuerySinkConfig config,
                                Function<BigQuerySinkConfig, BigQueryWriteClient> bqWriterCreator,
@@ -59,6 +63,7 @@ public class BigQueryProtoWriter implements BigQueryWriter {
 
     @Override
     public void init() {
+        // Creates the connection with schema fetched from the server.
         try {
             String streamName = BigQueryWriterUtils.getDefaultStreamName(config);
             GetWriteStreamRequest writeStreamRequest =
@@ -67,15 +72,18 @@ public class BigQueryProtoWriter implements BigQueryWriter {
                             .setView(WriteStreamView.FULL)
                             .build();
             try (BigQueryWriteClient bigQueryInstance = bqWriterCreator.apply(config)) {
-                // This WriteStream is to get the schema of the table.
                 WriteStream writeStream = bigQueryInstance.getWriteStream(writeStreamRequest);
-                // saving the descriptor for conversion
-                descriptor = BQTableSchemaToProtoDescriptor.convertBQTableSchemaToProtoDescriptor(writeStream.getTableSchema());
-                streamWriter = createStreamWriter();
+                createAndSetStreamWriter(writeStream.getTableSchema());
             }
         } catch (Descriptors.DescriptorValidationException e) {
             throw new IllegalArgumentException("Could not initialise the bigquery writer", e);
         }
+    }
+
+    private void createAndSetStreamWriter(TableSchema updatedSchema) throws Descriptors.DescriptorValidationException {
+        descriptor = BQTableSchemaToProtoDescriptor.convertBQTableSchemaToProtoDescriptor(updatedSchema);
+        schema = ProtoSchemaConverter.convert(descriptor);
+        streamWriter = createStreamWriter();
     }
 
     @Override
@@ -101,27 +109,24 @@ public class BigQueryProtoWriter implements BigQueryWriter {
         }
         // need to synchronize
         synchronized (this) {
+            if (streamWriter == null || streamWriter.isClosed() || checkInactiveConnection()) {
+                instrumentation.logInfo("Recreating stream writer, because it was closed with exception or abandoned by the server");
+                closeStreamWriter();
+                init();
+            }
             TableSchema updatedSchema = streamWriter.getUpdatedSchema();
             if (updatedSchema != null) {
                 instrumentation.logInfo("Updated table schema detected, recreating stream writer");
                 try {
-                    // Close the StreamWriter
-                    start = Instant.now();
-                    streamWriter.close();
-                    instrument(start, BigQueryMetrics.BigQueryStorageAPIType.STREAM_WRITER_CLOSED);
-                    descriptor = BQTableSchemaToProtoDescriptor.convertBQTableSchemaToProtoDescriptor(updatedSchema);
-                    streamWriter = createStreamWriter();
+                    closeStreamWriter();
+                    createAndSetStreamWriter(updatedSchema);
                 } catch (Descriptors.DescriptorValidationException e) {
                     throw new IllegalArgumentException("Could not initialise the bigquery writer", e);
                 }
             }
-            if (streamWriter.isClosed()) {
-                // somehow the stream writer is not recoverable
-                // we need to create a new one
-                streamWriter = createStreamWriter();
-            }
             // timer for append latency
             start = Instant.now();
+            lastAppendTimeStamp = System.nanoTime();
             future = streamWriter.append(payload);
         }
         AppendRowsResponse appendRowsResponse = future.get();
@@ -130,11 +135,27 @@ public class BigQueryProtoWriter implements BigQueryWriter {
         return appendRowsResponse;
     }
 
+    private void closeStreamWriter() {
+        if (streamWriter != null) {
+            Instant start = Instant.now();
+            streamWriter.close();
+            instrument(start, BigQueryMetrics.BigQueryStorageAPIType.STREAM_WRITER_CLOSED);
+        }
+    }
+
+    private boolean checkInactiveConnection() {
+        return System.nanoTime() - lastAppendTimeStamp >= TimeUnit.MINUTES.toNanos(INTERNAL_CONNECTION_TIMEOUT);
+    }
+
     private StreamWriter createStreamWriter() {
         Instant start = Instant.now();
-        BigQueryStream bigQueryStream = streamCreator.apply(config,
-                credCreator.apply(config),
-                ProtoSchemaConverter.convert(descriptor));
+        lastAppendTimeStamp = System.nanoTime();
+        BigQueryStream bigQueryStream =
+                streamCreator.apply(
+                        config,
+                        credCreator.apply(config),
+                        schema);
+        instrumentation.logInfo("Creating bq write stream with schema {}", schema);
         instrument(start, BigQueryMetrics.BigQueryStorageAPIType.STREAM_WRITER_CREATED);
         assert (bigQueryStream instanceof BigQueryProtoStream);
         return ((BigQueryProtoStream) bigQueryStream).getStreamWriter();

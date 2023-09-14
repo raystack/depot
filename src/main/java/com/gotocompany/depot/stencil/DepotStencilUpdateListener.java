@@ -8,8 +8,8 @@ import lombok.Setter;
 
 import java.util.Map;
 
+@Getter
 public abstract class DepotStencilUpdateListener implements SchemaUpdateListener {
-    @Getter
     @Setter
     private MessageParser messageParser;
 

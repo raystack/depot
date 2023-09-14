@@ -29,7 +29,7 @@ public class BigQueryStorageAPISink implements Sink {
         SinkResponse sinkResponse = new SinkResponse();
         BigQueryPayload payload = bigQueryStorageClient.convert(messages);
         responseParser.setSinkResponseForInvalidMessages(payload, messages, sinkResponse);
-        if (payload.getPayloadIndexes().size() > 0) {
+        if (!payload.getPayloadIndexes().isEmpty()) {
             try {
                 AppendRowsResponse appendRowsResponse = bigQueryStorageClient.appendAndGet(payload);
                 responseParser.setSinkResponseForErrors(payload, appendRowsResponse, messages, sinkResponse);

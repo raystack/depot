@@ -58,7 +58,7 @@ public class BigQuerySink implements Sink {
         Records records = messageRecordConverterCache.getMessageRecordConverter().convert(messageList);
         SinkResponse sinkResponse = new SinkResponse();
         records.getInvalidRecords().forEach(invalidRecord -> sinkResponse.addErrors(invalidRecord.getIndex(), invalidRecord.getErrorInfo()));
-        if (records.getValidRecords().size() > 0) {
+        if (!records.getValidRecords().isEmpty()) {
             InsertAllResponse response = insertIntoBQ(records.getValidRecords());
             instrumentation.logInfo("Pushed a batch of {} records to BQ. Insert success?: {}", records.getValidRecords().size(), !response.hasErrors());
             if (response.hasErrors()) {

@@ -11,8 +11,9 @@ import com.google.cloud.bigquery.storage.v1.TableName;
 import com.gotocompany.depot.bigquery.storage.proto.BigQueryProtoStream;
 import com.gotocompany.depot.config.BigQuerySinkConfig;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class BigQueryWriterUtils {
     private static final String DEFAULT_STREAM_SUFFIX = "/_default";
@@ -32,7 +33,7 @@ public class BigQueryWriterUtils {
     public static CredentialsProvider getCredentialsProvider(BigQuerySinkConfig config) {
         try {
             return FixedCredentialsProvider.create(
-                    GoogleCredentials.fromStream(new FileInputStream(config.getBigQueryCredentialPath())));
+                    GoogleCredentials.fromStream(Files.newInputStream(Paths.get(config.getBigQueryCredentialPath()))));
         } catch (IOException e) {
             throw new IllegalArgumentException("Can't initialise credential provider", e);
         }
