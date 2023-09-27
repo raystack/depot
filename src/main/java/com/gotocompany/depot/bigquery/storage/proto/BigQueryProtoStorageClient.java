@@ -49,6 +49,7 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
     public BigQueryPayload convert(List<Message> messages) {
         ProtoRows.Builder rowBuilder = ProtoRows.newBuilder();
         BigQueryPayload payload = new BigQueryPayload();
+        writer.checkAndRefreshConnection();
         Descriptors.Descriptor descriptor = writer.getDescriptor();
         long validIndex = 0;
         for (int index = 0; index < messages.size(); index++) {

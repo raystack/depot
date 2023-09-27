@@ -6,7 +6,6 @@ import com.google.cloud.bigquery.storage.v1.*;
 import com.google.protobuf.Descriptors;
 import com.gotocompany.depot.bigquery.storage.BigQueryPayload;
 import com.gotocompany.depot.bigquery.storage.BigQueryStream;
-import com.gotocompany.depot.bigquery.storage.BigQueryWriter;
 import com.gotocompany.depot.bigquery.storage.BigQueryWriterFactory;
 import com.gotocompany.depot.config.BigQuerySinkConfig;
 import com.gotocompany.depot.config.enums.SinkConnectorSchemaDataType;
@@ -25,7 +24,7 @@ public class BigQueryProtoWriterTest {
     private final Instrumentation instrumentation = Mockito.mock(Instrumentation.class);
     private final BigQuerySinkConfig config = Mockito.mock(BigQuerySinkConfig.class);
     private final BigQueryMetrics metrics = Mockito.mock(BigQueryMetrics.class);
-    private BigQueryWriter bigQueryWriter;
+    private BigQueryProtoWriter bigQueryWriter;
 
     @Before
     public void setup() {
@@ -53,14 +52,14 @@ public class BigQueryProtoWriterTest {
                 .build();
         Mockito.when(ws.getTableSchema()).thenReturn(schema);
         Mockito.when(bqwc.getWriteStream(Mockito.any(GetWriteStreamRequest.class))).thenReturn(ws);
-        bigQueryWriter = BigQueryWriterFactory.createBigQueryWriter(config, c -> bqwc, c -> cp, (c, cr, p) -> bqs, instrumentation, metrics);
+        bigQueryWriter = (BigQueryProtoWriter) BigQueryWriterFactory.createBigQueryWriter(config, c -> bqwc, c -> cp, (c, cr, p) -> bqs, instrumentation, metrics);
         bigQueryWriter.init();
     }
 
     @Test
     public void shouldInitStreamWriter() {
-        Descriptors.Descriptor descriptor = ((BigQueryProtoWriter) bigQueryWriter).getDescriptor();
-        Assert.assertEquals(writer, ((BigQueryProtoWriter) bigQueryWriter).getStreamWriter());
+        Descriptors.Descriptor descriptor = bigQueryWriter.getDescriptor();
+        Assert.assertEquals(writer, bigQueryWriter.getStreamWriter());
         Assert.assertEquals("field1", descriptor.getFields().get(0).getName());
         Assert.assertEquals(Descriptors.FieldDescriptor.Type.STRING, descriptor.getFields().get(0).getType());
         Assert.assertFalse(descriptor.getFields().get(0).isRepeated());
@@ -85,7 +84,7 @@ public class BigQueryProtoWriterTest {
     @Test
     public void shouldRecreateStreamWriter() throws ExecutionException, InterruptedException {
         //check previous schema
-        Descriptors.Descriptor descriptor = ((BigQueryProtoWriter) bigQueryWriter).getDescriptor();
+        Descriptors.Descriptor descriptor = bigQueryWriter.getDescriptor();
         Assert.assertEquals(2, descriptor.getFields().size());
         TableSchema newSchema = TableSchema.newBuilder()
                 .addFields(TableFieldSchema.newBuilder()
@@ -113,12 +112,13 @@ public class BigQueryProtoWriterTest {
         AppendRowsResponse apiResponse = Mockito.mock(AppendRowsResponse.class);
         Mockito.when(future.get()).thenReturn(apiResponse);
         Mockito.when(writer.append(rows)).thenReturn(future);
+        bigQueryWriter.checkAndRefreshConnection();
         AppendRowsResponse appendRowsResponse = bigQueryWriter.appendAndGet(payload);
         Mockito.verify(writer, Mockito.times(1)).close();
         Assert.assertEquals(apiResponse, appendRowsResponse);
-        descriptor = ((BigQueryProtoWriter) bigQueryWriter).getDescriptor();
+        descriptor = bigQueryWriter.getDescriptor();
         Assert.assertEquals(3, descriptor.getFields().size());
-        Assert.assertEquals(writer, ((BigQueryProtoWriter) bigQueryWriter).getStreamWriter());
+        Assert.assertEquals(writer, bigQueryWriter.getStreamWriter());
         Assert.assertEquals("field1", descriptor.getFields().get(0).getName());
         Assert.assertEquals(Descriptors.FieldDescriptor.Type.STRING, descriptor.getFields().get(0).getType());
         Assert.assertFalse(descriptor.getFields().get(0).isRepeated());
@@ -223,6 +223,7 @@ public class BigQueryProtoWriterTest {
         Mockito.when(future.get()).thenReturn(apiResponse);
         Mockito.when(writer.append(rows)).thenReturn(future);
         Mockito.when(writer.getUpdatedSchema()).thenReturn(newSchema);
+        bigQueryWriter.checkAndRefreshConnection();
         bigQueryWriter.appendAndGet(payload);
 
         String tableName = String.format(BigQueryMetrics.BIGQUERY_TABLE_TAG, config.getTableName());
@@ -274,7 +275,7 @@ public class BigQueryProtoWriterTest {
         Mockito.when(future.get()).thenReturn(apiResponse);
         Mockito.when(writer.append(rows)).thenReturn(future);
         Mockito.when(writer.getUpdatedSchema()).thenReturn(newSchema);
-
+        bigQueryWriter.checkAndRefreshConnection();
         bigQueryWriter.appendAndGet(payload);
 
         String tableName = String.format(BigQueryMetrics.BIGQUERY_TABLE_TAG, config.getTableName());
@@ -331,6 +332,7 @@ public class BigQueryProtoWriterTest {
         AppendRowsResponse apiResponse = Mockito.mock(AppendRowsResponse.class);
         Mockito.when(future.get()).thenReturn(apiResponse);
         Mockito.when(writer.append(rows)).thenReturn(future);
+        bigQueryWriter.checkAndRefreshConnection();
         bigQueryWriter.appendAndGet(payload);
 
         String tableName = String.format(BigQueryMetrics.BIGQUERY_TABLE_TAG, config.getTableName());

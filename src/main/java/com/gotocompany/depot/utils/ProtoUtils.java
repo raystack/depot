@@ -12,7 +12,7 @@ public class ProtoUtils {
     public static boolean hasUnknownField(DynamicMessage root) {
         List<DynamicMessage> dynamicMessageFields = collectNestedFields(root);
         List<DynamicMessage> messageWithUnknownFields = getMessageWithUnknownFields(dynamicMessageFields);
-        return messageWithUnknownFields.size() > 0;
+        return !messageWithUnknownFields.isEmpty();
     }
 
     private static List<DynamicMessage> collectNestedFields(DynamicMessage node) {
@@ -37,6 +37,6 @@ public class ProtoUtils {
     }
 
     private static List<DynamicMessage> getMessageWithUnknownFields(List<DynamicMessage> messages) {
-        return messages.stream().filter(message -> message.getUnknownFields().asMap().size() > 0).collect(Collectors.toList());
+        return messages.stream().filter(message -> !message.getUnknownFields().asMap().isEmpty()).collect(Collectors.toList());
     }
 }
