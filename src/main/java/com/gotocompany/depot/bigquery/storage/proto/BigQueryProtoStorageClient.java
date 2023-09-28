@@ -27,14 +27,19 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class BigQueryProtoStorageClient implements BigQueryStorageClient {
 
+    private static final long MESSAGE_PARSER_CHECKER_DELAY_MILLIS = 1000;
     private final BigQueryProtoWriter writer;
     private final BigQuerySinkConfig config;
     private final MessageParser parser;
     private final String schemaClass;
     private final SinkConnectorSchemaMessageMode mode;
+    private final ScheduledExecutorService messageParserChecker = Executors.newScheduledThreadPool(1);
 
     public BigQueryProtoStorageClient(BigQueryWriter writer, BigQuerySinkConfig config, MessageParser parser) {
         this.writer = (BigQueryProtoWriter) writer;
@@ -43,6 +48,11 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
         this.mode = config.getSinkConnectorSchemaMessageMode();
         this.schemaClass = mode == SinkConnectorSchemaMessageMode.LOG_MESSAGE
                 ? config.getSinkConnectorSchemaProtoMessageClass() : config.getSinkConnectorSchemaProtoKeyClass();
+        this.messageParserChecker.scheduleWithFixedDelay(
+                () -> parser.refresh(schemaClass),
+                MESSAGE_PARSER_CHECKER_DELAY_MILLIS,
+                config.getSchemaRegistryStencilCacheTtlMs(),
+                TimeUnit.MILLISECONDS);
     }
 
 
@@ -155,6 +165,7 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
     @Override
     public void close() throws IOException {
         writer.close();
+        messageParserChecker.shutdownNow();
     }
 }
 
