@@ -33,7 +33,8 @@ import java.util.concurrent.TimeUnit;
 
 public class BigQueryProtoStorageClient implements BigQueryStorageClient {
 
-    private static final long MESSAGE_PARSER_CHECKER_DELAY_MILLIS = 1000;
+    private static final long MESSAGE_PARSER_CHECKER_DELAY_SECONDS = 1;
+    private static final long MESSAGE_PARSER_CHECKER_FREQUENCY_SECONDS = 60;
     private final BigQueryProtoWriter writer;
     private final BigQuerySinkConfig config;
     private final MessageParser parser;
@@ -50,9 +51,9 @@ public class BigQueryProtoStorageClient implements BigQueryStorageClient {
                 ? config.getSinkConnectorSchemaProtoMessageClass() : config.getSinkConnectorSchemaProtoKeyClass();
         this.messageParserChecker.scheduleWithFixedDelay(
                 () -> parser.refresh(schemaClass),
-                MESSAGE_PARSER_CHECKER_DELAY_MILLIS,
-                config.getSchemaRegistryStencilCacheTtlMs(),
-                TimeUnit.MILLISECONDS);
+                MESSAGE_PARSER_CHECKER_DELAY_SECONDS,
+                MESSAGE_PARSER_CHECKER_FREQUENCY_SECONDS,
+                TimeUnit.SECONDS);
     }
 
 
