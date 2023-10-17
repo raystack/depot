@@ -5,6 +5,7 @@ import com.gotocompany.depot.redis.record.RedisRecord;
 import com.gotocompany.depot.error.ErrorInfo;
 import com.gotocompany.depot.error.ErrorType;
 import com.gotocompany.depot.metrics.Instrumentation;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,17 @@ public class RedisSinkUtils {
                     }
                 }
         );
+        return errors;
+    }
+
+    public static Map<Long, ErrorInfo> getNonRetryableErrors(List<RedisRecord> redisRecords, JedisConnectionException e, Instrumentation instrumentation) {
+        Map<Long, ErrorInfo> errors = new HashMap<>();
+        for (RedisRecord record : redisRecords) {
+            instrumentation.logError("Error while inserting to redis for message. Record: {}, Error: {}",
+                    record.toString(), e.getMessage());
+            errors.put(record.getIndex(), new ErrorInfo(new Exception(e.getMessage()), ErrorType.SINK_4XX_ERROR));
+
+        }
         return errors;
     }
 }

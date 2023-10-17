@@ -10,6 +10,7 @@ import com.gotocompany.depot.redis.util.RedisSinkUtils;
 import com.gotocompany.depot.Sink;
 import com.gotocompany.depot.SinkResponse;
 import com.gotocompany.depot.error.ErrorInfo;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,8 +37,13 @@ public class RedisSink implements Sink {
         SinkResponse sinkResponse = new SinkResponse();
         invalidRecords.forEach(invalidRecord -> sinkResponse.addErrors(invalidRecord.getIndex(), invalidRecord.getErrorInfo()));
         if (validRecords.size() > 0) {
-            List<RedisResponse> responses = redisClient.send(validRecords);
-            Map<Long, ErrorInfo> errorInfoMap = RedisSinkUtils.getErrorsFromResponse(validRecords, responses, instrumentation);
+            Map<Long, ErrorInfo> errorInfoMap;
+            try {
+                List<RedisResponse> responses = redisClient.send(validRecords);
+                errorInfoMap = RedisSinkUtils.getErrorsFromResponse(validRecords, responses, instrumentation);
+            } catch (JedisConnectionException e) {
+                errorInfoMap = RedisSinkUtils.getNonRetryableErrors(validRecords, e, instrumentation);
+            }
             errorInfoMap.forEach(sinkResponse::addErrors);
             instrumentation.logInfo("Pushed a batch of {} records to Redis", validRecords.size());
         }
