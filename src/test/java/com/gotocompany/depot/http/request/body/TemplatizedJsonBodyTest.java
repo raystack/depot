@@ -91,7 +91,7 @@ public class TemplatizedJsonBodyTest {
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         RequestBody body = new TemplatizedJsonBody(sinkConfig);
         String stringBody = body.build(messageContainer);
-        String expected = "{\"test_timestamp\":\"" + time.toString() + "\",\"test_repeated_messages\":[{\"order_number\":\"test-order-1\",\"order_details\":\"ORDER-DETAILS-1\"},{\"order_number\":\"test-order-1\",\"order_details\":\"ORDER-DETAILS-1\"}],\"test_float\":10,\"test_repeated\":[\"test-list-1\",\"test-list-2\",\"test-list-3\"],\"test-string\":{\"yyy\":\"Test-test-string-10.0\",\"xxx\":\"constant\"},\"test_seconds\":1669160207,\"test_message\":{\"order_number\":\"test-order-1\",\"order_details\":\"ORDER-DETAILS-1\"}}";
+        String expected = "{\"test_float\":10.0,\"test-string\":{\"xxx\":\"constant\",\"yyy\":\"Test-test-string-10.0\"},\"test_repeated\":[\"test-list-1\",\"test-list-2\",\"test-list-3\"],\"test_repeated_messages\":[{\"order_number\":\"test-order-1\",\"order_details\":\"ORDER-DETAILS-1\"},{\"order_number\":\"test-order-1\",\"order_details\":\"ORDER-DETAILS-1\"}],\"test_message\":{\"order_number\":\"test-order-1\",\"order_details\":\"ORDER-DETAILS-1\"},\"test_timestamp\":\"" + time.toString() + "\",\"test_seconds\":1669160207}";
         assertEquals(expected, stringBody);
     }
 
@@ -108,8 +108,10 @@ public class TemplatizedJsonBodyTest {
         configuration.put("SINK_HTTPV2_JSON_BODY_TEMPLATE", "{\"a\"=\"b\"}");
         sinkConfig = ConfigFactory.create(HttpSinkConfig.class, configuration);
         ConfigurationException thrown = assertThrows(ConfigurationException.class, () -> new TemplatizedJsonBody(sinkConfig));
-        assertEquals("Json body template is not a valid json. Expected a ':' after a key at 5 [character 6 line 1]", thrown.getMessage());
+        assertEquals("Json body template is not a valid json. Unexpected character ('=' (code 61)): was expecting a colon to separate field name and value\n"
+                + " at [Source: (String)\"{\"a\"=\"b\"}\"; line: 1, column: 6]", thrown.getMessage());
     }
+
 
     @Test
     public void shouldThrowExceptionForUnknownFieldInTemplate() {
