@@ -47,6 +47,28 @@ Allow unknown fields in proto schema
 * Type: `required`
 * Default: `false`
 
+## `SINK_ADD_METADATA_ENABLED`
+
+Defines whether to add Kafka metadata fields like topic, partition, offset, timestamp in the input proto messge.
+
+* Example value: `true`
+* Type: `optional`
+* Default: `false`
+
+## `SINK_METADATA_COLUMNS_TYPES`
+
+Defines which Kafka metadata fields to add in the input proto message.
+* Example value: `message_offset`
+* Type: `optional`
+
+## `SINK_DEFAULT_FIELD_VALUE_ENABLE`
+
+Defines whether to send the default values in the request body for fields which are not present or null in the input Proto message
+
+* Example value: `false`
+* Type: `optional`
+* Default value: `false`
+
 ## `METRIC_STATSD_HOST`
 
 URL of the StatsD host

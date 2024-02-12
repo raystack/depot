@@ -9,4 +9,5 @@ This page contains reference for all the configurations for sink connectors.
 * [Bigquery Sink](bigquery-sink.md)
 * [Redis Sink](redis.md)
 * [Bigtable Sink](bigtable.md)
+* [HTTP Sink](http-sink.md)
 
