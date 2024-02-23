@@ -27,7 +27,7 @@ public class HttpResponseParser {
             if (shouldLogRequest(responseCode, requestLogStatusCodeRanges)) {
                 instrumentation.logInfo(record.getRequestString());
             }
-            if (response.isFailed()) {
+            if (response.isFail()) {
                 errors.putAll(getErrors(record, responseCode, retryStatusCodeRanges));
                 instrumentation.logError("Error while pushing message request to http services. Response Code: {}, Response Body: {}", responseCode, response.getResponseBody());
             }
@@ -37,7 +37,7 @@ public class HttpResponseParser {
 
     private static Map<Long, ErrorInfo> getErrors(HttpRequestRecord record, String responseCode, Map<Integer, Boolean> retryStatusCodeRanges) {
         Map<Long, ErrorInfo> errors = new HashMap<>();
-        for (long messageIndex: record) {
+        for (long messageIndex : record) {
             if (retryStatusCodeRanges.containsKey(Integer.parseInt(responseCode))) {
                 errors.put(messageIndex, new ErrorInfo(new Exception("Error:" + responseCode), ErrorType.SINK_RETRYABLE_ERROR));
             } else if (responseCode.startsWith("4")) {

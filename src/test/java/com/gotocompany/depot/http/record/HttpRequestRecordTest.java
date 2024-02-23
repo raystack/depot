@@ -76,7 +76,7 @@ public class HttpRequestRecordTest {
         when(statusLine.getStatusCode()).thenReturn(200);
         HttpRequestRecord requestRecord = createRecord(null, true);
         HttpSinkResponse sinkResponse = requestRecord.send(httpClient);
-        assertFalse(sinkResponse.isFailed());
+        assertFalse(sinkResponse.isFail());
     }
 
     @Test
@@ -86,7 +86,7 @@ public class HttpRequestRecordTest {
         when(statusLine.getStatusCode()).thenReturn(500);
         HttpRequestRecord requestRecord = createRecord(null, true);
         HttpSinkResponse sinkResponse = requestRecord.send(httpClient);
-        assertTrue(sinkResponse.isFailed());
+        assertTrue(sinkResponse.isFail());
     }
 
     @Test

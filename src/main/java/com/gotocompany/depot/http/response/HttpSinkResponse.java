@@ -10,30 +10,46 @@ import java.util.regex.Pattern;
 public class HttpSinkResponse {
 
     protected static final String SUCCESS_CODE_PATTERN = "^2.*";
-    private final HttpResponse response;
+    private boolean isFail;
+    private String responseCode;
+    private String responseBody;
 
-    public HttpSinkResponse(HttpResponse response) {
-        this.response = response;
+    public HttpSinkResponse(HttpResponse response) throws IOException {
+        setIsFail(response);
+        setResponseCode(response);
+        setResponseBody(response);
     }
 
-    public boolean isFailed() {
+    private void setIsFail(HttpResponse response) {
         if (response != null && response.getStatusLine() != null) {
-            return !Pattern.compile(SUCCESS_CODE_PATTERN).matcher(String.valueOf(response.getStatusLine().getStatusCode())).matches();
+            isFail = Pattern.compile(SUCCESS_CODE_PATTERN).matcher(String.valueOf(response.getStatusLine().getStatusCode())).matches();
         } else {
-            return true;
+            isFail = true;
         }
+    }
+
+    private void setResponseCode(HttpResponse response) {
+        if (response != null && response.getStatusLine() != null) {
+            responseCode = Integer.toString(response.getStatusLine().getStatusCode());
+        } else {
+            responseCode = "null";
+        }
+    }
+
+    private void setResponseBody(HttpResponse response) throws IOException {
+        HttpEntity entity = response.getEntity();
+        responseBody = EntityUtils.toString(entity);
+    }
+
+    public String getResponseBody() {
+        return responseBody;
     }
 
     public String getResponseCode() {
-        if (response != null && response.getStatusLine() != null) {
-            return Integer.toString(response.getStatusLine().getStatusCode());
-        } else {
-            return "null";
-        }
+        return responseCode;
     }
 
-    public String getResponseBody() throws IOException {
-        HttpEntity entity = response.getEntity();
-        return EntityUtils.toString(entity);
+    public boolean isFail() {
+        return isFail;
     }
 }
