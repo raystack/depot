@@ -47,7 +47,7 @@ public class StatsDReporterBuilder {
 
     public StatsDReporter build() {
         StatsDClient statsDClient = buildStatsDClient();
-        return new StatsDReporter(statsDClient, append(metricsConfig.getMetricStatsDTags().split(","), extraTags));
+        return new StatsDReporter(statsDClient, metricsConfig.getMetricStatsDTagsNativeFormatEnabled(),  append(metricsConfig.getMetricStatsDTags().split(","), extraTags));
     }
 
     private StatsDClient buildStatsDClient() {
