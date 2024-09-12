@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 public class StatsDReporter implements Closeable {
 
     private final StatsDClient client;
-    private final Boolean tagsNativeFormatEnabled;
+    private final boolean tagsNativeFormatEnabled;
     private static final Logger LOGGER = LoggerFactory.getLogger(StatsDReporter.class);
     private final String[] globalTags;
 

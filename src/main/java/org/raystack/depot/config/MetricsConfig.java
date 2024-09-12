@@ -18,5 +18,5 @@ public interface MetricsConfig extends Config {
 
     @Config.Key("METRIC_STATSD_TAGS_NATIVE_FORMAT_ENABLE")
     @DefaultValue("false")
-    Boolean getMetricStatsDTagsNativeFormatEnabled();
+    boolean getMetricStatsDTagsNativeFormatEnabled();
 }
