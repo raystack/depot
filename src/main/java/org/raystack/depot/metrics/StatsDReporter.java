@@ -69,7 +69,7 @@ public class StatsDReporter implements Closeable {
             return null;
         }
         List<String> list = Arrays.stream(tags).map(s -> s.replaceAll("=", ":")).collect(Collectors.toList());
-        list.addAll(Arrays.stream(this.getGlobalTags().split(",")).collect(Collectors.toList()));
+        list.addAll(Arrays.asList(this.getGlobalTags().split(",")));
         return list.toArray(new String[0]);
     }
 
